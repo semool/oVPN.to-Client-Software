@@ -1,19 +1,21 @@
-# encoding=utf8
 from Tkinter import *
 import Tkinter,tkMessageBox,Tkconstants,types,os,platform,sys,hashlib,random,base64,urllib,urllib2,time,datetime
 import _winreg,zipfile
 from waiting import wait, TimeoutExpired, ANY, ALL
 import subprocess
 import threading
-#import logging
 import win32com.client
 import socket
 from Crypto.Cipher import AES
 
-BUILT="0.0.8"
+BUILT="0.0.9"
 STATE="alpha"
 
-DEBUG = True
+try:
+	if sys.argv[1] == "debug":
+		DEBUG = True
+except:
+	DEBUG = False
 
 DOMAIN = "vcp.ovpn.to"
 PORT="443"
@@ -31,19 +33,25 @@ class AppUI(Frame):
 		self.frame.pack_propagate(0)		
 		self.frame.pack()
 		self.make_mini_menubar()
-		self.check_preboot()		
-		try:
-			pass
-			#debuglog = "%APPDATA%\ovpn\bin\client\dist\debug.log"
-			#debuglog = 'ovpn_client_debug.log'
-			#logging.basicConfig(filename=debuglog,level=logging.DEBUG)
-			#logging.debug('This message should go to the log file')
-		except:
-			pass
+		self.check_preboot()
 					
 	def self_vars(self):
-		self.SMALL_WINDOW = False
+		self.debug_log = False
+		self.DONT_CHECK_LOCK = False
+		self.OVPN_LATEST = 236
+		self.OVPN_LATEST_BUILT = "Mar 19 2015"
+		self.OVPN_LATEST_BUILT_TIMESTAMP = 1426719600
+		self.OVPN_DL_URL = False		
+		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.6-I003-i686.exe"
+		self.OVPN_WIN_DLHASH_x86 = "97db2d5545c59a9984a1117bca0b578bbdcb1134a720ca4f342aba8b44bee508"
+		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.6-I003-x86_64.exe"
+		self.OVPN_WIN_DLHASH_x64 = "409011239096933ebc8e6c9dd44ac3050e43466104f4b296e7d175094643af02"
+
+		self.isSMALL_WINDOW = False
 		self.SWITCH_SMALL_WINDOW = False
+		self.SWITCH_FULL_WINDOW = False
+		self.SWITCH_SYSTRAY = False
+		self.INFO_WINDOW_ACTIVE = False
 		self.isLOGGEDin = False
 		self.menubar = False
 		self.UPDATE_MENUBAR = False
@@ -52,15 +60,16 @@ class AppUI(Frame):
 		self.timer_ovpn_ping_running = False
 		self.timer_ovpn_reconnect_running = False
 		self.timer_check_certdl_running = False
+		self.timer_check_certdl_dots = ""
 		self.statustext_from_before = False
 		self.statusbar_text = StringVar()
+		self.OVPN_CONNECTEDsystraytext = StringVar()
 		self.SYSTRAYon = False
 		self.screen_width = 320
 		self.screen_height = 240
 		self.USERID = False
 		self.input_PH = False
 		self.extract = False
-		self.isLoggedIn = False
 		self.STATE_OVPN = False
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS = False
@@ -70,6 +79,8 @@ class AppUI(Frame):
 		self.OVPN_FAV_SERVER = False
 		self.OVPN_AUTO_RECONNECT = True
 		self.OVPN_CONNECTEDto = False
+		self.OVPN_CONNECTEDtime = False
+		self.OVPN_CONNECTEDdistime = False
 		self.OVPN_CONNECTEDtoIP = False
 		self.OVPN_CONNECTEDtoIPbefore = False
 		self.OVPN_THREADID = False
@@ -80,24 +91,32 @@ class AppUI(Frame):
 		self.OVPN_PING_LAST = -1
 		self.OVPN_PING_STAT = -1
 		self.INTERFACES = False
-		
-		
+
+
 	def errorquit(self,text):
 		self.debug(text)
 		tkMessageBox.showinfo("Error","%s" % (text))
 		sys.exit()
-		
+
 	def msgwarn(self,text):
 		self.debug(text)
 		tkMessageBox.showinfo("Warning","%s" % (text))	
-	
+
 	def debug(self,text):
-		self.localtime = time.asctime (time.localtime(time.time()))
 		if DEBUG: 
-			#self.localtime = "x"
-			debugstring = "%s: "%(self.localtime)+text
+			localtime = time.asctime (time.localtime(time.time()))
+			debugstring = "%s: %s"%(localtime,text)
 			print(debugstring)
-			#logging.debug(debugstring)
+			if not self.debug_log == False:
+				try: 
+					dbg = open(self.debug_log,'a')
+					dbg.write("%s\r\n" % (debugstring))
+					dbg.close()
+					return True
+				except: 
+					print("Write to %s failed"%(self.debug_log))
+					return False
+
 
 	def check_preboot(self):
 		if self.pre0_detect_os():
@@ -118,20 +137,24 @@ class AppUI(Frame):
 							self.form_enter_new_encryption_password()
 							self.debug(text="We start looping too!")
 							return True
+							
+							
 	def removethis(self):
 		self.frame.destroy()
 		self.frame = Frame(self, width=self.screen_width, height=self.screen_height)
 		self.frame.pack_propagate(0)
 		self.frame.pack()		
-		self.frame.update_idletasks()
-							
+		self.update_idletasks()
+	
+	
 	def timer_preboot(self):
 		if self.preboot == True:
 			self.removethis()
 			self.make_menubar()
 			if self.gui_check_remotelogin():
 				self.debug(text="def timer_preboot remotelogin OK")
-				if self.timer_check_certdl_running == False: self.isLOGGEDin = True				
+				if self.timer_check_certdl_running == False: 
+					self.isLOGGEDin = True				
 				if self.extract:
 					self.make_menubar()
 					text = "Extraction well done!"
@@ -142,7 +165,8 @@ class AppUI(Frame):
 		else:
 			#self.debug(text="def timer_preboot: looping!")
 			self.root.after(1000,self.timer_preboot)
-							
+
+			
 	def ask_passphrase(self):
 		self.debug(text="def ask_passphrase")
 		self.removethis()
@@ -150,6 +174,7 @@ class AppUI(Frame):
 		self.input_PH = Entry(self.frame,show="*")
 		self.input_PH.pack()		
 		button = Button(self.frame, text="OK", command=self.receive_passphrase).pack()
+		self.update_idletasks()
 	
 
 	def receive_passphrase(self):
@@ -177,7 +202,8 @@ class AppUI(Frame):
 				self.ask_passphrase()					
 		else:
 			self.ask_passphrase()							
-	
+
+			
 	def pre0_detect_os(self):
 		self.self_vars()
 		self.OS = sys.platform
@@ -190,16 +216,26 @@ class AppUI(Frame):
 			if key1_value[0] == "Intel64": 
 				self.OSARCH = "x86_64"
 				self.OSBITS = "64"			
-			elif key1_value[0] == "AMD64": 
+			elif key1_value[0] == "AMD64":
 				self.OSARCH = "x86_64"
 				self.OSBITS = "64"
 			elif key1_value[0] == "x86" or key1_value[0] == "i686" or key1_value[0] == "i586":
 				self.OSARCH = "x86"
 				self.OSBITS = "32"
 			else:
-				self.errorquit(text = "Operating System not supported: %s %s" % (self.OS,key1_value[0]))				
+				self.errorquit(text = "Operating System not supported: %s %s" % (self.OS,key1_value[0]))
+			
+			if self.OSBITS == "32": 
+				self.OVPN_DL_URL = self.OVPN_WIN_DL_URL_x86
+				self.OVPN_DLHASH = self.OVPN_WIN_DLHASH_x86
+			if self.OSBITS == "64": 
+				self.OVPN_DL_URL = self.OVPN_WIN_DL_URL_x64
+				self.OVPN_DLHASH = self.OVPN_WIN_DLHASH_x64
+				
 			if DEBUG: print("def pre0_detect_os: arch=%s bits=%s key=%s OS=%s" % (self.OSARCH,self.OSBITS,key1_value[0],self.OS))
 			self.win_get_interfaces()
+			self.win_detect_openvpn()			
+			self.root.title("oVPN.to v"+BUILT+STATE+" "+self.OSARCH)
 			return True
 		elif OS == "linux2" :
 			self.errorquit(text = "Operating System not supported: %s" % (self.OS))	
@@ -207,6 +243,7 @@ class AppUI(Frame):
 			self.errorquit(text = "Operating System not supported: %s" % (self.OS))
 		else: 
 			self.errorquit(text = "Operating System not supported: %s" % (self.OS))
+	
 	
 	def win_pre1_check_app_dir(self):
 		os_appdata = os.getenv('APPDATA')
@@ -220,6 +257,7 @@ class AppUI(Frame):
 		else:
 			self.errorquit(text = "def check_winapp_dir could not create app_dir: %s" % (self.app_dir))
 
+			
 	def win_pre2_check_profiles_win(self):
 		self.debug(text="def win_pre2_check_profiles_win: %s" % (self.app_dir))
 		self.profiles_unclean = os.listdir(self.app_dir)
@@ -242,42 +280,63 @@ class AppUI(Frame):
 			self.USERID = self.profile
 			return True
 		elif self.profiles_count > 1:
-			self.errorquit(text = "Multiple profiles not yet implemented.\nPlease empty\n %s" % (self.app_dir))
-		#elif self.check_userid_format:
-		#	return True
+			self.errorquit(text = "Multiple profiles not yet implemented.\nPlease empty or rename profile-folders to *.bak (non int)\n %s" % (self.app_dir))
 		
-		for profile in self.profiles:
-			print("Profile: %s" % (profile))
-			
-		if DEBUG: print("def check_profiles_win end")
-		#return True
+		if DEBUG: 
+			for profile in self.profiles:
+				print("Profile: %s" % (profile))
+			print("def check_profiles_win end")
+		
 			
 	def win_pre3_load_profile_dir_vars(self):
-		self.api_dir = "%s\%s" % (self.app_dir,self.profile)
+		self.api_dir = "%s\\%s" % (self.app_dir,self.profile)
+		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		
-		self.debuglog = "%s\cient_debug.log" % (self.api_dir)
+		self.debug_log = "%s\\cient_debug.log" % (self.api_dir)
+		try:
+			dbg = open(self.debug_log,'wb')
+			dbg.write("DEBUG_LOG START\r\n")
+			dbg.close()
+		except: 
+			print("Delete %s failed"%(self.debug_log))
 		
-		self.api_cfg = "%s\ovpnapi.conf" % (self.api_dir)
-		self.vpn_dir = "%s\openvpn" % (self.api_dir)
-		self.prx_dir = "%s\proxy" % (self.api_dir)
-		self.stu_dir = "%s\stunnel" % (self.api_dir)
-		self.pfw_dir = "%s\pfw" % (self.api_dir)
+		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
+		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
+		self.prx_dir = "%s\\proxy" % (self.api_dir)
 		
-		self.vpn_cfg = "%s\config" % (self.vpn_dir)
-		self.zip_cfg = "%s\confs.zip" % (self.vpn_dir)
-		self.zip_crt = "%s\certs.zip" % (self.vpn_dir)
-		self.api_upd = "%s\lastupdate.txt" % (self.vpn_dir)
+		self.stu_dir = "%s\\stunnel" % (self.api_dir)
+		self.pfw_dir = "%s\\pfw" % (self.api_dir)
 		
-
+		self.vpn_cfg = "%s\\config" % (self.vpn_dir)
+		self.zip_cfg = "%s\\confs.zip" % (self.vpn_dir)
+		self.zip_crt = "%s\\certs.zip" % (self.vpn_dir)
+		self.api_upd = "%s\\lastupdate.txt" % (self.vpn_dir)
+		
+		if not self.win_firewall_start():
+			self.msgwarn("Could not start Windows Firewall!")
+				
 		if DEBUG: print("win_pre3_load_profile_dir_vars loaded")
 		return True	
 
+		
 	def check_config_folders(self):
 		self.debug(text="def check_config_folders userid = %s" % (self.USERID))
 		if not os.path.exists(self.api_dir):
 			if DEBUG: print("api_dir %s not found, creating." % (self.api_dir))
 			os.mkdir(self.api_dir)
-
+			
+		if os.path.isfile(self.lock_file):
+			if self.DONT_CHECK_LOCK == False:
+				if tkMessageBox.askyesno("Client is Locked!", "oVPN.to Client Software is already running or did not close cleanly.\n\nDo you really want to start?"):
+					os.remove(self.lock_file)
+				else:
+					sys.exit()
+			
+		if not os.path.isfile(self.lock_file):
+			lock = open(self.lock_file,'wb')
+			lock.write("%s" % (self.get_now_unixtime()))
+			lock.close()
+			
 		if not os.path.exists(self.vpn_dir):
 			if DEBUG: print("vpn_dir %s not found, creating." % (self.vpn_dir))
 			os.mkdir(self.vpn_dir)
@@ -325,6 +384,7 @@ class AppUI(Frame):
 		self.input_userid = Entry(self.frame)
 		self.input_userid.pack()
 		Button(self.frame, text="OK", command=self.receive_userid).pack()
+
 		
 	def receive_userid(self):
 		self.USERID = self.input_userid.get().rstrip()
@@ -338,6 +398,7 @@ class AppUI(Frame):
 					return True
 		else: self.USERID = False	
 
+		
 	def form_enter_new_encryption_password(self):
 		self.removethis()
 		self.make_label(text="oVPN.to Client Setup\n\n\nPassphrase to encrypt and decrypt your API Configuration.\n\nEnter New Passphrase!\nRepeat New Passphrase!")
@@ -377,14 +438,14 @@ class AppUI(Frame):
 		Label(self.frame,text="oVPN.to Client %s\n\n\n" % (self.USERID)).pack()
 		
 		if self.curl_api_request(API_ACTION = "lastupdate"):
-			if DEBUG: print("self.curldata: %s") % (self.curldata)
+			self.debug(text="self.curldata: %s" % (self.curldata))
 			self.remote_lastupdate = self.curldata
 			if self.check_last_server_update():
 				text = "Updating oVPN Configurations..."
 				self.statusbar_text.set(text)
 				self.make_label(text = text)
 				if self.curl_api_request(API_ACTION = "getconfigs"):
-					text = "Updating oVPN Certificates..."
+					text = "Updating oVPN Certificates......"
 					self.statusbar_text.set(text)
 					self.make_label(text = text)
 					if self.curl_api_request(API_ACTION = "requestcerts"):
@@ -396,9 +457,9 @@ class AppUI(Frame):
 				self.make_label(text="\n\nAlpha is not Beta!\nThanks for testing!")
 				return True	
 		else:
-			#os.remove(self.api_cfg)
-			self.errorquit(text="Invalid User-ID/API-Key or Connection failed to https://vcp.ovpn.to!")	
+			self.msgwarn(text="Connection failed to https://vcp.ovpn.to!")
 
+			
 	def check_last_server_update(self):
 		cfg = open(self.api_upd,'r')
 		read_data = cfg.read()
@@ -410,11 +471,15 @@ class AppUI(Frame):
 	
 	def write_last_update(self):
 		cfg = open(self.api_upd,'wb')
-		now = int(time.time())
-		cfg.write("%s" % (now))
+		cfg.write("%s" % (self.get_now_unixtime()))
 		cfg.close()
 		return True
 
+		
+	def get_now_unixtime(self):
+		self.now_unixtime = int(time.time())
+		return self.now_unixtime
+		
 		
 	def extract_ovpn(self):
 		z1file = zipfile.ZipFile(self.zip_cfg)
@@ -424,18 +489,20 @@ class AppUI(Frame):
 		if self.write_last_update():
 			self.statusbar_text.set("Certificates and Configs extracted.")
 			return True
-		
-		
-	
+
+			
 	def timer_check_certdl(self):
 		self.timer_check_certdl_running = True
 		self.curl_api_request(API_ACTION = "requestcerts")
+
 		if not self.body == "ready":
-			self.root.after(15000,self.timer_check_certdl)
-			#self.root.update_idletasks()
+			if len(self.timer_check_certdl_dots) > 4: self.timer_check_certdl_dots = ""
+			self.timer_check_certdl_dots = "%s." % (self.timer_check_certdl_dots)
+			text = "Updating oVPN Certificates%s" % (self.timer_check_certdl_dots)
+			self.statusbar_text.set(text)
+			self.root.after(3000,self.timer_check_certdl)
 		if self.body == "ready":
 			if self.curl_api_request(API_ACTION = "getcerts"):	
-				#self.removethis()
 				self.body = False
 				if self.extract_ovpn():
 					self.removethis()
@@ -448,7 +515,8 @@ class AppUI(Frame):
 				else:
 					self.make_label(text = "\noVPN Server Update Failed!")
 					return False
-					
+
+
 	def check_inet_connection(self):
 		s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		host = "vcp.ovpn.to"
@@ -473,25 +541,19 @@ class AppUI(Frame):
 					self.msgwarn(text=text)			
 					#time.sleep(8)
 					
-				
 
-	def try_socket(self,host,port):
-		
+	def try_socket(self,host,port):		
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			result = s.connect_ex((host, port))
 			s.close()			
 		except:
 			result = False
-		
-		print "def try_socket: result = %s" % (result)
 		if result == 0:
 			return True
 		return False
 			
 		
-		
-						
 	def curl_api_request(self,API_ACTION):
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		self.API_ACTION = API_ACTION
@@ -503,7 +565,6 @@ class AppUI(Frame):
 			
 		if self.API_ACTION == "getconfigs": 
 			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
-			fp = open(self.zip_cfg, "wb")
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION, 'version' : '23x', 'type' : 'win' }	
 			
 		if self.API_ACTION == "requestcerts":			
@@ -511,7 +572,6 @@ class AppUI(Frame):
 			
 		if self.API_ACTION == "getcerts":
 			if os.path.isfile(self.zip_crt): os.remove(self.zip_crt)
-			fp = open(self.zip_crt, "wb")
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }	
 			
 		data = urllib.urlencode(values)
@@ -524,28 +584,47 @@ class AppUI(Frame):
 			#self.debug("self.body = %s"%(self.body))
 		except:
 			self.debug("URL TIMEOUT: self.API_ACTION = %s" % (self.API_ACTION))
-			self.errorquit(text="Connection to https://vcp.ovpn.to failed!")
-			return False
+			self.msgwarn(text="Connection Timeout to https://vcp.ovpn.to!")
 			
-		if self.API_ACTION == "getconfigs" or self.API_ACTION == "getcerts": 
-			fp.write(self.body)
-			fp.close()
-			return True
-
-		if self.API_ACTION == "requestcerts": 
-			if self.body == "ready" or self.body == "wait" or self.body == "submitted":
-				if DEBUG: print("self.body: %s") % (self.body)
-				return True		
+		if not self.body == False:
 		
-		if not self.body == "AUTHERROR":
-			self.curldata = self.body.split(":")
-			if self.curldata[0] == "AUTHOK":
-				self.curldata = self.curldata[1]
-				return True				
+			if not self.body == "AUTHERROR":
+				self.curldata = self.body.split(":")
+				if self.curldata[0] == "AUTHOK":
+					self.curldata = self.curldata[1]
+					return True
+			else:
+				os.remove(self.api_cfg)
+				self.errorquit("Invalid User-ID/API-Key. Encrypted API-Keyfile deleted.")
+		
+			if self.API_ACTION == "getconfigs":
+				try:
+					fp = open(self.zip_cfg, "wb")
+					fp.write(self.body)
+					fp.close()
+					return True	
+				except:
+					return False
+					
+			elif self.API_ACTION == "getcerts": 
+				try:			
+					fp = open(self.zip_crt, "wb")
+					fp.write(self.body)
+					fp.close()
+					return True
+				except:
+					return False					
+
+			if self.API_ACTION == "requestcerts": 
+				if self.body == "ready" or self.body == "wait" or self.body == "submitted":
+					if DEBUG: print("self.body: %s") % (self.body)
+					return True		
+			
 			
 	def check_userid_format(self):
 		if self.USERID.isdigit() and self.USERID > 1 and len(self.USERID) > 1:
 			return True		
+
 			
 	def check_login_format(self):
 		if self.check_userid_format():
@@ -553,7 +632,8 @@ class AppUI(Frame):
 			if self.USERID.isdigit() and self.USERID > 1 and len(self.USERID) > 1:
 				if self.APIKEY.isalnum() and len(self.APIKEY) == 128:
 					return True				
-			
+
+					
 	def load_decryption(self):
 		self.debug(text="def load_decryption")
 		if len(self.input_PH.get()) > 0: 
@@ -598,6 +678,7 @@ class AppUI(Frame):
 			self.debug(text="def read_config passphrase :False")
 			return False
 
+			
 	def write_new_config(self):
 		if self.check_login_format():
 			self.aeskeyhash = hashlib.sha256(self.PH1).digest()
@@ -632,10 +713,12 @@ class AppUI(Frame):
 			self.text2aes = False
 			self.paddata = False
 			self.check_preboot()			
+
 			
 	def make_confighash(self):
 		self.text2hash1 = "USERID=%s,APIKEY=%s" % (self.USERID,self.APIKEY)
 		self.hash2aes = hashlib.sha256(self.text2hash1).hexdigest()
+			
 			
 	def compare_confighash(self):
 		self.make_confighash()
@@ -643,43 +726,28 @@ class AppUI(Frame):
 			self.debug(text="def compare_confighash :True")
 			return True	
 
+			
 	def make_label(self,text):
 		Label(self.frame,text=text).pack()
 		self.update_idletasks()
 			
 		
 	def dologout(self):
-		self.removethis()
-		#self.canvas.destroy()
-		self.menubar.destroy()
-		self.isLOGGEDin = False
-		self.USERID = False
-		self.debug(text="Logout")
-		self.make_mini_menubar()
-		self.check_preboot()
+		if self.OVPN_CONNECTEDto == False and self.isLOGGEDin == True:
+			self.removethis()
+			self.statusbar.destroy()
+			self.isLOGGEDin = False
+			self.USERID = False
+			self.debug(text="Logout")
+			self.make_mini_menubar()
+			self.DONT_CHECK_LOCK = True
+			self.check_preboot()
+			if self.SYSTRAYon == True:
+				self.systray.shutdown()
+		else:
+			self.msgwarn(text="Disconnect first!")
 		
 
-	def make_mini_menubar(self):
-		self.mini_menubar = Menu(self)
-
-		#menu = Menu(self.mini_menubar, tearoff=0)
-		#self.mini_menubar.add_cascade(label="Menu", menu=menu)
-		#self.mini_menubar.add_separator()
-		#menu.add_command(label="Anything")
-		
-		menu = Menu(self.mini_menubar, tearoff=0)
-		self.mini_menubar.add_cascade(label="?", menu=menu)
-		menu.add_command(label="Info")	
-
-		try:
-			self.master.config(menu=self.mini_menubar)
-		except AttributeError:
-			# master is a toplevel window (Python 1.4/Tkinter 1.63)
-			self.master.tk.call(master, "config", "-menu", self.mini_menubar)
-
-		#self.boot_canvas = Canvas(self, bg="#1a1a1a", width=self.screen_width, height=self.screen_height,bd=0, highlightthickness=0)
-		#self.boot_canvas.pack()
-		
 	def load_ovpn_server(self):
 		self.removethis()
 		content = os.listdir(self.vpn_cfg)
@@ -722,7 +790,7 @@ class AppUI(Frame):
 			self.ovpn_tls_key = "%s\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_cli_crt = "%s\client%s.crt" % (self.ovpn_server_dir,self.USERID)
 			self.ovpn_cli_key = "%s\client%s.key" % (self.ovpn_server_dir,self.USERID)
-			self.ovpn_string = "openvpn.exe --config \"%s\" --ca \"%s\" --cert \"%s\" --key \"%s\" --tls-auth \"%s\" --log \"%s\" " % (self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.ovpn_sessionlog)
+			self.ovpn_string = "\"%s\" --config \"%s\" --ca \"%s\" --cert \"%s\" --key \"%s\" --tls-auth \"%s\" --log \"%s\" " % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.ovpn_sessionlog)
 			
 			try:
 				self.call_ovpn_srv = server
@@ -732,9 +800,10 @@ class AppUI(Frame):
 				#self.statusbar_text.set("oVPN connecting to %s ..." %(server))
 				self.OVPN_THREAD_STARTED = True
 			except:
-				self.statusbar_text.set("Unable to start Thread: oVPN (%s) "%(server))
-				tkMessageBox.showwarning("Error", "Unable to start thread: oVPN %s "%(server))
-				self.debug(text="Error: unable to start thread: oVPN")
+				text="Error! Unable to start thread: oVPN %s "%(server)
+				self.statusbar_text.set(text)
+				self.msgwarn(text=text)
+				self.debug(text=text)
 				
 			if self.OVPN_AUTO_RECONNECT == True:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == True")
@@ -745,7 +814,7 @@ class AppUI(Frame):
 				
 		else:
 			self.debug(text="def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
-			#if tkMessageBox.askokcancel("Change oVPN Server?", "oVPN is connected to: %s\n\nSwitch to oVPN Server: %s?"%(self.OVPN_CONNECTEDto,server)):
+			#if tkMessageBox.askyesno("Change oVPN Server?", "oVPN is connected to: %s\n\nSwitch to oVPN Server: %s?"%(self.OVPN_CONNECTEDto,server)):
 			self.debug(text="Change oVPN to %s" %(server))
 			self.kill_openvpn()
 			self.openvpn(server)
@@ -753,15 +822,21 @@ class AppUI(Frame):
 		
 
 	def inThread_timer_ovpn_ping(self):
+		
 		if self.timer_ovpn_ping_running == False:
+			self.OVPN_PING_STAT = -2			
 			self.debug(text="def inThread_timer_ovpn_ping")
 			self.timer_ovpn_ping_running = True
+		
 		if self.STATE_OVPN == True:
 			
+			if self.OVPN_PING_STAT > 0: 
+				time.sleep(6)
+			else:
+				time.sleep(3)
 			if self.OS == "win32": 
 				ovpn_ping_cmd = "ping.exe -n 1 172.16.32.1"
 				PING_PROC = False
-				#PING_PROC = subprocess.Popen("%s" % (ovpn_ping_cmd),stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 				try: PING_PROC = subprocess.check_output("%s" % (ovpn_ping_cmd),shell=True)
 				except:	pass
 					
@@ -772,7 +847,7 @@ class AppUI(Frame):
 				if OVPN_PING_out > 0:
 					self.OVPN_PING.append(OVPN_PING_out)
 					self.OVPN_PING_LAST = OVPN_PING_out
-				if len(self.OVPN_PING) > 90:
+				if len(self.OVPN_PING) > 255:
 					self.OVPN_PING.pop(0)
 				if len(self.OVPN_PING) > 0:
 					for ping in self.OVPN_PING:
@@ -780,9 +855,10 @@ class AppUI(Frame):
 					self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 				#self.debug(text="ping = %s\n#############\nList len=%s\n%s\npingstat=%s"%(OVPN_PING_out,len(self.OVPN_PING),self.OVPN_PING,self.OVPN_PING_STAT))
 				#self.debug("timer ovpn ping running threads: %s" % (threading.active_count()))
-				time.sleep(6)
+				
 				threading.Thread(target=self.inThread_timer_ovpn_ping).start()
 				return True
+				
 		elif self.STATE_OVPN == False:
 			self.debug("leaving timer_ovpn_ping")
 			self.OVPN_PING_STAT = -1
@@ -795,27 +871,29 @@ class AppUI(Frame):
 		self.ovpn_proc_retcode = False
 		self.STATE_OVPN = True
 		self.OVPN_CONNECTEDto = self.call_ovpn_srv
-		self.win_firewall_start()
-		self.win_netsh_set_dns_ovpn()
-		self.win_firewall_modify_rule(option="add")	
-		self.OVPN_PING_STAT = -2
+		self.win_netsh_set_dns_ovpn()	
+		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
+		self.OVPN_CONNECTEDtime = self.get_now_unixtime()
+		self.UPDATE_MENUBAR = True
+		self.win_firewall_modify_rule(option="add")
 		self.ovpn_proc_retcode = subprocess.call("%s" % (self.ovpn_string),shell=True)
-		self.OVPN_CONNECTEDtoIPbefore = self.OVPN_CONNECTEDtoIP
 		self.win_firewall_modify_rule(option="delete")
+		self.OVPN_CONNECTEDtoIPbefore = self.OVPN_CONNECTEDtoIP
 		self.STATE_OVPN = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtoIP = False
 		self.OVPN_THREADID = False
 		self.OVPN_PING_STAT = -1
+		self.OVPN_PING_LAST = -1
+		self.OVPN_PING = list()
 		self.debug(text="def call_openvpn self.ovpn_proc_retcode = %s" %(self.ovpn_proc_retcode))
 		if self.OVPN_AUTO_RECONNECT == True:
 			self.debug(text="def inThread_spawn_openvpn_process: auto-reconnect %s" %(self.call_ovpn_srv))
 			self.OVPN_RECONNECT_NOW = True
-
-	def add_ovpn_routes(self):
-		pass
+		self.UPDATE_MENUBAR = True
+		
 		
 	def read_gateway_from_routes(self):
 		self.debug(text="def read_ovpn_routes:")
@@ -830,7 +908,8 @@ class AppUI(Frame):
 				#self.debug(text="def read_ovpn_routes: %s"%(line))
 				self.GATEWAY_LOCAL = line.split()[2]
 				self.debug(text="self.GATEWAY_LOCAL: %s"%(self.GATEWAY_LOCAL))
-					
+
+				
 	def del_ovpn_routes(self):
 		if not self.OVPN_CONNECTEDtoIPbefore == False:
 			self.read_gateway_from_routes()
@@ -850,7 +929,6 @@ class AppUI(Frame):
 			self.OVPN_CONNECTEDtoIPbefore = False
 			self.GATEWAY_LOCAL = False
 			
-
 		
 	def inThread_timer_openvpn_reconnect(self):
 		#self.debug("def inThread_timer_openvpn_reconnect")
@@ -871,10 +949,10 @@ class AppUI(Frame):
 			threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
 			time.sleep(3)
 			return True
+
 			
 	def kill_openvpn(self):		
 		self.OVPN_AUTO_RECONNECT = False
-		#self.OVPN_RECONNECT_NOW = False
 		self.debug(text="def kill_openvpn")	
 		string1 = "taskkill /im openvpn.exe"
 		string2 = "taskkill /im openvpn.exe /f"
@@ -888,40 +966,44 @@ class AppUI(Frame):
 		self.UPDATE_MENUBAR = True
 		self.del_ovpn_routes()
 
+
 	def win_netsh_set_dns_down(self):
 		d0wns_dns = "178.32.122.65 37.187.0.40 128.199.248.105 95.85.9.86 31.220.27.46 108.61.210.58 178.17.170.67 46.151.208.154 91.214.71.181 217.12.210.54 217.12.203.133"
 		for dns in d0wns_dns.split():
 			pass
 		
 		
-		
 	def win_netsh_set_dns_ovpn(self):
-		self.debug(text="def win_netsh_set_dns_ovpn:")
-		string1 = "netsh interface ip set dnsservers \"%s\" static 172.16.32.1 primary" % (self.WIN_EXT_DEVICE)
-		try: 
-			read1 = subprocess.check_output("%s" % (string1),shell=True)
-			#read2 = subprocess.check_output("%s" % (string2),shell=True)
-			self.debug(text="read1:\n%s"%(read1))
-		except:
-			self.debug(text="def win_netsh_set_dns_ovpn: setting dns failed: string =\n%s"%(string1))
+		if not self.GATEWAY_DNS == "172.16.32.1":
+			self.debug(text="def win_netsh_set_dns_ovpn:")
+			string1 = "netsh interface ip set dnsservers \"%s\" static 172.16.32.1 primary" % (self.WIN_EXT_DEVICE)
+			try: 
+				read1 = subprocess.check_output("%s" % (string1),shell=True)
+				#read2 = subprocess.check_output("%s" % (string2),shell=True)
+				self.debug(text="read1:\n%s"%(read1))
+			except:
+				self.debug(text="def win_netsh_set_dns_ovpn: setting dns failed: string =\n%s"%(string1))
 			
 		
 	def win_netsh_restore_dns_dhcp(self):
 		os.system('netsh interface ip set dnsservers "%" dhcp'%(self.WIN_EXT_DEVICE))
+
 		
 	def win_netsh_restore_dns_from_backup(self):
-		string = 'netsh interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS)
-		read = False
-		try: 
-			read = subprocess.check_output("%s" % (string),shell=True)
-		except:
-			pass
-		if not read == False:
-			self.msgwarn(text="Primary DNS Server restored to: %s"%(self.GATEWAY_DNS))
-		else:
-			self.msgwarn(text="Error: Restoring your DNS Server to %s failed."%(self.GATEWAY_DNS))
-		self.debug(text="def win_netsh_restore_dns_from_backup: %s"%(read))
+		if not self.GATEWAY_DNS == "172.16.32.1":
+			string = 'netsh interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS)
+			read = False
+			try: 
+				read = subprocess.check_output("%s" % (string),shell=True)
+			except:
+				pass
+			if not read == False:
+				self.msgwarn(text="Primary DNS Server restored to: %s"%(self.GATEWAY_DNS))
+			else:
+				self.msgwarn(text="Error: Restoring your DNS Server to %s failed."%(self.GATEWAY_DNS))
+			self.debug(text="def win_netsh_restore_dns_from_backup: %s"%(read))
 
+			
 	def win_netsh_read_dns_to_backup(self):
 		string = "netsh interface ipv4 show dns"
 		read = subprocess.check_output("%s" % (string),shell=True)
@@ -956,21 +1038,58 @@ class AppUI(Frame):
 		self.debug(text="self.GATEWAY_DNS = %s"%(self.GATEWAY_DNS))
 			
 
-	def win_netsh_show_interfaces(self):
-		os.system('netsh interface ip show interfaces')
-
-	def win_netsh_show_dnsservers(self):
-		os.system('netsh interface ip show dnsservers')	
+#	def win_netsh_show_interfaces(self):
+#		os.system('netsh interface ip show interfaces')
+#
+#	def win_netsh_show_dnsservers(self):
+#		os.system('netsh interface ip show dnsservers')	
 		
 	def win_detect_openvpn(self):
-		pass
+		self.OPENVPN_EXE = False
+		os_programfiles = "PROGRAMFILES PROGRAMFILES(x86) PROGRAMW6432"
+		r = 0
+		for getenv in os_programfiles.split():
+			programfiles = os.getenv(getenv)
+			file = "%s\\OpenVPN\\bin\\openvpn.exe" % (programfiles)
+			if os.path.isfile(file): 
+				self.debug(text="def win_detect_openvpn: %s" % (file))
+				self.OPENVPN_EXE = file
+				break
+		
+		if self.OPENVPN_EXE == False:
+			self.errorquit(text="Could not find openvpn.exe")
+		else:
+			try:
+				out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()		
+			except:
+				self.errorquit(text="Could not detect openVPN Version!")
+				
+			self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
+			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
+			if self.OVPN_VERSION >= self.OVPN_LATEST:
+				if self.OVPN_BUILT == self.OVPN_LATEST_BUILT:
+					return True
+				else:
+					built_mon = self.OVPN_BUILT[0]
+					built_day = int(self.OVPN_BUILT[1])
+					built_year = int(self.OVPN_BUILT[2])
+					builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
+					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
+					built_month_int = int(string_built_time.tm_mon)
+					built_timestamp = int(time.mktime(datetime.datetime(built_year,built_month_int,built_day,0,0).timetuple()))
+					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
+						return True
+					else:
+						self.errorquit(text="Please update your openVPN Version!")
+			else:
+				self.errorquit(text="Please update your openVPN Version!")
 
+				
 	def win_install_tap_adapter(self):
 		#C:\Program Files\TAP-Windows\bin\tapinstall.exe find *TAP
 		pass
 		
-	def win_get_interfaces(self):
-		
+	def win_get_interfaces(self):		
 		self.debug(text="def win_get_interfaces")
 		wmi=win32com.client.GetObject('winmgmts:')
 		adapters=wmi.InstancesOf('win32_networkadapter')
@@ -1034,25 +1153,26 @@ class AppUI(Frame):
 
 		
 	def win_firewall_start(self):
-		self.pfw_bak = "%s\pfw.%s.bak.wfw" % (self.pfw_dir,int(time.time()))
-		self.pfw_log = "%s\pfw.%s.log" % (self.pfw_dir,int(time.time()))
+		#self.pfw_bak = "%s\\pfw.%s.bak.wfw" % (self.pfw_dir,int(time.time()))
+		#self.pfw_log = "%s\\pfw.%s.log" % (self.pfw_dir,int(time.time()))
 		self.pfw_cmdlist = list()
-		self.pfw_cmdlist.append("advfirewall export %s" % (self.pfw_bak))
-		self.pfw_cmdlist.append("advfirewall reset")
+		#self.pfw_cmdlist.append("advfirewall export %s" % (self.pfw_bak))
+		#self.pfw_cmdlist.append("advfirewall reset")
 		self.pfw_cmdlist.append("advfirewall set allprofiles state on")
-		self.pfw_cmdlist.append("advfirewall set currentprofile logging filename \"%s\"" % (self.pfw_log))
+		#self.pfw_cmdlist.append("advfirewall set currentprofile logging filename \"%s\"" % (self.pfw_log))
 		self.pfw_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
 		self.pfw_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
 		self.pfw_cmdlist.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
-		self.win_join_netsh_cmd()
-	
+		return self.win_join_netsh_cmd()
+
+		
 	def win_firewall_add_rule_to_vcp(self,option):
 		self.debug(text="def win_firewall_add_rule_to_vcp:")
 		self.pfw_cmdlist = list()
 		url = "https://vcp.ovpn.to"
 		ips = list()
 		ips.append("178.17.170.116")
-		ips.append("172.16.32.1")	
+		ips.append("172.16.32.1")
 		port = 443
 		protocol = "tcp"
 		for ip in ips:
@@ -1061,7 +1181,8 @@ class AppUI(Frame):
 					(option,rule_name,ip,port,protocol)
 			self.pfw_cmdlist.append(rule_string)
 			
-		self.win_join_netsh_cmd()	
+		return self.win_join_netsh_cmd()	
+
 		
 	def win_firewall_allow_outbound(self):
 		self.debug(text="def win_firewall_allow_outbound:")
@@ -1069,28 +1190,71 @@ class AppUI(Frame):
 		self.pfw_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
 		#self.pfw_cmdlist.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))	
 		#self.pfw_cmdlist.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
-		self.win_join_netsh_cmd()
+		return self.win_join_netsh_cmd()
+
 		
 	def win_firewall_modify_rule(self,option):
-		self.pfw_cmdlist = list()
-		if option == "add" or option == "delete":
-			rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
+		self.pfw_cmdlist = list()		
+		rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
+		if option == "add":
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
-			self.debug(text="def pfw: %s"%(rule_string))
-			self.pfw_cmdlist.append(rule_string)
-			self.win_join_netsh_cmd()
+		if option == "delete":
+			rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
+		self.debug(text="def pfw: %s"%(rule_string))
+		self.pfw_cmdlist.append(rule_string)
+		return self.win_join_netsh_cmd()
 			
 	
 	def win_join_netsh_cmd(self):
 		self.pfw_cmd = "netsh.exe"
+		i=0
 		for cmd in self.pfw_cmdlist:
 			fullstring = "%s %s" % (self.pfw_cmd,cmd)			
 			try: 
 				response = subprocess.check_output("%s" % (fullstring),shell=True)
 				self.debug(text="pfwOK: %s" % (fullstring))
+				i+=1
 			except:
 				self.debug(text="pfwFAIL: %s" % (fullstring))
+		
+		if len(self.pfw_cmdlist) == i:
+			return True
 
+
+	def make_mini_menubar(self):
+		self.mini_menubar = Menu(self)
+
+		#menu = Menu(self.mini_menubar, tearoff=0)
+		#self.mini_menubar.add_cascade(label="Menu", menu=menu)
+		#self.mini_menubar.add_separator()
+		#menu.add_command(label="Anything")
+		
+		menu = Menu(self.mini_menubar, tearoff=0)
+		self.mini_menubar.add_cascade(label="?", menu=menu)
+		menu.add_command(label="Info",command=self.info_window)
+
+		try:
+			self.master.config(menu=self.mini_menubar)
+		except AttributeError:
+			# master is a toplevel window (Python 1.4/Tkinter 1.63)
+			self.master.tk.call(master, "config", "-menu", self.mini_menubar)
+
+		
+	def info_window(self):
+		if self.INFO_WINDOW_ACTIVE == False:
+			self.info_toplevel = Toplevel(self.root)
+			self.info_toplevel.attributes("-toolwindow", True)
+			self.info_toplevel.title('Information')
+			self.info_toplevel.geometry("320x48")			
+			self.info_toplevel.protocol("WM_DELETE_WINDOW", self.info_window)
+			self.info_toplevel.focus_set()
+			self.INFO_WINDOW_ACTIVE = True
+			Label(self.info_toplevel,text="text 123")
+		else:
+			self.info_toplevel.destroy()
+			self.INFO_WINDOW_ACTIVE = False
+
+	
 	def make_menubar(self):
 		self.load_ovpn_server()
 		#self.make_systray()
@@ -1100,8 +1264,10 @@ class AppUI(Frame):
 		menubar = Menu(self.root)
 		self.root.config(menu=menubar)
 
-		ovpnMenu = Menu(menubar)     
+		ovpnMenu = Menu(menubar)		
+		menubar.add_cascade(label="oVPN", underline=0, menu=ovpnMenu)
 		submenu = Menu(ovpnMenu)
+		ovpnMenu.add_cascade(label='Server', menu=submenu, underline=0)
 		for menuserver in self.OVPN_SERVER:
 			self.countrycode = menuserver[:2]
 			servershort = menuserver[:3]
@@ -1111,185 +1277,165 @@ class AppUI(Frame):
 			else:
 				servershort = menuserver[:3]
 				submenu.add_command(label=servershort,command=lambda menuserver=menuserver: self.openvpn(menuserver))
-		ovpnMenu.add_cascade(label='Server', menu=submenu, underline=0)
-
-		ovpnMenu.add_separator()
-
 		if self.STATE_OVPN == False and not self.OVPN_FAV_SERVER == False:
 			ovpnMenu.add_command(label="Connect",command=self.openvpn)
 		elif self.STATE_OVPN == True:
 			ovpnMenu.add_command(label="Disconnect",command=self.kill_openvpn)		
-		menubar.add_cascade(label="oVPN", underline=0, menu=ovpnMenu)
+
+		#ovpnMenu.add_separator()
 		
-		#self.make_statusbar()
+		infoMenu = Menu(menubar)
+		menubar.add_cascade(label="?", underline=0, menu=infoMenu)
+		infoMenu.add_command(label="Logout",command=self.dologout)
 		
 	
 	def make_statusbar(self):
-		#if not self.statusbar == False:
-		#	self.statusframe.destroy()
-		if self.SMALL_WINDOW == False:
-			self.statusbar = Label(self, bd=1, relief=SUNKEN, anchor=W, textvariable=self.statusbar_text,font=('Courier','12','normal')).pack(side=BOTTOM, fill=X)		
-		#if self.SMALL_WINDOW == True:
-		#	self.statusbar = Label(self, bd=1, relief=SUNKEN, anchor=W, textvariable=self.statusbar_text,font=('Courier','12','normal')).pack(side=BOTTOM, fill=X)
+		if not self.statusbar == False:
+			self.statusbar.destroy()
+			self.statusbar = False
+		
+		if self.isSMALL_WINDOW == False:
+			self.statusbar = Label(self, bd=1, relief=SUNKEN, anchor=W, textvariable=self.statusbar_text,font=('Courier','12','normal'))	
+			
+		if self.isSMALL_WINDOW == True:
+			self.statusbar = Label(self, bd=0, relief=SUNKEN, anchor=W, textvariable=self.statusbar_text,font=('Courier','10','normal'))
+		
+		if not self.statusbar == False:
+			self.statusbar.pack(side=BOTTOM, fill=X)
 			
 		#self.statusbar_text.set("Statusbar-Text")
 		if self.timer_statusbar_running == False: 
 			self.timer_statusbar()
+			
 		
 	def timer_statusbar(self):
-		#if self.isLOGGEDin: 
-		#return True
 		self.timer_statusbar_running = True
 		text = False
 		
 		if self.isLOGGEDin == True:	
 			if self.STATE_OVPN == False:
 				text = "oVPN disconnected!"
+				
 			elif self.STATE_OVPN == True:		
 
 				if self.OVPN_PING_STAT == -1:
-					text = "oVPN is connecting to %s"%(self.OVPN_CONNECTEDto)
-					self.SWITCH_SMALL_WINDOW = True
-					
+					self.SWITCH_SMALL_WINDOW = True				
+					text = "oVPN is connecting to %s"%(self.OVPN_CONNECTEDto)		
 				elif self.OVPN_PING_STAT == -2:
-					text = "oVPN is testing connection to %s" % (self.OVPN_CONNECTEDto)
 					self.OVPN_isTESTING = True
-					self.SWITCH_SMALL_WINDOW = True					
+					self.SWITCH_SMALL_WINDOW = True				
+					text = "oVPN is testing connection to %s" % (self.OVPN_CONNECTEDto)					
 				else:
+					self.SWITCH_SMALL_WINDOW = True
 					if self.OVPN_isTESTING == True:
 						self.OVPN_PING = list()
 						self.OVPN_PING_STAT = self.OVPN_PING_LAST
 						self.OVPN_isTESTING = False
-					text = "oVPN is connected to %s (%s/%s ms)"%(self.OVPN_CONNECTEDto,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
-					self.SWITCH_SMALL_WINDOW = True	
-
+					now = self.get_now_unixtime()
+					connectedseconds = now - self.OVPN_CONNECTEDtime
+					m, s = divmod(connectedseconds, 60)
+					h, m = divmod(m, 60)
+					self.OVPN_CONNECTEDtimetext = "%d:%02d:%02d"  % (h,m,s)
+					text = "oVPN is connected to %s (%s/%s ms)  [%s]"%(self.OVPN_CONNECTEDto,self.OVPN_PING_LAST,self.OVPN_PING_STAT,self.OVPN_CONNECTEDtimetext)
+					self.OVPN_CONNECTEDsystraytext.set(text)
+					self.SWITCH_SYSTRAY = True
 		else:
 			text = "Please enter your Passphrase!"
 			
-		if self.SWITCH_SMALL_WINDOW == True and self.SMALL_WINDOW == False:
+		if self.SWITCH_SMALL_WINDOW == True and self.isSMALL_WINDOW == False:
+			if self.SYSTRAYon == True:
+				self.systray.shutdown()	
+			self.isSMALL_WINDOW = True
 			self.screen_width = 480
 			self.screen_height = 24
 			self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
-			self.removethis()
-			self.SMALL_WINDOW = True
-		#elif self.SWITCH_FULL_WINDOW == True and self.SMALL_WINDOW == True:
-		#	self.screen_width = 480
-		#	self.screen_height = 320
-		#	self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
-		#	self.removethis()
-		#	self.SMALL_WINDOW = False			
-			
+			self.removethis()			
+			self.make_statusbar()			
+			self.SWITCH_SMALL_WINDOW = False
+			self.root.attributes("-toolwindow", True)
+		elif self.SWITCH_FULL_WINDOW == True and self.isSMALL_WINDOW == True:
+			self.isSMALL_WINDOW = False	
+			self.screen_width = 480
+			self.screen_height = 320
+			self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
+			self.removethis()			
+			self.make_statusbar()
+			self.SWITCH_FULL_WINDOW = False
+			self.root.attributes("-toolwindow", False)
+		elif self.SWITCH_SYSTRAY == True and self.isSMALL_WINDOW == True:
+			self.SWITCH_SYSTRAY == False
+			if self.SYSTRAYon == False: 
+				try:
+					self.make_systray()
+				except:
+					pass
+				pass
+					
 		if not self.statustext_from_before == text:
 			self.statusbar_text.set(text)
 			self.statustext_from_before = text
 			
-		if self.isLOGGEDin and self.UPDATE_MENUBAR: 
+		if self.isLOGGEDin and self.UPDATE_MENUBAR == True:
 			self.make_menubar()
 			self.UPDATE_MENUBAR = False
 			
 		self.root.after(1000,self.timer_statusbar)
 		return True
+
+
+	"""
+
+	def make_systray(self):			
+		self.systray = False
+		traymenu_options = (
+						("...", None, self.defundef),
+						("Quit", "ico\\earth.ico", self.defundef)
+					)
+		self.systray = SysTrayIcon("ico\\earth.ico", self.OVPN_CONNECTEDsystraytext, traymenu_options)
+
+		self.systray.start()
+		self.SYSTRAYon = True
 		
+	"""
+
+	
 	def on_closing(self,root):
 		if self.STATE_OVPN == True:
 			tkMessageBox.showwarning("Warning", "Quit blocked while oVPN is connected.\nDisconnect oVPN from %s first."%(self.OVPN_CONNECTEDto[:3]))
 			return False
-		elif tkMessageBox.askokcancel("Quit", "Quit oVPN Client?"):
+		elif tkMessageBox.askyesno("Quit", "Quit oVPN Client?"):
 			self.win_netsh_restore_dns_from_backup()
-			if tkMessageBox.askokcancel("Disable Firewall Protection?", "Unload Firewall and allow OUT to Internet again?"):
-				self.win_firewall_allow_outbound()
-				self.msgwarn(text="Firewall rules unloaded.\nSettings restored.")
+			if tkMessageBox.askyesno("Keep Firewall Protection?", "Keep Firewall loaded and block OUT to Internet?"):
+				if self.win_firewall_start():
+					text="Firewall enabled!\nInternet is blocked!"
+					self.debug(text=text)
+					self.msgwarn(text=text)
+				else:
+					text="Error. Could not start Firewall!"
+					self.debug(text=text)
+					self.msgwarn(text=text)
 			else:
-				self.win_firewall_start()
-				self.msgwarn(text="Firewall enabled!\nInternet is blocked!")
-			root.destroy()
-			sys.exit()	
-"""		
-	#from infi.systray import SysTrayIcon
-	def make_systray(self):
-		if self.SYSTRAYon == True: self.systray.destroy()
-		self.systray = False
-		traymenu_options = (
-						("...", None, systray_say_hello),
-						#("Quit", "ico\earth.ico", lambda systray=systray,root=root: self.systray_quit(systray,root))
-						#("Quit", "ico\earth.ico", lambda systray=systray: self.systray_quit(systray))
-						("Quit", "ico\earth.ico", self.systray_quit)
-					)
-		self.systray = SysTrayIcon("ico\earth.ico", "oVPN.to Client", traymenu_options)
-		self.systray.start()
-		self.SYSTRAYon = True
-
-	def systray_quit(self,systray):
-		if self.STATE_OVPN == False:
-			print("quit systray")
-			self.root.quit()
-			#self.root.destroy()
-			systray.shutdown()
-		else:
-			if tkMessageBox.askokcancel("Quit", "You can not quit while openVPN is running!"):			
-				return True
-
-"""		
+				if self.win_firewall_allow_outbound():
+					text="Firewall rules unloaded.\nSettings restored."
+					self.debug(text=text)
+					self.msgwarn(text=text)
+				else:
+					text="Error! Unloading Firewall failed."
+					self.msgwarn(text=text)	
+			if self.SYSTRAYon == True:
+				self.systray.shutdown()
+			if os.path.isfile(self.lock_file):
+				try:
+					os.remove(self.lock_file)
+				except:
+					self.msgwarn(text="Delete LOCK.file failed.")
+			else:
+				self.msgwarn(text="Could not delete LOCK. File not found.")
+			sys.exit()
 		
-"""
 		
-	def make_menubar(self):	
-		if not self.menubar == False:
-			self.menubar.destroy()
-		self.menubar = Menu(self.parent)
-
-		menu = Menu(self.menubar, tearoff=0)
-		self.menubar.add_cascade(label="Menu", menu=menu)
-		menu.add_command(label="Settings")
-		menu.add_command(label="Logout",command=self.dologout)		
-		menu.add_command(label="Quit",command=menu.quit)
-
-		menu = Menu(self.menubar, tearoff=0)
-		self.menubar.add_cascade(label="oVPN", menu=menu)
-		menu.add_command(label="Server")
-		
-		if self.STATE_OVPN == False:
-			menu.add_command(label="Connect",command=self.openvpn)
-		elif self.STATE_OVPN == True:
-			menu.add_command(label="Disconnect",command=self.openvpn)
-			
-		menu.add_command(label="Update")
-		
-		menu = Menu(self.menubar, tearoff=0)
-		self.menubar.add_cascade(label="3proxy", menu=menu)
-		menu.add_command(label="Config")
-		
-		menu = Menu(self.menubar, tearoff=0)
-		self.menubar.add_cascade(label="Stunnel", menu=menu)
-		menu.add_command(label="Config")		
-		
-		menu = Menu(self.menubar, tearoff=0)
-		self.menubar.add_cascade(label="?", menu=menu)
-		menu.add_command(label="Info")		
-
-		#try:
-		self.parent.config(menu=self.menubar)
-		#except AttributeError:
-			# master is a toplevel window (Python 1.4/Tkinter 1.63)
-		#	self.master.tk.call(master, "config", "-menu", self.menubar)
-		return True
-		#self.canvas = Canvas(self, bg="#1a1a1a", width=self.screen_width, height=self.screen_height,bd=0, highlightthickness=0)
-		#self.canvas.pack()
-
-"""		
-
-
-		
-#	def menu_info(self):
-#		pass
-
-
-
-
-
-def systray_say_hello(systray):
-	print "Hello, World!"
-	
+	def defundef(self):
+		pass
 
 
 def main():
@@ -1300,7 +1446,7 @@ def main():
 	root.geometry("%sx%s"%(root.screen_width,root.screen_height))
 	root.resizable(0,0)
 	root.attributes("-toolwindow", False)
-	root.title("oVPN.to v"+BUILT+STATE)	
+	root.title("oVPN.to v"+BUILT+STATE)
 	app = AppUI(root).pack()	
 	root.mainloop()
 	print("Ending")
@@ -1309,3 +1455,57 @@ def main():
 if __name__=='__main__':
     main()
 
+
+"""
+
+import wx
+
+TRAY_TOOLTIP = 'System Tray Demo'
+TRAY_ICON = 'icon.png'
+
+
+def create_menu_item(menu, label, func):
+    item = wx.MenuItem(menu, -1, label)
+    menu.Bind(wx.EVT_MENU, func, id=item.GetId())
+    menu.AppendItem(item)
+    return item
+
+
+class TaskBarIcon(wx.TaskBarIcon):
+    def __init__(self):
+        super(TaskBarIcon, self).__init__()
+        self.set_icon(TRAY_ICON)
+        self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_left_down)
+
+    def CreatePopupMenu(self):
+        menu = wx.Menu()
+        create_menu_item(menu, 'Say Hello', self.on_hello)
+        menu.AppendSeparator()
+        create_menu_item(menu, 'Exit', self.on_exit)
+        return menu
+
+    def set_icon(self, path):
+        icon = wx.IconFromBitmap(wx.Bitmap(path))
+        self.SetIcon(icon, TRAY_TOOLTIP)
+
+    def on_left_down(self, event):
+        print 'Tray icon was left-clicked.'
+
+    def on_hello(self, event):
+        print 'Hello, world!'
+
+    def on_exit(self, event):
+        wx.CallAfter(self.Destroy)
+
+
+def main():
+    app = wx.PySimpleApp()
+    TaskBarIcon()
+    app.MainLoop()
+
+
+if __name__ == '__main__':
+    main()
+
+
+"""
