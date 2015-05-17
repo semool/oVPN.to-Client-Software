@@ -9,8 +9,8 @@ import socket
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.2a"
-STATE="alpha"
+BUILT="0.1.2b"
+STATE="_alpha"
 
 try:
 	if sys.argv[1] == "debug":
@@ -774,7 +774,11 @@ class AppUI(Frame):
 			self.make_mini_menubar()
 			#self.DONT_CHECK_LOCK = True
 			if self.SYSTRAYon == True:
-				self.systray.shutdown()			
+				self.systray.shutdown()
+			try:
+				os.remove(self.lock_file)
+			except:
+				self.debug(text="Could not remove lock file")				
 			self.check_preboot()
 		else:
 			self.msgwarn(text="Disconnect first!")
@@ -1280,6 +1284,7 @@ class AppUI(Frame):
 			xlist = list()
 			xlist.append("\nAny Credits and Cookies go to:\n")
 			xlist.append("+ dns.d0wn.biz for hosting DNS!")
+			xlist.append("+ bauerj for code submits!")
 			xlist.append("+ NhatPG for windows icons!")
 			xlist.append("+ [ this place is for sale! ]")
 			for x in xlist:
