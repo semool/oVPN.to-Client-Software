@@ -735,6 +735,11 @@ class AppUI(Frame):
 			self.hash2aes = False
 			self.text2aes = False
 			self.paddata = False
+			# check_preboot() will cause a warning if we don't remove the lock
+			try:
+				os.remove(self.lock_file)
+			except:
+				self.debug(text="Could not remove lock file")
 			self.check_preboot()			
 
 			
@@ -1165,13 +1170,24 @@ class AppUI(Frame):
 			self.INTERFACES.remove(self.WIN_TAP_DEVICE)
 			self.debug(text="remaining INTERFACES = %s"%(self.INTERFACES))
 			if len(self.INTERFACES) > 1:
-				self.msgwarn(text="Multiple Network Adapters found! Please select your External/Internet Network Adapter!")
-				for INTERFACE in self.INTERFACES:					
-					if tkMessageBox.askyesno("Choose your Externel/Internet Network Adapter", "Is '%s' your External/Internet Network Adapter?"%(INTERFACE)):
-						self.WIN_EXT_DEVICE = INTERFACE
-						break
-					else:
-						pass
+				window = Toplevel()
+				window.title("Choose your External Network Adapter!")
+				text = Label(window, text="Multiple network adapters found.\nPlease select your external network adapter (the one you use to connect to the Internet)!")
+				text.pack()
+				listbox = Listbox(window, width=64)
+				def adapter_window_callback(window, listbox):
+					self.WIN_EXT_DEVICE = listbox.get(ACTIVE)
+					window.destroy()
+				button = Button(window, text="OK", command=lambda: adapter_window_callback(window, listbox))
+				for INTERFACE in self.INTERFACES:
+					listbox.insert(END, INTERFACE)	
+				listbox.pack()
+				button.pack()
+				# Put our window into the foreground
+				window.transient(self.root)
+				window.grab_set()
+				# Block until the users closes the window
+ 				self.root.wait_window(window)
 			elif len(self.INTERFACES) < 1:
 				self.errorquit(text="No Network Adapter found!")
 			else:
@@ -1179,8 +1195,9 @@ class AppUI(Frame):
 				text = "External Interface = %s"%(self.WIN_EXT_DEVICE)
 				#self.msgwarn(text=text)
 				self.debug(text=text)
-				
 		self.win_netsh_read_dns_to_backup()
+
+	
 
 		
 	def win_firewall_start(self):
@@ -1495,7 +1512,7 @@ def main():
 	root.resizable(0,0)
 	root.attributes("-toolwindow", False)
 	root.overrideredirect(False)
-	root.title("oVPN.to v"+BUILT+STATE)		
+	root.title("oVPN.to v"+BUILT+STATE)
 	app = AppUI(root).pack()	
 	root.mainloop()	
 	print("Ending")
