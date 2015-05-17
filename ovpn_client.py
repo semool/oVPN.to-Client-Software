@@ -9,7 +9,7 @@ import socket
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.2"
+BUILT="0.1.2a"
 STATE="alpha"
 
 try:
