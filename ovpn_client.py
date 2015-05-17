@@ -9,7 +9,7 @@ import socket
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.2b"
+BUILT="0.1.2c"
 STATE="_alpha"
 
 try:
@@ -39,7 +39,6 @@ class AppUI(Frame):
 					
 	def self_vars(self):
 		self.debug_log = False
-		self.DONT_CHECK_LOCK = False
 		self.OVPN_LATEST = 236
 		self.OVPN_LATEST_BUILT = "Mar 19 2015"
 		self.OVPN_LATEST_BUILT_TIMESTAMP = 1426719600
@@ -345,16 +344,18 @@ class AppUI(Frame):
 			os.mkdir(self.api_dir)
 			
 		if os.path.isfile(self.lock_file):
-			if self.DONT_CHECK_LOCK == False:
-				if tkMessageBox.askyesno("Client is Locked!", "oVPN.to Client Software is already running or did not close cleanly.\n\nDo you really want to start?"):
+			if tkMessageBox.askyesno("Client is Locked!", "oVPN.to Client Software is already running or did not close cleanly.\n\nDo you really want to start?"):
+				try:
 					os.remove(self.lock_file)
-				else:
+				except:
+					self.msgwarn("Could not remove lock file. File itself locked because another oVPN Client instance running?")
 					sys.exit()
+			else:
+				sys.exit()
 			
 		if not os.path.isfile(self.lock_file):
-			lock = open(self.lock_file,'wb')
-			lock.write("%s" % (self.get_now_unixtime()))
-			lock.close()
+			self.LOCK = open(self.lock_file,'wb')
+			self.LOCK.write("%s" % (self.get_now_unixtime()))
 			
 		if not os.path.exists(self.vpn_dir):
 			if DEBUG: print("vpn_dir %s not found, creating." % (self.vpn_dir))
@@ -736,10 +737,7 @@ class AppUI(Frame):
 			self.text2aes = False
 			self.paddata = False
 			# check_preboot() will cause a warning if we don't remove the lock
-			try:
-				os.remove(self.lock_file)
-			except:
-				self.debug(text="Could not remove lock file")
+			self.remove_lock()
 			self.check_preboot()			
 
 			
@@ -772,13 +770,10 @@ class AppUI(Frame):
 			self.USERID = False
 			self.debug(text="Logout")
 			self.make_mini_menubar()
-			#self.DONT_CHECK_LOCK = True
+			self.LOCK.close()
 			if self.SYSTRAYon == True:
 				self.systray.shutdown()
-			try:
-				os.remove(self.lock_file)
-			except:
-				self.debug(text="Could not remove lock file")				
+			self.remove_lock()
 			self.check_preboot()
 		else:
 			self.msgwarn(text="Disconnect first!")
@@ -1469,7 +1464,18 @@ class AppUI(Frame):
 				i = 0
 				break
 
-					
+				
+	def remove_lock(self):
+		if os.path.isfile(self.lock_file):
+			self.LOCK.close()
+			try:
+				os.remove(self.lock_file)
+			except:
+				self.msgwarn(text="Could not delete lock file")
+		else:
+			self.msgwarn(text="Could not delete LOCK. File not found.")
+
+
 	def on_closing(self,root):
 		if self.STATE_OVPN == True:
 			tkMessageBox.showwarning("Warning", "Quit blocked while oVPN is connected.\nDisconnect oVPN from %s first."%(self.OVPN_CONNECTEDto[:3]))
@@ -1495,13 +1501,7 @@ class AppUI(Frame):
 					self.msgwarn(text=text)	
 			if self.SYSTRAYon == True:
 				self.systray.shutdown()
-			if os.path.isfile(self.lock_file):
-				try:
-					os.remove(self.lock_file)
-				except:
-					self.msgwarn(text="Delete LOCK.file failed.")
-			else:
-				self.msgwarn(text="Could not delete LOCK. File not found.")
+			self.remove_lock()
 			sys.exit()
 		
 		
