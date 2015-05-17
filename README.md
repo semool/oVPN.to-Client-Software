@@ -5,5 +5,7 @@
 + [pywin32](http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py2.7.exe/download)
 
 
-    pip install pycrypto
-    pip install distutils
++ pip install pycrypto
++ pip install distutils
+
++ python Developer Imports: https://vcp.ovpn.to/files/ovpn_cli/dev_v011.7z
