@@ -9,7 +9,7 @@ import socket
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.0"
+BUILT="0.1.1"
 STATE="alpha"
 
 try:
@@ -38,7 +38,6 @@ class AppUI(Frame):
 		self.check_preboot()
 					
 	def self_vars(self):
-		self.root.iconbitmap(r'C:\Python27\sourcecode\ovpn-tool\earth.png')
 		self.debug_log = False
 		self.DONT_CHECK_LOCK = False
 		self.OVPN_LATEST = 236
@@ -321,7 +320,11 @@ class AppUI(Frame):
 		
 		if not self.win_firewall_start():
 			self.msgwarn("Could not start Windows Firewall!")
-
+			
+		
+		self.taskbar_icon = "%s\\ico\\earth.png" % (self.bin_dir)
+		self.root.iconbitmap(self.taskbar_icon)
+		
 		self.systray_icon_connected = "%s\\ico\\292.ico" % (self.bin_dir)
 		self.systray_icon_disconnected = "%s\\ico\\263.ico" % (self.bin_dir)
 		self.systray_icon_connect = "%s\\ico\\396.ico" % (self.bin_dir)
