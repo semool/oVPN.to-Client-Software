@@ -9,14 +9,14 @@ import socket
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.1"
+BUILT="0.1.2"
 STATE="alpha"
 
 try:
 	if sys.argv[1] == "debug":
 		DEBUG = True
 except:
-	DEBUG = False
+	DEBUG = True
 
 DOMAIN = "vcp.ovpn.to"
 PORT="443"
@@ -299,12 +299,13 @@ class AppUI(Frame):
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		
 		self.debug_log = "%s\\cient_debug.log" % (self.api_dir)
-		try:
-			dbg = open(self.debug_log,'wb')
-			dbg.write("DEBUG_LOG START\r\n")
-			dbg.close()
-		except: 
-			print("Delete %s failed"%(self.debug_log))
+		if DEBUG:
+			try:
+				dbg = open(self.debug_log,'wb')
+				dbg.write("DEBUG_LOG START\r\n")
+				dbg.close()
+			except: 
+				print("Delete %s failed"%(self.debug_log))
 		
 		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
 		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
@@ -318,8 +319,8 @@ class AppUI(Frame):
 		self.zip_crt = "%s\\certs.zip" % (self.vpn_dir)
 		self.api_upd = "%s\\lastupdate.txt" % (self.vpn_dir)
 		
-		if not self.win_firewall_start():
-			self.msgwarn("Could not start Windows Firewall!")
+#		if not self.win_firewall_start():
+#			self.msgwarn("Could not start Windows Firewall!")
 			
 		
 		self.taskbar_icon = "%s\\ico\\earth.png" % (self.bin_dir)
@@ -337,7 +338,8 @@ class AppUI(Frame):
 
 		
 	def check_config_folders(self):
-		self.debug(text="def check_config_folders userid = %s" % (self.USERID))
+		#self.debug(text="def check_config_folders userid = %s" % (self.USERID))
+		self.debug(text="def check_config_folders: userid found")
 		if not os.path.exists(self.api_dir):
 			if DEBUG: print("api_dir %s not found, creating." % (self.api_dir))
 			os.mkdir(self.api_dir)
@@ -680,7 +682,8 @@ class AppUI(Frame):
 				APIKEY = self.apidata[1].split("=")
 				CFGSHA = self.apidata[2].split("=")
 				if len(USERID) == 2 and USERID[1] > 1 and USERID[1].isdigit():					
-					self.debug(text="def read_config USERID = %s :True" % (USERID))
+					#self.debug(text="def read_config USERID = %s :True" % (USERID))
+					self.debug(text="def read_config USERID = profile-folder :True" % (USERID))
 					if len(APIKEY) == 2 and len(APIKEY[1]) == 128 and APIKEY[1].isalnum():						
 						self.debug(text="def read_config APIKEY len = %s :True" % (len(APIKEY)))
 						if len(CFGSHA) == 2 and len(CFGSHA[1]) == 64 and CFGSHA[1].isalnum():
@@ -901,6 +904,8 @@ class AppUI(Frame):
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
 		self.OVPN_CONNECTEDtime = self.get_now_unixtime()
 		self.UPDATE_MENUBAR = True
+		if not self.win_firewall_start():
+			self.msgwarn("Could not start Windows Firewall!")
 		self.win_firewall_modify_rule(option="add")
 		self.ovpn_proc_retcode = subprocess.call("%s" % (self.ovpn_string),shell=True)
 		self.win_firewall_modify_rule(option="delete")
