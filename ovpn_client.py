@@ -1,14 +1,15 @@
 from Tkinter import *
+from infi.systray import SysTrayIcon
 import Tkinter,tkMessageBox,Tkconstants,types,os,platform,sys,hashlib,random,base64,urllib,urllib2,time,datetime
 import _winreg,zipfile
-from waiting import wait, TimeoutExpired, ANY, ALL
 import subprocess
 import threading
 import win32com.client
 import socket
 from Crypto.Cipher import AES
 
-BUILT="0.0.9"
+
+BUILT="0.1.0"
 STATE="alpha"
 
 try:
@@ -27,15 +28,17 @@ class AppUI(Frame):
 	def __init__(self, root):
 		Frame.__init__(self, root, relief=SUNKEN, bd=2)
 		self.root = root
+		self.root.bind( '<Configure>', self.onFormEvent )
 		self.root.protocol("WM_DELETE_WINDOW", lambda root=root: self.on_closing(root))
 		self.self_vars()		
-		self.frame = Frame(self,bg="#1a1a1a", width=self.screen_width, height=self.screen_height)
+		self.frame = Frame(self.root,bg="#1a1a1a", width=self.screen_width, height=self.screen_height)
 		self.frame.pack_propagate(0)		
 		self.frame.pack()
 		self.make_mini_menubar()
 		self.check_preboot()
 					
 	def self_vars(self):
+		self.root.iconbitmap(r'C:\Python27\sourcecode\ovpn-tool\earth.png')
 		self.debug_log = False
 		self.DONT_CHECK_LOCK = False
 		self.OVPN_LATEST = 236
@@ -47,6 +50,7 @@ class AppUI(Frame):
 		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.6-I003-x86_64.exe"
 		self.OVPN_WIN_DLHASH_x64 = "409011239096933ebc8e6c9dd44ac3050e43466104f4b296e7d175094643af02"
 
+		self.MAIN_WINDOW_OPEN = True
 		self.isSMALL_WINDOW = False
 		self.SWITCH_SMALL_WINDOW = False
 		self.SWITCH_FULL_WINDOW = False
@@ -62,6 +66,7 @@ class AppUI(Frame):
 		self.timer_check_certdl_running = False
 		self.timer_check_certdl_dots = ""
 		self.statustext_from_before = False
+		self.systraytext_from_before = False
 		self.statusbar_text = StringVar()
 		self.OVPN_CONNECTEDsystraytext = StringVar()
 		self.SYSTRAYon = False
@@ -172,7 +177,8 @@ class AppUI(Frame):
 		self.removethis()
 		self.make_label(text="oVPN.to Client Authentication\n\n\nEnter your Passphrase")
 		self.input_PH = Entry(self.frame,show="*")
-		self.input_PH.pack()		
+		self.input_PH.pack()
+		self.input_PH.focus()
 		button = Button(self.frame, text="OK", command=self.receive_passphrase).pack()
 		self.update_idletasks()
 	
@@ -290,6 +296,7 @@ class AppUI(Frame):
 			
 	def win_pre3_load_profile_dir_vars(self):
 		self.api_dir = "%s\\%s" % (self.app_dir,self.profile)
+		self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		
 		self.debug_log = "%s\\cient_debug.log" % (self.api_dir)
@@ -314,7 +321,14 @@ class AppUI(Frame):
 		
 		if not self.win_firewall_start():
 			self.msgwarn("Could not start Windows Firewall!")
-				
+
+		self.systray_icon_connected = "%s\\ico\\292.ico" % (self.bin_dir)
+		self.systray_icon_disconnected = "%s\\ico\\263.ico" % (self.bin_dir)
+		self.systray_icon_connect = "%s\\ico\\396.ico" % (self.bin_dir)
+		self.systray_icon_hourglass = "%s\\ico\\205.ico" % (self.bin_dir)
+		self.systray_icon_syncupdate = "%s\\ico\\266.ico" % (self.bin_dir)
+		self.systray_icon_greenshield = "%s\\ico\\074.ico" % (self.bin_dir)
+		
 		if DEBUG: print("win_pre3_load_profile_dir_vars loaded")
 		return True	
 
@@ -383,6 +397,7 @@ class AppUI(Frame):
 		self.make_label(text = "oVPN.to Client\n\n\nPlease enter your oVPN.to User-ID Number:")
 		self.input_userid = Entry(self.frame)
 		self.input_userid.pack()
+		self.input_userid.focus()
 		Button(self.frame, text="OK", command=self.receive_userid).pack()
 
 		
@@ -405,6 +420,7 @@ class AppUI(Frame):
 				
 		self.input_PH1 = Entry(self.frame,show="*")
 		self.input_PH1.pack()
+		self.input_PH1.focus()
 		self.input_PH2 = Entry(self.frame,show="*")
 		self.input_PH2.pack()
 
@@ -427,6 +443,7 @@ class AppUI(Frame):
 		self.make_label(text="oVPN.to Client Setup\n\n\nEnter your oVPN.to API-Key:")
 		self.input_apikey = Entry(self.frame,show="*")
 		self.input_apikey.pack()
+		self.input_apikey.focus()
 		
 		Button(self.frame, text="Save API-Key!", command=self.write_new_config).pack()		
 
@@ -438,7 +455,7 @@ class AppUI(Frame):
 		Label(self.frame,text="oVPN.to Client %s\n\n\n" % (self.USERID)).pack()
 		
 		if self.curl_api_request(API_ACTION = "lastupdate"):
-			self.debug(text="self.curldata: %s" % (self.curldata))
+			#self.debug(text="self.curldata: %s" % (self.curldata))
 			self.remote_lastupdate = self.curldata
 			if self.check_last_server_update():
 				text = "Updating oVPN Configurations..."
@@ -734,16 +751,20 @@ class AppUI(Frame):
 		
 	def dologout(self):
 		if self.OVPN_CONNECTEDto == False and self.isLOGGEDin == True:
+			self.isSMALL_WINDOW = False	
+			self.screen_width = 320
+			self.screen_height = 240
+			self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
 			self.removethis()
 			self.statusbar.destroy()
 			self.isLOGGEDin = False
 			self.USERID = False
 			self.debug(text="Logout")
 			self.make_mini_menubar()
-			self.DONT_CHECK_LOCK = True
-			self.check_preboot()
+			#self.DONT_CHECK_LOCK = True
 			if self.SYSTRAYon == True:
-				self.systray.shutdown()
+				self.systray.shutdown()			
+			self.check_preboot()
 		else:
 			self.msgwarn(text="Disconnect first!")
 		
@@ -893,6 +914,9 @@ class AppUI(Frame):
 			self.debug(text="def inThread_spawn_openvpn_process: auto-reconnect %s" %(self.call_ovpn_srv))
 			self.OVPN_RECONNECT_NOW = True
 		self.UPDATE_MENUBAR = True
+		#if self.SYSTRAYon == True:
+		#	self.systray.shutdown()
+		#	self.SYSTRAYon = False
 		
 		
 	def read_gateway_from_routes(self):
@@ -952,7 +976,7 @@ class AppUI(Frame):
 
 			
 	def kill_openvpn(self):		
-		self.OVPN_AUTO_RECONNECT = False
+		self.OVPN_AUTO_RECONNECT = False		
 		self.debug(text="def kill_openvpn")	
 		string1 = "taskkill /im openvpn.exe"
 		string2 = "taskkill /im openvpn.exe /f"
@@ -967,10 +991,10 @@ class AppUI(Frame):
 		self.del_ovpn_routes()
 
 
-	def win_netsh_set_dns_down(self):
-		d0wns_dns = "178.32.122.65 37.187.0.40 128.199.248.105 95.85.9.86 31.220.27.46 108.61.210.58 178.17.170.67 46.151.208.154 91.214.71.181 217.12.210.54 217.12.203.133"
-		for dns in d0wns_dns.split():
-			pass
+#	def win_netsh_set_dns_down(self):
+#		d0wns_dns = "178.32.122.65 37.187.0.40 128.199.248.105 95.85.9.86 31.220.27.46 108.61.210.58 178.17.170.67 46.151.208.154 91.214.71.181 217.12.210.54 217.12.203.133"
+#		for dns in d0wns_dns.split():
+#			pass
 		
 		
 	def win_netsh_set_dns_ovpn(self):
@@ -1085,9 +1109,9 @@ class AppUI(Frame):
 				self.errorquit(text="Please update your openVPN Version!")
 
 				
-	def win_install_tap_adapter(self):
-		#C:\Program Files\TAP-Windows\bin\tapinstall.exe find *TAP
-		pass
+#	def win_install_tap_adapter(self):
+#		path = "C:\Program Files\TAP-Windows\bin\tapinstall.exe find *TAP"
+#		pass
 		
 	def win_get_interfaces(self):		
 		self.debug(text="def win_get_interfaces")
@@ -1105,7 +1129,6 @@ class AppUI(Frame):
 		if len(self.INTERFACES)	< 2:
 			self.errorquit(text="Could not read your Network Interfaces!")
 		
-		#try: 
 		string = "openvpn.exe --show-adapters"
 		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		ADAPTERS = ADAPTERS.split('\r\n')
@@ -1221,39 +1244,34 @@ class AppUI(Frame):
 			return True
 
 
-	def make_mini_menubar(self):
-		self.mini_menubar = Menu(self)
-
-		#menu = Menu(self.mini_menubar, tearoff=0)
-		#self.mini_menubar.add_cascade(label="Menu", menu=menu)
-		#self.mini_menubar.add_separator()
-		#menu.add_command(label="Anything")
-		
-		menu = Menu(self.mini_menubar, tearoff=0)
-		self.mini_menubar.add_cascade(label="?", menu=menu)
-		menu.add_command(label="Info",command=self.info_window)
-
-		try:
-			self.master.config(menu=self.mini_menubar)
-		except AttributeError:
-			# master is a toplevel window (Python 1.4/Tkinter 1.63)
-			self.master.tk.call(master, "config", "-menu", self.mini_menubar)
-
-		
 	def info_window(self):
 		if self.INFO_WINDOW_ACTIVE == False:
 			self.info_toplevel = Toplevel(self.root)
 			self.info_toplevel.attributes("-toolwindow", True)
 			self.info_toplevel.title('Information')
-			self.info_toplevel.geometry("320x48")			
 			self.info_toplevel.protocol("WM_DELETE_WINDOW", self.info_window)
 			self.info_toplevel.focus_set()
 			self.INFO_WINDOW_ACTIVE = True
-			Label(self.info_toplevel,text="text 123")
+			xlist = list()
+			xlist.append("\nAny Credits and Cookies go to:\n")
+			xlist.append("+ dns.d0wn.biz for hosting DNS!")
+			xlist.append("+ NhatPG for windows icons!")
+			xlist.append("+ [ this place is for sale! ]")
+			for x in xlist:
+				infolabel = Label(self.info_toplevel,text=x)
+				infolabel.pack()
 		else:
 			self.info_toplevel.destroy()
 			self.INFO_WINDOW_ACTIVE = False
 
+			
+	def make_mini_menubar(self):
+		self.mini_menubar = Menu(self)
+		menu = Menu(self.mini_menubar, tearoff=0)
+		self.mini_menubar.add_cascade(label="?", menu=menu)
+		menu.add_command(label="Info",command=self.info_window)
+		self.master.config(menu=self.mini_menubar)
+		
 	
 	def make_menubar(self):
 		self.load_ovpn_server()
@@ -1287,6 +1305,8 @@ class AppUI(Frame):
 		infoMenu = Menu(menubar)
 		menubar.add_cascade(label="?", underline=0, menu=infoMenu)
 		infoMenu.add_command(label="Logout",command=self.dologout)
+		infoMenu.add_command(label="Info",command=self.info_window)
+		
 		
 	
 	def make_statusbar(self):
@@ -1306,27 +1326,35 @@ class AppUI(Frame):
 		#self.statusbar_text.set("Statusbar-Text")
 		if self.timer_statusbar_running == False: 
 			self.timer_statusbar()
+
 			
-		
 	def timer_statusbar(self):
 		self.timer_statusbar_running = True
 		text = False
+		systraytext = False
 		
-		if self.isLOGGEDin == True:	
+		if not self.isLOGGEDin == True:
+			text = "Please enter your Passphrase!"
+		else:
 			if self.STATE_OVPN == False:
 				text = "oVPN disconnected!"
-				
-			elif self.STATE_OVPN == True:		
-
-				if self.OVPN_PING_STAT == -1:
-					self.SWITCH_SMALL_WINDOW = True				
-					text = "oVPN is connecting to %s"%(self.OVPN_CONNECTEDto)		
+				systraytext = text
+				systrayicon = self.systray_icon_disconnected
+				#self.SWITCH_SYSTRAY = True
+			elif self.STATE_OVPN == True:
+			
+				if self.OVPN_PING_STAT == -1:								
+					text = "oVPN is connecting to %s"%(self.OVPN_CONNECTEDto)
+					systraytext = text
+					systrayicon = self.systray_icon_connect
+					#self.SWITCH_SYSTRAY = True
 				elif self.OVPN_PING_STAT == -2:
-					self.OVPN_isTESTING = True
-					self.SWITCH_SMALL_WINDOW = True				
-					text = "oVPN is testing connection to %s" % (self.OVPN_CONNECTEDto)					
-				else:
-					self.SWITCH_SMALL_WINDOW = True
+					self.OVPN_isTESTING = True									
+					text = "oVPN is testing connection to %s" % (self.OVPN_CONNECTEDto)
+					systraytext = text
+					systrayicon = self.systray_icon_hourglass					
+					#self.SWITCH_SYSTRAY = True
+				else:					
 					if self.OVPN_isTESTING == True:
 						self.OVPN_PING = list()
 						self.OVPN_PING_STAT = self.OVPN_PING_LAST
@@ -1336,15 +1364,14 @@ class AppUI(Frame):
 					m, s = divmod(connectedseconds, 60)
 					h, m = divmod(m, 60)
 					self.OVPN_CONNECTEDtimetext = "%d:%02d:%02d"  % (h,m,s)
+					systraytext = "oVPN is connected to %s"%(self.OVPN_CONNECTEDto)
 					text = "oVPN is connected to %s (%s/%s ms)  [%s]"%(self.OVPN_CONNECTEDto,self.OVPN_PING_LAST,self.OVPN_PING_STAT,self.OVPN_CONNECTEDtimetext)
-					self.OVPN_CONNECTEDsystraytext.set(text)
-					self.SWITCH_SYSTRAY = True
-		else:
-			text = "Please enter your Passphrase!"
-			
+					systrayicon = self.systray_icon_connected
+						
+				if self.isSMALL_WINDOW == False:
+					self.SWITCH_SMALL_WINDOW = True
+				
 		if self.SWITCH_SMALL_WINDOW == True and self.isSMALL_WINDOW == False:
-			if self.SYSTRAYon == True:
-				self.systray.shutdown()	
 			self.isSMALL_WINDOW = True
 			self.screen_width = 480
 			self.screen_height = 24
@@ -1352,28 +1379,31 @@ class AppUI(Frame):
 			self.removethis()			
 			self.make_statusbar()			
 			self.SWITCH_SMALL_WINDOW = False
-			self.root.attributes("-toolwindow", True)
+			self.root.attributes("-toolwindow", False)
+			
 		elif self.SWITCH_FULL_WINDOW == True and self.isSMALL_WINDOW == True:
 			self.isSMALL_WINDOW = False	
-			self.screen_width = 480
-			self.screen_height = 320
+			self.screen_width = 320
+			self.screen_height = 240
 			self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
 			self.removethis()			
 			self.make_statusbar()
 			self.SWITCH_FULL_WINDOW = False
 			self.root.attributes("-toolwindow", False)
-		elif self.SWITCH_SYSTRAY == True and self.isSMALL_WINDOW == True:
-			self.SWITCH_SYSTRAY == False
-			if self.SYSTRAYon == False: 
-				try:
-					self.make_systray()
-				except:
-					pass
-				pass
-					
-		if not self.statustext_from_before == text:
+			
+		if not self.systraytext_from_before == systraytext and not systraytext == False:
+			if self.SYSTRAYon == True:
+				self.systray.shutdown()			
+			self.systraytext_from_before = systraytext
+			menu_options = ((systraytext, systrayicon, self.defundef),)			
+			self.systray = SysTrayIcon(systrayicon, systraytext, menu_options)
+			self.systray.start()
+			self.SYSTRAYon = True
+
+		if not self.statustext_from_before == text and not text == False:
 			self.statusbar_text.set(text)
 			self.statustext_from_before = text
+			#self.debug(text="timer_statusbar: running: text = %s" % (text))
 			
 		if self.isLOGGEDin and self.UPDATE_MENUBAR == True:
 			self.make_menubar()
@@ -1381,24 +1411,35 @@ class AppUI(Frame):
 			
 		self.root.after(1000,self.timer_statusbar)
 		return True
-
-
-	"""
-
-	def make_systray(self):			
-		self.systray = False
-		traymenu_options = (
-						("...", None, self.defundef),
-						("Quit", "ico\\earth.ico", self.defundef)
-					)
-		self.systray = SysTrayIcon("ico\\earth.ico", self.OVPN_CONNECTEDsystraytext, traymenu_options)
-
-		self.systray.start()
-		self.SYSTRAYon = True
 		
-	"""
+	"""	
+	def systray2mainwindow(self):
+		if self.MAIN_WINDOW_OPEN == True:
+			self.root.iconify()
+			self.MAIN_WINDOW_OPEN = False
+		elif self.MAIN_WINDOW_OPEN == False:
+			self.root.show()
+			self.MAIN_WINDOW_OPEN = True
+	"""	
 
 	
+	def onFormEvent(self, event ):
+		i = 0
+		for key in dir( event ):			
+			if not key.startswith( '_' ):
+				#print '%s=%s' % ( key, getattr( event, key ) )
+				if key == "width" and getattr( event, key ) < self.screen_width:
+					i+=1
+				if key == "height"  and getattr( event, key ) < self.screen_height:
+					i+=1					
+			if i == 2:
+				self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
+				#self.debug(text="def onFormEvent: root.geometry reset")
+				#print '%s=%s' % ( key, getattr( event, key ) )
+				i = 0
+				break
+
+					
 	def on_closing(self,root):
 		if self.STATE_OVPN == True:
 			tkMessageBox.showwarning("Warning", "Quit blocked while oVPN is connected.\nDisconnect oVPN from %s first."%(self.OVPN_CONNECTEDto[:3]))
@@ -1436,76 +1477,23 @@ class AppUI(Frame):
 		
 	def defundef(self):
 		pass
-
+		
 
 def main():
-	
 	root = Tk()
 	root.screen_width = 320
 	root.screen_height = 240	
 	root.geometry("%sx%s"%(root.screen_width,root.screen_height))
 	root.resizable(0,0)
 	root.attributes("-toolwindow", False)
-	root.title("oVPN.to v"+BUILT+STATE)
+	root.overrideredirect(False)
+	root.title("oVPN.to v"+BUILT+STATE)		
 	app = AppUI(root).pack()	
-	root.mainloop()
+	root.mainloop()	
 	print("Ending")
 	sys.exit()
 	
-if __name__=='__main__':
-    main()
 
 
-"""
-
-import wx
-
-TRAY_TOOLTIP = 'System Tray Demo'
-TRAY_ICON = 'icon.png'
-
-
-def create_menu_item(menu, label, func):
-    item = wx.MenuItem(menu, -1, label)
-    menu.Bind(wx.EVT_MENU, func, id=item.GetId())
-    menu.AppendItem(item)
-    return item
-
-
-class TaskBarIcon(wx.TaskBarIcon):
-    def __init__(self):
-        super(TaskBarIcon, self).__init__()
-        self.set_icon(TRAY_ICON)
-        self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_left_down)
-
-    def CreatePopupMenu(self):
-        menu = wx.Menu()
-        create_menu_item(menu, 'Say Hello', self.on_hello)
-        menu.AppendSeparator()
-        create_menu_item(menu, 'Exit', self.on_exit)
-        return menu
-
-    def set_icon(self, path):
-        icon = wx.IconFromBitmap(wx.Bitmap(path))
-        self.SetIcon(icon, TRAY_TOOLTIP)
-
-    def on_left_down(self, event):
-        print 'Tray icon was left-clicked.'
-
-    def on_hello(self, event):
-        print 'Hello, world!'
-
-    def on_exit(self, event):
-        wx.CallAfter(self.Destroy)
-
-
-def main():
-    app = wx.PySimpleApp()
-    TaskBarIcon()
-    app.MainLoop()
-
-
-if __name__ == '__main__':
-    main()
-
-
-"""
+if __name__== '__main__':
+	main()
