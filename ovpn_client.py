@@ -9,7 +9,7 @@ import socket
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.2c"
+BUILT="0.1.3"
 STATE="_alpha"
 
 try:
@@ -66,6 +66,7 @@ class AppUI(Frame):
 		self.statustext_from_before = False
 		self.systraytext_from_before = False
 		self.statusbar_text = StringVar()
+		self.statusbar_freeze = False
 		self.OVPN_CONNECTEDsystraytext = StringVar()
 		self.SYSTRAYon = False
 		self.screen_width = 320
@@ -94,7 +95,8 @@ class AppUI(Frame):
 		self.OVPN_PING_LAST = -1
 		self.OVPN_PING_STAT = -1
 		self.INTERFACES = False
-
+		self.d0wns_dns = False
+		self.DNS_SELECTED = False
 
 	def errorquit(self,text):
 		self.debug(text)
@@ -344,7 +346,7 @@ class AppUI(Frame):
 			os.mkdir(self.api_dir)
 			
 		if os.path.isfile(self.lock_file):
-			if tkMessageBox.askyesno("Client is Locked!", "oVPN.to Client Software is already running or did not close cleanly.\n\nDo you really want to start?"):
+			if tkMessageBox.askyesno("Client is Locked!", "oVPN Client is already running or did not close cleanly.\n\nDo you really want to start?"):
 				try:
 					os.remove(self.lock_file)
 				except:
@@ -575,8 +577,38 @@ class AppUI(Frame):
 		if result == 0:
 			return True
 		return False
-			
 		
+	def read_d0wns_dns(self):
+		if not self.OVPN_PING_STAT >= 0:
+			self.UPDATE_MENUBAR = True
+			return True
+		
+		url = "https://dns.d0wn.biz/dns.txt"
+		req = urllib2.Request(url)
+		body = False
+		try: 
+			response = urllib2.urlopen(req)
+			body = response.read()
+			
+		except:
+			text = "URL TIMEOUT: %s" % (url)
+			self.debug(text=text)
+			self.msgwarn(text=text)
+		if not body  == False:
+			#self.debug("def read_d0wns_dns body = %s"%(body))		
+			dnslist = body.split('\n')
+			self.d0wns_dns = list()
+			if len(dnslist) >= 1:
+				for line in dnslist:
+					content = line.split(',')
+					#self.debug(text="len content = %s" % (len(content)))
+					if len(content) >= 3:
+						self.d0wns_dns.append(content)
+				self.UPDATE_MENUBAR = True
+				
+			else:
+				text="Error loading d0wn's DNS!"
+			
 	def curl_api_request(self,API_ACTION):
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		self.API_ACTION = API_ACTION
@@ -606,8 +638,9 @@ class AppUI(Frame):
 			self.body = response.read()
 			#self.debug("self.body = %s"%(self.body))
 		except:
-			self.debug("URL TIMEOUT: self.API_ACTION = %s" % (self.API_ACTION))
-			self.msgwarn(text="Connection Timeout to https://vcp.ovpn.to!")
+			text = text="API Connection Timeout to https://vcp.ovpn.to!"
+			self.debug(text=text)
+			self.msgwarn(text=text)
 			
 		if not self.body == False:
 		
@@ -832,6 +865,7 @@ class AppUI(Frame):
 				self.OVPN_THREAD_STARTED = True
 			except:
 				text="Error! Unable to start thread: oVPN %s "%(server)
+				self.statusbar_freeze = 5000
 				self.statusbar_text.set(text)
 				self.msgwarn(text=text)
 				self.debug(text=text)
@@ -885,7 +919,7 @@ class AppUI(Frame):
 						pingsum += int(ping)
 					self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 				#self.debug(text="ping = %s\n#############\nList len=%s\n%s\npingstat=%s"%(OVPN_PING_out,len(self.OVPN_PING),self.OVPN_PING,self.OVPN_PING_STAT))
-				#self.debug("timer ovpn ping running threads: %s" % (threading.active_count()))
+				#self.debug("timer ovpn ping running threads: %s, ping=%s" % (threading.active_count(),OVPN_PING_out))
 				
 				threading.Thread(target=self.inThread_timer_ovpn_ping).start()
 				return True
@@ -1003,10 +1037,10 @@ class AppUI(Frame):
 		self.del_ovpn_routes()
 
 
-#	def win_netsh_set_dns_down(self):
-#		d0wns_dns = "178.32.122.65 37.187.0.40 128.199.248.105 95.85.9.86 31.220.27.46 108.61.210.58 178.17.170.67 46.151.208.154 91.214.71.181 217.12.210.54 217.12.203.133"
-#		for dns in d0wns_dns.split():
-#			pass
+	def win_netsh_set_dns_down(self):
+		d0wns_dns = "178.32.122.65 37.187.0.40 128.199.248.105 95.85.9.86 31.220.27.46 108.61.210.58 178.17.170.67 46.151.208.154 91.214.71.181 217.12.210.54 217.12.203.133"
+		for dns in d0wns_dns.split():
+			pass
 		
 		
 	def win_netsh_set_dns_ovpn(self):
@@ -1019,7 +1053,22 @@ class AppUI(Frame):
 				self.debug(text="read1:\n%s"%(read1))
 			except:
 				self.debug(text="def win_netsh_set_dns_ovpn: setting dns failed: string =\n%s"%(string1))
-			
+	
+	def win_netsh_change_dns_server(self,dns_ipv4):
+		string = "netsh interface ip set dnsservers \"%s\" static %s primary" % (self.WIN_EXT_DEVICE,dns_ipv4)
+		read = False
+		try:
+			read = subprocess.check_output("%s" % (string),shell=True)
+			text = "DNS changed to %s" % (dns_ipv4)
+			self.DNS_SELECTED = dns_ipv4
+			self.statusbar_freeze = 5000
+			self.statusbar_text.set(text)
+		except:
+			text = "Setting DNS failed"
+			self.msgwarn(text=text)
+		self.debug(text=text)
+		self.UPDATE_MENUBAR = True
+
 		
 	def win_netsh_restore_dns_dhcp(self):
 		os.system('netsh interface ip set dnsservers "%" dhcp'%(self.WIN_EXT_DEVICE))
@@ -1299,34 +1348,90 @@ class AppUI(Frame):
 		
 	
 	def make_menubar(self):
-		self.load_ovpn_server()
-		#self.make_systray()
+		""" check if menubar exists and destroy """
 		if not self.menubar == False:
 			self.menubar.destroy()
-		
+		""" setup our Menubar """
 		menubar = Menu(self.root)
 		self.root.config(menu=menubar)
-
+		""" create first Menu: oVPN """
 		ovpnMenu = Menu(menubar)		
 		menubar.add_cascade(label="oVPN", underline=0, menu=ovpnMenu)
-		submenu = Menu(ovpnMenu)
-		ovpnMenu.add_cascade(label='Server', menu=submenu, underline=0)
+		""" create oVPN->submenu: Server """
+		ovpnserver_submenu = Menu(ovpnMenu)
+		label='Server'		
+		if self.STATE_OVPN == True:
+			servershort = self.OVPN_CONNECTEDto[:3]
+			label = "Server [ %s ]" % (servershort)
+		ovpnMenu.add_cascade(label=label, menu=ovpnserver_submenu, underline=0)
+		""" load oVPN Server into submenu: Server """
+		self.load_ovpn_server()
 		for menuserver in self.OVPN_SERVER:
 			self.countrycode = menuserver[:2]
 			servershort = menuserver[:3]
 			if self.OVPN_CONNECTEDto == menuserver:
 				servershort = "[ "+servershort+" ]"
-				submenu.add_command(label=servershort)
+				ovpnserver_submenu.add_command(label=servershort)
 			else:
 				servershort = menuserver[:3]
-				submenu.add_command(label=servershort,command=lambda menuserver=menuserver: self.openvpn(menuserver))
-		if self.STATE_OVPN == False and not self.OVPN_FAV_SERVER == False:
-			ovpnMenu.add_command(label="Connect",command=self.openvpn)
-		elif self.STATE_OVPN == True:
-			ovpnMenu.add_command(label="Disconnect",command=self.kill_openvpn)		
-
-		#ovpnMenu.add_separator()
+				ovpnserver_submenu.add_command(label=servershort,command=lambda menuserver=menuserver: self.openvpn(menuserver))
 		
+		""" following menu commands will only run if certain states match! """
+		if self.STATE_OVPN == False and not self.OVPN_FAV_SERVER == False:
+			""" this state called 'mmb00' is reached if disconnected and FAV_SERVER is set. """
+			""" show a connect button to join connection to FAV_SERVER. not yet done *fixme* """
+			ovpnMenu.add_command(label="Connect",command=self.openvpn)
+
+		elif self.STATE_OVPN == True and self.OVPN_PING_STAT < 0:
+			""" this state called 'mmb01' is reached after ovpn connection established, but ping_timer is waiting for ping to our internal vpn gateway and user did not use any menu entry function """
+			ovpnMenu.add_command(label="Load DNS",command=self.read_d0wns_dns)
+			ovpnMenu.add_separator()
+			ovpnMenu.add_command(label="Disconnect",command=self.kill_openvpn)
+			
+		elif self.STATE_OVPN == True and self.OVPN_PING_STAT >= 0:
+			""" this state called 'mmb02' is reached if ovpn connection established and ping_timer is pinging our internal vpn gateway successfully """
+			""" we'll come here after user hits label="Load DNS" from previous state """
+			""" so we should add 'self.UPDATE_MENUBAR = True' to any function listed in previous state """
+			
+			""" if user hit command=self.read_d0wns_dns from previous state, make DNS Server Menu """
+			if not self.d0wns_dns == False:
+				""" create submenu for DNS Server """
+				dnsserver_submenu = Menu(ovpnMenu)
+				label = "Select DNS"
+				if not self.DNS_SELECTED == False:
+					label = "DNS: %s" % (self.DNS_SELECTED)
+				ovpnMenu.add_cascade(label=label, menu=dnsserver_submenu, underline=0)
+				""" add our internal DNS first """
+				dns_ipv4 = "172.16.32.1"
+				dns_country = "oVPN Internal"
+				dns_hostname = "Randomized"	
+				label = "%s: %s (%s)" % (dns_country,dns_ipv4,dns_hostname)
+				dnsserver_submenu.add_command(label=label,command=lambda dns_ipv4=dns_ipv4: self.win_netsh_change_dns_server(dns_ipv4))
+				#self.debug(text="def make_menubar: len self.d0wns_dns = %s" % (len(self.d0wns_dns)))
+				""" make submenu for d0wns dns """
+				d0wns_dnsserver_submenu = Menu(dnsserver_submenu)
+				label = "DNS by d0wn.biz"
+				dnsserver_submenu.add_cascade(label=label, menu=d0wns_dnsserver_submenu, underline=0)
+				""" load d0wns dns into DNS menu """
+				for line in self.d0wns_dns:
+					#print line
+					try:
+						dns_hostname = line[0]
+						dns_ipv4 = line[1]
+						dns_country =  line[2]
+						dns_cryptkey = line[3]
+						dns_cryptname =  line[4]
+						dns_crypt_ports = line[5].split(' ')
+						label = "%s: %s (%s)" % (dns_country,dns_ipv4,dns_hostname)
+						d0wns_dnsserver_submenu.add_command(label=label,command=lambda dns_ipv4=dns_ipv4: self.win_netsh_change_dns_server(dns_ipv4))
+					except:
+						break
+					
+				""" finally """
+				ovpnMenu.add_separator()
+				ovpnMenu.add_command(label="Disconnect",command=self.kill_openvpn)
+		
+		""" regardless of any state, show the ? info menu """
 		infoMenu = Menu(menubar)
 		menubar.add_cascade(label="?", underline=0, menu=infoMenu)
 		infoMenu.add_command(label="Logout",command=self.dologout)
@@ -1354,9 +1459,15 @@ class AppUI(Frame):
 
 			
 	def timer_statusbar(self):
+
 		self.timer_statusbar_running = True
 		text = False
 		systraytext = False
+
+		if not self.statusbar_freeze == False:
+			self.root.after(self.statusbar_freeze,self.timer_statusbar)
+			self.statusbar_freeze = False
+			return True		
 		
 		if not self.isLOGGEDin == True:
 			text = "Please enter your Passphrase!"
@@ -1436,6 +1547,7 @@ class AppUI(Frame):
 			
 		self.root.after(1000,self.timer_statusbar)
 		return True
+
 		
 	"""	
 	def systray2mainwindow(self):
@@ -1486,7 +1598,7 @@ class AppUI(Frame):
 				if self.win_firewall_start():
 					text="Firewall enabled!\nInternet is blocked!"
 					self.debug(text=text)
-					self.msgwarn(text=text)
+					#self.msgwarn(text=text)
 				else:
 					text="Error. Could not start Firewall!"
 					self.debug(text=text)
@@ -1495,10 +1607,11 @@ class AppUI(Frame):
 				if self.win_firewall_allow_outbound():
 					text="Firewall rules unloaded.\nSettings restored."
 					self.debug(text=text)
-					self.msgwarn(text=text)
+					#self.msgwarn(text=text)
 				else:
 					text="Error! Unloading Firewall failed."
-					self.msgwarn(text=text)	
+					self.debug(text=text)					
+					self.msgwarn(text=text)
 			if self.SYSTRAYon == True:
 				self.systray.shutdown()
 			self.remove_lock()
