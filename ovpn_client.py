@@ -9,7 +9,7 @@ import socket
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.3"
+BUILT="0.1.4"
 STATE="_alpha"
 
 try:
@@ -350,7 +350,7 @@ class AppUI(Frame):
 				try:
 					os.remove(self.lock_file)
 				except:
-					self.msgwarn("Could not remove lock file. File itself locked because another oVPN Client instance running?")
+					self.msgwarn("Could not remove lock file.\nFile itself locked because another oVPN Client instance running?")
 					sys.exit()
 			else:
 				sys.exit()
@@ -1035,41 +1035,44 @@ class AppUI(Frame):
 				pass
 		self.UPDATE_MENUBAR = True
 		self.del_ovpn_routes()
-
-
-	def win_netsh_set_dns_down(self):
-		d0wns_dns = "178.32.122.65 37.187.0.40 128.199.248.105 95.85.9.86 31.220.27.46 108.61.210.58 178.17.170.67 46.151.208.154 91.214.71.181 217.12.210.54 217.12.203.133"
-		for dns in d0wns_dns.split():
-			pass
 		
 		
 	def win_netsh_set_dns_ovpn(self):
 		if not self.GATEWAY_DNS == "172.16.32.1":
 			self.debug(text="def win_netsh_set_dns_ovpn:")
-			string1 = "netsh interface ip set dnsservers \"%s\" static 172.16.32.1 primary" % (self.WIN_EXT_DEVICE)
+			string1 = "netsh interface ip set dnsservers \"%s\" static 172.16.32.1 primary no" % (self.WIN_EXT_DEVICE)
+			string2 = "netsh interface ip set dnsservers \"%s\" static 172.16.32.1 primary no" % (self.WIN_TAP_DEVICE)
 			try: 
 				read1 = subprocess.check_output("%s" % (string1),shell=True)
-				#read2 = subprocess.check_output("%s" % (string2),shell=True)
-				self.debug(text="read1:\n%s"%(read1))
+				read2 = subprocess.check_output("%s" % (string2),shell=True)
+				self.debug(text=":true")
 			except:
-				self.debug(text="def win_netsh_set_dns_ovpn: setting dns failed: string =\n%s"%(string1))
-	
+				self.debug(text="def win_netsh_set_dns_ovpn: setting dns failed:\n%s\n%s"%(string1,string2))
+
+				
 	def win_netsh_change_dns_server(self,dns_ipv4):
-		string = "netsh interface ip set dnsservers \"%s\" static %s primary" % (self.WIN_EXT_DEVICE,dns_ipv4)
-		read = False
-		try:
-			read = subprocess.check_output("%s" % (string),shell=True)
-			text = "DNS changed to %s" % (dns_ipv4)
-			self.DNS_SELECTED = dns_ipv4
+		self.debug(text="def win_netsh_change_dns_server:")
+		string1 = "netsh interface ip set dnsservers \"%s\" static %s primary no" % (self.WIN_EXT_DEVICE,dns_ipv4)
+		string2 = "netsh interface ip set dnsservers \"%s\" static %s primary no" % (self.WIN_TAP_DEVICE,dns_ipv4)
+		try: 
+			read1 = subprocess.check_output("%s" % (string1),shell=True)
+			read2 = subprocess.check_output("%s" % (string2),shell=True)
+			text = "oVPN DNS changed to %s" % (dns_ipv4)
+			if dns_ipv4 == "172.16.32.1":
+				text = "%s (Internal Randomized)" % (text)
+			elif dns_ipv4 == "127.0.0.1":
+				text = "%s (DNScrypt enabled)" % (text)
+			else:
+				text = "%s (direct connection)" % (text)
 			self.statusbar_freeze = 5000
 			self.statusbar_text.set(text)
+			self.DNS_SELECTED = dns_ipv4
+			self.UPDATE_MENUBAR = True
+			self.debug(text=":true")
 		except:
-			text = "Setting DNS failed"
-			self.msgwarn(text=text)
-		self.debug(text=text)
-		self.UPDATE_MENUBAR = True
-
+			self.debug(text="def win_netsh_change_dns_server: failed\n%s\n%s"%(string1,string2))
 		
+	
 	def win_netsh_restore_dns_dhcp(self):
 		os.system('netsh interface ip set dnsservers "%" dhcp'%(self.WIN_EXT_DEVICE))
 
@@ -1403,14 +1406,14 @@ class AppUI(Frame):
 				ovpnMenu.add_cascade(label=label, menu=dnsserver_submenu, underline=0)
 				""" add our internal DNS first """
 				dns_ipv4 = "172.16.32.1"
-				dns_country = "oVPN Internal"
-				dns_hostname = "Randomized"	
+				dns_country = "oVPN"
+				dns_hostname = "Internal Randomized through vLAN and DNScrypt"
 				label = "%s: %s (%s)" % (dns_country,dns_ipv4,dns_hostname)
 				dnsserver_submenu.add_command(label=label,command=lambda dns_ipv4=dns_ipv4: self.win_netsh_change_dns_server(dns_ipv4))
 				#self.debug(text="def make_menubar: len self.d0wns_dns = %s" % (len(self.d0wns_dns)))
 				""" make submenu for d0wns dns """
 				d0wns_dnsserver_submenu = Menu(dnsserver_submenu)
-				label = "DNS by d0wn.biz"
+				label = "DNS by d0wn.biz (directl connection from VPN-Srv to DNS)"
 				dnsserver_submenu.add_cascade(label=label, menu=d0wns_dnsserver_submenu, underline=0)
 				""" load d0wns dns into DNS menu """
 				for line in self.d0wns_dns:
