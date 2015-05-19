@@ -1,0 +1,1 @@
+C:\Python27\Tools\i18n\pygettext.py -p ./locale -a ovpn_client.py 
