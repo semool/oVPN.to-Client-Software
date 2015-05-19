@@ -177,6 +177,7 @@ class AppUI(Frame):
 		self.removethis()
 		self.make_label(text="oVPN.to Client Authentication\n\n\nEnter your Passphrase")
 		self.input_PH = Entry(self.frame,show="*")
+		self.input_PH.bind('<Return>', lambda x: self.receive_userid())
 		self.input_PH.pack()
 		self.input_PH.focus()
 		button = Button(self.frame, text="OK", command=self.receive_passphrase).pack()
@@ -404,6 +405,7 @@ class AppUI(Frame):
 		self.removethis()
 		self.make_label(text = "oVPN.to Client\n\n\nPlease enter your oVPN.to User-ID Number:")
 		self.input_userid = Entry(self.frame)
+		self.input_userid.bind('<Return>', lambda x: self.receive_userid())
 		self.input_userid.pack()
 		self.input_userid.focus()
 		Button(self.frame, text="OK", command=self.receive_userid).pack()
@@ -424,15 +426,18 @@ class AppUI(Frame):
 		
 	def form_enter_new_encryption_password(self):
 		self.removethis()
-		self.make_label(text="oVPN.to Client Setup\n\n\nPassphrase to encrypt and decrypt your API Configuration.\n\nEnter New Passphrase!\nRepeat New Passphrase!")
-				
+		self.make_label(text="oVPN.to Client Setup\n\nPlease enter a passphrase to encrypt your API configuration.\n")
+		self.make_label(text="\nNew passphrase:")
 		self.input_PH1 = Entry(self.frame,show="*")
 		self.input_PH1.pack()
 		self.input_PH1.focus()
+		self.make_label(text="\nRepeat your new passphrase:")
 		self.input_PH2 = Entry(self.frame,show="*")
+		self.input_PH2.bind('<Return>', lambda x: self.receive_new_passphrase())
 		self.input_PH2.pack()
-
-		Button(self.frame, text="Save Encryption Passphrase!", command=self.receive_new_passphrase).pack()
+		# create a margin
+		Label(self.frame).pack()
+		Button(self.frame, text="Save Encryption Passphrase!", command=self.receive_new_passphrase).pack(ipadx=10, ipady=10)
 		
 		
 	def receive_new_passphrase(self):
@@ -450,6 +455,7 @@ class AppUI(Frame):
 		self.removethis()
 		self.make_label(text="oVPN.to Client Setup\n\n\nEnter your oVPN.to API-Key:")
 		self.input_apikey = Entry(self.frame,show="*")
+		self.input_apikey.bind('<Return>', lambda x: self.write_new_config())
 		self.input_apikey.pack()
 		self.input_apikey.focus()
 		
