@@ -7,7 +7,7 @@ import _winreg,zipfile,subprocess,threading,win32com.client,socket,random,struct
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.9"
+BUILT="0.1.9a"
 STATE="_alpha"
 
 try:
@@ -33,7 +33,7 @@ class AppUI(Frame):
 		self.frame.pack_propagate(0)		
 		self.frame.pack()
 		self.make_mini_menubar()
-		self.check_preboot()
+		self.check_preboot(logout=False)
 					
 	def self_vars(self):
 		self.debug_log = False
@@ -135,7 +135,7 @@ class AppUI(Frame):
 					return False
 
 
-	def check_preboot(self):
+	def check_preboot(self,logout):
 		if self.pre0_detect_os():
 			if self.win_pre1_check_app_dir():
 				if self.win_pre2_check_profiles_win():
@@ -146,7 +146,7 @@ class AppUI(Frame):
 							self.timer_preboot()
 							self.make_statusbar()
 							self.check_inet_connection()
-							if self.plaintext_passphrase == False:
+							if self.plaintext_passphrase == False or logout == True:
 								self.receive_passphrase()
 							else:
 								self.debug("def check_preboot: plaintext_passphrase loaded, try auto-login")
@@ -229,11 +229,6 @@ class AppUI(Frame):
 		if not self.input_PH == False: 
 			self.PH = self.input_PH.get().rstrip()
 
-		if self.save_passphrase.get() and len(self.PH) > 0:
-			f = open(self.plaintext_passphrase_file,'w')
-			f.write(self.PH)
-			f.close()
-			
 		if not self.USERID == False and not self.input_PH == False:
 			if self.read_config():
 				self.debug(text="def receive_passphrase :self.read_config")
@@ -244,6 +239,13 @@ class AppUI(Frame):
 					self.statusbar_text.set("Passphrase Ok!")
 					self.removethis()
 					self.make_label(text="\n\n\nPlease wait!")
+					try:
+						if self.save_passphrase.get():
+							f = open(self.plaintext_passphrase_file,'w')
+							f.write(self.PH)
+							f.close()
+					except:
+						self.debug(text="def receive_passphrase: write plaintext_passphrase_file failed")
 					return True
 				else:
 					os.remove(self.api_cfg)
@@ -1241,7 +1243,7 @@ class AppUI(Frame):
 			self.paddata = False
 			# check_preboot() will cause a warning if we don't remove the lock
 			self.remove_lock()
-			self.check_preboot()			
+			self.check_preboot(logout=False)			
 
 			
 	def make_confighash(self):
@@ -1277,7 +1279,7 @@ class AppUI(Frame):
 			if self.SYSTRAYon == True:
 				self.systray.shutdown()
 			self.remove_lock()
-			self.check_preboot()
+			self.check_preboot(logout=True)
 		else:
 			self.msgwarn(text="Disconnect first!")
 		
