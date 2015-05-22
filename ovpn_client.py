@@ -7,7 +7,7 @@ import _winreg,zipfile,subprocess,threading,win32com.client,socket,random,struct
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.8"
+BUILT="0.1.9"
 STATE="_alpha"
 
 try:
@@ -422,7 +422,7 @@ class AppUI(Frame):
 				
 			if not os.path.exists(self.pfw_dir):
 				if DEBUG: print("pfw_dir %s not found, creating." % (self.pfw_dir))
-				
+				os.mkdir(self.pfw_dir)
 			
 			if not os.path.exists(self.dns_dir):
 				os.mkdir(self.dns_dir)
@@ -1298,14 +1298,19 @@ class AppUI(Frame):
 				if "remote " in line:
 					print(line)
 					try:
-						self.OVPN_CONNECTEDtoIP = line.split()[1]
-						self.OVPN_CONNECTEDtoPort = line.split()[2]
+						ip = line.split()[1]
+						port = int(line.split()[2])
+						if self.isValueIPv4(ip) and port > 0 and port < 65535:
+							self.OVPN_CONNECTEDtoIP = ip
+							self.OVPN_CONNECTEDtoPort = port
 						#break
 					except:
 						self.errorquit(text="Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file) )
 				if "proto " in line:
 					try:
-						self.OVPN_CONNECTEDtoProtocol = line.split()[1]
+						proto = line.split()[1]
+						if proto.lower()  == "tcp" or proto.lower() == "udp":
+							self.OVPN_CONNECTEDtoProtocol = proto
 					except:
 						self.errorquit(text="Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file) )
 			
@@ -1320,7 +1325,8 @@ class AppUI(Frame):
 			
 			try:
 				self.call_ovpn_srv = server
-				threading.Thread(target=self.inThread_spawn_openvpn_process).start()
+				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
+				thread_spawn_openvpn_process.start()
 				self.OVPN_THREADID = threading.currentThread()
 				self.debug(text="Started: oVPN %s on Thread: %s" %(server,self.OVPN_THREADID))
 			except:
@@ -1334,10 +1340,14 @@ class AppUI(Frame):
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == True")
 				self.OVPN_RECONNECT_NOW = False
 				try:
-					threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
-					self.statusbar_freeze = 500
+					#threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
+					thread_timer_openvpn_reconnect = threading.Thread(target=self.inThread_timer_openvpn_reconnect)
+					thread_timer_openvpn_reconnect.start()
+					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
+					self.debug(text="Started: self.inThread_timer_openvpn_reconnect() on Thread: %s" %(self.OVPN_PING_TIMER_THREADID))
+					#self.statusbar_freeze = 500
 					text = "oVPN Process Watchdog enabled."
-					self.statusbar_text.set(text)
+					#self.statusbar_text.set(text)
 					self.debug(text=text)
 				except:
 					self.statusbar_freeze = 6000
@@ -1365,33 +1375,47 @@ class AppUI(Frame):
 		
 		if self.STATE_OVPN == True:
 			
-			if self.OS == "win32": 
+			if self.OS == "win32":
 				ovpn_ping_cmd = "ping.exe -n 1 172.16.32.1"
 				PING_PROC = False
-				try: PING_PROC = subprocess.check_output("%s" % (ovpn_ping_cmd),shell=True)
-				except:	pass
+				try:
+					PING_PROC = subprocess.check_output("%s" % (ovpn_ping_cmd),shell=True)
+				except:
+					self.debug(text="def inThread_timer_ovpn_ping: ping.exe failed")
+					pass
 					
-				try: OVPN_PING_out = PING_PROC.split('\r\n')[2].split()[4].split('=')[1][:-2] 
-				except: OVPN_PING_out = -2
+				try:
+					OVPN_PING_out = PING_PROC.split('\r\n')[2].split()[4].split('=')[1][:-2]
+				except:
+					self.debug(text="def inThread_timer_ovpn_ping: split ping failed, but normally not an issue while connection is testing")
+					OVPN_PING_out = -2
 				
 				pingsum = 0
 				if OVPN_PING_out > 0:
 					self.OVPN_PING.append(OVPN_PING_out)
 					self.OVPN_PING_LAST = OVPN_PING_out
-				if len(self.OVPN_PING) > 1200:
+				if len(self.OVPN_PING) > 360:
 					self.OVPN_PING.pop(0)
 				if len(self.OVPN_PING) > 0:
 					for ping in self.OVPN_PING:
 						pingsum += int(ping)
 					self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 				#self.debug(text="ping = %s\n#############\nList len=%s\n%s\npingstat=%s"%(OVPN_PING_out,len(self.OVPN_PING),self.OVPN_PING,self.OVPN_PING_STAT))
-				#self.debug("timer ovpn ping running threads: %s, ping=%s" % (threading.active_count(),OVPN_PING_out))
-				if self.OVPN_PING_STAT > 0: 
-					time.sleep(3)
+				if self.OVPN_PING_STAT >= 0:
+					if self.OVPN_CONNECTEDtime > 60:
+						time.sleep(10)
+					else:
+						time.sleep(3)
 				else:
-					time.sleep(1)				
-				threading.Thread(target=self.inThread_timer_ovpn_ping).start()
-				return True
+					time.sleep(1)
+				try:
+					pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
+					pingthread.start()
+					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
+					self.debug(text="done: rejoin def inThread_timer_ovpn_ping() %s: total threads: %s, ping=%s" %(self.OVPN_PING_TIMER_THREADID,threading.active_count(),OVPN_PING_out))	
+					return True
+				except:
+					self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
 				
 		elif self.STATE_OVPN == False:
 			self.debug("leaving timer_ovpn_ping")
@@ -1405,7 +1429,7 @@ class AppUI(Frame):
 		self.ovpn_proc_retcode = False
 		self.STATE_OVPN = True
 		self.OVPN_CONNECTEDto = self.call_ovpn_srv
-		self.win_netsh_set_dns_ovpn()	
+		self.win_netsh_set_dns_ovpn()
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
@@ -1768,14 +1792,13 @@ class AppUI(Frame):
 		self.pfw_cmd = "netsh.exe"
 		i=0
 		for cmd in self.pfw_cmdlist:
-			fullstring = "%s %s" % (self.pfw_cmd,cmd)			
+			fullstring = "%s %s" % (self.pfw_cmd,cmd)
 			try: 
-				response = subprocess.check_output("%s" % (fullstring),shell=True)
-				#self.debug(text="pfwOK: %s" % (fullstring))
+				exitcode = subprocess.call("%s" % (fullstring),shell=True)
+				self.debug(text="pfwOK: %s: exitcode = %s" % (fullstring,exitcode))
 				i+=1
 			except:
 				self.debug(text="pfwFAIL: %s" % (fullstring))
-		
 		if len(self.pfw_cmdlist) == i:
 			return True
 
@@ -2151,7 +2174,7 @@ class AppUI(Frame):
 			self.removethis()			
 			self.SWITCH_FULL_WINDOW = False
 			#self.root.attributes("-toolwindow", False)
-			
+	
 		if not self.systraytext_from_before == systraytext and not systraytext == False:
 			if self.SYSTRAYon == True:
 				try:
@@ -2170,7 +2193,7 @@ class AppUI(Frame):
 				except:
 					self.debug(text="def timer_statusbar: self.systray.start() failed")
 					self.SYSTRAYon = False
-				
+		
 		if not self.statustext_from_before == text:
 			self.statusbar_text.set(text)
 			self.statustext_from_before = text
@@ -2216,7 +2239,7 @@ class AppUI(Frame):
 			self.win_netsh_restore_dns_from_backup()
 			if tkMessageBox.askyesno("Keep Firewall Protection?", "Keep Firewall loaded and block OUT to Internet?"):
 				if self.win_firewall_start():
-					text="Firewall enabled!\nInternet is blocked!"
+					text="Firewall enabled! Internet blocked!"
 					self.debug(text=text)
 					#self.msgwarn(text=text)
 				else:
