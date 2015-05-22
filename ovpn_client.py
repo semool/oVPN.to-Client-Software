@@ -108,6 +108,7 @@ class AppUI(Frame):
 		self.d0wnsIP4s = list()
 		self.d0wns_PING = False
 		self.plaintext_passphrase = False
+		self.save_passphrase = IntVar()
 		
 	def errorquit(self,text):
 		self.debug(text)
@@ -216,6 +217,8 @@ class AppUI(Frame):
 		self.input_PH = Entry(self.frame,show="*")
 		self.input_PH.pack()
 		self.input_PH.focus()
+		checkbox = Checkbutton(self.frame, text="Save passphrase", variable=self.save_passphrase)
+		checkbox.pack()
 		button = Button(self.frame, text="OK", command=self.receive_passphrase)
 		button.pack()
 	
@@ -225,6 +228,11 @@ class AppUI(Frame):
 		
 		if not self.input_PH == False: 
 			self.PH = self.input_PH.get().rstrip()
+
+		if self.save_passphrase.get() and len(self.PH) > 0:
+			f = open(self.plaintext_passphrase_file,'w')
+			f.write(self.PH)
+			f.close()
 			
 		if not self.USERID == False and not self.input_PH == False:
 			if self.read_config():
