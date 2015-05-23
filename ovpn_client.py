@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from Tkinter import *
 from infi.systray import SysTrayIcon
-import Tkinter,tkMessageBox,Tkconstants,types,os,platform,sys,hashlib,random,base64,urllib,urllib2,time,datetime
-import _winreg,zipfile,subprocess,threading,win32com.client,socket
+from datetime import datetime as datetime
+import Tkinter,tkMessageBox,Tkconstants,types,os,platform,sys,hashlib,random,base64,urllib,urllib2,time
+import _winreg,zipfile,subprocess,threading,win32com.client,socket,random,struct
 from Crypto.Cipher import AES
 import gettext
 import locale
 
-BUILT="0.1.5"
+BUILT="0.1.9b"
 STATE="_alpha"
 
 try:
@@ -34,7 +35,7 @@ class AppUI(Frame):
 		self.frame.pack_propagate(0)		
 		self.frame.pack()
 		self.make_mini_menubar()
-		self.check_preboot()
+		self.check_preboot(logout=False)
 					
 	def self_vars(self):
 		self.debug_log = False
@@ -66,7 +67,6 @@ class AppUI(Frame):
 		self.systraytext_from_before = False
 		self.statusbar_text = StringVar()
 		self.statusbar_freeze = False
-		self.OVPN_CONNECTEDsystraytext = StringVar()
 		self.SYSTRAYon = False
 		self.screen_width = 320
 		self.screen_height = 240
@@ -79,17 +79,19 @@ class AppUI(Frame):
 		self.WIN_TAP_DEVICE = False
 		self.WIN_EXT_DEVICE = False
 		self.OVPN_SERVER = list()
-		#self.OVPN_FAV_SERVER = False
-		self.OVPN_FAV_SERVER = "BG1.ovpn.to"
+		self.OVPN_FAV_SERVER = False
+		#self.OVPN_FAV_SERVER = "BG1.ovpn.to"
+		self.OVPN_AUTO_CONNECT_ON_START = False
 		self.OVPN_AUTO_RECONNECT = True
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtime = False
 		self.OVPN_CONNECTEDdistime = False
 		self.OVPN_CONNECTEDtoIP = False
 		self.OVPN_CONNECTEDtoIPbefore = False
+		self.OVPN_GATEWAY_IP4 = "172.16.32.1"
 		self.OVPN_THREADID = False
-		self.OVPN_THREAD_STARTED = False
 		self.OVPN_RECONNECT_NOW = False
+		
 		self.OVPN_PING = list()
 		self.OVPN_isTESTING = False
 		self.OVPN_PING_LAST = -1
@@ -99,6 +101,16 @@ class AppUI(Frame):
 		self.DNS_SELECTED = False
 		self.DNS_SELECTEDcountry = False
 		self.DNS_COUNTRYLIST = False
+		self.DNS_TEST_PORT=53
+		self.DNS_TEST_TIMEOUT=1		
+		self.DNS_DICT = {}
+		self.DNS_TEST = {}
+		self.DNS_PING = {}
+		self.d0wns_DICT = {}
+		self.d0wnsIP4s = list()
+		self.d0wns_PING = False
+		self.plaintext_passphrase = False
+		self.save_passphrase = IntVar()
 		
 	def errorquit(self,text):
 		self.debug(text)
@@ -125,7 +137,7 @@ class AppUI(Frame):
 					return False
 
 
-	def check_preboot(self):
+	def check_preboot(self,logout):
 		if self.pre0_detect_os():
 			if self.win_pre1_check_app_dir():
 				if self.win_pre2_check_profiles_win():
@@ -135,9 +147,35 @@ class AppUI(Frame):
 							self.preboot = False
 							self.timer_preboot()
 							self.make_statusbar()
-							self.check_inet_connection()						
-							self.receive_passphrase()
-							self.update_idletasks()
+							self.check_inet_connection()
+							if self.plaintext_passphrase == False or logout == True:
+								self.receive_passphrase()
+							else:
+								self.debug("def check_preboot: plaintext_passphrase loaded, try auto-login")
+								self.input_PH = self.plaintext_passphrase
+								if self.read_config():
+									self.debug(text="def check_preboot: self.read_config() :True")
+									if self.compare_confighash():
+										self.plaintext_passphrase = False
+										self.input_PH = False
+										self.preboot = True
+										self.debug(text="def check_preboot: self.compare_confighash() :True")
+										self.statusbar_text.set("Passphrase Ok!")
+										self.removethis()
+										self.make_label(text="\n\n\nPlease wait!")
+										return True
+									else:
+										try:
+											os.remove(self.api_cfg)
+											self.errorquit(text = "def check_preboot: self.compare_confighash() failed. CFG deleted.")
+										except:
+											self.errorquit(text = "def check_preboot: self.compare_confighash() failed. CFG delete failed.")
+								else:
+									try:
+										os.remove(self.plaintext_passphrase_file)
+										self.errorquit(text="Decryption with plaintext_passphrase failed. txt removed.")
+									except:
+										self.errorquit(text="Decryption with plaintext_passphrase failed. txt remove failed.")	
 							self.debug(text="We start looping!")
 							return True
 						else:
@@ -179,11 +217,12 @@ class AppUI(Frame):
 		self.removethis()
 		self.make_label(text=_("oVPN.to Client Authentication\n\n\nEnter your Passphrase"))
 		self.input_PH = Entry(self.frame,show="*")
-		#self.input_PH.bind('<Return>', lambda x: self.receive_userid())
 		self.input_PH.pack()
 		self.input_PH.focus()
-		button = Button(self.frame, text="OK", command=self.receive_passphrase).pack()
-		self.update_idletasks()
+		checkbox = Checkbutton(self.frame, text="Save passphrase", variable=self.save_passphrase)
+		checkbox.pack()
+		button = Button(self.frame, text="OK", command=self.receive_passphrase)
+		button.pack()
 	
 
 	def receive_passphrase(self):
@@ -191,7 +230,7 @@ class AppUI(Frame):
 		
 		if not self.input_PH == False: 
 			self.PH = self.input_PH.get().rstrip()
-			
+
 		if not self.USERID == False and not self.input_PH == False:
 			if self.read_config():
 				self.debug(text="def receive_passphrase :self.read_config")
@@ -202,6 +241,13 @@ class AppUI(Frame):
 					self.statusbar_text.set(_("Passphrase Ok!"))
 					self.removethis()
 					self.make_label(text=_("\n\n\nPlease wait!"))
+					try:
+						if self.save_passphrase.get():
+							f = open(self.plaintext_passphrase_file,'w')
+							f.write(self.PH)
+							f.close()
+					except:
+						self.debug(text="def receive_passphrase: write plaintext_passphrase_file failed")
 					return True
 				else:
 					os.remove(self.api_cfg)
@@ -244,7 +290,7 @@ class AppUI(Frame):
 			if DEBUG: print("def pre0_detect_os: arch=%s bits=%s key=%s OS=%s" % (self.OSARCH,self.OSBITS,key1_value[0],self.OS))
 			self.win_get_interfaces()
 			self.win_detect_openvpn()			
-			self.root.title("oVPN.to v"+BUILT+STATE+" "+self.OSARCH)
+			self.root.title("oVPN v"+BUILT+STATE+" "+self.OSARCH)
 			return True
 		elif OS == "linux2" :
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))	
@@ -324,8 +370,11 @@ class AppUI(Frame):
 		self.api_upd = "%s\\lastupdate.txt" % (self.vpn_dir)
 		
 		self.dns_dir =  "%s\\dns" % (self.api_dir)
+		self.dns_d0wntxt =  "%s\\dns.d0wn.biz.txt" % (self.dns_dir)
 		self.dns_ung =  "%s\\ungefiltert" % (self.dns_dir)
 		self.dns_ung_alphaindex =  "%s\\alphaindex.txt" % (self.dns_ung)
+		
+		self.plaintext_passphrase_file = "%s\\plaintext_passphrase.txt" % (self.api_dir)
 		
 #		if not self.win_firewall_start():
 #			self.msgwarn("Could not start Windows Firewall!")
@@ -385,13 +434,20 @@ class AppUI(Frame):
 				
 			if not os.path.exists(self.pfw_dir):
 				if DEBUG: print("pfw_dir %s not found, creating." % (self.pfw_dir))
-				
+				os.mkdir(self.pfw_dir)
 			
 			if not os.path.exists(self.dns_dir):
 				os.mkdir(self.dns_dir)
 				
 			if not os.path.exists(self.dns_ung):
 				os.mkdir(self.dns_ung)
+				
+			if os.path.isfile(self.plaintext_passphrase_file):
+				self.debug(text="reading plaintext passphrase")
+				fp = open(self.plaintext_passphrase_file,'r')
+				ph = fp.read()
+				fp.close()
+				self.plaintext_passphrase = ph
 				
 			if os.path.exists(self.api_dir) and os.path.exists(self.vpn_dir) and os.path.exists(self.vpn_cfg) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
@@ -420,10 +476,10 @@ class AppUI(Frame):
 		self.removethis()
 		self.make_label(text = _("oVPN.to Client\n\n\nPlease enter your oVPN.to User-ID Number:"))
 		self.input_userid = Entry(self.frame)
-		#self.input_userid.bind('<Return>', lambda x: self.receive_userid())
 		self.input_userid.pack()
 		self.input_userid.focus()
-		Button(self.frame, text="OK", command=self.receive_userid).pack()
+		button = Button(self.frame, text="OK", command=self.receive_userid)
+		button.pack()
 
 		
 	def receive_userid(self):
@@ -436,7 +492,7 @@ class AppUI(Frame):
 				if self.check_config_folders() == False:
 					self.form_enter_new_encryption_password()
 					return True
-		else: self.USERID = False	
+		else: self.USERID = False
 
 		
 	def form_enter_new_encryption_password(self):
@@ -448,7 +504,6 @@ class AppUI(Frame):
 		self.input_PH1.focus()
 		self.make_label(text="\n" + _("Repeat your new passphrase:"))
 		self.input_PH2 = Entry(self.frame,show="*")
-		#self.input_PH2.bind('<Return>', lambda x: self.receive_new_passphrase())
 		self.input_PH2.pack()
 		# create a margin
 		Label(self.frame).pack()
@@ -470,11 +525,12 @@ class AppUI(Frame):
 		self.removethis()
 		self.make_label(text=_("oVPN.to Client Setup\n\n\nEnter your oVPN.to API-Key:"))
 		self.input_apikey = Entry(self.frame,show="*")
-		#self.input_apikey.bind('<Return>', lambda x: self.write_new_config())
 		self.input_apikey.pack()
 		self.input_apikey.focus()
 		
-		Button(self.frame, text=_("Save API-Key!"), command=self.write_new_config).pack()		
+		button = Button(self.frame, text=_("Save API-Key!"), command=self.write_new_config)
+		button.pack()
+		
 
 		
 	def gui_check_remotelogin(self):
@@ -528,13 +584,16 @@ class AppUI(Frame):
 		
 		
 	def extract_ovpn(self):
-		z1file = zipfile.ZipFile(self.zip_cfg)
-		z2file = zipfile.ZipFile(self.zip_crt)		
-		z1file.extractall(self.vpn_cfg) 
-		z2file.extractall(self.vpn_cfg)
-		if self.write_last_update():
-			self.statusbar_text.set(_("Certificates and Configs extracted."))
-			return True
+		try:
+			z1file = zipfile.ZipFile(self.zip_cfg)
+			z2file = zipfile.ZipFile(self.zip_crt)		
+			z1file.extractall(self.vpn_cfg) 
+			z2file.extractall(self.vpn_cfg)
+			if self.write_last_update():
+				self.statusbar_text.set("Certificates and Configs extracted.")
+				return True
+		except:
+			self.debug(text="def extract_ovpn: failed")
 
 			
 	def timer_check_certdl(self):
@@ -599,45 +658,115 @@ class AppUI(Frame):
 			return True
 		return False
 
-
-	def read_ungefiltert_surfen_dns(self,countrycode):
+		
+	def read_ungefiltert_surfen_dns(self,countrycode,countryindexupdate):
+		file = self.dns_ung_alphaindex
+		if countrycode == None:			
+				if countryindexupdate == True:
+					try:
+						if os.path.isfile(file):
+							os.remove(file)
+						self.DNS_COUNTRYLIST = False
+					except:
+						pass
+				try:
+					countryindex = open(file,'r')
+					body = countryindex.read()
+					countryindex.close()
+					self.DNS_COUNTRYLIST = list()
+					for line in body.split('\n'):
+						if len(line) > 3:
+							try:
+								splitline = line.split('=',1)
+								splitline[1] = base64.b64decode(splitline[1])
+								splitline[1] = splitline[1].decode('utf8')
+								self.DNS_COUNTRYLIST.append(splitline)
+							except:
+								self.debug(text="def rusd: read from file: append(splitline) = %s failed"%(splitline)) 
+					self.debug(text="def rusd: read from file")
+					self.UPDATE_MENUBAR = True
+					return True
+				except:
+					pass
+					self.debug(text="def rusd: read from file failed")
+				
 		if self.DNS_COUNTRYLIST == False:
 			""" load countrylist from website """
 			body = False
-			try: 
-				headers = { 'User-Agent' : 'oVPN.to Client - Loading Country List. Contact support@ovpn.to or join https://webirc.ovpn.to' }
-				url = "http://www.ungefiltert-surfen.de/"
-				req = urllib2.Request(url, None, headers)				
-				response = urllib2.urlopen(req)
-				body = response.read()
-				#print body
-				self.DNS_COUNTRYLIST = list()
-			except:
-				text = _("URL TIMEOUT: %s") % (url)
-				self.debug(text=text)
-				self.msgwarn(text=text)
+			urls = ["https://vcp.ovpn.to/files/dns/ungefiltert-surfen.de/mirror.html","https://vcp.ovpn.to/files/dns/ungefiltert-surfen.de/mirror.bak","http://www.ungefiltert-surfen.de/"]
+			for url in urls:
+				if not body == False:
+					break
+				try: 
+					headers = { 'User-Agent' : 'oVPN.to Client - Loading Country List. Contact support@ovpn.to or join https://webirc.ovpn.to' }
+					req = urllib2.Request(url, None, headers)				
+					response = urllib2.urlopen(req)
+					body = response.read()
+					self.DNS_COUNTRYLIST = list()
+					self.debug(text="def rusd: read dns countrylist from url %s"%(url))
+				except:
+					text = "URL TIMEOUT: %s" % (url)
+					self.debug(text=text)
+					#self.msgwarn(text=text)
 			if not body  == False:
 				#print body
 				i=0
+				if os.path.isfile(file):
+					os.remove(file)
 				for line in body.split('\n'):
-					if line.startswith('<li><a href="/nameserver/') and line.endswith("</a></li>"):
+					if line.startswith('<li><a href="/nameserver/') and line.endswith("</a></li>"):						
 						try:
 							thisline = line.decode('utf8','ignore')
-							thisline = thisline.replace('<li><a href="/nameserver/','')
-							thisline = thisline.replace('html">','')
-							thisline = thisline.replace('</a></li>','')
-							""" added ,1 to splitline, may remove silly hack from submenu """
-							splitline = thisline.split('.',1)
-							self.DNS_COUNTRYLIST.append(splitline)
-							#print thisline
+							#thisline = line.decode('utf8')
+							try:
+								thisline = thisline.replace('<li><a href="/nameserver/','')
+								thisline = thisline.replace('html">','')
+								thisline = thisline.replace('</a></li>','')
+								splitline = thisline.split('.',1)
+								try:
+									self.DNS_COUNTRYLIST.append(splitline)								
+									try:
+										#content = "%s=%s\n" % (,splitline[1])
+										try:
+											splitline[1] = splitline[1].encode('utf8')
+										except:
+											self.debug(text="def rusd: splitline encode utf8 failed")
+										try:
+											b64countryname = base64.b64encode(splitline[1])
+											content = splitline[0]+'='+b64countryname+'\n'
+											countrycode = splitline[0]
+										except:
+											self.debug(text="def rusd: splitline b64 encode failed")										
+										try:
+											fpindex = open(self.dns_ung_alphaindex, "a")
+											try:
+												fpindex.write(content)
+												try:
+													fpindex.close()
+													#self.debug(text="def rusd: write content %s to file"%(content))
+												except:
+													self.debug(text="def rusd: fpindex close failed")
+											except:			
+												self.debug(text="def rusd: fpindex write content failed: content = %s"%(content))
+										except:
+											self.debug(text="def rusd: fpindex open failed")
+									except:
+										self.debug(text="def rusd: build content failed")									
+								except:
+									self.debug(text="def rusd: self.DNS_COUNTRYLIST.append(splitline) failed")
+							except:								
+								self.debug(text="def rusd: thisline replace failed")
 						except:
-							self.debug(text="def read_ungefiltert_surfen_dns: decode error")
-				self.debug(text="def read_ungefiltert_surfen_dns: self.DNS_COUNTRYLIST = %s"%(len(self.DNS_COUNTRYLIST)))
-				self.UPDATE_MENUBAR = True
-				#self.statusbar_freeze = 250
-				self.statusbar_text.set(_("oVPN is loading %s DNS Country into Menu")%(len(self.DNS_COUNTRYLIST)))
+							self.debug(text="def rusd: thisline failed")
+					
+				if len(self.DNS_COUNTRYLIST)> 0:
+					self.debug(text="def rusd: self.DNS_COUNTRYLIST = %s"%(len(self.DNS_COUNTRYLIST)))
+					self.UPDATE_MENUBAR = True
+					self.statusbar_freeze = 2000
+					self.statusbar_text.set("oVPN is loading %s DNS Country into Menu"%(len(self.DNS_COUNTRYLIST)))
+					return True
 				
-		else:
+		elif not self.DNS_COUNTRYLIST == False and not countrycode == None:
 			""" we already loaded the full country list """
 			""" now load dns from specific country """
 			body = False
@@ -656,43 +785,150 @@ class AppUI(Frame):
 				#print body
 				file = "%s\\%s.txt"%(self.dns_ung,countrycode)
 				try:
+					""" write countrycode dns to file and trigger UPDATE_MENUBAR """
 					dns = open(file,'w')
 					dns.write(body)
 					dns.close()
 					self.debug(text="dns for %s written to %s"%(countrycode,file))
-					self.UPDATE_MENUBAR = True				
+					try:
+						""" check if we have a dictionary and set empty list to clear cache """
+						dnslist = self.DNS_DICT[countrycode]
+						self.DNS_DICT[countrycode] = list()					
+						pass
+						#self.debug(text="dns cache cleared for %s"%(countrycode))
+					except:
+						pass
+					try:
+						self.read_ungefiltert_dns_file(file,countrycode)
+						self.debug(text="def: rusd: self.read_ungefiltert_dns_file(file,%s) :True"%(countrycode))
+					except:
+						self.debug(text="def: rusd: self.read_ungefiltert_dns_file(file,%s) failed"%(countrycode))
+					self.UPDATE_MENUBAR = True
 					return True
 				except:
 					print("Write to %s failed"%(file))
 					return False
 
 
+	def DNStest(self,addr):
+		try:
+			try:
+				domains = ["google","wikipedia","spiegel"]
+				domain = random.choice(domains)
+				if domain == "google":
+					tlds = ["com","net","org"]
+				elif domain == "wikipedia":
+					tlds = ["com","net","org"]
+				elif domain == "spiegel":
+					tlds = ["info","net","de"]
+				sub = "www"	
+				tld = random.choice(tlds)
+				dnshost = [sub,domain,tld]
+				packet=struct.pack("!HHHHHH", 0x0001, 0x0100, 1, 0, 0, 0)
+				for name in dnshost:
+					query=struct.pack("!b"+str(len(name))+"s", len(name), name)
+					packet=packet+query	
+				packet=packet+struct.pack("!bHH",0,1,1)
+				try:
+					s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+					s.settimeout(self.DNS_TEST_TIMEOUT)
+					# send DNS question to server
+					sendcount=s.sendto(packet, 0, (addr,self.DNS_TEST_PORT))
+					if sendcount <= 0:
+						return False
+					start = int(time.time() * 1000)
+					try:
+						recvdata=s.recvfrom(1024)
+					except socket.error, e:
+						return False
+					try:
+						end = int(time.time() * 1000)
+						tdiff = end-start
+						self.debug(text="def DNStest: DNS %s (%s) %s"%(addr,tdiff,dnshost))
+						self.DNS_PING[addr] = tdiff
+						#self.debug(text="def DNStest: DICT self.DNS_PING[%s] = %s"%(addr,self.DNS_PING[addr]))
+						#self.statusbar_freeze = 100
+						#self.statusbar_text.set(text)
+						return True
+					except:
+						self.debug(text="def DNStest: calc failed")
+				except:
+					self.debug(text="def DNStest: socket socket failed")				
+			except:
+				self.debug(text="def DNStest: struct packet failed")
+		except:
+			self.debug(text="def DNStest: failed")
+		
+					
 	def read_ungefiltert_dns_file(self,file,countrycode):
-		if os.path.isfile(file):
-			dns = open(file,'r')
-			read_data = dns.read()
-			dns.close()
-			dnslist = list()
-			i=0
-			for line in read_data.split('\n'):
-				if self.isValueIPv4(line):
-					dnslist.append(line)
-					i+=1
-			#self.debug(text="def read_ungefiltert_dns_file: %s loaded %s dns"%(countrycode,i))
-			if i > 0:
-				return dnslist
+		try:
+			dnslist = self.DNS_DICT[countrycode]
+			random.shuffle(dnslist)
+			self.dnslist = list()
+			self.dnslist = dnslist[-8:]
+			#self.debug(text="reloaded dnslist [%s] from cache self.DNS_DICT[%s]"%(countrycode,countrycode))
+			try:
+				if self.DNS_TEST[countrycode] == "DNStest" and len(self.dnslist) > 0:
+					""" send query to every loaded dns and measure response time """
+					responses = 0
+					for trydns in self.dnslist:
+						self.debug(text="spawn DNStest with addr %s from [%s]"%(trydns,countrycode))
+						response = False
+						try:							
+							response = self.DNStest(trydns)
+							if response == True:
+								responses+=1
+								self.debug(text="def read_ungefiltert_dns_file: self.DNStest(trydns) response = %s"%(response))
+								self.debug(text="def read_ungefiltert_dns_file: self.DNS_PING[%s] = %s"%(trydns,self.DNS_PING[trydns]))
+						except:
+							self.debug(text="def read_ungefiltert_dns_file: self.DNStest(trydns) failed")				
+					if responses > 0:
+						self.DNS_TEST[countrycode] = False
+						#self.UPDATE_MENUBAR = True
+						self.debug(text="def read_ungefiltert_dns_file: responses = %s"%(responses))	
+						return True
+			except:
+				pass
+				#self.debug(text="def read_ungefiltert_dns_file: 'if self.DNS_TEST[countrycode] == DNStest' failed"%(countrycode))
+		except:
+			pass
+			#self.debug(text="No DNS cache-DICT for [%s], try read from file."%(countrycode))
+		try:
+			if os.path.isfile(file):
+				dns = open(file,'r')
+				read_data = dns.read()
+				dns.close()
+				dnslist = list()
+				i=0
+				for line in read_data.split('\n'):
+					if self.isValueIPv4(line):
+						dnslist.append(line)
+						i+=1
+				if i > 0:
+					self.DNS_DICT[countrycode] = dnslist
+					#self.debug(text="def read_ungefiltert_dns_file: DNS IPs: %d countrycode %s"%(i,countrycode))
+					""" randomize/shuffle loaded dns from file """
+					random.shuffle(dnslist)
+					self.dnslist = list()
+					self.dnslist = dnslist[-8:]
+					if len(self.dnslist) > 0:
+						return True
+					else:
+						self.dnslist = ["Error reading DNS from cachefile"]
+				else:
+					return False
 			else:
+				""" maybe spawn def read_ungefiltert_surfen_dns with countrycode to update it """
 				return False
-		else:
-			""" maybe spawn def read_ungefiltert_surfen_dns with countrycode to update it """
-			return False
+		except:
+			self.debug(text="def read_ungefiltert_dns_file: %s [%s] failed"%(file,countrycode))
 
 			
-	def read_d0wns_dns(self):
+	def update_d0wns_dns_from_url(self):
 		if not self.OVPN_PING_STAT >= 0:
 			self.UPDATE_MENUBAR = True
-			return True
-		
+			return False
+
 		urls = ["https://vcp.ovpn.to/files/dns/d0wns_dns.txt","https://dns.d0wn.biz/dns.txt"]
 		for url in urls:
 			try: 
@@ -707,45 +943,127 @@ class AppUI(Frame):
 				self.debug(text=text)
 				self.msgwarn(text=text)
 			if not body  == False:
-				#self.debug("def read_d0wns_dns body = %s"%(body))		
-				dnslist = body.split('\n')
-				self.d0wns_dns = list()
-				i=0
-				dnslist.pop(-1)
-				if len(dnslist) >= 1:
-					for line in dnslist:
-						content = line.split(',')
-						""" check if our loaded content is valid """
-						if len(content) == 6:
-							if content[0].startswith('ns') and content[0].endswith('.dns.d0wn.biz'):
-								for value in content[0].split('.'):
-									if not value.isalnum():
-										break
-								
-								if self.isValueIPv4(content[1]):
-									if content[2].isalnum() and len(content[3].split(':')) == 16:
-										for hex in content[3].split(':'):
-											if not hex.isalnum() or not len(hex) == 4:
-												break
-										
-										if content[4] == "2.dnscrypt-cert.d0wn.biz":
-											for port in content[5].split(' '):
-												if not port.isdigit():
+				try:
+					fp = open(self.dns_d0wntxt, "wb")
+					fp.write(body)
+					fp.close()
+					try:
+						self.read_d0wns_dns_from_file(update=False)
+						return True
+					except:
+						self.debug(text="def update_d0wns_dns_from_url: try: self.read_d0wns_dns_from_file() failed")					
+				except:
+					pass
+		return False
+					
+					
+	def read_d0wns_dns_from_file(self,update):
+		file = self.dns_d0wntxt
+		if update == True:
+			try:
+				if os.path.isfile(file):
+					os.remove(file)
+				self.d0wns_DICT = {}
+				self.d0wnsIP4s = list()
+			except:
+				pass
+				self.debug(text="def read_d0wns_dns_from_file: force-update failed")
+		try:
+			self.d0wns_dns = self.d0wns_DICT["d0wnsdns"]
+			try:
+				if update == "DNStest":
+					#self.debug(text="def read_d0wns_dns_from_file: DNStest")
+					responses = 0
+					for trydns in self.d0wnsIP4s:
+						#self.debug(text="def read_d0wns_dns_from_file: DNStest %s"%(trydns))
+						response = False
+						try:
+							response = self.DNStest(trydns)
+							if response == True:
+								responses+=1
+								#self.debug(text="def read_d0wns_dns_from_file: self.DNStest(trydns) response = %s"%(response))
+								#self.debug(text="def read_d0wns_dns_from_file: self.DNS_PING[%s] = %s"%(trydns,self.DNS_PING[trydns]))
+						except:
+							pass
+							#self.debug(text="def read_d0wns_dns_from_file: self.DNStest(trydns) failed")				
+					if responses > 0:
+						self.UPDATE_MENUBAR = True
+						#self.debug(text="def read_d0wns_dns_from_file: responses = %s"%(responses))	
+						return True
+			except:
+				self.debug(text="def read_d0wns_dns_from_file: try: DICT try: DNStest failed")
+					
+			self.debug(text="def read_d0wns_dns_from_file: load from cache")
+			self.UPDATE_MENUBAR = True
+			return True
+		except:
+			pass
+			self.debug(text="def read_d0wns_dns_from_file: no cache found, read from file")	
+		try:
+			if not os.path.isfile(file):
+				try:
+					self.update_d0wns_dns_from_url()
+					return True
+				except:
+					self.debug(text="def read_d0wns_dns_from_file: try: self.update_d0wns_dns_from_url() failed")
+			elif os.path.isfile(file):
+				try:					
+					dns = open(file,'r')
+					body = dns.read()
+					dns.close()
+					dnslist = body.split('\n')
+					self.d0wns_dns = list()
+					i=0
+					dnslist.pop(-1)
+				except:
+					self.debug(text="def read_d0wns_dns_from_file: open file failed")
+				try:
+					if len(dnslist) >= 1:
+						self.d0wnsIP4s = list()
+						for line in dnslist:
+							content = line.split(',')
+							""" check if our loaded content is valid """
+							if len(content) >= 6:
+								if content[0].startswith('ns') and content[0].endswith('.dns.d0wn.biz'):
+									for value in content[0].split('.'):
+										if not value.isalnum():
+											break
+									
+									if self.isValueIPv4(content[1]):
+										self.d0wnsIP4s.append(content[1])
+										if content[2].isalnum() and len(content[3].split(':')) == 16:
+											for hex in content[3].split(':'):
+												if not hex.isalnum() or not len(hex) == 4:
 													break
-										#self.debug(text="content %s\n:0,1,2,3,4,5 ok"%(content))
-										self.d0wns_dns.append(content)
-										self.UPDATE_MENUBAR = True
-										i+=1
-				""" """
-				if len(dnslist)-1 == len(self.d0wns_dns):
+											
+											if content[4] == "2.dnscrypt-cert.d0wn.biz":
+												for port in content[5].split(' '):
+													if not port.isdigit():
+														break
+											#self.debug(text="content %s\n:0,1,2,3,4,5 ok"%(content))
+											self.d0wns_dns.append(content)
+											self.UPDATE_MENUBAR = True
+											i+=1
+							else:
+								self.debug(text="def read_d0wns_dns_from_file: ! line len(content) >= 6")
+				except:
+					self.debug(text="def read_d0wns_dns_from_file: check file content failed")
+				""" we need a -1 here because d0wns dns.txt is auto-generated with trailing \n """
+				if len(dnslist)-1 == len(self.d0wns_dns) and len(dnslist) >= 3:
+					self.d0wns_DICT["d0wnsdns"] = self.d0wns_dns
+					self.statusbar_freeze = 1000
+					self.statusbar_text.set("oVPN is loading DNS Menu. Please wait...")
 					#self.debug(text="TRUE len(dnslist) = %s len(self.d0wns_dns) = %s i = %s"%(len(dnslist)-1,len(self.d0wns_dns),i))
 					return True
 				else:
 					self.debug(text="FALSE len(dnslist) = %s len(self.d0wns_dns) = %s i = %s"%(len(dnslist),len(self.d0wns_dns),i))
 					self.debug(text="dnslist =\n%s"%(dnslist))
 					self.debug(text="self.d0wns_dns =\n%s"%(self.d0wns_dns))
-					#return False
-										
+					""" """
+					return False
+		except:
+			self.debug(text="def read_d0wns_dns_from_file: failed")
+			
 
 	def isValueIPv4(self,value):
 		try:
@@ -838,14 +1156,25 @@ class AppUI(Frame):
 			self.APIKEY = self.input_apikey.get().rstrip()
 			if self.USERID.isdigit() and self.USERID > 1 and len(self.USERID) > 1:
 				if self.APIKEY.isalnum() and len(self.APIKEY) == 128:
-					return True				
+					return True
 
 					
 	def load_decryption(self):
 		self.debug(text="def load_decryption")
-		if len(self.input_PH.get()) > 0: 
-			self.aeskey = hashlib.sha256(self.input_PH.get().rstrip()).digest()
-			return True
+		if self.plaintext_passphrase == False:
+			try:
+				if len(self.input_PH.get()) > 0: 
+					self.aeskey = hashlib.sha256(self.input_PH.get().rstrip()).digest()
+					return True
+			except:
+				return False
+		else:
+			try:
+				if len(self.input_PH) > 0:
+					self.aeskey = hashlib.sha256(self.input_PH.rstrip()).digest()
+					return True
+			except:
+				return False
 
 			
 	def read_config(self):
@@ -922,7 +1251,7 @@ class AppUI(Frame):
 			self.paddata = False
 			# check_preboot() will cause a warning if we don't remove the lock
 			self.remove_lock()
-			self.check_preboot()			
+			self.check_preboot(logout=False)			
 
 			
 	def make_confighash(self):
@@ -958,7 +1287,7 @@ class AppUI(Frame):
 			if self.SYSTRAYon == True:
 				self.systray.shutdown()
 			self.remove_lock()
-			self.check_preboot()
+			self.check_preboot(logout=True)
 		else:
 			self.msgwarn(text=_("Disconnect first!"))
 		
@@ -987,14 +1316,19 @@ class AppUI(Frame):
 				if "remote " in line:
 					print(line)
 					try:
-						self.OVPN_CONNECTEDtoIP = line.split()[1]
-						self.OVPN_CONNECTEDtoPort = line.split()[2]
+						ip = line.split()[1]
+						port = int(line.split()[2])
+						if self.isValueIPv4(ip) and port > 0 and port < 65535:
+							self.OVPN_CONNECTEDtoIP = ip
+							self.OVPN_CONNECTEDtoPort = port
 						#break
 					except:
 						self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file) )
 				if "proto " in line:
 					try:
-						self.OVPN_CONNECTEDtoProtocol = line.split()[1]
+						proto = line.split()[1]
+						if proto.lower()  == "tcp" or proto.lower() == "udp":
+							self.OVPN_CONNECTEDtoProtocol = proto
 					except:
 						self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (self.ovpn_server_config_file) )
 			
@@ -1009,14 +1343,13 @@ class AppUI(Frame):
 			
 			try:
 				self.call_ovpn_srv = server
-				threading.Thread(target=self.inThread_spawn_openvpn_process).start()
+				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
+				thread_spawn_openvpn_process.start()
 				self.OVPN_THREADID = threading.currentThread()
 				self.debug(text=_("Started: oVPN %s on Thread: %s") %(server,self.OVPN_THREADID))
-				#self.statusbar_text.set("oVPN connecting to %s ..." %(server))
-				self.OVPN_THREAD_STARTED = True
 			except:
 				text=_("Error! Unable to start thread: oVPN %s ")%(server)
-				self.statusbar_freeze = 9000
+				self.statusbar_freeze = 6000
 				self.statusbar_text.set(text)
 				self.msgwarn(text=text)
 				self.debug(text=text)
@@ -1024,7 +1357,21 @@ class AppUI(Frame):
 			if self.OVPN_AUTO_RECONNECT == True:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == True")
 				self.OVPN_RECONNECT_NOW = False
-				threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
+				try:
+					#threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
+					thread_timer_openvpn_reconnect = threading.Thread(target=self.inThread_timer_openvpn_reconnect)
+					thread_timer_openvpn_reconnect.start()
+					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
+					self.debug(text="Started: self.inThread_timer_openvpn_reconnect() on Thread: %s" %(self.OVPN_PING_TIMER_THREADID))
+					#self.statusbar_freeze = 500
+					text = "oVPN Process Watchdog enabled."
+					#self.statusbar_text.set(text)
+					self.debug(text=text)
+				except:
+					self.statusbar_freeze = 6000
+					text = "Could not start oVPN Watchdog"
+					self.statusbar_text.set(text)
+					self.debug(text=text)
 			else:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == False")
 				
@@ -1046,34 +1393,47 @@ class AppUI(Frame):
 		
 		if self.STATE_OVPN == True:
 			
-			if self.OVPN_PING_STAT > 0: 
-				time.sleep(6)
-			else:
-				time.sleep(3)
-			if self.OS == "win32": 
+			if self.OS == "win32":
 				ovpn_ping_cmd = "ping.exe -n 1 172.16.32.1"
 				PING_PROC = False
-				try: PING_PROC = subprocess.check_output("%s" % (ovpn_ping_cmd),shell=True)
-				except:	pass
+				try:
+					PING_PROC = subprocess.check_output("%s" % (ovpn_ping_cmd),shell=True)
+				except:
+					self.debug(text="def inThread_timer_ovpn_ping: ping.exe failed")
+					pass
 					
-				try: OVPN_PING_out = PING_PROC.split('\r\n')[2].split()[4].split('=')[1][:-2] 
-				except: OVPN_PING_out = -2
+				try:
+					OVPN_PING_out = PING_PROC.split('\r\n')[2].split()[4].split('=')[1][:-2]
+				except:
+					self.debug(text="def inThread_timer_ovpn_ping: split ping failed, but normally not an issue while connection is testing")
+					OVPN_PING_out = -2
 				
 				pingsum = 0
 				if OVPN_PING_out > 0:
 					self.OVPN_PING.append(OVPN_PING_out)
 					self.OVPN_PING_LAST = OVPN_PING_out
-				if len(self.OVPN_PING) > 255:
+				if len(self.OVPN_PING) > 360:
 					self.OVPN_PING.pop(0)
 				if len(self.OVPN_PING) > 0:
 					for ping in self.OVPN_PING:
 						pingsum += int(ping)
 					self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 				#self.debug(text="ping = %s\n#############\nList len=%s\n%s\npingstat=%s"%(OVPN_PING_out,len(self.OVPN_PING),self.OVPN_PING,self.OVPN_PING_STAT))
-				#self.debug("timer ovpn ping running threads: %s, ping=%s" % (threading.active_count(),OVPN_PING_out))
-				
-				threading.Thread(target=self.inThread_timer_ovpn_ping).start()
-				return True
+				if self.OVPN_PING_STAT >= 0:
+					if self.OVPN_CONNECTEDtime > 60:
+						time.sleep(10)
+					else:
+						time.sleep(3)
+				else:
+					time.sleep(1)
+				try:
+					pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
+					pingthread.start()
+					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
+					self.debug(text="done: rejoin def inThread_timer_ovpn_ping() %s: total threads: %s, ping=%s" %(self.OVPN_PING_TIMER_THREADID,threading.active_count(),OVPN_PING_out))	
+					return True
+				except:
+					self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
 				
 		elif self.STATE_OVPN == False:
 			self.debug("leaving timer_ovpn_ping")
@@ -1087,7 +1447,7 @@ class AppUI(Frame):
 		self.ovpn_proc_retcode = False
 		self.STATE_OVPN = True
 		self.OVPN_CONNECTEDto = self.call_ovpn_srv
-		self.win_netsh_set_dns_ovpn()	
+		self.win_netsh_set_dns_ovpn()
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
@@ -1111,24 +1471,24 @@ class AppUI(Frame):
 			self.debug(text="def inThread_spawn_openvpn_process: auto-reconnect %s" %(self.call_ovpn_srv))
 			self.OVPN_RECONNECT_NOW = True
 		self.UPDATE_MENUBAR = True
-		#if self.SYSTRAYon == True:
-		#	self.systray.shutdown()
-		#	self.SYSTRAYon = False
 		
 		
 	def read_gateway_from_routes(self):
-		self.debug(text="def read_ovpn_routes:")
-		string = "route.exe print"
-		self.OVPN_READ_ROUTES = subprocess.check_output("%s" % (string),shell=True)
-		#self.debug(text="self.OVPN_READ_ROUTES = %s"%(self.OVPN_READ_ROUTES))
-		split = self.OVPN_READ_ROUTES.split('\r\n')
-		#self.debug(text="split=%s"%(split))
-		for line in split:
-			#self.debug(text="%s"%(line))
-			if "%s"%(self.OVPN_CONNECTEDtoIPbefore) in line:
-				#self.debug(text="def read_ovpn_routes: %s"%(line))
-				self.GATEWAY_LOCAL = line.split()[2]
-				self.debug(text="self.GATEWAY_LOCAL: %s"%(self.GATEWAY_LOCAL))
+		try:
+			self.debug(text="def read_ovpn_routes:")
+			string = "route.exe print"
+			self.OVPN_READ_ROUTES = subprocess.check_output("%s" % (string),shell=True)
+			#self.debug(text="self.OVPN_READ_ROUTES = %s"%(self.OVPN_READ_ROUTES))
+			split = self.OVPN_READ_ROUTES.split('\r\n')
+			#self.debug(text="split=%s"%(split))
+			for line in split:
+				#self.debug(text="%s"%(line))
+				if "%s"%(self.OVPN_CONNECTEDtoIPbefore) in line:
+					#self.debug(text="def read_ovpn_routes: %s"%(line))
+					self.GATEWAY_LOCAL = line.split()[2]
+					self.debug(text="self.GATEWAY_LOCAL: %s"%(self.GATEWAY_LOCAL))
+		except:
+			self.debug(text="def read_gateway_from_routes: failed")
 
 				
 	def del_ovpn_routes(self):
@@ -1148,9 +1508,8 @@ class AppUI(Frame):
 					self.debug(text="def del_ovpn_routes: failed")
 					pass
 			self.OVPN_CONNECTEDtoIPbefore = False
-			self.GATEWAY_LOCAL = False
+
 			
-		
 	def inThread_timer_openvpn_reconnect(self):
 		#self.debug("def inThread_timer_openvpn_reconnect")
 		time.sleep(3)		
@@ -1189,7 +1548,7 @@ class AppUI(Frame):
 		
 		
 	def win_netsh_set_dns_ovpn(self):
-		if not self.GATEWAY_DNS == "172.16.32.1":
+		if not self.GATEWAY_DNS == self.OVPN_GATEWAY_IP4:
 			self.debug(text="def win_netsh_set_dns_ovpn:")
 			string1 = "netsh interface ip set dnsservers \"%s\" static 172.16.32.1 primary no" % (self.WIN_EXT_DEVICE)
 			string2 = "netsh interface ip set dnsservers \"%s\" static 172.16.32.1 primary no" % (self.WIN_TAP_DEVICE)
@@ -1209,8 +1568,10 @@ class AppUI(Frame):
 			read1 = subprocess.check_output("%s" % (string1),shell=True)
 			read2 = subprocess.check_output("%s" % (string2),shell=True)
 			text = _("oVPN DNS changed to %s") % (dns_ipv4)
-			if dns_ipv4 == "172.16.32.1":
-				text = _("%s (Internal Randomized)") % (text)
+			if dns_ipv4 == False:
+				dns_ipv4 = self.OVPN_GATEWAY_IP4
+			if dns_ipv4 == self.OVPN_GATEWAY_IP4:
+				text = "%s (Randomized)" % (text)
 			elif dns_ipv4 == "127.0.0.1":
 				text = _("%s (DNScrypt enabled)") % (text)
 			else:
@@ -1232,7 +1593,7 @@ class AppUI(Frame):
 
 		
 	def win_netsh_restore_dns_from_backup(self):
-		if not self.GATEWAY_DNS == "172.16.32.1":
+		if not self.GATEWAY_DNS == self.OVPN_GATEWAY_IP4:
 			string = 'netsh interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS)
 			read = False
 			try: 
@@ -1249,7 +1610,7 @@ class AppUI(Frame):
 	def win_netsh_read_dns_to_backup(self):
 		string = "netsh interface ipv4 show dns"
 		read = subprocess.check_output("%s" % (string),shell=True)
-		read = read.strip().decode('utf-8','ignore')
+		read = read.strip().decode('cp1258','ignore')
 		search = '"%s"' % (self.WIN_EXT_DEVICE)
 		list = read.strip(' ').split('\r\n')
 		i=0
@@ -1265,26 +1626,16 @@ class AppUI(Frame):
 				if "DNS" in line:
 					dns = line.strip().split(":")[1].lstrip()
 					self.debug(text=line)
-					self.debug(text=dns)
-					check = dns.split(".")
-					for n in check:
-						x = int(n)
-						if x >= 0 and x <= 255 and t <= 4:
-							t+=1
-						else: 
-							t = 0
-							break
+					self.debug(text=dns)					
+					if self.isValueIPv4(dns):
+						self.GATEWAY_DNS = dns
+						break
+					else: 
+						self.GATEWAY_DNS = self.GATEWAY_LOCAL
+						break
 			i+=1
-		if t == 4: self.GATEWAY_DNS = dns
-		else: self.GATEWAY_DNS = self.GATEWAY_LOCAL
 		self.debug(text="self.GATEWAY_DNS = %s"%(self.GATEWAY_DNS))
 			
-
-#	def win_netsh_show_interfaces(self):
-#		os.system('netsh interface ip show interfaces')
-#
-#	def win_netsh_show_dnsservers(self):
-#		os.system('netsh interface ip show dnsservers')	
 		
 	def win_detect_openvpn(self):
 		self.OPENVPN_EXE = False
@@ -1318,7 +1669,7 @@ class AppUI(Frame):
 					builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
 					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
 					built_month_int = int(string_built_time.tm_mon)
-					built_timestamp = int(time.mktime(datetime.datetime(built_year,built_month_int,built_day,0,0).timetuple()))
+					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
 					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
 						return True
 					else:
@@ -1326,11 +1677,7 @@ class AppUI(Frame):
 			else:
 				self.errorquit(text=_("Please update your openVPN Version!"))
 
-				
-#	def win_install_tap_adapter(self):
-#		path = "C:\Program Files\TAP-Windows\bin\tapinstall.exe find *TAP"
-#		pass
-		
+	
 	def win_get_interfaces(self):		
 		self.debug(text="def win_get_interfaces")
 		wmi=win32com.client.GetObject('winmgmts:')
@@ -1359,15 +1706,16 @@ class AppUI(Frame):
 					self.debug(text=INTERFACE+" is TAP ADAPTER")
 					self.WIN_TAP_DEVICE = INTERFACE
 					break
-				elif line.startswith("Available TAP-WIN32 adapters"):
-					#self.debug(text="ignoring tap line")
-					pass
-				elif len(line) < 16:
-					#self.debug(text="ignoring line < 16")
-					pass
-				else:
-					#self.debug(text="ignoring else")
-					pass
+				""" do not remove! maybe need for debug in future """
+				#elif line.startswith("Available TAP-WIN32 adapters"):
+				#	#self.debug(text="ignoring tap line")
+				#	pass
+				#elif len(line) < 16:
+				#	#self.debug(text="ignoring line < 16")
+				#	pass
+				#else:
+				#	#self.debug(text="ignoring else")
+				#	pass
 					
 		if self.WIN_TAP_DEVICE == False:
 			self.errorquit(text=_("No openVPN TAP-Adapter found!"))
@@ -1425,7 +1773,7 @@ class AppUI(Frame):
 		url = "https://vcp.ovpn.to"
 		ips = list()
 		ips.append("178.17.170.116")
-		ips.append("172.16.32.1")
+		ips.append(self.OVPN_GATEWAY_IP4)
 		port = 443
 		protocol = "tcp"
 		for ip in ips:
@@ -1453,7 +1801,7 @@ class AppUI(Frame):
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
 		if option == "delete":
 			rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
-		self.debug(text="def pfw: %s"%(rule_string))
+		#self.debug(text="def pfw: %s"%(rule_string))
 		self.pfw_cmdlist.append(rule_string)
 		return self.win_join_netsh_cmd()
 			
@@ -1462,14 +1810,13 @@ class AppUI(Frame):
 		self.pfw_cmd = "netsh.exe"
 		i=0
 		for cmd in self.pfw_cmdlist:
-			fullstring = "%s %s" % (self.pfw_cmd,cmd)			
+			fullstring = "%s %s" % (self.pfw_cmd,cmd)
 			try: 
-				response = subprocess.check_output("%s" % (fullstring),shell=True)
-				self.debug(text="pfwOK: %s" % (fullstring))
+				exitcode = subprocess.call("%s" % (fullstring),shell=True)
+				self.debug(text="pfwOK: %s: exitcode = %s" % (fullstring,exitcode))
 				i+=1
 			except:
 				self.debug(text="pfwFAIL: %s" % (fullstring))
-		
 		if len(self.pfw_cmdlist) == i:
 			return True
 
@@ -1484,10 +1831,11 @@ class AppUI(Frame):
 			self.INFO_WINDOW_ACTIVE = True
 			xlist = list()
 			xlist.append("\n" + _("Any Credits and Cookies go to:") + "\n")
-			xlist.append(_("+ dns.d0wn.biz for hosting DNS!"))
+			xlist.append(_("+ d0wn for hosting DNS on dns.d0wn.biz!"))
 			xlist.append(_("+ bauerj for code submits!"))
-			xlist.append(_("+ NhatPG for windows icons!"))
+			xlist.append(_("+ dogpellet for DNStest() ideas!"))
 			xlist.append(_("+ [ this place is for sale! ]"))
+			xlist.append(_("+ ungefiltert-surfen.de for DNS Lists!"))
 			for x in xlist:
 				infolabel = Label(self.info_toplevel,text=x)
 				infolabel.pack()
@@ -1501,7 +1849,7 @@ class AppUI(Frame):
 		menu = Menu(self.mini_menubar, tearoff=0)
 		self.mini_menubar.add_cascade(label="?", menu=menu)
 		menu.add_command(label=_("Info"),command=self.info_window)
-		self.master.config(menu=self.mini_menubar)
+		self.root.config(menu=self.mini_menubar)
 		
 	
 	def make_menubar(self):
@@ -1509,17 +1857,16 @@ class AppUI(Frame):
 		if not self.menubar == False:
 			self.menubar.destroy()
 		""" setup our Menubar """
-		menubar = Menu(self.root)
-		self.root.config(menu=menubar)
+		menubar = Menu(self.root)		
 		""" create first Menu: oVPN """
 		ovpnMenu = Menu(menubar)		
 		menubar.add_cascade(label="oVPN", underline=0, menu=ovpnMenu)
 		""" create oVPN->submenu: Server """
 		ovpnserver_submenu = Menu(ovpnMenu)
-		label='Server'		
+		label="Select oVPN Server"	
 		if self.STATE_OVPN == True:
 			servershort = self.OVPN_CONNECTEDto[:3]
-			label = "Server [ %s ] %s" % (servershort,self.OVPN_CONNECTEDtoIP)
+			label = "Server [ %s ] %s (%s:%s)" % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoProtocol.upper(),self.OVPN_CONNECTEDtoPort)
 		ovpnMenu.add_cascade(label=label, menu=ovpnserver_submenu, underline=0)
 		""" load oVPN Server into submenu: Server """
 		self.load_ovpn_server()
@@ -1532,21 +1879,26 @@ class AppUI(Frame):
 			else:
 				servershort = menuserver[:3]
 				ovpnserver_submenu.add_command(label=servershort,command=lambda menuserver=menuserver: self.openvpn(menuserver))
-		
+				
 		""" following menu commands will only run if certain states match! """
 		if self.STATE_OVPN == False and not self.OVPN_FAV_SERVER == False:
-			""" this state called 'mmb00' is reached if disconnected and FAV_SERVER is set. """
-			""" show a connect button to join connection to FAV_SERVER. not yet done *fixme* """
-			ovpnMenu.add_command(label=_("Connect"),command=lambda: self.openvpn(self.OVPN_FAV_SERVER))
-			#self.openvpn(self.OVPN_FAV_SERVER)
-
+			try:
+				""" this state called 'mmb00' is reached if disconnected and FAV_SERVER is set. """
+				""" show a connect button to join connection to FAV_SERVER. not yet done *fixme* """
+				ovpnMenu.add_command(label="FAV Connect: %s"%(self.OVPN_FAV_SERVER),command=lambda: self.openvpn(self.OVPN_FAV_SERVER))
+			except:
+				self.debug(text="def mmb: state called 'mmb00' failed")
 		elif self.STATE_OVPN == True and self.OVPN_PING_STAT < 0:
 			""" this state called 'mmb01' is reached after ovpn connection established, but ping_timer is waiting for ping to our internal vpn gateway and user did not use any menu entry function """
-			if self.DNS_SELECTEDcountry == False:
-				label = _("DNS: Internal Randomized")
-			ovpnMenu.add_command(label=label,command=self.read_d0wns_dns)
-			ovpnMenu.add_separator()
-			ovpnMenu.add_command(label=_("Disconnect"),command=self.kill_openvpn)
+			try:
+				self.DNS_SELECTEDcountry = "Randomized"
+				dlabel = "Change DNS: %s" % (self.DNS_SELECTEDcountry)				
+				self.DNS_SELECTED = self.OVPN_GATEWAY_IP4
+				ovpnMenu.add_command(label=dlabel,command=lambda update=False: self.read_d0wns_dns_from_file(update=False))
+				ovpnMenu.add_separator()
+				ovpnMenu.add_command(label="Disconnect",command=self.kill_openvpn)
+			except:
+				self.debug(text="def mmb: state called 'mmb01' failed")
 			
 		elif self.STATE_OVPN == True and self.OVPN_PING_STAT >= 0:
 			""" this state called 'mmb02' is reached if ovpn connection established and ping_timer is pinging our internal vpn gateway successfully """
@@ -1558,47 +1910,67 @@ class AppUI(Frame):
 				""" create submenu for DNS Server """
 				dnsserver_submenu = Menu(ovpnMenu)
 				if self.DNS_SELECTEDcountry == False:
-					label = _("DNS: Internal Randomized")
+					label = "Randomized"
+					self.DNS_SELECTEDcountry = label
+					self.DNS_SELECTED = self.OVPN_GATEWAY_IP4
 				if not self.DNS_SELECTED == False:
-					""" dont know why but we always have Bulgaria or [ye] in self.DNS_SELECTEDcountry *fixme* something is wrong with lambda: countrycode=dns_country"""
-					#label = "DNS: [%s] %s " % (self.DNS_SELECTEDcountry,self.DNS_SELECTED)
-					label = _("DNS: %s") % (self.DNS_SELECTED)
+					if len(self.DNS_SELECTEDcountry) == 2:
+						self.DNS_SELECTEDcountry.upper()
+					label = "DNS: [%s] %s " % (self.DNS_SELECTEDcountry,self.DNS_SELECTED)
 				ovpnMenu.add_cascade(label=label, menu=dnsserver_submenu, underline=0)
 				""" add our internal DNS first """
-				dns_ipv4 = "172.16.32.1"
-				dns_country = "oVPN"
-				dns_hostname = _("Internal Randomized through vLAN and DNScrypt")
-				label = "%s: %s (%s)" % (dns_country,dns_ipv4,dns_hostname)
-				dnsserver_submenu.add_command(label=label,command=lambda dns_ipv4=dns_ipv4,countrycode=dns_country: self.win_netsh_change_dns_server(dns_ipv4=dns_ipv4,countrycode=dns_country))
+				dns_ipv4 = self.OVPN_GATEWAY_IP4
+				countrycode = "Randomized"
+				label = "%s: %s" % (countrycode,dns_ipv4)
+				dnsserver_submenu.add_command(label=label,command=lambda dns_ipv4=dns_ipv4,countrycode=countrycode: self.win_netsh_change_dns_server(dns_ipv4=dns_ipv4,countrycode=countrycode))
 				#self.debug(text="def make_menubar: len self.d0wns_dns = %s" % (len(self.d0wns_dns)))
 				""" make submenu for d0wns dns """
 				d0wns_dnsserver_submenu = Menu(dnsserver_submenu)
-				label = _("DNS by d0wn.biz (direct connection from oVPN Server to DNS)")
+				label = "DNS by d0wn.biz"
 				dnsserver_submenu.add_cascade(label=label, menu=d0wns_dnsserver_submenu, underline=0)
+				dlabel = "Update d0wns DNS from URL"
+				d0wns_dnsserver_submenu.add_command(label=dlabel,command=lambda update=True: self.read_d0wns_dns_from_file(update=True))
+				dlabel = "Check DNS Ping Response"
+				update = "DNStest"
+				d0wns_dnsserver_submenu.add_command(label=dlabel,command=lambda update=update: self.read_d0wns_dns_from_file(update=update))				
+				d0wns_dnsserver_submenu.add_separator()				
 				""" load d0wns dns into DNS menu """
 				for line in self.d0wns_dns:
 					#print line
 					try:
 						dns_hostname = line[0]
 						dns_ipv4 = line[1]
-						dns_country =  line[2]
+						countrycode =  line[2]
 						dns_cryptkey = line[3]
 						dns_cryptname =  line[4]
 						dns_crypt_ports = line[5].split(' ')
-						label = "%s: %s (%s)" % (dns_country,dns_ipv4,dns_hostname)	
-						d0wns_dnsserver_submenu.add_command(label=label,command=lambda dns_ipv4=dns_ipv4,countrycode=dns_country: self.win_netsh_change_dns_server(dns_ipv4=dns_ipv4,countrycode=dns_country))
+						dnsping = "n/a"
+						try:
+							dnsping = self.DNS_PING[dns_ipv4]
+						except:
+							pass
+						label = "%s: %s (%s ms)" % (countrycode,dns_ipv4,dnsping)
+						#self.debug("def mmb: create d0wn dns label %s"%(label))
+						countrycode = countrycode
+						d0wns_dnsserver_submenu.add_command(label=label,command=lambda dns_ipv4=dns_ipv4,countrycode=countrycode: self.win_netsh_change_dns_server(dns_ipv4=dns_ipv4,countrycode=countrycode))
+						
 					except:
 						break
 					
 				""" make submenu for ungefiltert-surfen dns inside ovpn->dns menu """
 				ungefiltert_dnsserver_submenu = Menu(dnsserver_submenu)
-				label = _("DNS by ungefiltert-surfen.de (direct connection from oVPN Server to DNS)")
+				label = "DNS by ungefiltert-surfen.de"
 				dnsserver_submenu.add_cascade(label=label, menu=ungefiltert_dnsserver_submenu, underline=0)
 				""" check if we have ungefiltert country list loaded """
 				if self.DNS_COUNTRYLIST == False:
 					""" offer button to load country list """
-					ungefiltert_dnsserver_submenu.add_command(label=_("Load Country List"),command=lambda: self.read_ungefiltert_surfen_dns(countrycode=None))
+					label = "Load Country List"
+					ungefiltert_dnsserver_submenu.add_command(label=label,command=lambda countrycode=None,countryindexupdate=None: self.read_ungefiltert_surfen_dns(countrycode=None,countryindexupdate=None))
 				else:
+					""" we have country index file, offer option to update country index """
+					commandtext = "Update Index from URL"
+					ungefiltert_dnsserver_submenu.add_command(label=commandtext,command=lambda countrycode=None,countryindexupdate=True: self.read_ungefiltert_surfen_dns(countrycode=None,countryindexupdate=True))
+					ungefiltert_dnsserver_submenu.add_separator()				
 					""" fill submenu with alphabet chars  """
 					countrylist_len = len(self.DNS_COUNTRYLIST)
 					if countrylist_len >= 1:
@@ -1624,25 +1996,11 @@ class AppUI(Frame):
 									
 									if len(content) == 2:									
 										countryname = content[1]
-										
-									""" disabled this hack, maybe not more needed *checkmelater* """
-									"""
-									elif len(content) == 3:
-										""" """ because we split with dots in self.read_ungefiltert_surfen_dns() we need a hack here """ """
 										try:
-											#self.debug(text="content > 2: content = %s" % (content))
-											x=0
-											for string in content:
-												if x == 1:
-													countryname = string
-												if x == 2 or x == 3:
-													countryname = "%s%s "	% (countryname,string)
-												x+=1
-											#self.debug(text="rewrite to %s"%(countryname))
+											countryname = countryname.decode('utf8')
 										except:
-											countryname = "%s (def: submenu 0x102376 error)" % (content[1])
-									"""
-									
+											pass
+										
 									""" a hack to replace html chars in countryname """
 									try:
 										countryname = countryname.replace("&#x27;","'")
@@ -1651,27 +2009,63 @@ class AppUI(Frame):
 
 									#self.debug(text="creating submenu content %s: %s %s"%(label,countrycode,countryname))
 									""" fill country into alphabet checkchar submenu """
+									countrycode = countrycode.lower()
 									file = "%s\\%s.txt" % (self.dns_ung,countrycode.lower())
 									if not os.path.isfile(file):
 										""" offer download for country if we have no local cache file"""
-										commandtext="-[%s] %s" %(countrycode,countryname)
-										countrycode = countrycode.lower()
-										alphabet_ungefiltert_dnsserver_submenu.add_command(label=commandtext,command=lambda countrycode=countrycode: self.read_ungefiltert_surfen_dns(countrycode=countrycode))
-									else:
+										commandtext="-[%s] %s" %(countrycode.upper(),countryname)										
+										alphabet_ungefiltert_dnsserver_submenu.add_command(label=commandtext,command=lambda countrycode=countrycode: self.read_ungefiltert_surfen_dns(countrycode=countrycode,countryindexupdate=None))
+									else:							
 										""" now create submenu in alphabet_ and load dns IP from csv into it """
 										dnsip_alphabet_ungefiltert_dnsserver_submenu = Menu(alphabet_ungefiltert_dnsserver_submenu)
-										newlabel = "+[%s] %s" %(countrycode,countryname)
+										try:
+											dnscountincountry = len(self.DNS_DICT[countrycode])
+										except:
+											dnscountincountry = 0
+										newlabel = "+[%s] %s (%s DNS)" %(countrycode.upper(),countryname,dnscountincountry)
 										alphabet_ungefiltert_dnsserver_submenu.add_cascade(label=newlabel, menu=dnsip_alphabet_ungefiltert_dnsserver_submenu, underline=0)
-										dnslist = self.read_ungefiltert_dns_file(file,countrycode)
+										
 										""" first entry is Update Country Option """
-										commandtext=_("Update List")
-										sendcountrycode = countrycode.lower()
-										dnsip_alphabet_ungefiltert_dnsserver_submenu.add_command(label=commandtext,command=lambda countrycode=sendcountrycode: self.read_ungefiltert_surfen_dns(countrycode=sendcountrycode))										
+										commandtext="Update Country DNS from URL"
+										#self.debug(text="adding menu entry '%s' for %s"%(commandtext,countrycode))
+										dnsip_alphabet_ungefiltert_dnsserver_submenu.add_command(label=commandtext,command=lambda countrycode=countrycode: self.read_ungefiltert_surfen_dns(countrycode=countrycode,countryindexupdate=None))
+										dlabel = "Random Reload from Cache"
+										#dnsip_alphabet_ungefiltert_dnsserver_submenu.add_command(label=dlabel,command=lambda dns_ipv4=self.DNS_SELECTED,countrycode=False: self.win_netsh_change_dns_server(dns_ipv4=self.DNS_SELECTED,countrycode=False))
+										dnsip_alphabet_ungefiltert_dnsserver_submenu.add_command(label=dlabel,command=lambda countrycode=countrycode: self.reload_ungefiltert_dns_cache(countrycode=countrycode))										
+										dnsip_alphabet_ungefiltert_dnsserver_submenu.add_separator()
 										""" now create entry for every dns-ip in dnslist """
-										for entry in dnslist:
-											dns_ipv4 = entry
-											dnsip_alphabet_ungefiltert_dnsserver_submenu.add_command(label=entry,command=lambda dns_ipv4=dns_ipv4,countrycode=sendcountrycode: self.win_netsh_change_dns_server(dns_ipv4=dns_ipv4,countrycode=sendcountrycode))
-											
+										try:
+											#self.debug(text="def make_menubar: self.read_ungefiltert_dns_file(%s,%s):"%(file,countrycode))
+											if self.read_ungefiltert_dns_file(file,countrycode) == True:												
+												for dns_ipv4 in self.dnslist:
+													entry = "%s (n/a ms)" % (dns_ipv4)
+													#self.debug(text="def mmb: rudf: dns_ipv4 = %s" % (dns_ipv4))
+													try:
+														#self.debug(text="def mmb: rudf: try: check if we have a DICT DNS_PING[%s]"%(dns_ipv4))
+														try:
+															dnsping = self.DNS_PING[dns_ipv4]
+															#self.debug(text="def mmb: dnsping for %s = %s ms"%(dns_ipv4,dnsping))
+															try:
+																entry = "%s (%s ms)" % (dns_ipv4,dnsping)
+																#self.debug(text="def mmb: create dnsip entry = %s" % (entry))													
+															except:
+																pass
+																#self.debug(text="def mmb: building entry with ping failed for %s"%(dns_ipv4))
+														except:
+															pass
+															#self.debug(text="def mmb: dnsping = self.DNS_PING[%s] = %s failed"%(dns_ipv4,self.DNS_PING[dns_ipv4]))
+													except:
+														pass
+														#self.debug(text="def mmb: bad except: DICT DNS_PING[%s] :NX"%(dns_ipv4))	
+													try:
+														dnsip_alphabet_ungefiltert_dnsserver_submenu.add_command(label=entry,command=lambda dns_ipv4=dns_ipv4,countrycode=countrycode: self.win_netsh_change_dns_server(dns_ipv4=dns_ipv4,countrycode=countrycode))
+													except:
+														self.debug("def mmb: error adding dns ip into country menu")
+											self.dnslist = list()
+										except:
+											self.debug(text="def mmb: try: if self.read_ungefiltert_dns_file(file,countrycode) failed")
+
+
 				""" finally """
 				ovpnMenu.add_separator()
 				ovpnMenu.add_command(label=_("Disconnect"),command=self.kill_openvpn)
@@ -1681,38 +2075,62 @@ class AppUI(Frame):
 		menubar.add_cascade(label="?", underline=0, menu=infoMenu)
 		infoMenu.add_command(label=_("Logout"),command=self.dologout)
 		infoMenu.add_command(label=_("Info"),command=self.info_window)
+		
+		self.root.config(menu=menubar)
+		
 
-	
+	def reload_ungefiltert_dns_cache(self,countrycode):
+		countrycode = countrycode
+		self.debug(text="def reload_ungefiltert_dns_cache: %s"%(countrycode))
+		try:			
+			dnslist = self.DNS_DICT[countrycode]			
+			self.DNS_TEST[countrycode] = "DNStest"
+			self.debug(text="def reload_ungefiltert_dns_cache: %s cleared"%(countrycode))
+			self.UPDATE_MENUBAR = True
+		except:
+			self.debug(text="def reload_ungefiltert_dns_cache: %s failed"%(countrycode))
+		
 	def make_statusbar(self):
-		if not self.statusbar == False:
-			self.statusbar.destroy()
-			self.statusbar = False
-		
-		if self.isSMALL_WINDOW == False:
-			self.statusbar = Label(self, bd=1, relief=SUNKEN, anchor=W, textvariable=self.statusbar_text,font=('Courier','12','normal'))	
+		try:
+			if not self.statusbar == False:
+				self.statusbar.destroy()
+				self.statusbar = False
+				
+			self.statusbar = Label(self, bd=1, relief=SUNKEN, anchor=W, textvariable=self.statusbar_text,font=('Courier','10','normal'))
 			
-		if self.isSMALL_WINDOW == True:
-			self.statusbar = Label(self, bd=0, relief=SUNKEN, anchor=W, textvariable=self.statusbar_text,font=('Courier','10','normal'))
-		
-		if not self.statusbar == False:
-			self.statusbar.pack(side=BOTTOM, fill=X)
+			if not self.statusbar == False:
+				self.statusbar.pack(side=BOTTOM, fill=X)
 			
-		#self.statusbar_text.set("Statusbar-Text")
-		if self.timer_statusbar_running == False: 
-			self.timer_statusbar()
+			if self.timer_statusbar_running == False:
+				self.timer_statusbar()
+		except:
+			self.debug(text="def make_statusbar: failed")
 
 			
 	def timer_statusbar(self):
-
 		self.timer_statusbar_running = True
 		text = False
 		systraytext = False
+		
+		if self.isLOGGEDin and self.UPDATE_MENUBAR == True:
+			""" enable 2 lines and disable next try to debug menubar update """
+			#self.UPDATE_MENUBAR = False
+			#self.make_menubar()
+			try:
+				self.UPDATE_MENUBAR = False
+				self.make_menubar()
+				self.debug(text="def timer_statusbar: self.make_menubar() :True")
+				#self.statusbar_freeze = 300
+				#self.statusbar_text.set("oVPN Menu Updated")
+			except:
+				self.debug(text="def timer_statusbar: self.make_menubar() failed")
+			
 
 		if not self.statusbar_freeze == False:
 			self.root.after(self.statusbar_freeze,self.timer_statusbar)
 			self.statusbar_freeze = False
-			return True		
-		
+			return True
+			
 		if not self.isLOGGEDin == True:
 			text = _("Please enter your Passphrase!")
 		else:
@@ -1720,20 +2138,25 @@ class AppUI(Frame):
 				text = _("oVPN disconnected!")
 				systraytext = text
 				systrayicon = self.systray_icon_disconnected
-				#self.SWITCH_SYSTRAY = True
+				try:
+					if self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
+						self.openvpn(self.OVPN_FAV_SERVER)
+						self.OVPN_AUTO_CONNECT_ON_START = False
+				except:
+					self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
 			elif self.STATE_OVPN == True:
 			
 				if self.OVPN_PING_STAT == -1:								
 					text = _("oVPN is connecting to %s")%(self.OVPN_CONNECTEDto)
 					systraytext = text
 					systrayicon = self.systray_icon_connect
-					#self.SWITCH_SYSTRAY = True
+					self.debug(text=text)
 				elif self.OVPN_PING_STAT == -2:
 					self.OVPN_isTESTING = True									
 					text = _("oVPN is testing connection to %s") % (self.OVPN_CONNECTEDto)
 					systraytext = text
-					systrayicon = self.systray_icon_hourglass					
-					#self.SWITCH_SYSTRAY = True
+					systrayicon = self.systray_icon_hourglass
+					self.debug(text=text)
 				else:					
 					if self.OVPN_isTESTING == True:
 						self.OVPN_PING = list()
@@ -1756,10 +2179,9 @@ class AppUI(Frame):
 			self.screen_width = 480
 			self.screen_height = 24
 			self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
-			self.removethis()			
-			self.make_statusbar()			
+			self.removethis()	
 			self.SWITCH_SMALL_WINDOW = False
-			self.root.attributes("-toolwindow", False)
+			#self.root.attributes("-toolwindow", False)
 			
 		elif self.SWITCH_FULL_WINDOW == True and self.isSMALL_WINDOW == True:
 			self.isSMALL_WINDOW = False	
@@ -1767,43 +2189,37 @@ class AppUI(Frame):
 			self.screen_height = 240
 			self.root.geometry("%sx%s"%(self.screen_width,self.screen_height))
 			self.removethis()			
-			self.make_statusbar()
 			self.SWITCH_FULL_WINDOW = False
-			self.root.attributes("-toolwindow", False)
-			
+			#self.root.attributes("-toolwindow", False)
+	
 		if not self.systraytext_from_before == systraytext and not systraytext == False:
 			if self.SYSTRAYon == True:
-				self.systray.shutdown()			
-			self.systraytext_from_before = systraytext
-			menu_options = ((systraytext, systrayicon, self.defundef),)			
-			self.systray = SysTrayIcon(systrayicon, systraytext, menu_options)
-			self.systray.start()
-			self.SYSTRAYon = True
-
-		if not self.statustext_from_before == text and not text == False:
+				try:
+					self.systray.shutdown()
+					self.SYSTRAYon = False
+				except:
+					self.debug(text="def timer_statusbar: self.systray.shutdown() failed")
+			if self.SYSTRAYon == False:
+				self.systraytext_from_before = systraytext
+				menu_options = ((systraytext, systrayicon, self.defundef),)			
+				self.systray = SysTrayIcon(systrayicon, systraytext, menu_options)
+				try:
+					self.systray.start()
+					self.debug(text="def timer_statusbar: self.systray.start()")
+					self.SYSTRAYon = True
+				except:
+					self.debug(text="def timer_statusbar: self.systray.start() failed")
+					self.SYSTRAYon = False
+		
+		if not self.statustext_from_before == text:
 			self.statusbar_text.set(text)
 			self.statustext_from_before = text
-			#self.debug(text="timer_statusbar: running: text = %s" % (text))
-			
-		if self.isLOGGEDin and self.UPDATE_MENUBAR == True:
-			self.make_menubar()
-			self.UPDATE_MENUBAR = False
+			#self.debug(text="def timer_statusbar: running: text = %s" % (text))
 			
 		self.root.after(1000,self.timer_statusbar)
 		return True
-
-		
-	"""	
-	def systray2mainwindow(self):
-		if self.MAIN_WINDOW_OPEN == True:
-			self.root.iconify()
-			self.MAIN_WINDOW_OPEN = False
-		elif self.MAIN_WINDOW_OPEN == False:
-			self.root.show()
-			self.MAIN_WINDOW_OPEN = True
-	"""	
-
 	
+
 	def onFormEvent(self, event ):
 		i = 0
 		for key in dir( event ):			
@@ -1840,7 +2256,7 @@ class AppUI(Frame):
 			self.win_netsh_restore_dns_from_backup()
 			if tkMessageBox.askyesno(_("Keep Firewall Protection?"), _("Keep Firewall loaded and block OUT to Internet?")):
 				if self.win_firewall_start():
-					text=_("Firewall enabled!\nInternet is blocked!")
+					text="Firewall enabled! Internet blocked!"
 					self.debug(text=text)
 					#self.msgwarn(text=text)
 				else:
@@ -1885,7 +2301,7 @@ def main():
 	root.resizable(0,0)
 	root.attributes("-toolwindow", False)
 	root.overrideredirect(False)
-	root.title("oVPN.to v"+BUILT+STATE)
+	root.title("oVPN v"+BUILT+STATE)
 	app = AppUI(root).pack()	
 	root.mainloop()	
 	print("Ending")
