@@ -1,0 +1,447 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2015-05-19 14:49+Mitteleuropäische Sommerzeit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: ovpn_client.py:105
+msgid "Error"
+msgstr ""
+
+#: ovpn_client.py:110 ovpn_client.py:1837
+msgid "Warning"
+msgstr ""
+
+#: ovpn_client.py:167
+msgid "Extraction well done!"
+msgstr ""
+
+#: ovpn_client.py:180
+msgid ""
+"oVPN.to Client Authentication\n"
+"\n"
+"\n"
+"Enter your Passphrase"
+msgstr ""
+
+#: ovpn_client.py:202
+msgid "Passphrase Ok!"
+msgstr ""
+
+#: ovpn_client.py:204
+msgid ""
+"\n"
+"\n"
+"\n"
+"Please wait!"
+msgstr ""
+
+#: ovpn_client.py:235
+msgid "Operating System not supported: %s %s"
+msgstr ""
+
+#: ovpn_client.py:250 ovpn_client.py:252 ovpn_client.py:254
+msgid "Operating System not supported: %s"
+msgstr ""
+
+#: ovpn_client.py:292
+msgid ""
+"Multiple profiles not yet implemented.\n"
+"Please empty or rename profile-folders to *.bak (non int)\n"
+" %s"
+msgstr ""
+
+#: ovpn_client.py:357
+msgid "Client is Locked!"
+msgstr ""
+
+#: ovpn_client.py:357
+msgid ""
+"oVPN Client is already running or did not close cleanly.\n"
+"\n"
+"Do you really want to start?"
+msgstr ""
+
+#: ovpn_client.py:361
+msgid ""
+"Could not remove lock file.\n"
+"File itself locked because another oVPN Client instance running?"
+msgstr ""
+
+#: ovpn_client.py:405
+msgid ""
+"Creating FILE\n"
+"%s\n"
+"failed!"
+msgstr ""
+
+#: ovpn_client.py:413
+msgid ""
+"Creating API-DIRS\n"
+"%s \n"
+"%s \n"
+"%s \n"
+"%s \n"
+"%s failed!"
+msgstr ""
+
+#: ovpn_client.py:421
+msgid ""
+"oVPN.to Client\n"
+"\n"
+"\n"
+"Please enter your oVPN.to User-ID Number:"
+msgstr ""
+
+#: ovpn_client.py:444
+msgid ""
+"oVPN.to Client Setup\n"
+"\n"
+"Please enter a passphrase to encrypt your API configuration.\n"
+msgstr ""
+
+#: ovpn_client.py:445
+msgid "New passphrase:"
+msgstr ""
+
+#: ovpn_client.py:449
+msgid "Repeat your new passphrase:"
+msgstr ""
+
+#: ovpn_client.py:455
+msgid "Save Encryption Passphrase!"
+msgstr ""
+
+#: ovpn_client.py:471
+msgid ""
+"oVPN.to Client Setup\n"
+"\n"
+"\n"
+"Enter your oVPN.to API-Key:"
+msgstr ""
+
+#: ovpn_client.py:477
+msgid "Save API-Key!"
+msgstr ""
+
+#: ovpn_client.py:484
+msgid ""
+"oVPN.to Client %s\n"
+"\n"
+"\n"
+msgstr ""
+
+#: ovpn_client.py:490
+msgid "Updating oVPN Configurations..."
+msgstr ""
+
+#: ovpn_client.py:494
+msgid "Updating oVPN Certificates......"
+msgstr ""
+
+#: ovpn_client.py:498
+msgid "Please wait up to 5 minutes."
+msgstr ""
+
+#: ovpn_client.py:502
+msgid "Checking for oVPN Updates: Complete!"
+msgstr ""
+
+#: ovpn_client.py:503
+msgid ""
+"Alpha is not Beta!\n"
+"Thanks for testing!"
+msgstr ""
+
+#: ovpn_client.py:506
+msgid "Connection failed to https://vcp.ovpn.to!"
+msgstr ""
+
+#: ovpn_client.py:536
+msgid "Certificates and Configs extracted."
+msgstr ""
+
+#: ovpn_client.py:547
+msgid "Updating oVPN Certificates%s"
+msgstr ""
+
+#: ovpn_client.py:562
+msgid "oVPN Server Update Failed!"
+msgstr ""
+
+#: ovpn_client.py:572
+msgid ""
+"1) Could not connect to vcp.ovpn.to\n"
+"Try setting firewall rule to access VCP!"
+msgstr ""
+
+#: ovpn_client.py:578
+msgid ""
+"2) Could not connect to vcp.ovpn.to\n"
+"Retry"
+msgstr ""
+
+#: ovpn_client.py:585
+msgid ""
+"3) Could not connect to vcp.ovpn.to\n"
+msgstr ""
+
+#: ovpn_client.py:616 ovpn_client.py:652
+msgid "URL TIMEOUT: %s"
+msgstr ""
+
+#: ovpn_client.py:638
+msgid "oVPN is loading %s DNS Country into Menu"
+msgstr ""
+
+#: ovpn_client.py:792
+msgid "API Connection Timeout to https://vcp.ovpn.to!"
+msgstr ""
+
+#: ovpn_client.py:805
+msgid "Invalid User-ID/API-Key. Encrypted API-Keyfile deleted."
+msgstr ""
+
+#: ovpn_client.py:885
+msgid "Invalid Passphrase!"
+msgstr ""
+
+#: ovpn_client.py:955 ovpn_client.py:1682
+msgid "Logout"
+msgstr ""
+
+#: ovpn_client.py:963
+msgid "Disconnect first!"
+msgstr ""
+
+#: ovpn_client.py:994
+msgid "Could not read Servers Remote-IP:Port from config: %s"
+msgstr ""
+
+#: ovpn_client.py:999
+msgid "Could not read Servers Protocol from config: %s"
+msgstr ""
+
+#: ovpn_client.py:1014
+msgid "Started: oVPN %s on Thread: %s"
+msgstr ""
+
+#: ovpn_client.py:1018
+msgid "Error! Unable to start thread: oVPN %s "
+msgstr ""
+
+#: ovpn_client.py:1097
+msgid "Could not start Windows Firewall!"
+msgstr ""
+
+#: ovpn_client.py:1211
+msgid "oVPN DNS changed to %s"
+msgstr ""
+
+#: ovpn_client.py:1213
+msgid "%s (Internal Randomized)"
+msgstr ""
+
+#: ovpn_client.py:1215
+msgid "%s (DNScrypt enabled)"
+msgstr ""
+
+#: ovpn_client.py:1217
+msgid "%s (direct connection)"
+msgstr ""
+
+#: ovpn_client.py:1226
+msgid "oVPN DNS Change failed!"
+msgstr ""
+
+#: ovpn_client.py:1243
+msgid "Primary DNS Server restored to: %s"
+msgstr ""
+
+#: ovpn_client.py:1245
+msgid "Error: Restoring your DNS Server to %s failed."
+msgstr ""
+
+#: ovpn_client.py:1302
+msgid "Could not find openvpn.exe"
+msgstr ""
+
+#: ovpn_client.py:1307
+msgid "Could not detect openVPN Version!"
+msgstr ""
+
+#: ovpn_client.py:1325 ovpn_client.py:1327
+msgid "Please update your openVPN Version!"
+msgstr ""
+
+#: ovpn_client.py:1348
+msgid "Could not read your Network Interfaces!"
+msgstr ""
+
+#: ovpn_client.py:1373
+msgid "No openVPN TAP-Adapter found!"
+msgstr ""
+
+#: ovpn_client.py:1379
+msgid "Choose your External Network Adapter!"
+msgstr ""
+
+#: ovpn_client.py:1380
+msgid ""
+"Multiple network adapters found.\n"
+"Please select your external network adapter (the one you use to connect to the Internet)!"
+msgstr ""
+
+#: ovpn_client.py:1397
+msgid "No Network Adapter found!"
+msgstr ""
+
+#: ovpn_client.py:1400
+msgid "External Interface = %s"
+msgstr ""
+
+#: ovpn_client.py:1486
+msgid "Any Credits and Cookies go to:"
+msgstr ""
+
+#: ovpn_client.py:1487
+msgid "+ dns.d0wn.biz for hosting DNS!"
+msgstr ""
+
+#: ovpn_client.py:1488
+msgid "+ bauerj for code submits!"
+msgstr ""
+
+#: ovpn_client.py:1489
+msgid "+ NhatPG for windows icons!"
+msgstr ""
+
+#: ovpn_client.py:1490
+msgid "+ [ this place is for sale! ]"
+msgstr ""
+
+#: ovpn_client.py:1503 ovpn_client.py:1683
+msgid "Info"
+msgstr ""
+
+#: ovpn_client.py:1540
+msgid "Connect"
+msgstr ""
+
+#: ovpn_client.py:1546 ovpn_client.py:1561
+msgid "DNS: Internal Randomized"
+msgstr ""
+
+#: ovpn_client.py:1549 ovpn_client.py:1677
+msgid "Disconnect"
+msgstr ""
+
+#: ovpn_client.py:1565
+msgid "DNS: %s"
+msgstr ""
+
+#: ovpn_client.py:1570
+msgid "Internal Randomized through vLAN and DNScrypt"
+msgstr ""
+
+#: ovpn_client.py:1576
+msgid "DNS by d0wn.biz (direct connection from oVPN Server to DNS)"
+msgstr ""
+
+#: ovpn_client.py:1595
+msgid "DNS by ungefiltert-surfen.de (direct connection from oVPN Server to DNS)"
+msgstr ""
+
+#: ovpn_client.py:1600
+msgid "Load Country List"
+msgstr ""
+
+#: ovpn_client.py:1667
+msgid "Update List"
+msgstr ""
+
+#: ovpn_client.py:1717
+msgid "Please enter your Passphrase!"
+msgstr ""
+
+#: ovpn_client.py:1720
+msgid "oVPN disconnected!"
+msgstr ""
+
+#: ovpn_client.py:1727
+msgid "oVPN is connecting to %s"
+msgstr ""
+
+#: ovpn_client.py:1733
+msgid "oVPN is testing connection to %s"
+msgstr ""
+
+#: ovpn_client.py:1747
+msgid "oVPN is connected to %s"
+msgstr ""
+
+#: ovpn_client.py:1748
+msgid "oVPN is connected to %s (%s/%s ms)  [%s]"
+msgstr ""
+
+#: ovpn_client.py:1830
+msgid "Could not delete lock file"
+msgstr ""
+
+#: ovpn_client.py:1832
+msgid "Could not delete LOCK. File not found."
+msgstr ""
+
+#: ovpn_client.py:1837
+msgid ""
+"Quit blocked while oVPN is connected.\n"
+"Disconnect oVPN from %s first."
+msgstr ""
+
+#: ovpn_client.py:1839
+msgid "Quit"
+msgstr ""
+
+#: ovpn_client.py:1839
+msgid "Quit oVPN Client?"
+msgstr ""
+
+#: ovpn_client.py:1841
+msgid "Keep Firewall Protection?"
+msgstr ""
+
+#: ovpn_client.py:1841
+msgid "Keep Firewall loaded and block OUT to Internet?"
+msgstr ""
+
+#: ovpn_client.py:1843
+msgid ""
+"Firewall enabled!\n"
+"Internet is blocked!"
+msgstr ""
+
+#: ovpn_client.py:1847
+msgid "Error. Could not start Firewall!"
+msgstr ""
+
+#: ovpn_client.py:1852
+msgid ""
+"Firewall rules unloaded.\n"
+"Settings restored."
+msgstr ""
+
+#: ovpn_client.py:1856
+msgid "Error! Unloading Firewall failed."
+msgstr ""
+
