@@ -7,7 +7,7 @@ import _winreg,zipfile,subprocess,threading,win32com.client,socket,random,struct
 from Crypto.Cipher import AES
 
 
-BUILT="0.1.9a"
+BUILT="0.1.9b"
 STATE="_alpha"
 
 try:
@@ -790,11 +790,17 @@ class AppUI(Frame):
 					self.debug(text="dns for %s written to %s"%(countrycode,file))
 					try:
 						""" check if we have a dictionary and set empty list to clear cache """
-						#dnslist = self.DNS_DICT[countrycode]
-						self.DNS_DICT[countrycode] = list()
-						self.debug(text="dns cache cleared for %s"%(countrycode))
+						dnslist = self.DNS_DICT[countrycode]
+						self.DNS_DICT[countrycode] = list()					
+						pass
+						#self.debug(text="dns cache cleared for %s"%(countrycode))
 					except:
 						pass
+					try:
+						self.read_ungefiltert_dns_file(file,countrycode)
+						self.debug(text="def: rusd: self.read_ungefiltert_dns_file(file,%s) :True"%(countrycode))
+					except:
+						self.debug(text="def: rusd: self.read_ungefiltert_dns_file(file,%s) failed"%(countrycode))
 					self.UPDATE_MENUBAR = True
 					return True
 				except:
