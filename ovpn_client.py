@@ -160,9 +160,9 @@ class AppUI(Frame):
 										self.input_PH = False
 										self.preboot = True
 										self.debug(text="def check_preboot: self.compare_confighash() :True")
-										self.statusbar_text.set("Passphrase Ok!")
+										self.statusbar_text.set(_("Passphrase Ok!"))
 										self.removethis()
-										self.make_label(text="\n\n\nPlease wait!")
+										self.make_label(text="\n\n\n" + _("Please wait!"))
 										return True
 									else:
 										try:
@@ -173,9 +173,9 @@ class AppUI(Frame):
 								else:
 									try:
 										os.remove(self.plaintext_passphrase_file)
-										self.errorquit(text="Decryption with plaintext_passphrase failed. txt removed.")
+										self.errorquit(text=_("Decryption with plaintext_passphrase failed. txt removed."))
 									except:
-										self.errorquit(text="Decryption with plaintext_passphrase failed. txt remove failed.")	
+										self.errorquit(text=_("Decryption with plaintext_passphrase failed. txt remove failed."))	
 							self.debug(text="We start looping!")
 							return True
 						else:
@@ -215,11 +215,11 @@ class AppUI(Frame):
 	def ask_passphrase(self):
 		self.debug(text="def ask_passphrase")
 		self.removethis()
-		self.make_label(text=_("oVPN.to Client Authentication\n\n\nEnter your Passphrase"))
+		self.make_label(text=_("oVPN.to Client Authentication") + "\n\n\n" + _("Enter your Passphrase"))
 		self.input_PH = Entry(self.frame,show="*")
 		self.input_PH.pack()
 		self.input_PH.focus()
-		checkbox = Checkbutton(self.frame, text="Save passphrase", variable=self.save_passphrase)
+		checkbox = Checkbutton(self.frame, text=_("Save passphrase"), variable=self.save_passphrase)
 		checkbox.pack()
 		button = Button(self.frame, text="OK", command=self.receive_passphrase)
 		button.pack()
@@ -240,7 +240,7 @@ class AppUI(Frame):
 					self.debug(text="def receive_passphrase :True")
 					self.statusbar_text.set(_("Passphrase Ok!"))
 					self.removethis()
-					self.make_label(text=_("\n\n\nPlease wait!"))
+					self.make_label(text="\n\n\n" + _("Please wait!"))
 					try:
 						if self.save_passphrase.get():
 							f = open(self.plaintext_passphrase_file,'w')
@@ -523,7 +523,7 @@ class AppUI(Frame):
 			
 	def form_enter_api_login(self):
 		self.removethis()
-		self.make_label(text=_("oVPN.to Client Setup\n\n\nEnter your oVPN.to API-Key:"))
+		self.make_label(text=_("oVPN.to Client Setup") + "\n\n\n" + _("Enter your oVPN.to API-Key:"))
 		self.input_apikey = Entry(self.frame,show="*")
 		self.input_apikey.pack()
 		self.input_apikey.focus()
@@ -914,7 +914,7 @@ class AppUI(Frame):
 					if len(self.dnslist) > 0:
 						return True
 					else:
-						self.dnslist = ["Error reading DNS from cachefile"]
+						self.dnslist = [_("Error reading DNS from cachefile")]
 				else:
 					return False
 			else:
@@ -1052,7 +1052,7 @@ class AppUI(Frame):
 				if len(dnslist)-1 == len(self.d0wns_dns) and len(dnslist) >= 3:
 					self.d0wns_DICT["d0wnsdns"] = self.d0wns_dns
 					self.statusbar_freeze = 1000
-					self.statusbar_text.set("oVPN is loading DNS Menu. Please wait...")
+					self.statusbar_text.set(_("oVPN is loading DNS Menu. Please wait..."))
 					#self.debug(text="TRUE len(dnslist) = %s len(self.d0wns_dns) = %s i = %s"%(len(dnslist)-1,len(self.d0wns_dns),i))
 					return True
 				else:
@@ -1825,7 +1825,7 @@ class AppUI(Frame):
 		if self.INFO_WINDOW_ACTIVE == False:
 			self.info_toplevel = Toplevel(self.root)
 			self.info_toplevel.attributes("-toolwindow", True)
-			self.info_toplevel.title('Information')
+			self.info_toplevel.title(_('Information'))
 			self.info_toplevel.protocol("WM_DELETE_WINDOW", self.info_window)
 			self.info_toplevel.focus_set()
 			self.INFO_WINDOW_ACTIVE = True
@@ -1926,11 +1926,11 @@ class AppUI(Frame):
 				#self.debug(text="def make_menubar: len self.d0wns_dns = %s" % (len(self.d0wns_dns)))
 				""" make submenu for d0wns dns """
 				d0wns_dnsserver_submenu = Menu(dnsserver_submenu)
-				label = "DNS by d0wn.biz"
+				label = _("DNS by d0wn.biz")
 				dnsserver_submenu.add_cascade(label=label, menu=d0wns_dnsserver_submenu, underline=0)
-				dlabel = "Update d0wns DNS from URL"
+				dlabel = _("Update d0wns DNS from URL")
 				d0wns_dnsserver_submenu.add_command(label=dlabel,command=lambda update=True: self.read_d0wns_dns_from_file(update=True))
-				dlabel = "Check DNS Ping Response"
+				dlabel = _("Check DNS Ping Response")
 				update = "DNStest"
 				d0wns_dnsserver_submenu.add_command(label=dlabel,command=lambda update=update: self.read_d0wns_dns_from_file(update=update))				
 				d0wns_dnsserver_submenu.add_separator()				
