@@ -27,7 +27,7 @@ import _winreg
 
 # compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
-CLIENTVERSION="v0.2.1-gtk"
+CLIENTVERSION="v0.2.2-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -654,24 +654,32 @@ class Systray:
 			self.INTERFACES.remove(self.WIN_TAP_DEVICE)
 			self.debug(text="remaining INTERFACES = %s"%(self.INTERFACES))
 			if len(self.INTERFACES) > 1:
-				window = Toplevel()
-				window.title(_("Choose your External Network Adapter!"))
-				text = Label(window, text=_("Multiple network adapters found.\nPlease select your external network adapter (the one you use to connect to the Internet)!"))
-				text.pack()
-				listbox = Listbox(window, width=64)
-				def adapter_window_callback(window, listbox):
-					self.WIN_EXT_DEVICE = listbox.get(ACTIVE)
-					window.destroy()
-				button = Button(window, text="OK", command=lambda: adapter_window_callback(window, listbox))
+				dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
+				text = _("Choose your External Network Adapter!")
+				dialogWindow.set_title(text)
+				dialogWindow.set_markup(text)
+				dialogBox = dialogWindow.get_content_area()
+				
+				liststore = gtk.ListStore(str)
+				combobox = gtk.ComboBox(liststore)
+				cell = gtk.CellRendererText()
+				combobox.pack_start(cell, True)
+				combobox.add_attribute(cell, 'text', 0)
+				combobox.set_wrap_width(5)
 				for INTERFACE in self.INTERFACES:
-					listbox.insert(END, INTERFACE)	
-				listbox.pack()
-				button.pack()
-				# Put our window into the foreground
-				window.transient(self.root)
-				window.grab_set()
-				# Block until the users closes the window
- 				self.root.wait_window(window)
+					print "add interface %s to combobox" % (INTERFACE)
+					liststore.append([INTERFACE])
+				combobox.set_model(liststore)
+				combobox.connect('changed',self.interface_selector_changed_cb)			
+					
+				dialogBox.pack_start(combobox,False,False,0)
+				dialogWindow.show_all()
+				print "open interface selector"
+				dialogWindow.run()
+				print "close interface selector"
+				if not self.WIN_EXT_DEVICE == False:
+					dialogWindow.destroy()
+					return True					
 			elif len(self.INTERFACES) < 1:
 				self.errorquit(text=_("No Network Adapter found!"))
 			else:
@@ -680,6 +688,15 @@ class Systray:
 				#self.msgwarn(text=text)
 				self.debug(text=text)
 				return True
+				
+	def interface_selector_changed_cb(self, combobox):
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.WIN_EXT_DEVICE = model[index][0]
+			print model[index][0], 'selected'
+		return
+				
 				
 	def call_openvpn(self,widget,event,server):
 		try:
@@ -1241,7 +1258,7 @@ class Systray:
 		dialogWindow.show_all()
 		response = dialogWindow.run()
 		self.dialogWindow_form_ask_passphrase = dialogWindow
-		ph1 = ph1Entry.get_text().rstrip()		
+		ph1 = ph1Entry.get_text().rstrip()	
 		dialogWindow.destroy()
 		if len(ph1) > 0:
 			self.PH = ph1
