@@ -27,7 +27,7 @@ import _winreg
 
 # compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
-CLIENTVERSION="v0.2.2-gtk"
+CLIENTVERSION="v0.2.3-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -56,7 +56,7 @@ class Systray:
 			self.tray = gtk.StatusIcon()
 			self.tray.set_from_stock(gtk.STOCK_PROPERTIES)
 			self.tray.connect('popup-menu', self.on_right_click)
-			#self.tray.connect('activate', self.on_left_click)
+			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip(('oVPN.to Client'))
 			self.systray_timer()
 		else:
@@ -142,27 +142,26 @@ class Systray:
 		#self.save_passphrase = IntVar()
 		
 		self.FLAG_IMG = {}
-		self.on_left_click_counter = 0
+		self.systray_menu = False
 		self.OVPN_SERVER_INFO = {}
 
 		
-	def on_right_click_mainwindow(self, widget):
-		model,iter = self.treeview.get_selection().get_selected()
-		if not iter: return
-		print iter
-		servername = model.get_value(iter,1)
-		servershort = servername[:3]
-		print servershort
-		
-
+	def on_right_click_mainwindow(self, treeview, event):
+		try:
+			path, column, __, __ = self.treeview.get_path_at_pos(int(event.x), int(event.y))
+		except:
+			return False			
+		selected_row = int(path[0])
+		servername = self.OVPN_SERVER[selected_row]
+		print servername
 		#print 'def on_right_click_mainwindow: widget = %s' % (widget)
 		#if event.button == 1:
 		#	self.debug(text="mainwindow left click")		
-		#if event.button == 3:
-		#	self.debug(text="mainwindow right click")
-		#self.treeview.get_selection().connect('changed',self.make_context_menu_servertab)
-		self.make_context_menu_servertab(servername)
-			
+		if event.button == 3:
+			self.debug(text="mainwindow right click")
+			self.make_context_menu_servertab(servername)
+
+	
 	def make_context_menu_servertab(self,servername):
 		#print event
 		context_menu_servertab = gtk.Menu()
@@ -194,17 +193,20 @@ class Systray:
 	def on_right_click(self, widget, event_button, event_time):
 		#print 'widget = %s' % (widget)
 		#print 'event_button = %s' % (event_button)
-		try:
+		if not self.systray_menu == False:
 			self.systray_menu.popdown()
-		except:
-			pass		
-		self.make_systray_menu(event_button, event_time)
+			self.systray_menu = False
+		else:
+			self.make_systray_menu(event_button, event_time)
+		
 
 	def on_left_click(self, widget):
 		try:
 			self.systray_menu.popdown()
+			self.systray_menu = False
 		except:
-			self.show_mainwindow(widget)
+			pass
+			#self.show_mainwindow(widget)
 
 
 	def make_systray_menu(self, event_button, event_time):
@@ -359,6 +361,13 @@ class Systray:
 		self.timer_check_certdl_running = True
 		text="Checking for oVPN Updates..."
 		self.set_progressbar(text)
+		try:
+			if len(self.OVPN_SERVER) == 0:
+				cfg = open(self.api_upd,'w')
+				cfg.write("0")
+				cfg.close()		
+		except:
+			pass
 		self.debug(text="def inThread_timer_check_certdl:")
 		if self.curl_api_request(API_ACTION = "lastupdate"):
 			text="Checking for Update"
@@ -506,10 +515,7 @@ class Systray:
 				"""
 
 				treeview.show()
-				#treeview.connect("button_press_event",self.on_right_click_mainwindow)
-				treeview.connect("cursor-changed",self.on_right_click_mainwindow)
-				#treeview.connect("popup-menu",self.on_right_click_mainwindow)
-				#treeview.connect("clicked",self.on_right_click_mainwindow)
+				treeview.connect("button_release_event",self.on_right_click_mainwindow)
 				mainframe.add(treeview)
 				mainwindow.show()
 				mainframe.show()
