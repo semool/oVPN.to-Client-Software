@@ -24,10 +24,11 @@ import gettext
 import locale
 import _winreg
 #import csv
+from ConfigParser import SafeConfigParser
 
 # compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
-CLIENTVERSION="v0.2.3-gtk"
+CLIENTVERSION="v0.2.4-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -218,7 +219,7 @@ class Systray:
 		update = gtk.MenuItem('Check for Server Updates')
 		update.show()
 		self.systray_menu.append(update)
-		update.connect('activate', self.check_remote_update)		
+		update.connect('activate', self.check_remote_update_cb)
 
 		sep = gtk.SeparatorMenuItem()
 		sep.show()
@@ -280,7 +281,7 @@ class Systray:
 		for menuserver in self.OVPN_SERVER:
 			servershort = menuserver[:3]
 			textstring = "%s (%s:%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][2],self.OVPN_SERVER_INFO[servershort][1])
-			flagcountry = servershort[:2].lower()
+			countrycode = servershort[:2].lower()
 			if self.OVPN_CONNECTEDto == menuserver:
 				servershort = "[ "+servershort+" ]"
 				serveritem = gtk.ImageMenuItem(servershort)
@@ -288,7 +289,7 @@ class Systray:
 				serveritem = gtk.ImageMenuItem(textstring)
 				serveritem.connect('button-press-event', self.call_openvpn, menuserver)
 			img = gtk.Image()
-			imgpath = self.FLAG_IMG[flagcountry]
+			imgpath = self.FLAG_IMG[countrycode]
 			img.set_from_file(imgpath)
 			serveritem.set_always_show_image(True)
 			serveritem.set_image(img)				
@@ -318,19 +319,21 @@ class Systray:
 		serverm.show()
 	"""
 	
-	def check_remote_update(self,widget):
+	def check_remote_update_cb(self,widget):
+		if self.check_remote_update():
+			return True
+	
+	def check_remote_update(self):
 		if self.timer_check_certdl_running == False:	
 			if self.check_inet_connection():
 				self.debug(text="def check_remote_update:")
-				if self.check_passphrase(widget):
+				if self.check_passphrase():
 					self.make_progressbar()
 					try:
-						thread_certdl = threading.Thread(name='certdl',target=lambda self=self: self.inThread_timer_check_certdl())
-						thread_certdl.daemon = True
+						thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
 						thread_certdl.start()
 						threadid_certdl = threading.currentThread()
 						self.debug(text="threadid_certdl = %s" %(threadid_certdl))
-						#self.debug(text="def check_remote_update: start inThreadTimer_check_certdl()")
 						return True
 					except:
 						self.debug(text="starting thread_certdl failed")
@@ -403,6 +406,7 @@ class Systray:
 										self.body = "done"
 										self.timer_check_certdl_running = False
 										self.progressbar.set_fraction(1)
+										self.PH = False
 										return True
 									else:										
 										self.debug(text="extraction failed")
@@ -412,17 +416,19 @@ class Systray:
 										self.body = "done"
 										self.timer_check_certdl_running = False
 										self.progressbar.set_fraction(0)
+										self.PH = False
 										return False
 			else:
 				text = _("Certificates and Configs up to date!")
 				self.set_progressbar(text)
 				self.progressbar.set_fraction(1)
 				self.timer_check_certdl_running = False
+				self.PH = False
 				return True
 				
 		else:
+			self.PH = False
 			self.debug(text="self.curl_api_request(API_ACTION = lastupdate): failed")
-		self.debug(text="def inThread_timer_check_certdl: ends")
 	
 
 	def show_about_dialog(self, widget):
@@ -534,34 +540,16 @@ class Systray:
 			print 'mainwindow destroy'
 			
 
-	def check_passphrase(self,widget):
+	def check_passphrase(self):
+		self.read_options_file()
 		if self.PH == False:
 			self.debug(text="def check_passphrase: popup receive passphrase")
 			self.form_ask_passphrase()
-
 		self.debug("def check_passphrase: passphrase loaded, try decrypt")
-		#self.input_PH = self.plaintext_passphrase
-		if self.read_config():
+		if self.read_apikey_config():
 			if self.compare_confighash():
-				#self.plaintext_passphrase = False
-				#self.PH = False
 				self.debug(text="def check_passphrase: self.compare_confighash() :True")
 				return True
-			else:
-				try:
-					os.remove(self.api_cfg)
-					self.errorquit(text = "def check_passphrase: self.compare_confighash() failed. CFG deleted.")
-				except:
-					self.errorquit(text = "def check_passphrase: self.compare_confighash() failed. CFG delete failed.")
-		else:
-			self.PH = False
-			self.check_remote_update(widget)
-			try:
-				os.remove(self.plaintext_passphrase_file)
-				#self.errorquit(text=_("Decryption with plaintext_passphrase failed. txt removed."))
-			except:
-				pass
-				#self.errorquit(text=_("Decryption with plaintext_passphrase failed. txt remove failed."))
 					
 
 	def preboot_check(self,logout):
@@ -600,14 +588,18 @@ class Systray:
 				self.OVPN_DLHASH = self.OVPN_WIN_DLHASH_x64
 				
 			if DEBUG: print("def pre0_detect_os: arch=%s bits=%s key=%s OS=%s" % (self.OSARCH,self.OSBITS,key1_value[0],self.OS))
-			if self.win_get_interfaces():
-				if self.win_netsh_read_dns_to_backup():
-					if self.win_detect_openvpn():
-						if self.win_pre1_check_app_dir():
-							if self.win_pre2_check_profiles_win():
-								if self.win_pre3_load_profile_dir_vars():
-									if self.check_config_folders():				
-										return True
+
+					
+			if self.win_pre1_check_app_dir():
+				if self.win_pre2_check_profiles_win():
+					if self.win_pre3_load_profile_dir_vars():
+						if self.check_config_folders():
+							if self.read_options_file():
+								if self.win_get_interfaces():
+									if self.win_netsh_read_dns_to_backup():
+										if self.win_detect_openvpn():
+											if self.write_options_file():
+												return True
 		elif OS == "linux2" :
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))	
 		elif OS == "darwin":
@@ -660,6 +652,11 @@ class Systray:
 			self.INTERFACES.remove(self.WIN_TAP_DEVICE)
 			self.debug(text="remaining INTERFACES = %s"%(self.INTERFACES))
 			if len(self.INTERFACES) > 1:
+				if not self.WIN_EXT_DEVICE == False:
+					if self.WIN_EXT_DEVICE in self.INTERFACES:
+						self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))					
+						return True
+						
 				dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
 				text = _("Choose your External Network Adapter!")
 				dialogWindow.set_title(text)
@@ -1254,20 +1251,30 @@ class Systray:
 		dialogWindow.set_title(_("Enter your Passphrase"))
 		dialogWindow.set_markup(_("Enter your Passphrase"))	
 		dialogBox = dialogWindow.get_content_area()
+		checkbox = gtk.CheckButton("Save Passphrase in File?")
+		checkbox.show()
 		ph1Entry = gtk.Entry()
 		ph1Entry.set_visibility(False)
 		ph1Entry.set_invisible_char("X")
 		ph1Entry.set_size_request(200,24)
-		ph1Label = gtk.Label("Passphrase:")		
+		ph1Label = gtk.Label("Passphrase:")
+		
 		dialogBox.pack_start(ph1Label,False,False,0)
 		dialogBox.pack_start(ph1Entry,False,False,0)
+		dialogBox.pack_start(checkbox,False,False,0)
 		dialogWindow.show_all()
 		response = dialogWindow.run()
 		self.dialogWindow_form_ask_passphrase = dialogWindow
-		ph1 = ph1Entry.get_text().rstrip()	
+		ph1 = ph1Entry.get_text().rstrip()
+		saveph = checkbox.get_active()
+		print 'checkbox saveph = %s' %(saveph)
 		dialogWindow.destroy()
+		
+			
 		if len(ph1) > 0:
 			self.PH = ph1
+			if saveph == True:
+				self.write_options_file()
 			return True
 		
 		
@@ -1346,6 +1353,7 @@ class Systray:
 			except: 
 				print("Delete %s failed"%(self.debug_log))
 		
+		self.opt_file = "%s\\options.cfg" % (self.api_dir)		
 		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)			
 		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
 		self.prx_dir = "%s\\proxy" % (self.api_dir)
@@ -1452,18 +1460,62 @@ class Systray:
 			else:
 				self.debug(text="def check_config_folders :False self.api_cfg not found")
 				if not self.PH == False:
-					if self.write_new_config():
-						if self.check_passphrase(None):
+					if self.write_new_apikey_config():
+						if self.check_passphrase():
 							return True
 				else:
 					if self.form_ask_userid():
-						if self.write_new_config():
-							if self.check_passphrase(None):
+						if self.write_new_apikey_config():
+							if self.check_passphrase():
 								return True
 		else:
 			self.errorquit(text = _("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		#except:
 		#	self.errorquit(text="def check_config_folders: failed")
+		
+	def read_options_file(self):		
+		if os.path.isfile(self.opt_file):
+			try:
+				parser = SafeConfigParser()
+				parser.read(self.opt_file)
+				PH = parser.get('oVPN','passphrase')
+				if not PH == "None":
+					self.PH = PH
+				self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
+				self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
+				self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
+				return True
+			except:
+				self.debug(text="def read_options_file: read failed")
+		else:
+			try:
+				cfg = open(self.opt_file,'w')
+				parser = SafeConfigParser()
+				parser.add_section('oVPN')
+				parser.set('oVPN','passphrase','False')
+				parser.set('oVPN','autoconnect','False')
+				parser.set('oVPN','favserver','False')
+				parser.set('oVPN','winextdevice','False')
+				parser.write(cfg)
+				cfg.close()
+				return True
+			except:
+				self.debug(text="def read_options_file: create failed")
+	
+	def write_options_file(self):
+		try:
+			cfg = open(self.opt_file,'w')
+			parser = SafeConfigParser()
+			parser.add_section('oVPN')
+			parser.set('oVPN','passphrase','%s'%(self.PH))
+			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
+			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
+			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
+			parser.write(cfg)
+			cfg.close()
+			return True
+		except:
+			self.debug(text="def write_options_file: failed")
 
 	def load_decryption(self):
 		self.debug(text="def load_decryption")
@@ -1482,8 +1534,8 @@ class Systray:
 			except:
 				return False		
 		
-	def read_config(self):
-		self.debug(text="def read_config")
+	def read_apikey_config(self):
+		self.debug(text="def read_apikey_config")
 		if not self.PH == False and self.load_decryption():
 			cfg = open(self.api_cfg,'r')
 			read_data = cfg.read()
@@ -1501,20 +1553,20 @@ class Systray:
 				APIKEY = self.apidata[1].split("=")
 				CFGSHA = self.apidata[2].split("=")
 				if len(USERID) == 2 and USERID[1] > 1 and USERID[1].isdigit():					
-					#self.debug(text="def read_config USERID = %s :True" % (USERID))
-					self.debug(text="def read_config USERID = profile-folder :True" % (USERID))
+					#self.debug(text="def read_apikey_config USERID = %s :True" % (USERID))
+					self.debug(text="def read_apikey_config USERID = profile-folder :True" % (USERID))
 					if len(APIKEY) == 2 and len(APIKEY[1]) == 128 and APIKEY[1].isalnum():						
-						self.debug(text="def read_config APIKEY len = %s :True" % (len(APIKEY)))			
+						self.debug(text="def read_apikey_config APIKEY len = %s :True" % (len(APIKEY)))			
 						if len(CFGSHA) == 2 and len(CFGSHA[1]) == 64 and CFGSHA[1].isalnum():
-							self.debug(text="def read_config CFGSHA = %s" % (CFGSHA))
+							self.debug(text="def read_apikey_config CFGSHA = %s" % (CFGSHA))
 							self.APIKEY = APIKEY[1]
 							self.CFGSHA = CFGSHA[1]
 							return True
 			#self.statusbar_text.set(_("Invalid Passphrase!"))
-			self.debug(text="def read_config passphrase :False")
+			self.debug(text="def read_apikey_config passphrase :False")
 			return False
 		
-	def write_new_config(self):
+	def write_new_apikey_config(self):
 		self.aeskeyhash = hashlib.sha256(self.PH).digest()
 		self.aesiv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
 		self.make_confighash()
@@ -1782,7 +1834,7 @@ class Systray:
 				if file.endswith('.ovpn.to.ovpn'):
 					filepath = "%s\\%s" % (self.vpn_cfg,file)
 					servername = file[:-5]
-					flagcountry = servername[:2].lower()
+					countrycode = servername[:2].lower()
 					servershort = servername[:3].upper()					
 					try:
 						serverinfo = self.OVPN_SERVER_INFO[servershort]
@@ -1824,16 +1876,13 @@ class Systray:
 							self.OVPN_SERVER_INFO[servershort] = serverinfo
 							#print self.OVPN_SERVER_INFO[servershort]
 					try:
-						flagicon = self.FLAG_IMG[flagcountry]
+						flagicon = self.FLAG_IMG[countrycode]
 					except:						
-						imgfile = '%s\\ico\\flags\\%s.png' % (self.bin_dir,flagcountry)
+						imgfile = '%s\\ico\\flags\\%s.png' % (self.bin_dir,countrycode)
 						if not os.path.isfile(imgfile):
-							imgfile = '%s\\ico\\flags\\00.png' % (self.bin_dir)
-						#self.debug(text="loading flagicon: %s"%(imgfile))
-						#img = gtk.Image()
-						#img.set_from_file(imgfile)
-						#self.FLAG_IMG[flagcountry] = img
-						self.FLAG_IMG[flagcountry] = imgfile
+							if not self.load_flags_from_remote(countrycode,imgfile) == True:
+								imgfile = '%s\\ico\\flags\\00.png' % (self.bin_dir)
+						self.FLAG_IMG[countrycode] = imgfile
 					self.OVPN_SERVER.append(servername)
 					#self.debug(text="def load_ovpn_server: file = %s " % (file))
 			self.OVPN_SERVER.sort()
@@ -1841,7 +1890,20 @@ class Systray:
 			cfg = open(self.api_upd,'w')
 			cfg.write("0")
 			cfg.close()
-		
+	
+	def load_flags_from_remote(self,countrycode,imgfile):
+		try:
+			url = "https://%s/img/flags/%s.png" % (DOMAIN,countrycode)
+			req = urllib2.Request(url)
+			response = urllib2.urlopen(req)
+			body = response.read()
+			fp = open(imgfile, "wb")
+			fp.write(body)
+			fp.close()
+			self.debug(text="def load_flags_from_remote: %s loaded"%(countrycode))
+			return True
+		except:
+			self.debug(text="def load_flags_from_remote: %s failed"%(countrycode))
 			
 	def on_closing(self, widget):
 		if self.STATE_OVPN == True:
