@@ -28,7 +28,7 @@ from ConfigParser import SafeConfigParser
 
 # compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
-CLIENTVERSION="v0.2.4-gtk"
+CLIENTVERSION="v0.2.5-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -53,7 +53,7 @@ class Systray:
 	def __init__(self):
 		self.init_localization()
 		self.self_vars()
-		if self.preboot_check(logout=False):
+		if self.preboot_check(logout=False) == True:
 			self.tray = gtk.StatusIcon()
 			self.tray.set_from_stock(gtk.STOCK_PROPERTIES)
 			self.tray.connect('popup-menu', self.on_right_click)
@@ -78,8 +78,6 @@ class Systray:
 
 		self.MAIN_WINDOW_OPEN = True
 		self.isSMALL_WINDOW = False
-		self.SWITCH_SMALL_WINDOW = False
-		self.SWITCH_FULL_WINDOW = False
 		self.SWITCH_SYSTRAY = False
 		self.INFO_WINDOW_ACTIVE = False
 		self.isLOGGEDin = False
@@ -151,7 +149,12 @@ class Systray:
 		try:
 			path, column, __, __ = self.treeview.get_path_at_pos(int(event.x), int(event.y))
 		except:
-			return False			
+			return False
+		try:
+			self.systray_menu.popdown()
+			self.systray_menu = False
+		except:
+			pass
 		selected_row = int(path[0])
 		servername = self.OVPN_SERVER[selected_row]
 		print servername
@@ -167,13 +170,32 @@ class Systray:
 		#print event
 		context_menu_servertab = gtk.Menu()
 		
-		connect = gtk.MenuItem('Connect to %s'%(servername))
-		connect.show()
-		context_menu_servertab.append(connect)
-		connect.connect('button-release-event',self.call_openvpn,servername)
+		if self.OVPN_CONNECTEDto == servername:
+			disconnect = gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
+			disconnect.show()
+			disconnect.connect('activate', self.kill_openvpn)
+			context_menu_servertab.append(disconnect)
+		else:		
+			connect = gtk.MenuItem('Connect to %s'%(servername))
+			connect.show()
+			context_menu_servertab.append(connect)
+			connect.connect('button-release-event',self.call_openvpn,servername)
 		sep = gtk.SeparatorMenuItem()
 		sep.show()
 		context_menu_servertab.append(sep)	
+		
+		if self.OVPN_FAV_SERVER == servername:
+			delfavorite = gtk.MenuItem('Remove AutoConnect: %s'%(servername))
+			delfavorite.show()
+			delfavorite.connect('button-release-event',self.del_ovpn_favorite_server,servername)
+			context_menu_servertab.append(delfavorite)
+		else:
+			setfavorite = gtk.MenuItem('Set AutoConnect: %s'%(servername))
+			setfavorite.show()
+			setfavorite.connect('button-release-event',self.set_ovpn_favorite_server,servername)
+			context_menu_servertab.append(setfavorite)
+			
+		
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), self.treeview)
 		self.context_menu_servertab = context_menu_servertab
 		
@@ -207,8 +229,11 @@ class Systray:
 			self.systray_menu = False
 		except:
 			pass
-			#self.show_mainwindow(widget)
-
+			
+	def systray_focus_out(self,widget,event):
+		print 'systray_focus_out'
+		self.systray_menu.popdown()
+		self.systray_menu = False
 
 	def make_systray_menu(self, event_button, event_time):
 		
@@ -273,9 +298,8 @@ class Systray:
 			self.systray_menu.append(quit)
 			quit.connect('activate', self.on_closing)
 
-		#self.systray_menu.popup(None, None, gtk.status_icon_position_menu, event_button, event_time, self.tray)
 		self.systray_menu.popup(None, None, None, event_button, event_time, self.tray)
-		print "systray created: event_button = %s" % (event_button)
+
 	
 	def make_systray_server_menu(self):
 		for menuserver in self.OVPN_SERVER:
@@ -406,24 +430,21 @@ class Systray:
 										self.body = "done"
 										self.timer_check_certdl_running = False
 										self.progressbar.set_fraction(1)
-										self.PH = False
 										return True
 									else:										
 										self.debug(text="extraction failed")
-										#self.tray.set_from_stock(gtk.STOCK_DIALOG_ERROR)
 										text = _("Error: Extraction failed!")
 										self.set_progressbar(text)										
 										self.body = "done"
 										self.timer_check_certdl_running = False
 										self.progressbar.set_fraction(0)
-										self.PH = False
 										return False
 			else:
 				text = _("Certificates and Configs up to date!")
 				self.set_progressbar(text)
+				self.set_statusbar_text(text)
 				self.progressbar.set_fraction(1)
 				self.timer_check_certdl_running = False
-				self.PH = False
 				return True
 				
 		else:
@@ -439,10 +460,122 @@ class Systray:
 		about_dialog.set_version('Client %s'%(CLIENTVERSION))
 		about_dialog.set_copyright('(C) 2010 - 2015 oVPN.to')
 		about_dialog.set_comments((ABOUT_TEXT))
-		#about_dialog.set_authors(['oVPN.to <support@ovpn.to>'])
+		about_dialog.set_authors(['oVPN.to <support@ovpn.to>'])
 		about_dialog.run()
 		about_dialog.destroy()
+		
+	def mainwindow_menubar(self):
+		try:
+			self.mb.destroy()
+			print 'menubar destroy'
+		except:
+			pass
+		self.mb = gtk.MenuBar()
+		
+		self.mainwindow_vbox.add(self.mb)
+		optionsmenu = gtk.Menu()
+		options = gtk.MenuItem('Options')
+		options.set_submenu(optionsmenu)
+		
+		#if not self.PH == False:
+		#	del_PH = gtk.MenuItem("Clear Passphrase from Disk and RAM")
+		#	del_FAV.connect('button-release-event',self.defundef,None)
+		#	optionsmenu.append(del_PH)
+			
+		if not self.OVPN_FAV_SERVER == False:
+			del_FAV = gtk.MenuItem("Disable AutoConnect")
+			del_FAV.connect('button-release-event',self.del_ovpn_favorite_server,self.OVPN_FAV_SERVER)
+			optionsmenu.append(del_FAV)
+			
+		if self.STATE_OVPN == True:
+			disconnect = gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
+			disconnect.connect('activate', self.kill_openvpn)
+			optionsmenu.append(disconnect)
+			
+		self.mb.append(options)
+		self.mb.show_all()
+		
+	def mainwindow_ovpn_server(self):
+		label = gtk.Label(_("oVPN Server"))
+		vbox = gtk.VBox(False,1)	
+		self.notebook.append_page(vbox,label)
+		self.mainwindow_vbox.add(self.notebook)
+		mainframe = gtk.Frame()
+		vbox.add(mainframe)
+		mainframe.set_label("Anonymous oVPN Server")
+		""" build serverlist """
+		#liststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,'gboolean')
+		liststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str)
+		self.mainwindow_liststore = liststore
+		treeview = gtk.TreeView(liststore)
+		self.treeview = treeview
+		for server in self.OVPN_SERVER:
+			countrycode = server[:2].lower()
+			servershort = server[:3].upper()
+			imgpath = self.FLAG_IMG[countrycode]
+			countryimg = gtk.gdk.pixbuf_new_from_file(imgpath)
+			#serverip = "127.0.0.1"
+			serverip  = self.OVPN_SERVER_INFO[servershort][0]
+			serverport = self.OVPN_SERVER_INFO[servershort][1]
+			serverproto = self.OVPN_SERVER_INFO[servershort][2]
+			servercipher = self.OVPN_SERVER_INFO[servershort][3]
+			connected = True
+			liststore.append([countryimg,server,serverip,serverport,serverproto,servercipher])
 
+		cell = gtk.CellRendererPixbuf()
+		column = gtk.TreeViewColumn('Country',cell)
+		column.add_attribute(cell,"pixbuf",0)
+		treeview.append_column(column)
+		
+		cell = gtk.CellRendererText()
+		column = gtk.TreeViewColumn('Server',cell)
+		column.add_attribute(cell,"text",1)
+		column.set_sort_column_id(1)
+		treeview.append_column(column)
+		
+		cell = gtk.CellRendererText()
+		column = gtk.TreeViewColumn('IPv4',cell)
+		column.add_attribute(cell,"text",2)
+		column.set_sort_column_id(2)
+		treeview.append_column(column)
+		
+		cell = gtk.CellRendererText()
+		column = gtk.TreeViewColumn('Port',cell)
+		column.add_attribute(cell,"text",3)
+		column.set_sort_column_id(3)
+		treeview.append_column(column)
+		
+		cell = gtk.CellRendererText()
+		column = gtk.TreeViewColumn('Proto',cell)
+		column.add_attribute(cell,"text",4)
+		column.set_sort_column_id(4)
+		treeview.append_column(column)				
+
+		cell = gtk.CellRendererText()
+		column = gtk.TreeViewColumn('Cipher',cell)
+		column.add_attribute(cell,"text",5)
+		column.set_sort_column_id(5)
+		treeview.append_column(column)
+		
+		"""
+		cell = gtk.CellRendererToggle()
+		cell.set_radio(True)
+		#cell.set_activatable(True)
+		#cell.set_active(True)
+		cell.connect("toggled",self.on_cell_radio_toggled)
+		column = gtk.TreeViewColumn('Connected',cell)
+		treeview.append_column(column)
+		"""
+
+		treeview.connect("button_release_event",self.on_right_click_mainwindow)
+		mainframe.add(treeview)
+
+		""" statusbar """
+		label = gtk.Label()
+		label.set_use_markup(True)
+		label.set_markup("Welcome to oVPN.to! Have a nice and anonymous day!")
+		self.statusbar_text = label
+		vbox.add(label)		
 		
 	def show_mainwindow(self,widget):
 		print 'self.MAINWINDOW_OPEN = %s' % (self.MAINWINDOW_OPEN)
@@ -450,85 +583,23 @@ class Systray:
 			self.load_ovpn_server()
 			try:
 				mainwindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
+				self.mainwindow = mainwindow
 				mainwindow.connect("destroy",self.show_mainwindow)
 				mainwindow.set_title("oVPN.to Client %s"%(CLIENTVERSION))
 				mainwindow.set_icon_name(gtk.STOCK_HOME)
 				mainwindow.set_border_width(4)
-				mainframe = gtk.Frame()
-				mainwindow.add(mainframe)
-				mainframe.set_label("Anonymous oVPN Server")
 				
-				""" build serverlist """
-				#liststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,'gboolean')
-				liststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str)
-				treeview = gtk.TreeView(liststore)
-				for server in self.OVPN_SERVER:
-					countrycode = server[:2].lower()
-					servershort = server[:3].upper()
-					imgpath = self.FLAG_IMG[countrycode]
-					countryimg = gtk.gdk.pixbuf_new_from_file(imgpath)
-					#serverip = "127.0.0.1"
-					serverip  = self.OVPN_SERVER_INFO[servershort][0]
-					serverport = self.OVPN_SERVER_INFO[servershort][1]
-					serverproto = self.OVPN_SERVER_INFO[servershort][2]
-					servercipher = self.OVPN_SERVER_INFO[servershort][3]
-					connected = True
-					liststore.append([countryimg,server,serverip,serverport,serverproto,servercipher])
-		
-				cell = gtk.CellRendererPixbuf()
-				column = gtk.TreeViewColumn('Country',cell)
-				column.add_attribute(cell,"pixbuf",0)
-				treeview.append_column(column)
+				self.mainwindow_vbox = gtk.VBox(False,1)
+				self.mainwindow.add(self.mainwindow_vbox)
 				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn('Server',cell)
-				column.add_attribute(cell,"text",1)
-				column.set_sort_column_id(1)
-				treeview.append_column(column)
+				self.notebook = gtk.Notebook()		
 				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn('IPv4',cell)
-				column.add_attribute(cell,"text",2)
-				column.set_sort_column_id(2)
-				treeview.append_column(column)
+				self.mainwindow_ovpn_server()
 				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn('Port',cell)
-				column.add_attribute(cell,"text",3)
-				column.set_sort_column_id(3)
-				treeview.append_column(column)
+				#self.mainwindow_menubar()
 				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn('Proto',cell)
-				column.add_attribute(cell,"text",4)
-				column.set_sort_column_id(4)
-				treeview.append_column(column)				
-
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn('Cipher',cell)
-				column.add_attribute(cell,"text",5)
-				column.set_sort_column_id(5)
-				treeview.append_column(column)
-				
-				"""
-				cell = gtk.CellRendererToggle()
-				cell.set_radio(True)
-				#cell.set_activatable(True)
-				#cell.set_active(True)
-				cell.connect("toggled",self.on_cell_radio_toggled)
-				column = gtk.TreeViewColumn('Connected',cell)
-				treeview.append_column(column)
-				"""
-
-				treeview.show()
-				treeview.connect("button_release_event",self.on_right_click_mainwindow)
-				mainframe.add(treeview)
-				mainwindow.show()
-				mainframe.show()
-				self.mainwindow = mainwindow
-				self.treeview = treeview
+				mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
-				self.mainwindow_liststore = liststore
 				print 'mainwindow created'
 				return True
 			except:
@@ -537,8 +608,17 @@ class Systray:
 		else:
 			self.mainwindow.destroy()
 			self.MAINWINDOW_OPEN = False
+			try:
+				self.systray_menu.popdown()
+				self.systray_menu = False
+			except:
+				pass			
 			print 'mainwindow destroy'
-			
+	
+	def set_statusbar_text(self,text):
+		if self.MAINWINDOW_OPEN == True:
+			self.statusbar_text.set_markup(text)
+			self.statusbar_freeze = True
 
 	def check_passphrase(self):
 		self.read_options_file()
@@ -688,8 +768,7 @@ class Systray:
 			else:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
 				text = _("External Interface = %s")%(self.WIN_EXT_DEVICE)
-				#self.msgwarn(text=text)
-				self.debug(text=text)
+				self.msgwarn(text=text)
 				return True
 				
 	def interface_selector_changed_cb(self, combobox):
@@ -699,13 +778,54 @@ class Systray:
 			self.WIN_EXT_DEVICE = model[index][0]
 			print model[index][0], 'selected'
 		return
-				
+
+	def set_ovpn_favorite_server(self,widget,event,server):
+		try:
+			self.OVPN_FAV_SERVER = server
+			self.OVPN_AUTO_CONNECT_ON_START = True
+			self.write_options_file()
+			try:
+				self.context_menu_servertab.popdown()
+			except:
+				pass
+			#try:
+			#	self.mainwindow_menubar()
+			#except:
+			#	pass	
+			text = "oVPN AutoConnect: %s" % (server)
+			self.set_statusbar_text(text)
+			return True
+		except:
+			self.msgwarn(text="def set_ovpn_favorite_server: failed")
+			
+	def del_ovpn_favorite_server(self,widget,event,server):
+		try:
+			self.OVPN_FAV_SERVER = False
+			self.OVPN_AUTO_CONNECT_ON_START = False
+			self.write_options_file()
+			try:
+				self.context_menu_servertab.popdown()
+			except:
+				pass
+			#try:
+			#	self.mainwindow_menubar()
+			#except:
+			#	pass				
+			text = "oVPN AutoConnect: removed %s" % (server)
+			self.set_statusbar_text(text)
+			return True
+		except:
+			self.msgwarn(text="def del_ovpn_favorite_server: failed")			
 				
 	def call_openvpn(self,widget,event,server):
 		try:
 			self.context_menu_servertab.popdown()
 		except:
 			pass
+		#try:
+		#	self.mainwindow_menubar()
+		#except:
+		#	pass			
 		try:
 			thread_openvpn = threading.Thread(target=lambda server=server: self.openvpn(server))
 			thread_openvpn.start()
@@ -757,10 +877,8 @@ class Systray:
 				self.debug(text=_("Started: oVPN %s on Thread: %s") %(server,self.OVPN_THREADID))
 			except:
 				text=_("Error! Unable to start thread: oVPN %s ")%(server)
-				#self.statusbar_freeze = 6000
-				#self.statusbar_text.set(text)
-				#self.msgwarn(text=text)
-				self.debug(text=text)
+				self.set_statusbar_text(text)
+				self.msgwarn(text=text)
 				
 			if self.OVPN_AUTO_RECONNECT == True:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == True")
@@ -771,14 +889,12 @@ class Systray:
 					thread_timer_openvpn_reconnect.start()
 					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
 					self.debug(text="Started: self.inThread_timer_openvpn_reconnect() on Thread: %s" %(self.OVPN_PING_TIMER_THREADID))
-					#self.statusbar_freeze = 500
-					text = "oVPN Process Watchdog enabled."
-					#self.statusbar_text.set(text)
+					text = "oVPN Watchdog enabled. Connecting to %s" % (server)
+					self.set_statusbar_text(text)
 					self.debug(text=text)
 				except:
-					#self.statusbar_freeze = 6000
 					text = "Could not start oVPN Watchdog"
-					#self.statusbar_text.set(text)
+					self.set_statusbar_text(text)
 					self.debug(text=text)
 			else:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == False")
@@ -818,9 +934,8 @@ class Systray:
 						OVPN_PING_out = -2
 					elif self.OVPN_PING_STAT >= 0:
 						OVPN_PING_out = 9999
-						#self.statusbar_freeze = 9000
-						#text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
-						#self.statusbar_text.set(text)
+						text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
+						self.set_statusbar_text(text)
 						#self.debug(text="def inThread_timer_ovpn_ping: split ping failed, connection timed out")
 				
 				pingsum = 0
@@ -845,7 +960,7 @@ class Systray:
 					pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 					pingthread.start()
 					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
-					self.debug(text="done: rejoin def inThread_timer_ovpn_ping() %s: total threads: %s, ping=%s" %(self.OVPN_PING_TIMER_THREADID,threading.active_count(),OVPN_PING_out))	
+					#self.debug(text="done: rejoin def inThread_timer_ovpn_ping() %s: total threads: %s, ping=%s" %(self.OVPN_PING_TIMER_THREADID,threading.active_count(),OVPN_PING_out))	
 					return True
 				except:
 					self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
@@ -869,8 +984,7 @@ class Systray:
 		self.OVPN_CONNECTEDtime = self.get_now_unixtime()
 		self.UPDATE_MENUBAR = True
 		if not self.win_firewall_start():
-			pass
-			#self.msgwarn(_("Could not start Windows Firewall!"))
+			self.msgwarn(_("Could not start Windows Firewall!"))
 		self.win_firewall_modify_rule(option="add")
 		self.ovpn_proc_retcode = subprocess.call("%s" % (self.ovpn_string),shell=True)
 		self.win_firewall_modify_rule(option="delete")
@@ -928,7 +1042,7 @@ class Systray:
 			
 	def inThread_timer_openvpn_reconnect(self):
 		#self.debug("def inThread_timer_openvpn_reconnect")
-		time.sleep(3)		
+		time.sleep(10)
 		if self.OVPN_RECONNECT_NOW == True and self.OVPN_AUTO_RECONNECT == True and self.STATE_OVPN == False:
 			self.call_openvpn(None,None,self.call_ovpn_srv)
 			text = "oVPN process crashed and restarted."
@@ -944,12 +1058,16 @@ class Systray:
 				#self.debug("def inThread_timer_openvpn_reconnect: timer_ovpn_ping is running")
 				pass
 			threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
-			time.sleep(3)
 			return True
 
 			
 	def kill_openvpn(self,*args):
-		self.OVPN_AUTO_RECONNECT = False		
+		#try:
+		#	self.mainwindow_menubar()
+		#except:
+		#	pass
+		self.OVPN_AUTO_RECONNECT = False
+		self.OVPN_RECONNECT_NOW = False
 		self.debug(text="def kill_openvpn")	
 		string1 = "taskkill /im openvpn.exe"
 		string2 = "taskkill /im openvpn.exe /f"
@@ -993,15 +1111,14 @@ class Systray:
 				text = _("%s (DNScrypt enabled)") % (text)
 			else:
 				text = _("%s (direct connection)") % (text)
-			#self.statusbar_freeze = 5000
-			#self.statusbar_text.set(text)
+			self.set_statusbar_text(text)
 			self.DNS_SELECTED = dns_ipv4
 			self.DNS_SELECTEDcountry = countrycode
 			#self.UPDATE_MENUBAR = True
 			self.debug(text=":true")
 		except:
-			#self.statusbar_freeze = 5000
-			#self.statusbar_text.set(_("oVPN DNS Change failed!"))		
+			text = _("oVPN DNS Change failed!")
+			set_statusbar_text(self,text)		
 			self.debug(text="def win_netsh_change_dns_server: failed\n%s\n%s"%(string1,string2))
 		
 	
@@ -1016,24 +1133,20 @@ class Systray:
 			self.netsh_cmdlist.append(string)
 			if self.win_join_netsh_cmd():
 				text=_("Primary DNS Server restored to: %s")%(self.GATEWAY_DNS1)
-				self.debug(text=text)
-				#self.msgwarn(text=text)
+				self.msgwarn(text=text)
 			else:
 				text=_("Error: Restoring your 1st DNS Server to %s failed.")%(self.GATEWAY_DNS2)
-				self.debug(text=text)
-				#self.msgwarn(text=text)
+				self.msgwarn(text=text)
 				
 		if not self.GATEWAY_DNS2 == False:
 			string = 'interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2)
 			self.netsh_cmdlist.append(string)
 			if self.win_join_netsh_cmd():
 				text=_("Secondary DNS Server restored to: %s")%(self.GATEWAY_DNS2)
-				self.debug(text=text)
-				#self.msgwarn(text=text)
+				self.msgwarn(text=text)
 			else:
 				text=_("Error: Restoring your 2nd DNS Server to %s failed.")%(self.GATEWAY_DNS2)
-				self.debug(text=text)
-				#self.msgwarn(text=text)	
+				self.msgwarn(text=text)	
 			
 
 		
@@ -1478,15 +1591,30 @@ class Systray:
 			try:
 				parser = SafeConfigParser()
 				parser.read(self.opt_file)
-				PH = parser.get('oVPN','passphrase')
-				if not PH == "None":
-					self.PH = PH
+				
+				self.PH = parser.get('oVPN','passphrase')
+				if self.PH == "False":
+					self.PH = False
+					
 				self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
+				if self.OVPN_AUTO_CONNECT_ON_START == "False": 
+					self.OVPN_AUTO_CONNECT_ON_START = False
+				
 				self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
+				if self.OVPN_FAV_SERVER == "False": 
+					self.OVPN_FAV_SERVER = False
+				
 				self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
+				if self.WIN_EXT_DEVICE == "False": 
+					self.WIN_EXT_DEVICE = False
+					
 				return True
 			except:
-				self.debug(text="def read_options_file: read failed")
+				self.msgwarn(text="def read_options_file: read failed")
+				try:
+					self.os.remove(self.opt_file)
+				except:
+					pass
 		else:
 			try:
 				cfg = open(self.opt_file,'w')
@@ -1562,7 +1690,8 @@ class Systray:
 							self.APIKEY = APIKEY[1]
 							self.CFGSHA = CFGSHA[1]
 							return True
-			#self.statusbar_text.set(_("Invalid Passphrase!"))
+			text = _("Invalid Passphrase!")
+			self.set_statusbar_text(text)
 			self.debug(text="def read_apikey_config passphrase :False")
 			return False
 		
@@ -1645,7 +1774,8 @@ class Systray:
 				z2file.extractall(self.vpn_cfg)
 				if self.write_last_update():
 					self.extract = True
-					#self.statusbar_text.set("Certificates and Configs extracted.")
+					text = "Certificates and Configs extracted."
+					self.set_statusbar_text(text)
 					return True
 		except:
 			self.debug(text="def extract_ovpn: failed")
@@ -1681,8 +1811,7 @@ class Systray:
 			#self.debug("self.body = %s"%(self.body))
 		except:
 			text = text=_("API Connection Timeout to https://%s!"%(DOMAIN))
-			self.debug(text=text)
-			#self.msgwarn(text=text)
+			self.msgwarn(text=text)
 			
 		if not self.body == False:
 		
@@ -1726,21 +1855,18 @@ class Systray:
 				
 		if not self.try_socket(host,port):
 			text=_("1) Could not connect to vcp.ovpn.to\nTry setting firewall rule to access VCP!")
-			#self.msgwarn(text=text)
-			self.debug(text=text)
+			self.msgwarn(text=text)
 			self.win_firewall_add_rule_to_vcp(option="add")
 			time.sleep(2)
 			if not self.try_socket(host,port):
 				text=_("2) Could not connect to vcp.ovpn.to\nRetry")
-				#self.msgwarn(text=text)
-				self.debug(text=text)
+				self.msgwarn(text=text)
 				time.sleep(2)
 				if not self.try_socket(host,port):
 					#text="3) Could not connect to vcp.ovpn.to\nTry setting firewall rule to allowing outbound connections to world!"
 					#self.win_firewall_allow_outbound()
 					text=_("3) Could not connect to vcp.ovpn.to\n")
-					self.debug(text=text)
-					#self.msgwarn(text=text)			
+					self.msgwarn(text=text)			
 					return False
 		return True
 	
@@ -1750,6 +1876,13 @@ class Systray:
 		self.systray_timer_running = True
 		text = False
 		systraytext = False
+		
+		if self.statusbar_freeze == True:
+			time.sleep(1)
+			self.thread_systray_timer = threading.Thread(target=self.systray_timer)
+			self.thread_systray_timer.start()
+			self.statusbar_freeze = False
+			return True
 		
 		if self.timer_check_certdl_running == True:
 			text = _("Checking for Updates!")
@@ -1762,7 +1895,7 @@ class Systray:
 			systrayicon = self.systray_icon_disconnected
 			try:
 				if self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
-					self.call_openvpn(widget,event,self.OVPN_FAV_SERVER)
+					self.call_openvpn(None,None,self.OVPN_FAV_SERVER)
 					self.OVPN_AUTO_CONNECT_ON_START = False
 			except:
 				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")		
@@ -1806,7 +1939,7 @@ class Systray:
 			self.tray.set_tooltip(('%s'%(systraytext)))
 			
 		if not self.statustext_from_before == text:
-			#self.statusbar_text.set(text)
+			self.set_statusbar_text(text)
 			self.statustext_from_before = text
 		
 		time.sleep(1)
@@ -1937,18 +2070,18 @@ class Systray:
 				return True
 			except:
 				text=_("remove lock failed")
-				self.debug(text=text)
-				#self.msgwarn()
+				self.msgwarn(text)
 		else:
 			text=_("Could not delete LOCK. File not found.")
-			self.debug(text=text)
-			#self.msgwarn()
+			self.msgwarn()
 
 			
 	def errorquit(self,text):
 		self.debug(text)
-		#tkMessageBox.showinfo(_("Error"),"%s" % (text))
-		sys.exit()			
+		message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+		message.set_markup("%s"%(text))
+		message.run()
+		sys.exit()
 			
 	def debug(self,text):
 		if DEBUG: 
@@ -1985,8 +2118,16 @@ class Systray:
 			print 'widget=%s'%(widget)
 		except:
 			pass
-		self.debug(text="self.defundef()")	
+		self.debug(text="self.defundef()")
+		
+	def msgwarn(self,text):
+		self.debug(text)
+		message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+		message.set_markup("%s"%(text))
+		message.run()
 
+		
+		
 def app():
 	Systray()
 	try:
