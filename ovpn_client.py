@@ -16,19 +16,19 @@ import time
 import zipfile
 import subprocess
 import threading
-import win32com.client
+#import win32com.client
 import socket
-import random
-import struct
+#import struct
 import gettext
 import locale
 import _winreg
+#import netifaces
 #import csv
 from ConfigParser import SafeConfigParser
 
 # compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
-CLIENTVERSION="v0.2.5-gtk"
+CLIENTVERSION="v0.2.6_f-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -67,14 +67,14 @@ class Systray:
 	def self_vars(self):
 		self.MAINWINDOW_OPEN = False
 		self.debug_log = False
-		self.OVPN_LATEST = 236
-		self.OVPN_LATEST_BUILT = "Mar 19 2015"
-		self.OVPN_LATEST_BUILT_TIMESTAMP = 1426719600
+		self.OVPN_LATEST = 237
+		self.OVPN_LATEST_BUILT = "Jun 08 2015"
+		self.OVPN_LATEST_BUILT_TIMESTAMP = 1433714400
 		self.OVPN_DL_URL = False		
-		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.6-I003-i686.exe"
-		self.OVPN_WIN_DLHASH_x86 = "97db2d5545c59a9984a1117bca0b578bbdcb1134a720ca4f342aba8b44bee508"
-		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.6-I003-x86_64.exe"
-		self.OVPN_WIN_DLHASH_x64 = "409011239096933ebc8e6c9dd44ac3050e43466104f4b296e7d175094643af02"
+		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I001-i686.exe"
+		self.OVPN_WIN_DLHASH_x86 = ".."
+		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I001-x86_64.exe"
+		self.OVPN_WIN_DLHASH_x64 = ".."
 
 		self.MAIN_WINDOW_OPEN = True
 		self.isSMALL_WINDOW = False
@@ -366,6 +366,7 @@ class Systray:
 	def make_progressbar(self):
 		self.progressbarfraction = 0.1
 		self.progresswindow = gtk.Window(type=gtk.WINDOW_TOPLEVEL)
+		self.progresswindow.set_default_size(250,128)
 		self.progresswindow.set_border_width(6)
 		self.progresswindow.set_title("oVPN Server Update")
 		self.progresswindow.set_icon_from_file(self.systray_icon_syncupdate)
@@ -587,6 +588,7 @@ class Systray:
 				mainwindow.connect("destroy",self.show_mainwindow)
 				mainwindow.set_title("oVPN.to Client %s"%(CLIENTVERSION))
 				mainwindow.set_icon_name(gtk.STOCK_HOME)
+				mainwindow.set_default_size(480,300)
 				mainwindow.set_border_width(4)
 				
 				self.mainwindow_vbox = gtk.VBox(False,1)
@@ -687,22 +689,48 @@ class Systray:
 		else: 
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))
 
+	def get_connection_name_from_guid(self,iface_guids):
+		iface_names = ['(unknown)' for i in range(len(iface_guids))]
+		reg = _winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE)
+		reg_key = _winreg.OpenKey(reg, r'SYSTEM\CurrentControlSet\Control\Network\{4d36e972-e325-11ce-bfc1-08002be10318}')
+		for i in range(len(iface_guids)):
+			try:
+				reg_subkey = _winreg.OpenKey(reg_key, iface_guids[i] + r'\Connection')
+				iface_names[i] = _winreg.QueryValueEx(reg_subkey, 'Name')[0]
+			except:
+				pass
+		return iface_names
+			
+			
 	def win_get_interfaces(self):		
-		self.debug(text="def win_get_interfaces")
-		wmi=win32com.client.GetObject('winmgmts:')
-		adapters=wmi.InstancesOf('win32_networkadapter')
-		self.INTERFACES = list()
-		for adapter in adapters:
-			for p in adapter.Properties_:
-				if p.Name == "NetConnectionID" and not p.Value == None:
-					INTERFACE=p.Value
-					string = "%s"%(INTERFACE)
-					#self.debug(text=string)
-					self.INTERFACES.append(string)
-		#self.debug(text="%s"%(self.INTERFACES))			
+		self.INTERFACES = list()						
+		string = "netsh interface show interface"
+		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
+		ADAPTERS = ADAPTERS.split('\r\n')
+		for line in ADAPTERS:
+			print line
+			interface = line.split()
+			try:
+				interface = interface[3:]
+				ilen = len(interface)	
+				if ilen > 1:
+					nface = None
+					for iface in interface:
+						if not nface == None:
+							nface = nface+" %s" % (iface)
+							print nface
+						else:
+							nface = iface
+					interface = nface
+				else:
+					interface = interface[0]
+				self.INTERFACES.append(interface)
+			except:
+				pass
+		self.INTERFACES.pop(0)		
+		self.debug(text="%s"%(self.INTERFACES))			
 		if len(self.INTERFACES)	< 2:
-			self.errorquit(text=_("Could not read your Network Interfaces!"))
-		
+			self.errorquit(text=_("Could not read your Network Interfaces!"))		
 		string = "openvpn.exe --show-adapters"
 		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		ADAPTERS = ADAPTERS.split('\r\n')
@@ -768,7 +796,8 @@ class Systray:
 			else:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
 				text = _("External Interface = %s")%(self.WIN_EXT_DEVICE)
-				self.msgwarn(text=text)
+				#self.msgwarn(text=text)
+				self.debug(text=text)
 				return True
 				
 	def interface_selector_changed_cb(self, combobox):
@@ -776,7 +805,8 @@ class Systray:
 		index = combobox.get_active()
 		if index > -1:
 			self.WIN_EXT_DEVICE = model[index][0]
-			print model[index][0], 'selected'
+			text = "selected IF: %s" % (self.WIN_EXT_DEVICE)
+			self.debug(text=text)
 		return
 
 	def set_ovpn_favorite_server(self,widget,event,server):
@@ -1805,14 +1835,20 @@ class Systray:
 		req = urllib2.Request(url, data)
 		
 		self.body = False
+		response = urllib2.urlopen(req)
+		self.body = response.read()
+		self.debug("self.body = %s"%(self.body))
+		"""
 		try: 
 			response = urllib2.urlopen(req)
 			self.body = response.read()
-			#self.debug("self.body = %s"%(self.body))
+			self.debug("self.body = %s"%(self.body))
 		except:
-			text = text=_("API Connection Timeout to https://%s!"%(DOMAIN))
-			self.msgwarn(text=text)
-			
+			pass
+			text = _("API Connection Timeout to https://%s!"%(DOMAIN))
+			self.debug(text=text)
+			#self.msgwarn(text=text)
+		"""	
 		if not self.body == False:
 		
 			if not self.body == "AUTHERROR":
@@ -2125,10 +2161,15 @@ class Systray:
 		message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
 		message.set_markup("%s"%(text))
 		message.run()
+		message.destroy()
 
 		
 		
 def app():
+	#try:
+	#	gtk.gtk_init()
+	#except:
+	#	sys.exit()
 	Systray()
 	try:
 		gtk.gdk.threads_init()
