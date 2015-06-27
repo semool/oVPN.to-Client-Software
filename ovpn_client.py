@@ -18,17 +18,15 @@ import subprocess
 import threading
 #import win32com.client
 import socket
-#import struct
 import gettext
 import locale
 import _winreg
-#import netifaces
-#import csv
+import requests
 from ConfigParser import SafeConfigParser
 
 # compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
-CLIENTVERSION="v0.2.6_f-gtk"
+CLIENTVERSION="v0.2.6_j-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -138,6 +136,7 @@ class Systray:
 		self.d0wnsIP4s = list()
 		self.d0wns_PING = False
 		self.plaintext_passphrase = False
+		self.USE_URLLIB2 = False
 		#self.save_passphrase = IntVar()
 		
 		self.FLAG_IMG = {}
@@ -1831,24 +1830,35 @@ class Systray:
 			if os.path.isfile(self.zip_crt): os.remove(self.zip_crt)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }	
 			
-		data = urllib.urlencode(values)
-		req = urllib2.Request(url, data)
-		
 		self.body = False
-		response = urllib2.urlopen(req)
-		self.body = response.read()
-		self.debug("self.body = %s"%(self.body))
-		"""
-		try: 
-			response = urllib2.urlopen(req)
-			self.body = response.read()
-			self.debug("self.body = %s"%(self.body))
-		except:
-			pass
-			text = _("API Connection Timeout to https://%s!"%(DOMAIN))
-			self.debug(text=text)
-			#self.msgwarn(text=text)
-		"""	
+			
+		if self.USE_URLLIB2 == True:
+			try: 
+				data = urllib.urlencode(values)
+				urllib2.ProxyHandler({})
+				req = urllib2.Request(url, data)
+				response = urllib2.urlopen(req)
+				self.body = response.read()
+				if self.body.isalnum() and len(self.body) <= 16:
+					self.debug("self.body = %s"%(self.body))
+			except:
+				self.USE_URLLIB2 = False
+				text = "def curl_api_request: urllib2 error"
+				self.debug(text=text)
+
+		
+		if self.body == False:
+			try:
+				r = requests.post(url,data=values)
+				if self.API_ACTION == "getconfigs" or self.API_ACTION == "getcerts":
+					self.body = r.content
+				else:
+					self.body = r.text
+			except:
+				text = "def curl_api_request: requests error on: %s" % (self.API_ACTION)
+				self.debug(text=text)		
+			
+		
 		if not self.body == False:
 		
 			if not self.body == "AUTHERROR":
