@@ -14,7 +14,7 @@
 + C:\Python27\Scripts\pip.exe install pycrypto
 + C:\Python27\Scripts\pip.exe install distutils
 + C:\Python27\Scripts\pip.exe install requests
-+ python Developer Imports: https://vcp.ovpn.to/files/ovpn_cli/dev_v011.7z
-
++ Developer Imports: https://vcp.ovpn.to/files/ovpn_cli/dev_v011.7z
++ https://vcp.ovpn.to/files/ovpn_cli/build-dev-v026_p3.zip
 
 
