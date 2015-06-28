@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import gtk
-#import gio,pango,cairo
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
 import types
@@ -26,7 +25,7 @@ from ConfigParser import SafeConfigParser
 
 # compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
 
-CLIENTVERSION="v0.2.6_j-gtk"
+CLIENTVERSION="v0.2.6_p2-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -96,7 +95,6 @@ class Systray:
 		self.screen_height = 240
 		self.USERID = False
 		self.PH = False
-		self.extract = False
 		self.STATE_OVPN = False
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
@@ -136,7 +134,7 @@ class Systray:
 		self.d0wnsIP4s = list()
 		self.d0wns_PING = False
 		self.plaintext_passphrase = False
-		self.USE_URLLIB2 = False
+		self.USE_URLLIB2 = True
 		#self.save_passphrase = IntVar()
 		
 		self.FLAG_IMG = {}
@@ -496,12 +494,14 @@ class Systray:
 		self.mb.show_all()
 		
 	def mainwindow_ovpn_server(self):
+		self.notebook = gtk.Notebook()	
 		label = gtk.Label(_("oVPN Server"))
 		vbox = gtk.VBox(False,1)	
 		self.notebook.append_page(vbox,label)
 		self.mainwindow_vbox.add(self.notebook)
 		mainframe = gtk.Frame()
-		vbox.add(mainframe)
+		#vbox.add(mainframe)
+		vbox.pack_start(mainframe,True,True,0)
 		mainframe.set_label("Anonymous oVPN Server")
 		""" build serverlist """
 		#liststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,'gboolean')
@@ -568,14 +568,17 @@ class Systray:
 		"""
 
 		treeview.connect("button_release_event",self.on_right_click_mainwindow)
-		mainframe.add(treeview)
+		scrolledwindow = gtk.ScrolledWindow()
+		scrolledwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+		scrolledwindow.add(treeview)
+		mainframe.add(scrolledwindow)
 
 		""" statusbar """
 		label = gtk.Label()
-		label.set_use_markup(True)
-		label.set_markup("Welcome to oVPN.to! Have a nice and anonymous day!")
+		text = "Welcome to oVPN.to! Have a nice and anonymous day!"
 		self.statusbar_text = label
-		vbox.add(label)		
+		self.statusbar_text.set_label(text)
+		vbox.pack_start(label,False,False,0)
 		
 	def show_mainwindow(self,widget):
 		print 'self.MAINWINDOW_OPEN = %s' % (self.MAINWINDOW_OPEN)
@@ -584,16 +587,15 @@ class Systray:
 			try:
 				mainwindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
 				self.mainwindow = mainwindow
+				#mainwindow.set_policy(gtk.POLICY_AUTOMATIC,gtk.POLICY_AUTOMATIC)
 				mainwindow.connect("destroy",self.show_mainwindow)
 				mainwindow.set_title("oVPN.to Client %s"%(CLIENTVERSION))
 				mainwindow.set_icon_name(gtk.STOCK_HOME)
-				mainwindow.set_default_size(480,300)
+				mainwindow.set_default_size(640,480)
 				mainwindow.set_border_width(4)
 				
 				self.mainwindow_vbox = gtk.VBox(False,1)
 				self.mainwindow.add(self.mainwindow_vbox)
-				
-				self.notebook = gtk.Notebook()		
 				
 				self.mainwindow_ovpn_server()
 				
@@ -618,7 +620,7 @@ class Systray:
 	
 	def set_statusbar_text(self,text):
 		if self.MAINWINDOW_OPEN == True:
-			self.statusbar_text.set_markup(text)
+			self.statusbar_text.set_label(text)
 			self.statusbar_freeze = True
 
 	def check_passphrase(self):
@@ -1799,13 +1801,17 @@ class Systray:
 						os.mkdir(self.vpn_cfg)
 					except:
 						self.debug(text="def extract_ovpn: %s not found, create failed."%(self.vpn_cfg))
-				z1file.extractall(self.vpn_cfg)
-				z2file.extractall(self.vpn_cfg)
-				if self.write_last_update():
-					self.extract = True
-					text = "Certificates and Configs extracted."
-					self.set_statusbar_text(text)
-					return True
+				try:
+					z1file.extractall(self.vpn_cfg)
+					z2file.extractall(self.vpn_cfg)
+					if self.write_last_update():
+						text = "Certificates and Configs extracted."
+						self.set_statusbar_text(text)
+						return True
+				except:
+						text = "Error on extracting Certificates and Configs!"
+						self.set_statusbar_text(text)
+						self.debug(text=text)
 		except:
 			self.debug(text="def extract_ovpn: failed")
 				
@@ -1831,6 +1837,8 @@ class Systray:
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }	
 			
 		self.body = False
+		text = "def curl_api_request: API_ACTION = %s" % (API_ACTION)
+		self.debug(text=text)
 			
 		if self.USE_URLLIB2 == True:
 			try: 
@@ -1839,11 +1847,12 @@ class Systray:
 				req = urllib2.Request(url, data)
 				response = urllib2.urlopen(req)
 				self.body = response.read()
-				if self.body.isalnum() and len(self.body) <= 16:
-					self.debug("self.body = %s"%(self.body))
+				if self.body.isalnum() and len(self.body) <= 128:
+					self.debug("urllib2: self.body = %s"%(self.body))
 			except:
 				self.USE_URLLIB2 = False
-				text = "def curl_api_request: urllib2 error"
+				text = "def curl_api_request: urllib2 error, try with requests"
+				self.set_progressbar(text)
 				self.debug(text=text)
 
 		
@@ -1854,10 +1863,18 @@ class Systray:
 					self.body = r.content
 				else:
 					self.body = r.text
+				if self.body.isalnum() and len(self.body) <= 128:
+					self.set_progressbar(text=self.body)
+					self.debug("requests: self.body = %s"%(self.body))
+			except requests.exceptions.ConnectionError as e:
+				text = "def curl_api_request: requests error on: %s = %s" % (self.API_ACTION,e)
+				self.set_progressbar(text)
+				self.debug(text=text)
+				return False
 			except:
-				text = "def curl_api_request: requests error on: %s" % (self.API_ACTION)
-				self.debug(text=text)		
-			
+				text = "def curl_api_request: requests error on: %s failed!" % (self.API_ACTION,e)
+				self.set_progressbar(text)
+				self.debug(text=text)			
 		
 		if not self.body == False:
 		
@@ -2189,3 +2206,4 @@ def app():
 
 if __name__ == "__main__":
 	app()
+
