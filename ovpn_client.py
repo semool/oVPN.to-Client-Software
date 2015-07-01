@@ -20,9 +20,7 @@ import _winreg
 import requests
 from ConfigParser import SafeConfigParser
 
-# compiler needs: http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.24/pygtk-all-in-one-2.24.0.win32-py2.7.msi
-
-CLIENTVERSION="v0.2.6_p3-gtk"
+CLIENTVERSION="v0.2.6_p4-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -131,7 +129,6 @@ class Systray:
 		self.d0wnsIP4s = list()
 		self.d0wns_PING = False
 		self.plaintext_passphrase = False
-		self.USE_URLLIB2 = False
 		self.ENABLE_mainwindow_menubar = False
 		#self.save_passphrase = IntVar()
 		
@@ -870,26 +867,29 @@ class Systray:
 			self.ovpn_server_LOWER = server.lower()
 
 			self.ovpn_server_config_file = "%s\%s.ovpn" % (self.vpn_cfg,self.ovpn_server_UPPER)
-			for line in open(self.ovpn_server_config_file):
-				if "remote " in line:
-					print(line)
-					try:
-						ip = line.split()[1]
-						port = int(line.split()[2])
-						if self.isValueIPv4(ip) and port > 0 and port < 65535:
-							self.OVPN_CONNECTEDtoIP = ip
-							self.OVPN_CONNECTEDtoPort = port
-						#break
-					except:
-						self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file) )
-				if "proto " in line:
-					try:
-						proto = line.split()[1]
-						if proto.lower()  == "tcp" or proto.lower() == "udp":
-							self.OVPN_CONNECTEDtoProtocol = proto
-					except:
-						self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (self.ovpn_server_config_file) )
-			
+			if os.path.isfile(self.ovpn_server_config_file):
+				for line in open(self.ovpn_server_config_file):
+					if "remote " in line:
+						print(line)
+						try:
+							ip = line.split()[1]
+							port = int(line.split()[2])
+							if self.isValueIPv4(ip) and port > 0 and port < 65535:
+								self.OVPN_CONNECTEDtoIP = ip
+								self.OVPN_CONNECTEDtoPort = port
+							#break
+						except:
+							self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file) )
+					if "proto " in line:
+						try:
+							proto = line.split()[1]
+							if proto.lower()  == "tcp" or proto.lower() == "udp":
+								self.OVPN_CONNECTEDtoProtocol = proto
+						except:
+							self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (self.ovpn_server_config_file) )
+			else:
+				return False
+				
 			
 			self.ovpn_sessionlog = "%s\ovpn.log" % (self.vpn_dir)
 			self.ovpn_server_dir = "%s\%s" % (self.vpn_cfg,self.ovpn_server_LOWER)
@@ -1531,7 +1531,13 @@ class Systray:
 		self.systray_icon_syncupdate = "%s\\ico\\266.ico" % (self.bin_dir)
 		self.systray_icon_greenshield = "%s\\ico\\074.ico" % (self.bin_dir)
 		
-		if DEBUG: print("win_pre3_load_profile_dir_vars loaded")
+		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
+		if os.path.isfile(self.CA_FILE):
+			os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
+		else:
+			self.debug(text="CA_FILE not found")
+		
+		self.debug(text="win_pre3_load_profile_dir_vars loaded")
 		return True
 
 
@@ -2189,9 +2195,6 @@ def app():
 		gtk.main()
 	except KeyboardInterrupt:
 		print('KeyboardInterrupt')
-	except:
-		print('Uncaught Exception')
 
 if __name__ == "__main__":
 	app()
-
