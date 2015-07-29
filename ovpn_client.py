@@ -20,7 +20,7 @@ import _winreg
 import requests
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.2.6_p4-gtk"
+CLIENTVERSION="v0.2.6_p5-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -60,12 +60,12 @@ class Systray:
 		self.MAINWINDOW_OPEN = False
 		self.debug_log = False
 		self.OVPN_LATEST = 237
-		self.OVPN_LATEST_BUILT = "Jun 08 2015"
-		self.OVPN_LATEST_BUILT_TIMESTAMP = 1433714400
+		self.OVPN_LATEST_BUILT = "Jul 09 2015"
+		self.OVPN_LATEST_BUILT_TIMESTAMP = 1436392800
 		self.OVPN_DL_URL = False		
-		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I001-i686.exe"
+		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I603-i686.exe"
 		self.OVPN_WIN_DLHASH_x86 = ".."
-		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I001-x86_64.exe"
+		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I603-x86_64.exe"
 		self.OVPN_WIN_DLHASH_x64 = ".."
 
 		self.MAIN_WINDOW_OPEN = True
@@ -96,9 +96,11 @@ class Systray:
 		self.GATEWAY_DNS2 = False
 		self.WIN_TAP_DEVICE = False
 		self.WIN_EXT_DEVICE = False
+		self.WIN_EXT_DHCP = False
 		self.OVPN_SERVER = list()
 		self.OVPN_FAV_SERVER = False
 		#self.OVPN_FAV_SERVER = "BG1.ovpn.to"
+		self.OPENVPN_EXE = False
 		self.OVPN_AUTO_CONNECT_ON_START = False
 		self.OVPN_AUTO_RECONNECT = True
 		self.OVPN_CONNECTEDto = False
@@ -435,7 +437,7 @@ class Systray:
 			else:
 				text = _("Certificates and Configs up to date!")
 				self.set_progressbar(text)
-				self.set_statusbar_text(text)
+				#self.set_statusbar_text(text)
 				self.progressbar.set_fraction(1)
 				self.timer_check_certdl_running = False
 				return True
@@ -684,9 +686,9 @@ class Systray:
 							if self.read_options_file():
 								if self.win_get_interfaces():
 									if self.win_netsh_read_dns_to_backup():
-										if self.win_detect_openvpn():
-											if self.write_options_file():
-												return True
+										#if self.win_detect_openvpn():
+										if self.write_options_file():
+											return True
 		elif OS == "linux2" :
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))	
 		elif OS == "darwin":
@@ -735,8 +737,9 @@ class Systray:
 		self.INTERFACES.pop(0)		
 		self.debug(text="%s"%(self.INTERFACES))			
 		if len(self.INTERFACES)	< 2:
-			self.errorquit(text=_("Could not read your Network Interfaces!"))		
-		string = "openvpn.exe --show-adapters"
+			self.errorquit(text=_("Could not read your Network Interfaces!"))
+		self.win_detect_openvpn()
+		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
 		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		ADAPTERS = ADAPTERS.split('\r\n')
 		self.debug(text="TAP ADAPTER = %s"%(ADAPTERS))
@@ -825,7 +828,7 @@ class Systray:
 				pass
 			self.mainwindow_menubar()	
 			text = "oVPN AutoConnect: %s" % (server)
-			self.set_statusbar_text(text)
+			#self.set_statusbar_text(text)
 			return True
 		except:
 			self.msgwarn(text="def set_ovpn_favorite_server: failed")
@@ -841,7 +844,7 @@ class Systray:
 				pass
 			self.mainwindow_menubar()			
 			text = "oVPN AutoConnect: removed %s" % (server)
-			self.set_statusbar_text(text)
+			#self.set_statusbar_text(text)
 			return True
 		except:
 			self.msgwarn(text="def del_ovpn_favorite_server: failed")			
@@ -907,7 +910,7 @@ class Systray:
 				self.debug(text=_("Started: oVPN %s on Thread: %s") %(server,self.OVPN_THREADID))
 			except:
 				text=_("Error! Unable to start thread: oVPN %s ")%(server)
-				self.set_statusbar_text(text)
+				#self.set_statusbar_text(text)
 				self.msgwarn(text=text)
 				
 			if self.OVPN_AUTO_RECONNECT == True:
@@ -920,12 +923,12 @@ class Systray:
 					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
 					self.debug(text="Started: self.inThread_timer_openvpn_reconnect() on Thread: %s" %(self.OVPN_PING_TIMER_THREADID))
 					text = "oVPN Watchdog enabled. Connecting to %s" % (server)
-					self.set_statusbar_text(text)
+					#self.set_statusbar_text(text)
 					self.debug(text=text)
 					self.mainwindow_menubar()
 				except:
 					text = "Could not start oVPN Watchdog"
-					self.set_statusbar_text(text)
+					#self.set_statusbar_text(text)
 					self.debug(text=text)
 			else:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == False")
@@ -966,7 +969,7 @@ class Systray:
 					elif self.OVPN_PING_STAT >= 0:
 						OVPN_PING_out = 9999
 						text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
-						self.set_statusbar_text(text)
+						#self.set_statusbar_text(text)
 						#self.debug(text="def inThread_timer_ovpn_ping: split ping failed, connection timed out")
 				
 				pingsum = 0
@@ -1017,6 +1020,7 @@ class Systray:
 		if not self.win_firewall_start():
 			self.msgwarn(_("Could not start Windows Firewall!"))
 		self.win_firewall_modify_rule(option="add")
+		time.sleep(5)		
 		self.ovpn_proc_retcode = subprocess.call("%s" % (self.ovpn_string),shell=True)
 		self.win_firewall_modify_rule(option="delete")
 		self.OVPN_CONNECTEDtoIPbefore = self.OVPN_CONNECTEDtoIP
@@ -1097,7 +1101,8 @@ class Systray:
 		self.OVPN_AUTO_RECONNECT = False
 		self.OVPN_RECONNECT_NOW = False
 		self.debug(text="def kill_openvpn")	
-		string = "taskkill /im openvpn.exe /f"
+		exe = self.OPENVPN_EXE.split("\\")[-1]
+		string = "taskkill /im %s /f" % (exe)
 		try:
 			self.OVPN_KILL2 = subprocess.check_output("%s" % (string),shell=True)
 		except:
@@ -1135,42 +1140,59 @@ class Systray:
 				text = _("%s (DNScrypt enabled)") % (text)
 			else:
 				text = _("%s (direct connection)") % (text)
-			self.set_statusbar_text(text)
+			#self.set_statusbar_text(text)
 			self.DNS_SELECTED = dns_ipv4
 			self.DNS_SELECTEDcountry = countrycode
 			#self.UPDATE_MENUBAR = True
 			self.debug(text=":true")
 		except:
 			text = _("oVPN DNS Change failed!")
-			set_statusbar_text(self,text)		
+			#set_statusbar_text(self,text)		
 			self.debug(text="def win_netsh_change_dns_server: failed\n%s\n%s"%(string1,string2))
 		
 	
-	def win_netsh_restore_dns_dhcp(self):
-		os.system('netsh interface ip set dnsservers "%" dhcp'%(self.WIN_EXT_DEVICE))
-
-		
+	
 	def win_netsh_restore_dns_from_backup(self):
 		self.netsh_cmdlist = list()
+		if self.WIN_EXT_DHCP == True:
+			string = 'interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE)
+			self.netsh_cmdlist.append(string)
+			if self.win_join_netsh_cmd():
+				text=_("Primary DNS Server restored to DHCP.")
+				self.debug(text=text)
+				return True
+			else:
+				text=_("Error: Restoring your Primary DNS Server to DHCP failed.")%(self.GATEWAY_DNS2)
+				self.debug(text=text)
+				#self.msgwarn(text=text)
+				return False
+			
+			
 		if not self.GATEWAY_DNS1 == self.OVPN_GATEWAY_IP4:
 			string = 'interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1)
 			self.netsh_cmdlist.append(string)
 			if self.win_join_netsh_cmd():
 				text=_("Primary DNS Server restored to: %s")%(self.GATEWAY_DNS1)
-				self.msgwarn(text=text)
+				self.debug(text=text)
+				return True
 			else:
-				text=_("Error: Restoring your 1st DNS Server to %s failed.")%(self.GATEWAY_DNS2)
-				self.msgwarn(text=text)
+				text=_("Error: Restoring your Primary DNS Server to %s failed.")%(self.GATEWAY_DNS2)
+				self.debug(text=text)
+				#self.msgwarn(text=text)				
+				return False
 				
 		if not self.GATEWAY_DNS2 == False:
 			string = 'interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2)
 			self.netsh_cmdlist.append(string)
 			if self.win_join_netsh_cmd():
 				text=_("Secondary DNS Server restored to: %s")%(self.GATEWAY_DNS2)
-				self.msgwarn(text=text)
+				self.debug(text=text)
+				return True
 			else:
 				text=_("Error: Restoring your 2nd DNS Server to %s failed.")%(self.GATEWAY_DNS2)
-				self.msgwarn(text=text)	
+				self.debug(text=text)
+				#self.msgwarn(text=text)
+				return False
 			
 
 		
@@ -1190,6 +1212,9 @@ class Systray:
 					m1=i+1
 
 				if i == m1:
+					if "DHCP" in line:
+						self.WIN_EXT_DHCP = True
+						return True
 					if "DNS" in line:
 						m2=i+1
 						try:
@@ -1298,11 +1323,33 @@ class Systray:
 				return True	
 		except:
 			return False			
+
+	def win_select_openvpn(self):
+		dialog = gtk.FileChooserDialog("Open..",None,gtk.FILE_CHOOSER_ACTION_OPEN,
+									   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+										gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+		dialog.set_default_response(gtk.RESPONSE_OK)
+		filter = gtk.FileFilter()
+		filter.set_name("*.exe")
+		filter.add_pattern("*.exe")
+		response = dialog.run()
+		if response == gtk.RESPONSE_OK:
+			self.OPENVPN_EXE = dialog.get_filename()
+			text = dialog.get_filename(), 'selected: %s' % (self.OPENVPN_EXE)			
+			self.debug(text)
+			dialog.destroy()
+			return True
+		elif response == gtk.RESPONSE_CANCEL:
+			text = 'Closed, no files selected'
+			self.debug(text)
+			dialog.destroy()
+			return False			
+				
+
 		
+	
 	def win_detect_openvpn(self):
-		self.OPENVPN_EXE = False
 		os_programfiles = "PROGRAMFILES PROGRAMFILES(x86) PROGRAMW6432"
-		r = 0
 		for getenv in os_programfiles.split():
 			programfiles = os.getenv(getenv)
 			file = "%s\\OpenVPN\\bin\\openvpn.exe" % (programfiles)
@@ -1310,36 +1357,38 @@ class Systray:
 				self.debug(text="def win_detect_openvpn: %s" % (file))
 				self.OPENVPN_EXE = file
 				break
+
 		
 		if self.OPENVPN_EXE == False:
-			self.errorquit(text=_("Could not find openvpn.exe"))
-		else:
-			try:
-				out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()		
-			except:
-				self.errorquit(text=_("Could not detect openVPN Version!"))
-			try:	
-				self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
-				self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
-				if self.OVPN_VERSION >= self.OVPN_LATEST:
-					if self.OVPN_BUILT == self.OVPN_LATEST_BUILT:
+			if not self.win_select_openvpn():
+				self.errorquit(text=_("Could not find openvpn.exe"))
+				
+		try:
+			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()		
+		except:
+			self.errorquit(text=_("Could not detect openVPN Version!"))
+		try:	
+			self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
+			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
+			if self.OVPN_VERSION >= self.OVPN_LATEST:
+				if self.OVPN_BUILT == self.OVPN_LATEST_BUILT:
+					return True
+				else:
+					built_mon = self.OVPN_BUILT[0]
+					built_day = int(self.OVPN_BUILT[1])
+					built_year = int(self.OVPN_BUILT[2])
+					builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
+					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
+					built_month_int = int(string_built_time.tm_mon)
+					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
+					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
 						return True
 					else:
-						built_mon = self.OVPN_BUILT[0]
-						built_day = int(self.OVPN_BUILT[1])
-						built_year = int(self.OVPN_BUILT[2])
-						builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
-						string_built_time = time.strptime(builtstr,"%b/%d/%Y")
-						built_month_int = int(string_built_time.tm_mon)
-						built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
-						if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
-							return True
-						else:
-							self.errorquit(text=_("Please update your openVPN Version!"))
-				else:
-					self.errorquit(text=_("Please update your openVPN Version!"))
-			except:
-				self.errorquit(text=_("def win_detect_openvpn: Failed"))
+						self.errorquit(text=_("Please update your openVPN Version to\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64))
+			else:
+				self.errorquit(text=_("Please update your openVPN Version!"))
+		except:
+			self.errorquit(text=_("def win_detect_openvpn: Failed"))
 		
 			
 	def win_pre1_check_app_dir(self):
@@ -1629,21 +1678,41 @@ class Systray:
 				parser = SafeConfigParser()
 				parser.read(self.opt_file)
 				
-				self.PH = parser.get('oVPN','passphrase')
-				if self.PH == "False":
-					self.PH = False
+				try:
+					self.PH = parser.get('oVPN','passphrase')
+					if self.PH == "False":
+						self.PH = False
+				except:
+					pass					
+				
+				try:
+					self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
+					if self.OVPN_AUTO_CONNECT_ON_START == "False": 
+						self.OVPN_AUTO_CONNECT_ON_START = False
+				except:
+					pass			
+				
 					
-				self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
-				if self.OVPN_AUTO_CONNECT_ON_START == "False": 
-					self.OVPN_AUTO_CONNECT_ON_START = False
+				try:
+					self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
+					if self.OVPN_FAV_SERVER == "False": 
+						self.OVPN_FAV_SERVER = False
+				except:
+					pass					
 				
-				self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
-				if self.OVPN_FAV_SERVER == "False": 
-					self.OVPN_FAV_SERVER = False
-				
-				self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
-				if self.WIN_EXT_DEVICE == "False": 
-					self.WIN_EXT_DEVICE = False
+				try:
+					self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
+					if self.WIN_EXT_DEVICE == "False": 
+						self.WIN_EXT_DEVICE = False
+				except:
+					pass
+
+				try:
+					self.OPENVPN_EXE = parser.get('oVPN','openvpnexe')
+					if self.OPENVPN_EXE == "False":
+						self.OPENVPN_EXE = False
+				except:
+					pass
 					
 				return True
 			except:
@@ -1661,6 +1730,7 @@ class Systray:
 				parser.set('oVPN','autoconnect','False')
 				parser.set('oVPN','favserver','False')
 				parser.set('oVPN','winextdevice','False')
+				parser.set('oVPN','openvpnexe','False')
 				parser.write(cfg)
 				cfg.close()
 				return True
@@ -1676,6 +1746,8 @@ class Systray:
 			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
+			parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
+			
 			parser.write(cfg)
 			cfg.close()
 			return True
@@ -1728,7 +1800,7 @@ class Systray:
 							self.CFGSHA = CFGSHA[1]
 							return True
 			text = _("Invalid Passphrase!")
-			self.set_statusbar_text(text)
+			#self.set_statusbar_text(text)
 			self.debug(text="def read_apikey_config passphrase :False")
 			return False
 		
@@ -1816,11 +1888,11 @@ class Systray:
 					z2file.extractall(self.vpn_cfg)
 					if self.write_last_update():
 						text = "Certificates and Configs extracted."
-						self.set_statusbar_text(text)
+						#self.set_statusbar_text(text)
 						return True
 				except:
 						text = "Error on extracting Certificates and Configs!"
-						self.set_statusbar_text(text)
+						#self.set_statusbar_text(text)
 						self.debug(text=text)
 		except:
 			self.debug(text="def extract_ovpn: failed")
@@ -1993,10 +2065,13 @@ class Systray:
 				self.systraytext_from_before = systraytext
 				self.tray.set_from_file(systrayicon)
 				self.tray.set_tooltip(('%s'%(systraytext)))
-				
+			
+			#fixme: memoryleak
+			"""
 			if not self.statustext_from_before == text:
 				self.set_statusbar_text(text)
 				self.statustext_from_before = text
+			"""
 		except:
 			pass
 		
