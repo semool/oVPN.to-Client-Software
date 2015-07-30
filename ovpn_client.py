@@ -20,7 +20,7 @@ import _winreg
 import requests
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.2.6_p6-gtk"
+CLIENTVERSION="v0.2.6_p7-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -968,7 +968,7 @@ class Systray:
 					elif self.OVPN_PING_STAT >= 0:
 						OVPN_PING_out = 9999
 						#text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
-						self.set_statusbar_text(text)
+						#self.set_statusbar_text(text)
 						#self.debug(text="def inThread_timer_ovpn_ping: split ping failed, connection timed out")
 				
 				pingsum = 0
