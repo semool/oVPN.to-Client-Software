@@ -20,7 +20,7 @@ import _winreg
 import requests
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.2.6_p5-gtk"
+CLIENTVERSION="v0.2.6_p6-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -83,7 +83,6 @@ class Systray:
 		self.statustext_from_before = False
 		self.systraytext_from_before = False
 		self.stop_systray_timer = False
-		#self.statusbar_text = StringVar()
 		self.statusbar_freeze = False
 		self.SYSTRAYon = False
 		self.screen_width = 320
@@ -417,7 +416,7 @@ class Systray:
 									self.body = False
 									text = _("Extracting oVPN Certificates...")
 									self.set_progressbar(text)										
-									if self.extract_ovpn():										
+									if self.extract_ovpn():								
 										self.debug(text="extraction complete")
 										#self.tray.set_from_stock(gtk.STOCK_DISCONNECT)										
 										text = _("Complete!")
@@ -437,7 +436,7 @@ class Systray:
 			else:
 				text = _("Certificates and Configs up to date!")
 				self.set_progressbar(text)
-				#self.set_statusbar_text(text)
+				self.set_statusbar_text(text)
 				self.progressbar.set_fraction(1)
 				self.timer_check_certdl_running = False
 				return True
@@ -828,7 +827,7 @@ class Systray:
 				pass
 			self.mainwindow_menubar()	
 			text = "oVPN AutoConnect: %s" % (server)
-			#self.set_statusbar_text(text)
+			self.set_statusbar_text(text)
 			return True
 		except:
 			self.msgwarn(text="def set_ovpn_favorite_server: failed")
@@ -844,7 +843,7 @@ class Systray:
 				pass
 			self.mainwindow_menubar()			
 			text = "oVPN AutoConnect: removed %s" % (server)
-			#self.set_statusbar_text(text)
+			self.set_statusbar_text(text)
 			return True
 		except:
 			self.msgwarn(text="def del_ovpn_favorite_server: failed")			
@@ -910,7 +909,7 @@ class Systray:
 				self.debug(text=_("Started: oVPN %s on Thread: %s") %(server,self.OVPN_THREADID))
 			except:
 				text=_("Error! Unable to start thread: oVPN %s ")%(server)
-				#self.set_statusbar_text(text)
+				self.set_statusbar_text(text)
 				self.msgwarn(text=text)
 				
 			if self.OVPN_AUTO_RECONNECT == True:
@@ -923,12 +922,12 @@ class Systray:
 					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
 					self.debug(text="Started: self.inThread_timer_openvpn_reconnect() on Thread: %s" %(self.OVPN_PING_TIMER_THREADID))
 					text = "oVPN Watchdog enabled. Connecting to %s" % (server)
-					#self.set_statusbar_text(text)
+					self.set_statusbar_text(text)
 					self.debug(text=text)
 					self.mainwindow_menubar()
 				except:
 					text = "Could not start oVPN Watchdog"
-					#self.set_statusbar_text(text)
+					self.set_statusbar_text(text)
 					self.debug(text=text)
 			else:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == False")
@@ -968,15 +967,15 @@ class Systray:
 						OVPN_PING_out = -2
 					elif self.OVPN_PING_STAT >= 0:
 						OVPN_PING_out = 9999
-						text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
-						#self.set_statusbar_text(text)
+						#text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
+						self.set_statusbar_text(text)
 						#self.debug(text="def inThread_timer_ovpn_ping: split ping failed, connection timed out")
 				
 				pingsum = 0
 				if OVPN_PING_out > 0:
 					self.OVPN_PING.append(OVPN_PING_out)
 					self.OVPN_PING_LAST = OVPN_PING_out
-				if len(self.OVPN_PING) > 360:
+				if len(self.OVPN_PING) > 16:
 					self.OVPN_PING.pop(0)
 				if len(self.OVPN_PING) > 0:
 					for ping in self.OVPN_PING:
@@ -1140,7 +1139,7 @@ class Systray:
 				text = _("%s (DNScrypt enabled)") % (text)
 			else:
 				text = _("%s (direct connection)") % (text)
-			#self.set_statusbar_text(text)
+			self.set_statusbar_text(text)
 			self.DNS_SELECTED = dns_ipv4
 			self.DNS_SELECTEDcountry = countrycode
 			#self.UPDATE_MENUBAR = True
@@ -1174,12 +1173,10 @@ class Systray:
 			if self.win_join_netsh_cmd():
 				text=_("Primary DNS Server restored to: %s")%(self.GATEWAY_DNS1)
 				self.debug(text=text)
-				return True
 			else:
 				text=_("Error: Restoring your Primary DNS Server to %s failed.")%(self.GATEWAY_DNS2)
 				self.debug(text=text)
-				#self.msgwarn(text=text)				
-				return False
+				#self.msgwarn(text=text)
 				
 		if not self.GATEWAY_DNS2 == False:
 			string = 'interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2)
@@ -1187,12 +1184,10 @@ class Systray:
 			if self.win_join_netsh_cmd():
 				text=_("Secondary DNS Server restored to: %s")%(self.GATEWAY_DNS2)
 				self.debug(text=text)
-				return True
 			else:
 				text=_("Error: Restoring your 2nd DNS Server to %s failed.")%(self.GATEWAY_DNS2)
 				self.debug(text=text)
 				#self.msgwarn(text=text)
-				return False
 			
 
 		
@@ -1800,7 +1795,7 @@ class Systray:
 							self.CFGSHA = CFGSHA[1]
 							return True
 			text = _("Invalid Passphrase!")
-			#self.set_statusbar_text(text)
+			self.set_statusbar_text(text)
 			self.debug(text="def read_apikey_config passphrase :False")
 			return False
 		
@@ -1855,13 +1850,20 @@ class Systray:
 			
 			
 	def check_last_server_update(self):
-		cfg = open(self.api_upd,'r')
-		read_data = cfg.read()
-		cfg.close()
-		if read_data < self.remote_lastupdate:
-			if DEBUG: print("our last update: %s") % (read_data)
-			return True	
-	
+		if os.path.isfile(self.api_upd):
+			cfg = open(self.api_upd,'r')
+			read_data = cfg.read()
+			cfg.close()
+			if read_data < self.remote_lastupdate:
+				text = "our last update: %s" % (read_data)
+				self.debug(text=text)
+				return True
+		else:
+			cfg = open(self.api_upd,'wb')
+			cfg.write("0")
+			cfg.close()
+			return True
+			
 	
 	def write_last_update(self):
 		try:
@@ -1873,12 +1875,23 @@ class Systray:
 			self.debug(text="def write_last_update: Failed")
 			return False
 
+			
+	def delete_dir(self,path):
+		if self.OS == "win32":
+			string = 'rmdir /S /Q "%s"' % (path)
+			text = "def delete_dir: %s" % (string)
+			self.debug(text=text)
+			subprocess.check_output("%s" % (string),shell=True)
+		
+			
 	def extract_ovpn(self):
 		try:
 			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):			
 				z1file = zipfile.ZipFile(self.zip_cfg)
 				z2file = zipfile.ZipFile(self.zip_crt)
-				if not os.path.isfile(self.vpn_cfg):
+				if os.path.isdir(self.vpn_cfg):
+					self.delete_dir(self.vpn_cfg)
+				if not os.path.isdir(self.vpn_cfg):
 					try:
 						os.mkdir(self.vpn_cfg)
 					except:
@@ -1888,12 +1901,13 @@ class Systray:
 					z2file.extractall(self.vpn_cfg)
 					if self.write_last_update():
 						text = "Certificates and Configs extracted."
-						#self.set_statusbar_text(text)
+						self.set_statusbar_text(text)
 						return True
 				except:
 						text = "Error on extracting Certificates and Configs!"
-						#self.set_statusbar_text(text)
+						self.set_statusbar_text(text)
 						self.debug(text=text)
+						return False
 		except:
 			self.debug(text="def extract_ovpn: failed")
 				
@@ -2041,11 +2055,11 @@ class Systray:
 				systraytext = text
 				systrayicon = self.systray_icon_hourglass
 				self.debug(text=text)
-			elif self.OVPN_PING_LAST == 9999:
-				text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
-				systraytext = text
-				systrayicon = self.systray_icon_disconnected
-				self.debug(text=text)
+			#elif self.OVPN_PING_LAST == 9999:
+				#text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
+				#systraytext = text
+				#systrayicon = self.systray_icon_disconnected
+				#self.debug(text=text)
 			else:					
 				if self.OVPN_isTESTING == True:
 					self.OVPN_PING = list()
@@ -2057,7 +2071,8 @@ class Systray:
 				h, m = divmod(m, 60)
 				d, h = divmod(h, 24)
 				self.OVPN_CONNECTEDtimetext = "%d:%d:%02d:%02d"  % (d,h,m,s)
-				text = _("oVPN is connected ( %s ) to %s ( %s / %s ms )")%(self.OVPN_CONNECTEDtimetext,self.OVPN_CONNECTEDto,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+				#text = _("oVPN is connected ( %s ) to %s ( %s / %s ms )")%(self.OVPN_CONNECTEDtimetext,self.OVPN_CONNECTEDto,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+				text = _("oVPN is connected ( %s ) to %s ( %s ms )")%(self.OVPN_CONNECTEDtimetext,self.OVPN_CONNECTEDto,self.OVPN_PING_LAST)
 				systraytext = text
 				systrayicon = self.systray_icon_connected
 		try:	
@@ -2067,11 +2082,10 @@ class Systray:
 				self.tray.set_tooltip(('%s'%(systraytext)))
 			
 			#fixme: memoryleak
-			"""
 			if not self.statustext_from_before == text:
 				self.set_statusbar_text(text)
 				self.statustext_from_before = text
-			"""
+			
 		except:
 			pass
 		
