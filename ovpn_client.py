@@ -20,7 +20,7 @@ import _winreg
 import requests
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.2.6_p8-gtk"
+CLIENTVERSION="v0.2.6_p9-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -1331,12 +1331,12 @@ class Systray:
 		if response == gtk.RESPONSE_OK:
 			self.OPENVPN_EXE = dialog.get_filename()
 			text = dialog.get_filename(), 'selected: %s' % (self.OPENVPN_EXE)			
-			self.debug(text)
+			self.debug(text=text)
 			dialog.destroy()
 			return True
 		elif response == gtk.RESPONSE_CANCEL:
 			text = 'Closed, no files selected'
-			self.debug(text)
+			self.debug(text=text)
 			dialog.destroy()
 			return False			
 				
@@ -1357,7 +1357,9 @@ class Systray:
 		if self.OPENVPN_EXE == False:
 			if not self.win_select_openvpn():
 				self.errorquit(text=_("Could not find openvpn.exe"))
-				
+	
+		text = "Using: %s" % (self.OPENVPN_EXE)
+		self.debug(text=text)		
 		try:
 			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()		
 		except:
@@ -1365,8 +1367,13 @@ class Systray:
 		try:	
 			self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
 			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
+			self.OVPN_LATEST_BUILT = self.OVPN_LATEST_BUILT.split()
+			text = "self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATEST_BUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATEST_BUILT)
+			self.debug(text=text)
 			if self.OVPN_VERSION >= self.OVPN_LATEST:
 				if self.OVPN_BUILT == self.OVPN_LATEST_BUILT:
+					text = "self.OVPN_BUILT == self.OVPN_LATEST_BUILT: True"
+					self.debug(text=text)
 					return True
 				else:
 					built_mon = self.OVPN_BUILT[0]
@@ -1376,7 +1383,9 @@ class Systray:
 					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
 					built_month_int = int(string_built_time.tm_mon)
 					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
-					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
+					text = "openvpn built_timestamp = %s self.OVPN_LATEST_BUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATEST_BUILT_TIMESTAMP)
+					self.debug(text=text)
+					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:						
 						return True
 					else:
 						self.errorquit(text=_("Please update your openVPN Version to\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64))
@@ -2216,17 +2225,22 @@ class Systray:
 				return True
 			except:
 				text=_("remove lock failed")
-				self.msgwarn(text)
+				self.msgwarn(text=text)
 		else:
 			text=_("Could not delete LOCK. File not found.")
-			self.msgwarn()
+			self.msgwarn(text=text)
 
 			
 	def errorquit(self,text):
-		self.debug(text)
-		message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
-		message.set_markup("%s"%(text))
-		message.run()
+		text = "errorquit: %s" % (text)
+		self.debug(text=text)
+		try:
+			message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+			message.set_markup("%s"%(text))
+			message.run()
+		except:
+			text = "%s failed" % (text)
+			self.debug(text=text)
 		sys.exit()
 			
 	def debug(self,text):
@@ -2267,13 +2281,13 @@ class Systray:
 		
 	def msgwarn(self,text):
 		try:
-			self.debug(text)
+			self.debug(text=text)
 			message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
 			message.set_markup("%s"%(text))
 			message.run()
 			message.destroy()
 		except:
-			self.debug(text)
+			self.debug(text=text)
 
 		
 		
