@@ -21,7 +21,7 @@ import requests
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.2.7-gtk"
+CLIENTVERSION="v0.2.8-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -60,13 +60,13 @@ class Systray:
 	def self_vars(self):
 		self.MAINWINDOW_OPEN = False
 		self.debug_log = False
-		self.OVPN_LATEST = 237
-		self.OVPN_LATEST_BUILT = "Jul  9 2015"
-		self.OVPN_LATEST_BUILT_TIMESTAMP = 1436392800
-		self.OVPN_DL_URL = False		
-		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I603-i686.exe"
+		self.OVPN_LATEST = 238
+		self.OVPN_LATEST_BUILT = "Aug 4 2015"
+		self.OVPN_LATEST_BUILT_TIMESTAMP = 1438639200
+		self.OVPN_DL_URL = False
+		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.8-I601-i686.exe"
 		self.OVPN_WIN_DLHASH_x86 = ".."
-		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.7-I603-x86_64.exe"
+		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.8-I601-x86_64.exe"
 		self.OVPN_WIN_DLHASH_x64 = ".."
 
 		self.MAIN_WINDOW_OPEN = True
