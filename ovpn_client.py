@@ -21,7 +21,7 @@ import requests
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.2.8-gtk"
+CLIENTVERSION="v0.2.9-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -396,6 +396,9 @@ class Systray:
 			self.progresswindow.set_border_width(6)
 			self.progresswindow.set_title("oVPN Server Update")
 			self.progresswindow.set_icon_from_file(self.systray_icon_syncupdate)
+			#self.progresswindow.set_resizable(False)
+			#self.progresswindow.set_type_hint(GDK_WINDOW_TYPE_HINT_MENU)
+			#self.progresswindow.
 			self.progressbar = gtk.ProgressBar()
 			self.progressbar.set_pulse_step(0)
 			self.progresswindow.add(self.progressbar)
@@ -411,8 +414,7 @@ class Systray:
 				self.progressbarfraction += 0.05
 			else:
 				self.progressbarfraction = 0.05
-			text = "oVPN Update: %s" % (text)
-			self.progressbar.set_text("%s"%(text))
+			self.progressbar.set_text(text)
 			self.progressbar.set_fraction(self.progressbarfraction)
 		except:
 			text = "def set_progressbar: failed"
@@ -707,6 +709,8 @@ class Systray:
 			if self.compare_confighash():
 				self.debug(text="def check_passphrase: self.compare_confighash() :True")
 				return True
+		else:
+			self.form_reask_userid()
 					
 
 	def preboot_check(self,logout):
@@ -815,7 +819,7 @@ class Systray:
 		self.INTERFACES.pop(0)		
 		self.debug(text="%s"%(self.INTERFACES))			
 		if len(self.INTERFACES)	< 2:
-			self.errorquit(text=_("Could not read your Network Interfaces!"))
+			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
 		self.win_detect_openvpn()
 		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
 		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
@@ -828,6 +832,7 @@ class Systray:
 				if line.startswith("'%s'"%(INTERFACE)):
 					self.debug(text=INTERFACE+" is TAP ADAPTER")
 					self.WIN_TAP_DEVICE = INTERFACE
+					self.win_enable_tap_interface()
 					break
 				""" do not remove! maybe need for debug in future """
 				#elif line.startswith("Available TAP-WIN32 adapters"):
@@ -841,7 +846,8 @@ class Systray:
 				#	pass
 					
 		if self.WIN_TAP_DEVICE == False:
-			self.errorquit(text=_("No openVPN TAP-Adapter found!"))
+			text = _("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)	
+			self.errorquit(text=text)
 		else:
 			self.INTERFACES.remove(self.WIN_TAP_DEVICE)
 			self.debug(text="remaining INTERFACES = %s"%(self.INTERFACES))
@@ -1089,6 +1095,7 @@ class Systray:
 		self.debug(text="def inThread_spawn_openvpn_process")
 		self.ovpn_proc_retcode = False
 		self.STATE_OVPN = True
+		self.win_enable_tap_interface()
 		self.OVPN_CONNECTEDto = self.call_ovpn_srv
 		self.win_netsh_set_dns_ovpn()
 		self.OVPN_PING_STAT = -1
@@ -1354,7 +1361,13 @@ class Systray:
 		self.netsh_cmdlist = list()
 		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
 		return self.win_join_netsh_cmd()
-	
+		
+	def win_enable_tap_interface(self):
+		self.debug(text="def win_enable_tap_interface:")
+		self.netsh_cmdlist = list()
+		self.netsh_cmdlist.append('interface set interface "%s" ENABLED'%(self.WIN_TAP_DEVICE))
+		return self.win_join_netsh_cmd()
+		
 	"""
 	*fixme* (unused)
 	def win_disable_interface(self):
@@ -1414,6 +1427,8 @@ class Systray:
 			return False			
 
 	def win_select_openvpn(self):
+		text = "OpenVPN not found, please select openvpn.exe"
+		self.msgwarn(text=text)
 		dialog = gtk.FileChooserDialog("Open..",None,gtk.FILE_CHOOSER_ACTION_OPEN,
 									   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
 										gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -1450,7 +1465,8 @@ class Systray:
 		
 		if self.OPENVPN_EXE == False or not os.path.isfile(self.OPENVPN_EXE):
 			if not self.win_select_openvpn():
-				self.errorquit(text=_("Could not find openvpn.exe"))
+				text = _("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)
+				self.errorquit(text=text)
 	
 		text = "Using: %s" % (self.OPENVPN_EXE)
 		self.debug(text=text)		
@@ -1643,6 +1659,13 @@ class Systray:
 					self.form_ask_userid()
 		except:
 			self.debug(text="def form_ask_userid: Failed")
+			
+	def form_reask_userid(self):
+		if self.form_ask_userid():
+			if self.write_new_apikey_config():
+				if self.check_passphrase():
+					return True
+		return False
 			
 	def win_pre3_load_profile_dir_vars(self):
 		self.api_dir = "%s\\%s" % (self.app_dir,self.profile)
@@ -1881,8 +1904,8 @@ class Systray:
 				return False		
 		
 	def read_apikey_config(self):
-		self.debug(text="def read_apikey_config: self.PH = %s" %(self.PH))
-		if not self.PH == False and self.load_decryption():
+		#self.debug(text="def read_apikey_config: self.PH = %s" %(self.PH))
+		if not self.PH == False and self.load_decryption() and os.path.isfile(self.api_cfg):
 			self.debug(text="def read_apikey_config: go")
 			cfg = open(self.api_cfg,'r')
 			read_data = cfg.read()
@@ -1901,11 +1924,11 @@ class Systray:
 				CFGSHA = self.apidata[2].split("=")
 				if len(USERID) == 2 and USERID[1] > 1 and USERID[1].isdigit():					
 					#self.debug(text="def read_apikey_config USERID = %s :True" % (USERID))
-					self.debug(text="def read_apikey_config USERID = profile-folder :True" % (USERID))
+					#self.debug(text="def read_apikey_config USERID = profile-folder :True" % (USERID))
 					if len(APIKEY) == 2 and len(APIKEY[1]) == 128 and APIKEY[1].isalnum():						
-						self.debug(text="def read_apikey_config APIKEY len = %s :True" % (len(APIKEY)))			
+						#self.debug(text="def read_apikey_config APIKEY len = %s :True" % (len(APIKEY)))			
 						if len(CFGSHA) == 2 and len(CFGSHA[1]) == 64 and CFGSHA[1].isalnum():
-							self.debug(text="def read_apikey_config CFGSHA = %s" % (CFGSHA))
+							#self.debug(text="def read_apikey_config CFGSHA = %s" % (CFGSHA))
 							self.APIKEY = APIKEY[1]
 							self.CFGSHA = CFGSHA[1]
 							return True
@@ -2098,8 +2121,11 @@ class Systray:
 					self.curldata = self.curldata[1]
 					return True
 			else:
-				os.remove(self.api_cfg)
-				self.errorquit(_("Invalid User-ID/API-Key. Encrypted API-Keyfile deleted."))
+				text = _("Invalid User-ID / API-Key or Account expired.")
+				self.msgwarn(text=text)
+				#os.remove(self.api_cfg)
+				#self.errorquit()				
+				return self.form_reask_userid()
 		
 			if self.API_ACTION == "getconfigs":
 				try:
