@@ -2370,16 +2370,16 @@ class Systray:
 			
 	def ask_loadorunload_fw(self):
 		try:
-			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_OK_CANCEL)
-			dialog.set_markup("OK: Enable Firewall and block Internet\r\n\r\nCancel: Disable Firewall and allow Internet")
+			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+			dialog.set_markup("Do you want to disable the firewall and allow direct access to the internet?")
 			response = dialog.run()
 
 			if self.OS == "win32":
-				if response == gtk.RESPONSE_OK:
+				if response == Gtk.ResponseType.NO:
 					self.win_firewall_start()
 					self.win_netsh_restore_dns_from_backup()
 						
-				if response == gtk.RESPONSE_CANCEL:
+				elif response == Gtk.ResponseType.YES:
 					self.win_firewall_allow_outbound()
 					self.win_netsh_restore_dns_from_backup()
 
