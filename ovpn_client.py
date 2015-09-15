@@ -21,7 +21,7 @@ import requests
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.2.9-gtk"
+CLIENTVERSION="v0.3.0-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -792,16 +792,39 @@ class Systray:
 					return True
 			
 	def win_read_interfaces(self):
-		self.INTERFACES = list()						
+		self.INTERFACES = list()
 		string = "netsh interface show interface"
 		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
-		ADAPTERS = ADAPTERS.split('\r\n')
+		ADAPTERS = ADAPTERS.split('\r\n')	
+		LANG = "undef"
+		
+		# language read hint
+		if ADAPTERS[1].endswith("nsefladenavn"):
+			LANG = "DK"
+		elif ADAPTERS[1].endswith("Schnittstellenname"):
+			LANG = "DE"
+		elif ADAPTERS[1].endswith("Interface Name"):
+			LANG = "EN"
+		else:
+			text="Possible Error reading your Interfaces from netsh.exe. Contact support@ovpn.to with Error-ID:\nADAPTERS[1]=(%s)\n" % (ADAPTERS[1])
+			self.msgwarn(text=text)
+		
+		text = "def win_read_interfaces: LANG = %s" % (LANG)
+		self.debug(text=text)
 		for line in ADAPTERS:
 			print line
 			interface = line.split()
 			try:
-				interface = interface[3:]
-				ilen = len(interface)	
+				if LANG == "DK":
+					if interface[1].startswith("Forbindelsen"):
+						interface = interface[5:]
+					elif interface[1].startswith("Afbrudt"):
+						interface = interface[3:]
+				elif LANG == "DE" or LANG == "EN":
+					interface = interface[3:]
+				else:
+					interface = interface[3:]
+				ilen = len(interface)
 				if ilen > 1:
 					nface = None
 					for iface in interface:
@@ -1287,11 +1310,11 @@ class Systray:
 			search = '"%s"' % (self.WIN_EXT_DEVICE)
 			list = read.strip(' ').split('\r\n')
 			i, m1, m2, t = 0, 0, 0 ,0
+			self.debug(text="def win_netsh_read_dns_to_backup:")
 			for line in list:
-				#self.debug(text=line)
 				if search in line:
-					self.debug(text=line)
-					self.debug(text="%s"%(i))
+					text = "found: %s in %s line %s" % (search,line,i)
+					self.debug(text=text)
 					m1=i+1
 
 				if i == m1:
@@ -1672,7 +1695,7 @@ class Systray:
 		self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		
-		self.debug_log = "%s\\cient_debug.log" % (self.api_dir)
+		self.debug_log = "%s\\client_debug.log" % (self.api_dir)
 		if DEBUG:
 			try:
 				dbg = open(self.debug_log,'wb')
@@ -2358,7 +2381,20 @@ class Systray:
 			except: 
 				pass
 			
-			self.ask_loadorunload_fw()
+			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_NONE)
+			dialog.set_markup("Do you really want to quit?")
+			dialog.add_button(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL)
+			dialog.add_button(gtk.STOCK_QUIT,gtk.RESPONSE_CLOSE)
+			response = dialog.run()
+			dialog.destroy()
+			
+			if response == gtk.RESPONSE_CANCEL:
+				return False
+			if response == gtk.RESPONSE_CLOSE:
+				self.ask_loadorunload_fw()
+			else:
+				return False			
+			
 			
 			text=_("close app")
 			self.debug(text=text)
@@ -2370,20 +2406,19 @@ class Systray:
 			
 	def ask_loadorunload_fw(self):
 		try:
-			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=Gtk.ButtonsType.YES_NO)
-			dialog.set_markup("Do you want to disable the firewall and allow direct access to the internet?")
+			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
+			dialog.set_markup("Do you want to disable the firewall?\n\nPress 'YES' to allow direct access to the internet!\nPress 'NO' to keep your internet blocked!")
 			response = dialog.run()
-
+			dialog.destroy()
 			if self.OS == "win32":
-				if response == Gtk.ResponseType.NO:
+				if response == gtk.RESPONSE_NO:
 					self.win_firewall_start()
 					self.win_netsh_restore_dns_from_backup()
 						
-				elif response == Gtk.ResponseType.YES:
+				if response == gtk.RESPONSE_YES:
 					self.win_firewall_allow_outbound()
 					self.win_netsh_restore_dns_from_backup()
-
-			dialog.destroy()
+					
 		except:
 			text = "def ask_loadorunload_fw: failed"
 			self.msgwarn(text=text)
