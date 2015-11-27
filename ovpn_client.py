@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.1-gtk"
+CLIENTVERSION="v0.3.2-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -147,6 +147,7 @@ class Systray:
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
 		self.ENABLE_EXTSERVERVIEW = False
+		self.WIN_RESET_EXT_DEVICE = False
 		
 	def on_right_click_mainwindow(self, treeview, event):
 		try:
@@ -403,9 +404,6 @@ class Systray:
 			self.progresswindow.set_border_width(6)
 			self.progresswindow.set_title("oVPN Server Update")
 			self.progresswindow.set_icon_from_file(self.systray_icon_syncupdate)
-			#self.progresswindow.set_resizable(False)
-			#self.progresswindow.set_type_hint(GDK_WINDOW_TYPE_HINT_MENU)
-			#self.progresswindow.
 			self.progressbar = gtk.ProgressBar()
 			self.progressbar.set_pulse_step(0)
 			self.progresswindow.add(self.progressbar)
@@ -467,7 +465,6 @@ class Systray:
 									self.set_progressbar(text)										
 									if self.extract_ovpn():								
 										self.debug(text="extraction complete")
-										#self.tray.set_from_stock(gtk.STOCK_DISCONNECT)										
 										text = _("Complete!")
 										self.set_progressbar(text)
 										self.body = "done"
@@ -881,9 +878,16 @@ class Systray:
 	
 	def read_interfaces(self):
 		if self.OS == "win32":
-			if self.win_read_interfaces():
-				if self.win_netsh_read_dns_to_backup():
-					return True
+			if self.WIN_RESET_EXT_DEVICE == False:
+				if self.win_read_interfaces():
+					if self.win_netsh_read_dns_to_backup():
+						return True
+			else:
+				self.win_netsh_restore_dns_from_backup()
+				self.WIN_RESET_EXT_DEVICE = False
+				if self.win_read_interfaces():
+					if self.win_netsh_read_dns_to_backup():
+						return True
 			
 	def win_read_interfaces(self):
 		self.INTERFACES = list()
@@ -973,33 +977,33 @@ class Systray:
 					if self.WIN_EXT_DEVICE in self.INTERFACES:
 						self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))					
 						return True
-						
-				dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
-				text = _("Choose your External Network Adapter!")
-				dialogWindow.set_title(text)
-				dialogWindow.set_markup(text)
-				dialogBox = dialogWindow.get_content_area()
-				
-				liststore = gtk.ListStore(str)
-				combobox = gtk.ComboBox(liststore)
-				cell = gtk.CellRendererText()
-				combobox.pack_start(cell, True)
-				combobox.add_attribute(cell, 'text', 0)
-				combobox.set_wrap_width(5)
-				for INTERFACE in self.INTERFACES:
-					print "add interface %s to combobox" % (INTERFACE)
-					liststore.append([INTERFACE])
-				combobox.set_model(liststore)
-				combobox.connect('changed',self.interface_selector_changed_cb)			
+				else:		
+					dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
+					text = _("Choose your External Network Adapter!")
+					dialogWindow.set_title(text)
+					dialogWindow.set_markup(text)
+					dialogBox = dialogWindow.get_content_area()
 					
-				dialogBox.pack_start(combobox,False,False,0)
-				dialogWindow.show_all()
-				print "open interface selector"
-				dialogWindow.run()
-				print "close interface selector"
-				if not self.WIN_EXT_DEVICE == False:
-					dialogWindow.destroy()
-					return True					
+					liststore = gtk.ListStore(str)
+					combobox = gtk.ComboBox(liststore)
+					cell = gtk.CellRendererText()
+					combobox.pack_start(cell, True)
+					combobox.add_attribute(cell, 'text', 0)
+					combobox.set_wrap_width(5)
+					for INTERFACE in self.INTERFACES:
+						print "add interface %s to combobox" % (INTERFACE)
+						liststore.append([INTERFACE])
+					combobox.set_model(liststore)
+					combobox.connect('changed',self.interface_selector_changed_cb)
+						
+					dialogBox.pack_start(combobox,False,False,0)
+					dialogWindow.show_all()
+					print "open interface selector"
+					dialogWindow.run()
+					print "close interface selector"
+					if not self.WIN_EXT_DEVICE == False:
+						dialogWindow.destroy()
+						return True					
 			elif len(self.INTERFACES) < 1:
 				self.errorquit(text=_("No Network Adapter found!"))
 			else:
@@ -1222,11 +1226,17 @@ class Systray:
 		self.OVPN_CONNECTEDtime = self.get_now_unixtime()
 		self.mainwindow_menubar()
 		if not self.win_firewall_start():
-			self.msgwarn(_("Could not start Windows Firewall!"))
+			text = _("def inThread_spawn_openvpn_process: Could not start Windows Firewall!");
+			self.debug(text=text)
+			return False
 		self.win_firewall_modify_rule(option="add")
-		time.sleep(5)		
+		#time.sleep(2)		
 		self.ovpn_proc_retcode = subprocess.call("%s" % (self.ovpn_string),shell=True)
 		self.win_firewall_modify_rule(option="delete")
+		try:
+			os.remove(self.ovpn_sessionlog)
+		except:
+			text = _("def inThread_spawn_openvpn_process: Could not remove %s" % (self.ovpn_sessionlog));
 		self.OVPN_CONNECTEDtoIPbefore = self.OVPN_CONNECTEDtoIP
 		self.STATE_OVPN = False
 		self.OVPN_CONNECTEDto = False
@@ -2202,13 +2212,15 @@ class Systray:
 			self.UPDATEOVPNONSTART = True
 		else:
 			self.UPDATEOVPNONSTART = False
+			self.plaintext_passphrase = False
 		self.write_options_file()
 		
 	def cb_resetextif(self,widget,event):
 		self.destroy_systray_menu()
 		self.WIN_EXT_DEVICE = False
+		self.WIN_RESET_EXT_DEVICE = True
 		self.write_options_file()
-		self.win_read_interfaces()
+		self.read_interfaces()
 		
 	def cb_extserverview(self,widget,event):
 		self.destroy_systray_menu()
@@ -2262,21 +2274,18 @@ class Systray:
 		
 		if self.API_ACTION == "lastupdate": 
 			self.TO_CURL = "uid=%s&apikey=%s&action=%s" % (self.USERID,self.APIKEY,self.API_ACTION)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }		
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }
 			
 		if self.API_ACTION == "getconfigs": 
 			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION, 'version' : '23x', 'type' : 'win' }	
 			
 		if self.API_ACTION == "requestcerts":			
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }	
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }
 			
 		if self.API_ACTION == "getcerts":
 			if os.path.isfile(self.zip_crt): os.remove(self.zip_crt)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }	
-			
-		if self.API_ACTION == "loadserverdata":
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }			
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }
 			
 		self.body = False
 		text = "def curl_api_request: API_ACTION = %s" % (API_ACTION)
