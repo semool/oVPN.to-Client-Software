@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.2-gtk"
+CLIENTVERSION="v0.3.3-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -63,13 +63,13 @@ class Systray:
 	def self_vars(self):
 		self.MAINWINDOW_OPEN = False
 		self.debug_log = False
-		self.OVPN_LATEST = 238
-		self.OVPN_LATEST_BUILT = "Aug 4 2015"
-		self.OVPN_LATEST_BUILT_TIMESTAMP = 1438639200
+		self.OVPN_LATEST = 239
+		self.OVPN_LATEST_BUILT = "Dec 16 2015"
+		self.OVPN_LATEST_BUILT_TIMESTAMP = 1450220400
 		self.OVPN_DL_URL = False
-		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.8-I601-i686.exe"
+		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.9-I601-i686.exe"
 		self.OVPN_WIN_DLHASH_x86 = ".."
-		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.8-I601-x86_64.exe"
+		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.9-I601-x86_64.exe"
 		self.OVPN_WIN_DLHASH_x64 = ".."
 
 		self.MAIN_WINDOW_OPEN = True
@@ -1621,9 +1621,9 @@ class Systray:
 					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
 					built_month_int = int(string_built_time.tm_mon)
 					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
-					text = "openvpn built_timestamp = %s self.OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATESTBUILT_TIMESTAMP)
+					text = "openvpn built_timestamp = %s self.OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATEST_BUILT_TIMESTAMP)
 					self.debug(text=text)
-					if built_timestamp >= self.OVPN_LATESTBUILT_TIMESTAMP:						
+					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
 						return True
 					else:
 						text = _("Please update your openVPN Version to\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)
