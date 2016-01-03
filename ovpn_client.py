@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.3-gtk"
+CLIENTVERSION="v0.3.4-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -97,6 +97,7 @@ class Systray:
 		self.GATEWAY_DNS1 = False
 		self.GATEWAY_DNS2 = False
 		self.WIN_TAP_DEVICE = False
+		self.WIN_TAP_DEVS = list()
 		self.WIN_EXT_DEVICE = False
 		self.WIN_EXT_DHCP = False
 		self.OVPN_SERVER = list()
@@ -109,10 +110,10 @@ class Systray:
 		self.OVPN_CONNECTEDtime = False
 		self.OVPN_CONNECTEDdistime = False
 		self.OVPN_CONNECTEDtoIP = False
-		self.OVPN_CONNECTEDtoIPbefore = False
 		self.OVPN_GATEWAY_IP4 = "172.16.32.1"
 		self.OVPN_THREADID = False
 		self.OVPN_RECONNECT_NOW = False
+		self.OVPN_CONFIGVERSION = "23x"
 		
 		self.OVPN_PING = list()
 		self.OVPN_isTESTING = False
@@ -285,8 +286,30 @@ class Systray:
 					else:
 						extserverview = gtk.MenuItem('Disable extended Server-View')
 					extserverview.connect('button-press-event', self.cb_extserverview)
-					updatemenu.append(extserverview)					
+					updatemenu.append(extserverview)
+					
+				
+				ipv6menu = gtk.Menu()
+				ipv6m = gtk.MenuItem('IPv6 Options')
+				ipv6m.set_submenu(ipv6menu)
+				updatemenu.append(ipv6m)
+				
+				if not self.OVPN_CONFIGVERSION == "23x":
+					ipv6entry1 = gtk.MenuItem('Select: IPv4 Entry Server with Exit to IPv4 (standard)')
+					ipv6entry1.connect('button-press-event', self.cb_change_ipmode1)
+					ipv6menu.append(ipv6entry1)
 
+				if not self.OVPN_CONFIGVERSION  == "23x46":
+					ipv6entry2 = gtk.MenuItem('Select: IPv4 Entry Server with Exits to IPv4 + IPv6')
+					ipv6entry2.connect('button-press-event', self.cb_change_ipmode2)
+					ipv6menu.append(ipv6entry2)
+				
+				if not self.OVPN_CONFIGVERSION == "23x64":				
+					ipv6entry3 = gtk.MenuItem('Select: IPv6 Entry Server with Exits to IPv6 + IPv4')
+					ipv6entry3.connect('button-press-event', self.cb_change_ipmode3)
+					ipv6menu.append(ipv6entry3)
+				
+				
 			except:
 				text="def make_systray_menu: updatemenu failed"
 				self.debug(text=text)			
@@ -503,7 +526,7 @@ class Systray:
 				about_dialog.set_destroy_with_parent (True)
 				about_dialog.set_name('oVPN.to')		
 				about_dialog.set_version('Client %s'%(CLIENTVERSION))
-				about_dialog.set_copyright('(C) 2010 - 2015 oVPN.to')
+				about_dialog.set_copyright('(C) 2010 - 2016 oVPN.to')
 				about_dialog.set_comments((ABOUT_TEXT))
 				about_dialog.set_authors(['oVPN.to <support@ovpn.to>'])
 				about_dialog.run()
@@ -888,7 +911,8 @@ class Systray:
 				if self.win_read_interfaces():
 					if self.win_netsh_read_dns_to_backup():
 						return True
-			
+
+						
 	def win_read_interfaces(self):
 		self.INTERFACES = list()
 		string = "netsh interface show interface"
@@ -943,17 +967,17 @@ class Systray:
 			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
 		self.win_detect_openvpn()
 		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
-		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
-		ADAPTERS = ADAPTERS.split('\r\n')
-		self.debug(text="TAP ADAPTER = %s"%(ADAPTERS))
-		for line in ADAPTERS:
+		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
+		TAPADAPTERS = TAPADAPTERS.split('\r\n')
+		self.debug(text="TAP ADAPTER = %s"%(TAPADAPTERS))
+		for line in TAPADAPTERS:
 			#self.debug(text="checking line = %s"%(line))
 			for INTERFACE in self.INTERFACES:
-				#self.debug(text="is IF %s listed as TAP?"%(INTERFACE))
-				if line.startswith("'%s'"%(INTERFACE)):
-					self.debug(text=INTERFACE+" is TAP ADAPTER")
-					self.WIN_TAP_DEVICE = INTERFACE
-					self.win_enable_tap_interface()
+				#self.debug(text="is IF: '%s' listed as TAP?"%(INTERFACE))
+				if line.startswith("'%s' {"%(INTERFACE)):
+					self.debug(text="Found TAP ADAPTER: '%s'" % (INTERFACE))
+					self.INTERFACES.remove(INTERFACE)					
+					self.WIN_TAP_DEVS.append(INTERFACE)
 					break
 				""" do not remove! maybe need for debug in future """
 				#elif line.startswith("Available TAP-WIN32 adapters"):
@@ -965,12 +989,49 @@ class Systray:
 				#else:
 				#	#self.debug(text="ignoring else")
 				#	pass
+				
+		if len(self.WIN_TAP_DEVS) == 1:
+			if self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
+				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
+
+		elif self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:			
+				self.debug(text="Found self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS")
+		else:
+			self.debug(text="self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
+			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
+			text = _("Choose your TAP Adapter!")
+			dialogWindow.set_title(text)
+			dialogWindow.set_markup(text)
+			dialogBox = dialogWindow.get_content_area()
+
+			liststore = gtk.ListStore(str)
+			combobox = gtk.ComboBox(liststore)
+			cell = gtk.CellRendererText()
+			combobox.pack_start(cell, True)
+			combobox.add_attribute(cell, 'text', 0)
+			combobox.set_wrap_width(5)
+			for INTERFACE in self.WIN_TAP_DEVS:
+				print "add tap interface '%s' to combobox" % (INTERFACE)
+				liststore.append([INTERFACE])
+			combobox.set_model(liststore)
+			combobox.connect('changed',self.tap_interface_selector_changed_cb)
+
+			dialogBox.pack_start(combobox,False,False,0)
+			dialogWindow.show_all()
+			print "open tap interface selector"
+			dialogWindow.run()
+			print "close tap interface selector"
+			if not self.WIN_TAP_DEVICE == False:
+				dialogWindow.destroy()
+			
 					
 		if self.WIN_TAP_DEVICE == False:
 			text = _("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)	
 			self.errorquit(text=text)
 		else:
-			self.INTERFACES.remove(self.WIN_TAP_DEVICE)
+			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
+			self.WIN_TAP_DEVS.remove(self.WIN_TAP_DEVICE)
+			self.win_enable_tap_interface()
 			self.debug(text="remaining INTERFACES = %s"%(self.INTERFACES))
 			if len(self.INTERFACES) > 1:
 				if not self.WIN_EXT_DEVICE == False:
@@ -1003,7 +1064,7 @@ class Systray:
 					print "close interface selector"
 					if not self.WIN_EXT_DEVICE == False:
 						dialogWindow.destroy()
-						return True					
+						return True			
 			elif len(self.INTERFACES) < 1:
 				self.errorquit(text=_("No Network Adapter found!"))
 			else:
@@ -1019,6 +1080,15 @@ class Systray:
 		if index > -1:
 			self.WIN_EXT_DEVICE = model[index][0]
 			text = "selected IF: %s" % (self.WIN_EXT_DEVICE)
+			self.debug(text=text)
+		return
+		
+	def tap_interface_selector_changed_cb(self, combobox):
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.WIN_TAP_DEVICE = model[index][0]
+			text = "selected tap IF: %s" % (self.WIN_TAP_DEVICE)
 			self.debug(text=text)
 		return
 
@@ -1083,7 +1153,7 @@ class Systray:
 						try:
 							ip = line.split()[1]
 							port = int(line.split()[2])
-							if self.isValueIPv4(ip) and port > 0 and port < 65535:
+							if (self.isValueIPv4(ip) or self.isValueIPv6(ip)) and port > 0 and port < 65535:
 								self.OVPN_CONNECTEDtoIP = ip
 								self.OVPN_CONNECTEDtoPort = port
 							#break
@@ -1106,7 +1176,7 @@ class Systray:
 			self.ovpn_tls_key = "%s\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_cli_crt = "%s\client%s.crt" % (self.ovpn_server_dir,self.USERID)
 			self.ovpn_cli_key = "%s\client%s.key" % (self.ovpn_server_dir,self.USERID)
-			self.ovpn_string = "\"%s\" --config \"%s\" --ca \"%s\" --cert \"%s\" --key \"%s\" --tls-auth \"%s\" --log \"%s\" " % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.ovpn_sessionlog)
+			self.ovpn_string = "\"%s\" --config \"%s\" --ca \"%s\" --cert \"%s\" --key \"%s\" --tls-auth \"%s\" --log \"%s\" --dev-node \"%s\" " % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.ovpn_sessionlog,self.WIN_TAP_DEVICE)
 			
 			try:
 				self.call_ovpn_srv = server
@@ -1230,14 +1300,22 @@ class Systray:
 			self.debug(text=text)
 			return False
 		self.win_firewall_modify_rule(option="add")
-		#time.sleep(2)		
-		self.ovpn_proc_retcode = subprocess.call("%s" % (self.ovpn_string),shell=True)
+		self.win_clear_ipv6_addr()
+		try:			
+			self.ovpn_proc_retcode = subprocess.check_output("%s" % (self.ovpn_string),shell=True)
+		except subprocess.CalledProcessError as e:
+			self.debug(text="self.ovpn_proc_retcode: output = %s" %(e.output))
+			self.OVPN_AUTO_RECONNECT = False
+		except:
+			self.debug(text="self.ovpn_proc_retcode: failed")
+			self.OVPN_AUTO_RECONNECT = False
 		self.win_firewall_modify_rule(option="delete")
 		try:
 			os.remove(self.ovpn_sessionlog)
 		except:
-			text = _("def inThread_spawn_openvpn_process: Could not remove %s" % (self.ovpn_sessionlog));
-		self.OVPN_CONNECTEDtoIPbefore = self.OVPN_CONNECTEDtoIP
+			text = _("def inThread_spawn_openvpn_process: Could not remove %s" % (self.ovpn_sessionlog))
+			self.debug(text=text)
+		self.win_clear_ipv6_addr()
 		self.STATE_OVPN = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtoIP = False
@@ -1262,8 +1340,8 @@ class Systray:
 			#self.debug(text="split=%s"%(split))
 			for line in split:
 				#self.debug(text="%s"%(line))
-				if "%s"%(self.OVPN_CONNECTEDtoIPbefore) in line:
-					#self.debug(text="def read_ovpn_routes: %s"%(line))
+				if "%s"%(self.OVPN_CONNECTEDtoIP) in line:
+					self.debug(text="def read_ovpn_routes: %s"%(line))
 					self.GATEWAY_LOCAL = line.split()[2]
 					self.debug(text="self.GATEWAY_LOCAL: %s"%(self.GATEWAY_LOCAL))
 		except:
@@ -1271,23 +1349,49 @@ class Systray:
 
 				
 	def del_ovpn_routes(self):
-		if not self.OVPN_CONNECTEDtoIPbefore == False:
-			self.read_gateway_from_routes()
-			if not self.GATEWAY_LOCAL == False:
-				self.debug(text="def del_ovpn_routes")
-				string1 = "route.exe DELETE %s MASK 255.255.255.255 %s" % (self.OVPN_CONNECTEDtoIPbefore,self.GATEWAY_LOCAL)
-				string2 = "route.exe DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.OVPN_GATEWAY_IP4)
-				string3 = "route.exe DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.OVPN_GATEWAY_IP4)
-				try: 
-					self.OVPN_DEL_ROUTES1 = subprocess.check_output("%s" % (string1),shell=True)
-					self.OVPN_DEL_ROUTES2 = subprocess.check_output("%s" % (string2),shell=True)
-					self.OVPN_DEL_ROUTES3 = subprocess.check_output("%s" % (string3),shell=True)
-					#self.debug(text="self.OVPN_DEL_ROUTES: %s, %s, %s"%(self.OVPN_DEL_ROUTES1,self.OVPN_DEL_ROUTES2,self.OVPN_DEL_ROUTES3))
-				except:
-					self.debug(text="def del_ovpn_routes: failed")
-					pass
-			self.OVPN_CONNECTEDtoIPbefore = False
-
+		self.read_gateway_from_routes()
+		if not self.GATEWAY_LOCAL == False:
+			self.debug(text="def del_ovpn_routes")
+			string1 = "route.exe DELETE %s MASK 255.255.255.255 %s" % (self.OVPN_CONNECTEDtoIP,self.GATEWAY_LOCAL)
+			string2 = "route.exe DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.OVPN_GATEWAY_IP4)
+			string3 = "route.exe DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.OVPN_GATEWAY_IP4)
+			try: 
+				self.OVPN_DEL_ROUTES1 = subprocess.check_output("%s" % (string1),shell=True)
+				self.OVPN_DEL_ROUTES2 = subprocess.check_output("%s" % (string2),shell=True)
+				self.OVPN_DEL_ROUTES3 = subprocess.check_output("%s" % (string3),shell=True)
+				self.debug(text="self.OVPN_DEL_ROUTES: %s, %s, %s"%(self.OVPN_DEL_ROUTES1,self.OVPN_DEL_ROUTES2,self.OVPN_DEL_ROUTES3))
+			except:
+				self.debug(text="def del_ovpn_routes: failed")
+				pass
+				
+	def win_clear_ipv6_addr(self):
+		if self.OVPN_CONFIGVERSION == "23x":
+			return
+		
+		try:
+			string = "netsh interface ipv6 show addresses %s" % (self.WIN_TAP_DEVICE)
+			read = subprocess.check_output("%s" % (string),shell=True)
+			read = read.strip().decode('cp1258','ignore')
+			list = read.strip(' ').split('\r\n')
+			for line in list:
+				if " fd48:8bea:68a5:" in line or " fe80::" in line:
+					if not "%" in line:
+						ipv6addr = line.split()[1]
+						string = "netsh interface ipv6 delete address address=\"%s\" interface=\"%s\"" % (ipv6addr,self.WIN_TAP_DEVICE)
+						try:
+							cmd = subprocess.check_output("%s" % (string),shell=True)
+							text = "def win_clear_ipv6_addr: removed %s '%s'" % (ipv6addr,string)
+							self.debug(text=text)
+						except subprocess.CalledProcessError as e:
+							text = "def win_clear_ipv6_addr: %s %s failed '%s': %s" % (ipv6addr,self.WIN_TAP_DEVICE,string,e.output)
+							self.debug(text=text)
+						except:
+							text = "def win_clear_ipv6_addr: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,string)
+							self.debug(text=text)
+		except:
+			text = "def win_clear_ipv6_addr: failed"
+			self.debug(text=text)	
+			
 			
 	def inThread_timer_openvpn_reconnect(self):
 		#self.debug("def inThread_timer_openvpn_reconnect")
@@ -1319,10 +1423,12 @@ class Systray:
 		exe = self.OPENVPN_EXE.split("\\")[-1]
 		string = "taskkill /im %s /f" % (exe)
 		try:
+			self.del_ovpn_routes()
 			self.OVPN_KILL2 = subprocess.check_output("%s" % (string),shell=True)
+			
 		except:
 			pass
-		self.del_ovpn_routes()
+		
 		
 		
 		
@@ -1975,7 +2081,8 @@ class Systray:
 						self.plaintext_passphrase = False
 				except:
 					pass					
-				
+
+					
 				try:
 					self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
 					if self.OVPN_AUTO_CONNECT_ON_START == "False": 
@@ -1990,7 +2097,8 @@ class Systray:
 						self.OVPN_FAV_SERVER = False
 				except:
 					pass					
-				
+
+					
 				try:
 					self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
 					if self.WIN_EXT_DEVICE == "False": 
@@ -1998,12 +2106,22 @@ class Systray:
 				except:
 					pass
 
+					
+				try:
+					self.WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
+					if self.WIN_TAP_DEVICE == "False": 
+						self.WIN_EXT_DEVICE = False
+				except:
+					pass
+
+					
 				try:
 					self.OPENVPN_EXE = parser.get('oVPN','openvpnexe')
 					if self.OPENVPN_EXE == "False":
 						self.OPENVPN_EXE = False
 				except:
 					pass
+
 					
 				try:
 					self.UPDATEOVPNONSTART = parser.get('oVPN','updateovpnonstart')
@@ -2015,7 +2133,17 @@ class Systray:
 				except:
 					pass
 					
-				return True
+				try:
+					ocfgv = parser.get('oVPN','configversion')
+					self.debug(text="self.OVPN_CONFIGVERSION = %s" % (self.OVPN_CONFIGVERSION))
+					if ocfgv == "23x" or ocfgv == "23x46" or ocfgv == "23x64":
+						self.OVPN_CONFIGVERSION = ocfgv
+					else:
+						self.OVPN_CONFIGVERSION = "23x"
+				except:
+					pass					
+				if self.write_options_file():
+					return True
 			except:
 				self.msgwarn(text="def read_options_file: read failed")
 				try:
@@ -2031,8 +2159,10 @@ class Systray:
 				parser.set('oVPN','autoconnect','False')
 				parser.set('oVPN','favserver','False')
 				parser.set('oVPN','winextdevice','False')
+				parser.set('oVPN','wintapdevice','False')				
 				parser.set('oVPN','openvpnexe','False')
-				parser.set('oVPN','updateovpnonstart','False')	
+				parser.set('oVPN','updateovpnonstart','False')
+				parser.set('oVPN','configversion','23x')
 				parser.write(cfg)
 				cfg.close()
 				return True
@@ -2048,8 +2178,11 @@ class Systray:
 			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
+			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))			
 			parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
+			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
+			
 			parser.write(cfg)
 			cfg.close()
 			return True
@@ -2231,6 +2364,26 @@ class Systray:
 			self.ENABLE_EXTSERVERVIEW = False
 			
 			
+	def cb_change_ipmode1(self,widget,event):
+		self.destroy_systray_menu()
+		self.OVPN_CONFIGVERSION = "23x"
+		self.write_options_file()
+		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
+		
+	def cb_change_ipmode2(self,widget,event):
+		self.destroy_systray_menu()
+		self.OVPN_CONFIGVERSION = "23x46"
+		self.write_options_file()
+		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
+
+	def cb_change_ipmode3(self,widget,event):
+		self.destroy_systray_menu()
+		self.OVPN_CONFIGVERSION = "23x64"
+		self.write_options_file()
+		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
+		
+			
+			
 	def delete_dir(self,path):
 		if self.OS == "win32":
 			string = 'rmdir /S /Q "%s"' % (path)
@@ -2265,7 +2418,7 @@ class Systray:
 						return False
 		except:
 			self.debug(text="def extract_ovpn: failed")
-				
+
 
 	def curl_api_request(self,API_ACTION):
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
@@ -2278,7 +2431,7 @@ class Systray:
 			
 		if self.API_ACTION == "getconfigs": 
 			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION, 'version' : '23x', 'type' : 'win' }	
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
 			
 		if self.API_ACTION == "requestcerts":			
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }
