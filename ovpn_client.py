@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.4-gtk"
+CLIENTVERSION="v0.3.5-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -276,9 +276,9 @@ class Systray:
 				updatemenu.append(resetlogin)
 				
 				if self.STATE_OVPN == False:
-					resetextif = gtk.MenuItem('Reset External Device')
+					resetextif = gtk.MenuItem('Reset Network Adapter')
 					resetextif.connect('button-press-event', self.cb_resetextif)
-					updatemenu.append(resetextif)
+					updatemenu.append(resetextif)					
 					
 				if self.STATE_OVPN == True:
 					if self.ENABLE_EXTSERVERVIEW == False:
@@ -308,7 +308,22 @@ class Systray:
 					ipv6entry3 = gtk.MenuItem('Select: IPv6 Entry Server with Exits to IPv6 + IPv4')
 					ipv6entry3.connect('button-press-event', self.cb_change_ipmode3)
 					ipv6menu.append(ipv6entry3)
+					
+				"""
+				dnsmenu = gtk.Menu()
+				dnsm = gtk.MenuItem('DNS Options')
+				dnsm.set_submenu(dnsmenu)
+				updatemenu.append(dnsm)
 				
+				
+				dnsentry1 = gtk.MenuItem('Set DNS for VPN connection')
+				dnsentry1.connect('button-press-event', self.cb_change_vpndns)
+				dnsmenu.append(dnsentry1)
+				
+				dnsentry2 = gtk.MenuItem('Set DNS for Quit on Windows')
+				dnsentry2.connect('button-press-event', self.cb_change_quitdns)
+				dnsmenu.append(dnsentry2)				
+				"""
 				
 			except:
 				text="def make_systray_menu: updatemenu failed"
@@ -961,8 +976,8 @@ class Systray:
 				self.INTERFACES.append(interface)
 			except:
 				pass
-		self.INTERFACES.pop(0)		
-		self.debug(text="%s"%(self.INTERFACES))			
+		self.INTERFACES.pop(0)
+		self.debug(text="%s"%(self.INTERFACES))
 		if len(self.INTERFACES)	< 2:
 			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
 		self.win_detect_openvpn()
@@ -970,6 +985,7 @@ class Systray:
 		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		TAPADAPTERS = TAPADAPTERS.split('\r\n')
 		self.debug(text="TAP ADAPTER = %s"%(TAPADAPTERS))
+		self.WIN_TAP_DEVS = list()
 		for line in TAPADAPTERS:
 			#self.debug(text="checking line = %s"%(line))
 			for INTERFACE in self.INTERFACES:
@@ -995,7 +1011,7 @@ class Systray:
 				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 
 		elif self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:			
-				self.debug(text="Found self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS")
+				self.debug(text="Found self.WIN_TAP_DEVICE %s in self.WIN_TAP_DEVS %s" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
 		else:
 			self.debug(text="self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
 			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
@@ -1026,11 +1042,9 @@ class Systray:
 			
 					
 		if self.WIN_TAP_DEVICE == False:
-			text = _("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)	
-			self.errorquit(text=text)
+			self.errorquit(text=_("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64))
 		else:
 			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
-			self.WIN_TAP_DEVS.remove(self.WIN_TAP_DEVICE)
 			self.win_enable_tap_interface()
 			self.debug(text="remaining INTERFACES = %s"%(self.INTERFACES))
 			if len(self.INTERFACES) > 1:
@@ -1069,9 +1083,7 @@ class Systray:
 				self.errorquit(text=_("No Network Adapter found!"))
 			else:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
-				text = _("External Interface = %s")%(self.WIN_EXT_DEVICE)
-				#self.msgwarn(text=text)
-				self.debug(text=text)
+				self.debug(text="External Interface = %s"%(self.WIN_EXT_DEVICE))
 				return True
 			
 	def interface_selector_changed_cb(self, combobox):
@@ -1079,17 +1091,15 @@ class Systray:
 		index = combobox.get_active()
 		if index > -1:
 			self.WIN_EXT_DEVICE = model[index][0]
-			text = "selected IF: %s" % (self.WIN_EXT_DEVICE)
-			self.debug(text=text)
+			self.debug(text="selected IF: %s" % (self.WIN_EXT_DEVICE))
 		return
 		
 	def tap_interface_selector_changed_cb(self, combobox):
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
-			self.WIN_TAP_DEVICE = model[index][0]
-			text = "selected tap IF: %s" % (self.WIN_TAP_DEVICE)
-			self.debug(text=text)
+			self.WIN_TAP_DEVICE = model[index][0]			
+			self.debug(text="selected tap IF: %s" % (self.WIN_TAP_DEVICE))
 		return
 
 	def set_ovpn_favorite_server(self,widget,event,server):
@@ -1193,7 +1203,6 @@ class Systray:
 				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == True")
 				self.OVPN_RECONNECT_NOW = False
 				try:
-					#threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
 					thread_timer_openvpn_reconnect = threading.Thread(target=self.inThread_timer_openvpn_reconnect)
 					thread_timer_openvpn_reconnect.start()
 					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
@@ -1211,11 +1220,9 @@ class Systray:
 				
 		else:
 			self.debug(text="def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
-			#if tkMessageBox.askyesno("Change oVPN Server?", "oVPN is connected to: %s\n\nSwitch to oVPN Server: %s?"%(self.OVPN_CONNECTEDto,server)):
 			self.debug(text="Change oVPN to %s" %(server))
 			self.kill_openvpn()
 			self.call_openvpn(None,None,server)
-		#self.UPDATE_MENUBAR = True
 		
 
 	def inThread_timer_ovpn_ping(self):
@@ -1941,8 +1948,8 @@ class Systray:
 		self.zip_crt = "%s\\certs.zip" % (self.vpn_dir)
 		self.api_upd = "%s\\lastupdate.txt" % (self.vpn_dir)
 		
-		self.dns_dir =  "%s\\dns" % (self.api_dir)
-		self.dns_d0wntxt =  "%s\\dns.d0wn.biz.txt" % (self.dns_dir)
+		self.dns_dir =  "%s\\dns" % (self.bin_dir)
+		self.dns_d0wntxt =  "%s\\dns.txt" % (self.dns_dir)
 		self.dns_ung =  "%s\\ungefiltert" % (self.dns_dir)
 		self.dns_ung_alphaindex =  "%s\\alphaindex.txt" % (self.dns_ung)
 		
@@ -2351,6 +2358,7 @@ class Systray:
 	def cb_resetextif(self,widget,event):
 		self.destroy_systray_menu()
 		self.WIN_EXT_DEVICE = False
+		self.WIN_TAP_DEVICE = False		
 		self.WIN_RESET_EXT_DEVICE = True
 		self.write_options_file()
 		self.read_interfaces()
@@ -2381,9 +2389,13 @@ class Systray:
 		self.OVPN_CONFIGVERSION = "23x64"
 		self.write_options_file()
 		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
+	
+	def cb_change_vpndns(self,widget,event):
+		self.destroy_systray_menu()
+	
+	def cb_change_quitdns(self,widget,event):
+		self.destroy_systray_menu()
 		
-			
-			
 	def delete_dir(self,path):
 		if self.OS == "win32":
 			string = 'rmdir /S /Q "%s"' % (path)
@@ -2738,8 +2750,28 @@ class Systray:
 					self.debug(text="def load_serverdata_from_remote: json decode error")
 					self.OVPN_SERVER_STATS_LASTUPDATE = self.get_now_unixtime()
 			except:
-				self.debug(text="def load_serverdata_from_remote: api request failed")					
-			
+				self.debug(text="def load_serverdata_from_remote: api request failed")
+
+	"""
+				
+	def load_d0wns_dns(self):
+		if os.isfile(self.dns_d0wntxt):
+			file = open(self.dns_d0wntxt,'r')
+		else:
+			try:
+				url = "https://dns.d0wn.biz/dns.txt"
+				r = requests.get(url)
+				body = r.content.split('\n')
+				print body
+				try:
+					self.d0wns_DNS = body.split(',')
+					print self.d0wns_DNS
+				except:
+					pass
+
+	"""
+				
+				
 	def on_closing(self, widget):
 		if self.STATE_OVPN == True:
 			return False
