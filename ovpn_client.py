@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.5-gtk"
+CLIENTVERSION="v0.3.6-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -984,6 +984,7 @@ class Systray:
 		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
 		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		TAPADAPTERS = TAPADAPTERS.split('\r\n')
+		TAPADAPTERS.pop(0)
 		self.debug(text="TAP ADAPTER = %s"%(TAPADAPTERS))
 		self.WIN_TAP_DEVS = list()
 		for line in TAPADAPTERS:
@@ -992,7 +993,7 @@ class Systray:
 				#self.debug(text="is IF: '%s' listed as TAP?"%(INTERFACE))
 				if line.startswith("'%s' {"%(INTERFACE)):
 					self.debug(text="Found TAP ADAPTER: '%s'" % (INTERFACE))
-					self.INTERFACES.remove(INTERFACE)					
+					self.INTERFACES.remove(INTERFACE)
 					self.WIN_TAP_DEVS.append(INTERFACE)
 					break
 				""" do not remove! maybe need for debug in future """
@@ -1005,13 +1006,16 @@ class Systray:
 				#else:
 				#	#self.debug(text="ignoring else")
 				#	pass
-				
-		if len(self.WIN_TAP_DEVS) == 1:
-			if self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
-				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 
-		elif self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:			
-				self.debug(text="Found self.WIN_TAP_DEVICE %s in self.WIN_TAP_DEVS %s" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
+		if self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:
+			self.debug(text="Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
+			
+		elif len(self.WIN_TAP_DEVS) == 0:
+			self.errorquit(text=_("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64))
+				
+		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
+			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
+
 		else:
 			self.debug(text="self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
 			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
@@ -1046,13 +1050,12 @@ class Systray:
 		else:
 			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 			self.win_enable_tap_interface()
-			self.debug(text="remaining INTERFACES = %s"%(self.INTERFACES))
+			self.debug(text="remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
 			if len(self.INTERFACES) > 1:
-				if not self.WIN_EXT_DEVICE == False:
-					if self.WIN_EXT_DEVICE in self.INTERFACES:
-						self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))					
-						return True
-				else:		
+				if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
+					self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))					
+					return True
+				else:
 					dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
 					text = _("Choose your External Network Adapter!")
 					dialogWindow.set_title(text)
@@ -1078,7 +1081,7 @@ class Systray:
 					print "close interface selector"
 					if not self.WIN_EXT_DEVICE == False:
 						dialogWindow.destroy()
-						return True			
+						return True
 			elif len(self.INTERFACES) < 1:
 				self.errorquit(text=_("No Network Adapter found!"))
 			else:
@@ -2117,7 +2120,7 @@ class Systray:
 				try:
 					self.WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
 					if self.WIN_TAP_DEVICE == "False": 
-						self.WIN_EXT_DEVICE = False
+						self.WIN_TAP_DEVICE = False
 				except:
 					pass
 
