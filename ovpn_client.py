@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.6-gtk"
+CLIENTVERSION="v0.3.7-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -32,12 +32,6 @@ ABOUT_TEXT = """Credits and Cookies go to...
 + ... ungefiltert-surfen.de for WorldWide DNS!
 + ... famfamfam.com for flag and silk icons!
 """
-
-try:
-	if sys.argv[1] == "debug":
-		DEBUG = True
-except:
-	DEBUG = True
 
 DOMAIN = "vcp.ovpn.to"
 PORT="443"
@@ -62,14 +56,15 @@ class Systray:
 
 	def self_vars(self):
 		self.MAINWINDOW_OPEN = False
+		self.DEBUG = True
 		self.debug_log = False
-		self.OVPN_LATEST = 239
-		self.OVPN_LATEST_BUILT = "Dec 16 2015"
-		self.OVPN_LATEST_BUILT_TIMESTAMP = 1450220400
+		self.OVPN_LATEST = 2310
+		self.OVPN_LATEST_BUILT = "Jan 4 2016"
+		self.OVPN_LATEST_BUILT_TIMESTAMP = 1451862000
 		self.OVPN_DL_URL = False
-		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.9-I601-i686.exe"
+		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.10-I601-i686.exe"
 		self.OVPN_WIN_DLHASH_x86 = ".."
-		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.9-I601-x86_64.exe"
+		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.10-I601-x86_64.exe"
 		self.OVPN_WIN_DLHASH_x64 = ".."
 
 		self.MAIN_WINDOW_OPEN = True
@@ -162,7 +157,7 @@ class Systray:
 			pass
 		selected_row = int(path[0])
 		servername = self.OVPN_SERVER[selected_row]
-		print servername
+		#print servername
 		#print 'def on_right_click_mainwindow: widget = %s' % (widget)
 		#if event.button == 1:
 		#	self.debug(text="mainwindow left click")		
@@ -777,7 +772,6 @@ class Systray:
 		
 	def show_mainwindow(self,widget):
 		self.destroy_systray_menu()
-		print 'self.MAINWINDOW_OPEN = %s' % (self.MAINWINDOW_OPEN)
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
 			try:
@@ -798,16 +792,16 @@ class Systray:
 				
 				mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
-				print 'mainwindow created'
+				#print 'mainwindow created'
 				return True
 			except:
 				self.MAINWINDOW_OPEN = False
-				print 'mainwindow failed'
+				self.debug(text="mainwindow failed")
 		else:
 			self.mainwindow.destroy()
 			self.MAINWINDOW_OPEN = False
 			#self.destroy_systray_menu()
-			print 'mainwindow destroy'
+			self.debug(text="mainwindow destroy")
 
 	def cb_destroy_systray_menu(self,event,time):
 		self.destroy_systray_menu()
@@ -854,41 +848,12 @@ class Systray:
 		self.self_vars()
 		self.OS = sys.platform
 		if self.OS == "win32":
-			""" *fixme* (unused)
-			w32Reg = _winreg.ConnectRegistry(None,_winreg.HKEY_LOCAL_MACHINE)
-			w32Key1 = _winreg.OpenKey(w32Reg, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0", _winreg.KEY_READ)
-			key1_value, type = _winreg.QueryValueEx(w32Key1,"Identifier")
-			key1_value = key1_value.split()
-			w32Key1.Close()
-			if key1_value[0] == "Intel64": 
-				self.OSARCH = "x86_64"
-				self.OSBITS = "64"			
-			elif key1_value[0] == "AMD64":
-				self.OSARCH = "x86_64"
-				self.OSBITS = "64"
-			elif key1_value[0] == "x86" or key1_value[0] == "i686" or key1_value[0] == "i586":
-				self.OSARCH = "x86"
-				self.OSBITS = "32"
-			else:
-				self.errorquit(text = _("Operating System not supported: %s %s") % (self.OS,key1_value[0]))
-			
-			if self.OSBITS == "32": 
-				self.OVPN_DL_URL = self.OVPN_WIN_DL_URL_x86
-				self.OVPN_DLHASH = self.OVPN_WIN_DLHASH_x86
-			if self.OSBITS == "64": 
-				self.OVPN_DL_URL = self.OVPN_WIN_DL_URL_x64
-				self.OVPN_DLHASH = self.OVPN_WIN_DLHASH_x64
-			
-			
-			if DEBUG: print("def pre0_detect_os: arch=%s bits=%s key=%s OS=%s" % (self.OSARCH,self.OSBITS,key1_value[0],self.OS))
-			"""
-			
 			if self.win_pre1_check_app_dir():
 				if self.win_pre2_check_profiles_win():
 					if self.win_pre3_load_profile_dir_vars():
 						if self.check_config_folders():
 							if self.read_options_file():
-								if self.read_interfaces():									
+								if self.read_interfaces():
 									if self.write_options_file():
 										return True
 										
@@ -899,21 +864,7 @@ class Systray:
 		else: 
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))
 
-	"""	
-	*fixme* (unused)
-	def get_connection_name_from_guid(self,iface_guids):
-		iface_names = ['(unknown)' for i in range(len(iface_guids))]
-		reg = _winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE)
-		reg_key = _winreg.OpenKey(reg, r'SYSTEM\CurrentControlSet\Control\Network\{4d36e972-e325-11ce-bfc1-08002be10318}')
-		for i in range(len(iface_guids)):
-			try:
-				reg_subkey = _winreg.OpenKey(reg_key, iface_guids[i] + r'\Connection')
-				iface_names[i] = _winreg.QueryValueEx(reg_subkey, 'Name')[0]
-			except:
-				pass
-		return iface_names
-	"""
-	
+
 	def read_interfaces(self):
 		if self.OS == "win32":
 			if self.WIN_RESET_EXT_DEVICE == False:
@@ -949,7 +900,7 @@ class Systray:
 		text = "def win_read_interfaces: LANG = %s" % (LANG)
 		self.debug(text=text)
 		for line in ADAPTERS:
-			print line
+			self.debug(text="%s"%(line))
 			interface = line.split()
 			try:
 				if LANG == "DK":
@@ -967,7 +918,7 @@ class Systray:
 					for iface in interface:
 						if not nface == None:
 							nface = nface+" %s" % (iface)
-							print nface
+							self.debug(text="%s"%(nface))
 						else:
 							nface = iface
 					interface = nface
@@ -1031,16 +982,16 @@ class Systray:
 			combobox.add_attribute(cell, 'text', 0)
 			combobox.set_wrap_width(5)
 			for INTERFACE in self.WIN_TAP_DEVS:
-				print "add tap interface '%s' to combobox" % (INTERFACE)
+				self.debug(text="add tap interface '%s' to combobox" % (INTERFACE))
 				liststore.append([INTERFACE])
 			combobox.set_model(liststore)
 			combobox.connect('changed',self.tap_interface_selector_changed_cb)
 
 			dialogBox.pack_start(combobox,False,False,0)
 			dialogWindow.show_all()
-			print "open tap interface selector"
+			self.debug(text="open tap interface selector")
 			dialogWindow.run()
-			print "close tap interface selector"
+			self.debug(text="close tap interface selector")
 			if not self.WIN_TAP_DEVICE == False:
 				dialogWindow.destroy()
 			
@@ -1069,16 +1020,16 @@ class Systray:
 					combobox.add_attribute(cell, 'text', 0)
 					combobox.set_wrap_width(5)
 					for INTERFACE in self.INTERFACES:
-						print "add interface %s to combobox" % (INTERFACE)
+						self.debug(text="add interface %s to combobox" % (INTERFACE))
 						liststore.append([INTERFACE])
 					combobox.set_model(liststore)
 					combobox.connect('changed',self.interface_selector_changed_cb)
 						
 					dialogBox.pack_start(combobox,False,False,0)
 					dialogWindow.show_all()
-					print "open interface selector"
+					self.debug(text="open interface selector")
 					dialogWindow.run()
-					print "close interface selector"
+					self.debug(text="close interface selector")
 					if not self.WIN_EXT_DEVICE == False:
 						dialogWindow.destroy()
 						return True
@@ -1755,7 +1706,7 @@ class Systray:
 		os_appdata = os.getenv('APPDATA')
 		self.app_dir = "%s\ovpn" % (os_appdata)
 		if not os.path.exists(self.app_dir):
-			if DEBUG: print("win_pre1_check_app_dir %s not found, creating." % (self.app_dir))
+			if self.DEBUG: print("win_pre1_check_app_dir %s not found, creating." % (self.app_dir))
 			os.mkdir(self.app_dir)
 		if os.path.exists(self.app_dir):
 			self.debug(text="win_pre1_check_app_dir self.app_dir=%s :True" % (self.app_dir))
@@ -1773,10 +1724,10 @@ class Systray:
 				self.profiles.append(profile)
 				
 		self.profiles_count = len(self.profiles)
-		if DEBUG: print("_check_profiles_win profiles_count %s" % (self.profiles_count))
+		if self.DEBUG: print("_check_profiles_win profiles_count %s" % (self.profiles_count))
 		
 		if self.profiles_count == 0:
-			if DEBUG: print("No profiles found")
+			if self.DEBUG: print("No profiles found")
 			if self.USERID == False:
 				self.debug(text="spawn popup userid = %s" % (self.USERID))
 				if self.form_ask_userid():
@@ -1790,7 +1741,7 @@ class Systray:
 		elif self.profiles_count > 1:
 			self.errorquit(text = _("Multiple profiles not yet implemented.\nPlease empty or rename profile-folders to *.bak (non int)\n %s") % (self.app_dir))
 		
-		if DEBUG: 
+		if self.DEBUG: 
 			for profile in self.profiles:
 				print("Profile: %s" % (profile))
 			print("def check_profiles_win end")
@@ -1922,6 +1873,8 @@ class Systray:
 		
 	def cb_form_reask_userid(self,widget,event):
 		self.destroy_systray_menu()
+		self.plaintext_passphrase = False
+		self.write_options_file()
 		self.form_reask_userid()
 			
 	def win_pre3_load_profile_dir_vars(self):
@@ -1930,7 +1883,7 @@ class Systray:
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		
 		self.debug_log = "%s\\client_debug.log" % (self.api_dir)
-		if DEBUG:
+		if self.DEBUG:
 			try:
 				dbg = open(self.debug_log,'wb')
 				dbg.write("DEBUG_LOG START\r\n")
@@ -2005,7 +1958,7 @@ class Systray:
 			#self.debug(text="def check_config_folders userid = %s" % (self.USERID))
 			self.debug(text="def check_config_folders: userid found")
 			if not os.path.exists(self.api_dir):
-				if DEBUG: print("api_dir %s not found, creating." % (self.api_dir))
+				if self.DEBUG: print("api_dir %s not found, creating." % (self.api_dir))
 				os.mkdir(self.api_dir)
 				
 			if os.path.isfile(self.lock_file):				
@@ -2019,23 +1972,23 @@ class Systray:
 				self.LOCK.write("%s" % (self.get_now_unixtime()))
 				
 			if not os.path.exists(self.vpn_dir):
-				if DEBUG: print("vpn_dir %s not found, creating." % (self.vpn_dir))
+				if self.DEBUG: print("vpn_dir %s not found, creating." % (self.vpn_dir))
 				os.mkdir(self.vpn_dir)
 
 			if not os.path.exists(self.vpn_cfg):
-				if DEBUG: print("vpn_cfg %s not found, creating." % (self.vpn_cfg))
+				if self.DEBUG: print("vpn_cfg %s not found, creating." % (self.vpn_cfg))
 				os.mkdir(self.vpn_cfg)			
 
 			if not os.path.exists(self.prx_dir):
-				if DEBUG: print("prx_dir %s not found, creating." % (self.prx_dir))
+				if self.DEBUG: print("prx_dir %s not found, creating." % (self.prx_dir))
 				os.mkdir(self.prx_dir)
 				
 			if not os.path.exists(self.stu_dir):
-				if DEBUG: print("stu_dir %s not found, creating." % (self.stu_dir))
+				if self.DEBUG: print("stu_dir %s not found, creating." % (self.stu_dir))
 				os.mkdir(self.stu_dir)
 				
 			if not os.path.exists(self.pfw_dir):
-				if DEBUG: print("pfw_dir %s not found, creating." % (self.pfw_dir))
+				if self.DEBUG: print("pfw_dir %s not found, creating." % (self.pfw_dir))
 				os.mkdir(self.pfw_dir)
 			
 			if not os.path.exists(self.dns_dir):
@@ -2086,6 +2039,15 @@ class Systray:
 				parser.read(self.opt_file)
 				
 				try:
+					self.DEBUG = parser.getboolean('oVPN','debugmode')
+					#if self.DEBUG == "True":
+					#	self.DEBUG = True
+					#else:
+					#	self.DEBUG = False
+				except:
+					pass
+				
+				try:
 					self.plaintext_passphrase = parser.get('oVPN','passphrase')
 					if self.plaintext_passphrase == "False":
 						self.plaintext_passphrase = False
@@ -2098,7 +2060,7 @@ class Systray:
 					if self.OVPN_AUTO_CONNECT_ON_START == "False": 
 						self.OVPN_AUTO_CONNECT_ON_START = False
 				except:
-					pass		
+					pass
 				
 					
 				try:
@@ -2106,7 +2068,7 @@ class Systray:
 					if self.OVPN_FAV_SERVER == "False": 
 						self.OVPN_FAV_SERVER = False
 				except:
-					pass					
+					pass
 
 					
 				try:
@@ -2165,6 +2127,7 @@ class Systray:
 				cfg = open(self.opt_file,'w')
 				parser = SafeConfigParser()
 				parser.add_section('oVPN')
+				parser.set('oVPN','debugmode','False')
 				parser.set('oVPN','passphrase','False')
 				parser.set('oVPN','autoconnect','False')
 				parser.set('oVPN','favserver','False')
@@ -2184,6 +2147,7 @@ class Systray:
 			cfg = open(self.opt_file,'w')
 			parser = SafeConfigParser()
 			parser.add_section('oVPN')
+			parser.set('oVPN','debugmode','%s'%(self.DEBUG))			
 			parser.set('oVPN','passphrase','%s'%(self.plaintext_passphrase))
 			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
@@ -2265,12 +2229,12 @@ class Systray:
 		while self.padfill <= self.addpad:
 			self.randadd = random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
 			self.paddata = '%s%s' % (self.paddata,self.randadd)
-			#if DEBUG: print("padfill=%s\npaddata=%s" % (self.padfill,self.paddata))
+			if self.DEBUG: print("padfill=%s\npaddata=%s" % (self.padfill,self.paddata))
 			self.padfill += 1
 		self.text2aes = "%s%s" % (self.text2aes,self.paddata)
 		self.text2aeslen = len(self.text2aes)
-		#if DEBUG: print("text2aeslen=%s\n" % (self.text2aeslen))
-		#if DEBUG: print("\n##############debug:text2aes=%s\ndebug:aesiv=%s\ndebug:len(self.text2aeslen)=%s\nself.addpad=%s" % (self.text2aes,self.aesiv,self.text2aeslen,self.addpad))
+		if self.DEBUG: print("text2aeslen=%s\n" % (self.text2aeslen))
+		if self.DEBUG: print("\n##############debug:text2aes=%s\ndebug:aesiv=%s\ndebug:len(self.text2aeslen)=%s\nself.addpad=%s" % (self.text2aes,self.aesiv,self.text2aeslen,self.addpad))
 		self.crypt = AES.new(self.aeskeyhash, AES.MODE_CBC, self.aesiv)
 		cipherd_data = base64.b64encode(self.crypt.encrypt(self.text2aes))
 		data2file = "%s,%s" % (base64.b64encode(self.aesiv),cipherd_data)
@@ -2862,7 +2826,7 @@ class Systray:
 		sys.exit()
 			
 	def debug(self,text):
-		if DEBUG: 
+		if self.DEBUG: 
 			localtime = time.asctime (time.localtime(time.time()))
 			debugstring = "%s: %s"%(localtime,text)
 			print(debugstring)
@@ -2874,7 +2838,6 @@ class Systray:
 					return True
 				except: 
 					print("Write to %s failed"%(self.debug_log))
-					return False
 
 	def init_localization(self):
 		loc = locale.getdefaultlocale()[0][0:2]
@@ -2883,7 +2846,7 @@ class Systray:
 			translation = gettext.GNUTranslations(open(filename, "rb"))
 		except IOError:
 			translation = gettext.NullTranslations()
-			print("Language file for %s not found" % loc)
+			print "Language file for %s not found" % loc
 		translation.install()
 
 	def get_now_unixtime(self):
