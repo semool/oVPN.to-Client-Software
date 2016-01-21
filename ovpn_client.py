@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.7-gtk"
+CLIENTVERSION="v0.3.8-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -1330,7 +1330,7 @@ class Systray:
 			return
 		
 		try:
-			string = "netsh interface ipv6 show addresses %s" % (self.WIN_TAP_DEVICE)
+			string = "netsh interface ipv6 show addresses \"%s\"" % (self.WIN_TAP_DEVICE)
 			read = subprocess.check_output("%s" % (string),shell=True)
 			read = read.strip().decode('cp1258','ignore')
 			list = read.strip(' ').split('\r\n')
@@ -1359,8 +1359,7 @@ class Systray:
 		time.sleep(10)
 		if self.OVPN_RECONNECT_NOW == True and self.OVPN_AUTO_RECONNECT == True and self.STATE_OVPN == False:
 			self.call_openvpn(None,None,self.call_ovpn_srv)
-			text = "oVPN process crashed and restarted."
-			self.debug(text=text)
+			self.debug(text="oVPN process crashed and restarted.")
 			return False
 		elif self.STATE_OVPN == True:
 			#self.debug(text="Watchdog: oVPN is running to %s %s" %(self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP))
@@ -2040,10 +2039,6 @@ class Systray:
 				
 				try:
 					self.DEBUG = parser.getboolean('oVPN','debugmode')
-					#if self.DEBUG == "True":
-					#	self.DEBUG = True
-					#else:
-					#	self.DEBUG = False
 				except:
 					pass
 				
@@ -2096,12 +2091,8 @@ class Systray:
 
 					
 				try:
-					self.UPDATEOVPNONSTART = parser.get('oVPN','updateovpnonstart')
+					self.UPDATEOVPNONSTART = parser.getboolean('oVPN','updateovpnonstart')
 					self.debug(text="self.UPDATEOVPNONSTART = %s" % (self.UPDATEOVPNONSTART))
-					if self.UPDATEOVPNONSTART == "True":
-						self.UPDATEOVPNONSTART = True
-					else:
-						self.UPDATEOVPNONSTART = False
 				except:
 					pass
 					
@@ -2113,7 +2104,15 @@ class Systray:
 					else:
 						self.OVPN_CONFIGVERSION = "23x"
 				except:
+					pass
+					
+
+				try:
+					self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
+				except:
 					pass					
+
+					
 				if self.write_options_file():
 					return True
 			except:
@@ -2136,6 +2135,7 @@ class Systray:
 				parser.set('oVPN','openvpnexe','False')
 				parser.set('oVPN','updateovpnonstart','False')
 				parser.set('oVPN','configversion','23x')
+				parser.set('oVPN','serverviewextend','False')
 				parser.write(cfg)
 				cfg.close()
 				return True
@@ -2156,6 +2156,7 @@ class Systray:
 			parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
+			parser.set('oVPN','serverviewextend','%s'%(self.ENABLE_EXTSERVERVIEW))
 			
 			parser.write(cfg)
 			cfg.close()
@@ -2337,6 +2338,7 @@ class Systray:
 				self.ENABLE_EXTSERVERVIEW = True
 		else:
 			self.ENABLE_EXTSERVERVIEW = False
+		self.write_options_file()
 			
 			
 	def cb_change_ipmode1(self,widget,event):
