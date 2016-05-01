@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.3.9-gtk"
+CLIENTVERSION="v0.4.0-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -150,7 +150,7 @@ class Systray:
 		self.WIN_FIREWALL_STARTED = False
 		self.WIN_DNS_CHANGED = False
 		self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"		
-		self.CA_OS_ENV_HASH = "2dc5f20df96822757257576e0f0037caee49c7769261ca8b9354ed0e70f76988348e5f1fb6ab3c61933c78e0008987c7f96765192520c02686bd843e493ee689"
+
 
 	#######		
 	def on_right_click_mainwindow(self, treeview, event):
@@ -1582,6 +1582,27 @@ class Systray:
 				hasher.update(buf)
 			return hasher.hexdigest()
 
+	######		
+	def load_ca_cert(self):
+		if os.path.isfile(self.CA_FILE):
+			self.CA_FILE_HASH = self.hash_sha512_file(self.CA_FILE)
+			if self.CA_FILE_HASH == self.CA_FIXED_HASH:
+				try:
+					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
+					return True
+				except:
+					text="Error:\nSSL Root Certificate for %s not loaded %s" % (DOMAIN,self.CA_FILE)
+					self.msgwarn(text=text)
+					return False					
+			else:
+				text = "Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH)
+				self.msgwarn(text=text)
+				return False
+		else:
+			text="Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE)
+			self.msgwarn(text=text)
+			return False	
+
 	#######
 	def win_firewall_start(self):
 		self.netsh_cmdlist = list()
@@ -1990,7 +2011,7 @@ class Systray:
 				dbg.write("DEBUG_LOG START\r\n")
 				dbg.close()
 			except: 
-				print("Delete %s failed"%(self.debug_log))
+				pass
 		
 		self.opt_file = "%s\\options.cfg" % (self.api_dir)		
 		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)			
@@ -2030,32 +2051,7 @@ class Systray:
 		
 		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
 		
-		if os.path.isfile(self.CA_FILE):
-			self.CA_FILE_HASH = self.hash_sha512_file(self.CA_FILE)
-			if self.CA_FILE_HASH == self.CA_FIXED_HASH:
-				try:
-					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
-					hasher = hashlib.sha512()
-					hasher.update(os.environ["REQUESTS_CA_BUNDLE"])
-					os_env_hash = hasher.hexdigest()
-					if os_env_hash == self.CA_OS_ENV_HASH:
-						text="SSL Root Certificate for %s hash verified and loaded. os.environ hash = %s" % (DOMAIN,os_env_hash)
-						self.debug(text=text)
-					else:
-						text="SSL Root Certificate for %s hash verified and loaded but os.environ hash = %s but should be = %s" % (DOMAIN,os_env_hash,self.CA_OS_ENV_HASH)
-						self.msgwarn(text=text)						
-						return False
-				except:
-					text="Error:\nSSL Root Certificate for %s not loaded" % (DOMAIN,self.CA_FILE)
-					self.msgwarn(text=text)
-					return False					
-			else:
-				text = "Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH)
-				self.msgwarn(text=text)
-				return False
-		else:
-			text="Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE)
-			self.msgwarn(text=text)
+		if not self.load_ca_cert():
 			return False
 		
 		self.debug(text="win_pre3_load_profile_dir_vars loaded")
