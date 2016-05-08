@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.0-gtk"
+CLIENTVERSION="v0.4.1-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -148,6 +148,8 @@ class Systray:
 		self.ENABLE_EXTSERVERVIEW = False
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
+		self.WIN_BACKUP_FIREWALL = False
+		self.WIN_RESET_FIREWALL = False
 		self.WIN_DNS_CHANGED = False
 		self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"		
 
@@ -249,14 +251,15 @@ class Systray:
 	#######
 	def make_systray_menu(self, event_button, event_time):
 		try:
-			self.load_ovpn_server()				
+			self.load_ovpn_server()
+			self.load_firewall_backups()
 			self.systray_menu = gtk.Menu()
 			
 			text = "def make_systray_menu: event %s" % (event_button)
 			self.debug(text=text)
 			try: 
 				updatemenu = gtk.Menu()
-				updatem = gtk.MenuItem('Updates and Options')
+				updatem = gtk.MenuItem('Options')
 				updatem.set_submenu(updatemenu)
 
 				self.systray_menu.append(updatem)
@@ -313,7 +316,41 @@ class Systray:
 					ipv6entry3 = gtk.MenuItem('Select: IPv6 Entry Server with Exits to IPv6 + IPv4')
 					ipv6entry3.connect('button-press-event', self.cb_change_ipmode3)
 					ipv6menu.append(ipv6entry3)
+					
+				fwmenu = gtk.Menu()
+				fwm = gtk.MenuItem('Firewall Options')
+				fwm.set_submenu(fwmenu)
+				updatemenu.append(fwm)
 				
+				if self.WIN_RESET_FIREWALL == True:
+					fwentry = gtk.MenuItem('Clear Rules on Connect [enabled]')
+					fwentry.connect('button-press-event', self.cb_change_fwresetmode)
+					fwmenu.append(fwentry)					
+				elif self.WIN_RESET_FIREWALL == False:
+					fwentry = gtk.MenuItem('Clear Rules on Connect [disabled]')
+					fwentry.connect('button-press-event', self.cb_change_fwresetmode)
+					fwmenu.append(fwentry)
+					
+				if self.WIN_BACKUP_FIREWALL == True:
+					fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [enabled]')
+					fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
+					fwmenu.append(fwentry)
+				elif self.WIN_BACKUP_FIREWALL == False:
+					fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [disabled]')
+					fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
+					fwmenu.append(fwentry)
+
+				if self.STATE_OVPN == False:
+					fwrmenu = gtk.Menu()
+					fwrm = gtk.MenuItem('Restore Firewall Backups')
+					fwrm.set_submenu(fwrmenu)
+					fwmenu.append(fwrm)
+					
+					for file in self.FIREWALL_BACKUPS:
+						fwrentry = gtk.MenuItem('%s'%(file))
+						fwrentry.connect('button-press-event', self.cb_restore_firewallbackup, file)
+						fwrmenu.append(fwrentry)
+											
 				if self.DEBUG == False:
 					switchdebug = gtk.MenuItem('Enable DEBUG Mode')
 					switchdebug.connect('button-press-event', self.cb_switch_debug)
@@ -347,6 +384,9 @@ class Systray:
 			sep = gtk.SeparatorMenuItem()
 			self.systray_menu.append(sep)
 			
+#			if len(self.OVPN_SERVER) > 0:
+#				self.make_systray_server_menu()
+			
 			if len(self.OVPN_SERVER) > 0:
 				self.make_systray_server_menu()
 
@@ -370,9 +410,9 @@ class Systray:
 			sep = gtk.SeparatorMenuItem()
 			self.systray_menu.append(sep)
 			if self.MAINWINDOW_OPEN:
-				mainwindow = gtk.MenuItem('Close Full View')
+				mainwindow = gtk.MenuItem('Close')
 			else:
-				mainwindow = gtk.MenuItem('Open Full View')
+				mainwindow = gtk.MenuItem('Open')
 			self.systray_menu.append(mainwindow)
 			# SIGNALS
 			mainwindow.connect('activate', self.show_mainwindow)
@@ -397,12 +437,14 @@ class Systray:
 		except:
 			text="def make_systray_menu: failed"
 			self.debug(text=text)
-
+	"""
 	#######
 	def make_systray_server_menu(self):
 		try:
+			countrycodefrombefore = 0
 			for menuserver in self.OVPN_SERVER:
 				servershort = menuserver[:3]
+
 				textstring = "%s (%s:%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][2],self.OVPN_SERVER_INFO[servershort][1])
 				countrycode = servershort[:2].lower()
 				if self.OVPN_CONNECTEDto == menuserver:
@@ -419,6 +461,49 @@ class Systray:
 				serveritem.set_image(img)				
 				self.systray_menu.append(serveritem)
 				serveritem.show()
+		except:
+			self.destroy_systray_menu()
+			text = "def make_systray_server_menu: failed"
+			self.debug(text=text)
+	"""		
+	#######
+	def make_systray_server_menu(self):
+		try:
+			countrycodefrombefore = 0
+			for menuserver in self.OVPN_SERVER:
+				servershort = menuserver[:3]
+
+				textstring = "%s (%s:%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][2],self.OVPN_SERVER_INFO[servershort][1])
+				countrycode = servershort[:2].lower()
+				
+				if not countrycodefrombefore == countrycode:
+					# create countrygroup menu
+					countrycodefrombefore = countrycode					
+					cgmenu = gtk.Menu()
+					cgm = gtk.ImageMenuItem(countrycode.upper())
+					img = gtk.Image()
+					imgpath = self.FLAG_IMG[countrycode]
+					img.set_from_file(imgpath)
+					cgm.set_always_show_image(True)
+					cgm.set_image(img)					
+					cgm.set_submenu(cgmenu)
+					self.systray_menu.append(cgm)				
+				
+				if self.OVPN_CONNECTEDto == menuserver:
+					servershort = "[ "+servershort+" ]"
+					serveritem = gtk.ImageMenuItem(servershort)
+				else:
+					serveritem = gtk.ImageMenuItem(textstring)
+					# SIGNALS
+					serveritem.connect('button-press-event', self.call_openvpn, menuserver)
+				img = gtk.Image()
+				imgpath = self.FLAG_IMG[countrycode]
+				img.set_from_file(imgpath)
+				serveritem.set_always_show_image(True)
+				serveritem.set_image(img)
+				cgmenu.append(serveritem)
+				serveritem.show()
+
 		except:
 			self.destroy_systray_menu()
 			text = "def make_systray_server_menu: failed"
@@ -1606,7 +1691,8 @@ class Systray:
 	#######
 	def win_firewall_start(self):
 		self.netsh_cmdlist = list()
-		self.netsh_cmdlist.append("advfirewall reset")
+		if self.WIN_RESET_FIREWALL == True:
+			self.netsh_cmdlist.append("advfirewall reset")
 		#self.netsh_cmdlist.append("advfirewall set privateprofile logging filename \"%s\"" % (self.pfw_private_log))
 		#self.netsh_cmdlist.append("advfirewall set publicprofile logging filename \"%s\"" % (self.pfw_public_log))
 		#self.netsh_cmdlist.append("advfirewall set domainprofile logging filename \"%s\"" % (self.pfw_domain_log))
@@ -1618,6 +1704,18 @@ class Systray:
 			self.WIN_FIREWALL_STARTED = True
 			return True
 
+	#######
+	def win_firewall_allowout(self):
+		self.netsh_cmdlist = list()
+		self.netsh_cmdlist.append("advfirewall set allprofiles state on")
+		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
+		self.netsh_cmdlist.append("advfirewall set domainprofile firewallpolicy blockinbound,allowoutbound")
+		self.netsh_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
+		if self.win_join_netsh_cmd():
+			self.WIN_FIREWALL_STARTED = True
+			return True		
+	
+	
 	#######
 	def win_firewall_block_on_exit(self):
 		self.netsh_cmdlist = list()
@@ -1647,6 +1745,8 @@ class Systray:
 
 	#######
 	def win_firewall_export_on_start(self):
+		#if self.WIN_BACKUP_FIREWALL == False:
+		#	return True
 		self.debug(text="def win_firewall_export_on_start:")
 		self.netsh_cmdlist = list()
 		self.netsh_cmdlist.append('advfirewall export "%s"' % (self.pfw_bak))
@@ -1654,11 +1754,14 @@ class Systray:
 
 	#######
 	def win_firewall_restore_on_exit(self):
+		if self.WIN_BACKUP_FIREWALL == False:
+			return True	
 		if self.WIN_FIREWALL_STARTED == True:
 			self.debug(text="def win_firewall_restore_on_exit:")		
 			self.netsh_cmdlist = list()
 			self.netsh_cmdlist.append("advfirewall reset")
-			self.netsh_cmdlist.append('advfirewall import "%s"' % (self.pfw_bak))
+			if os.path.isfile(self.pfw_bak):
+				self.netsh_cmdlist.append('advfirewall import "%s"' % (self.pfw_bak))
 			return self.win_join_netsh_cmd()
 
 	#######
@@ -2213,6 +2316,12 @@ class Systray:
 				except:
 					pass
 					
+				try:
+					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
+					self.debug(text="self.WIN_RESET_FIREWALL = %s" % (self.WIN_RESET_FIREWALL))
+				except:
+					pass					
+					
 
 				try:
 					self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
@@ -2243,6 +2352,7 @@ class Systray:
 				parser.set('oVPN','updateovpnonstart','False')
 				parser.set('oVPN','configversion','23x')
 				parser.set('oVPN','serverviewextend','False')
+				parser.set('oVPN','winresetfirewall','False')
 				parser.write(cfg)
 				cfg.close()
 				return True
@@ -2265,6 +2375,8 @@ class Systray:
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
 			parser.set('oVPN','serverviewextend','%s'%(self.ENABLE_EXTSERVERVIEW))
+			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))			
+			#parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))			
 			
 			parser.write(cfg)
 			cfg.close()
@@ -2476,6 +2588,34 @@ class Systray:
 		self.write_options_file()
 		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
 
+	#######
+	def cb_change_fwresetmode(self,widget,event):
+		self.destroy_systray_menu()
+		if self.WIN_RESET_FIREWALL == True:
+			self.WIN_RESET_FIREWALL = False
+		elif self.WIN_RESET_FIREWALL == False:
+			self.WIN_RESET_FIREWALL = True
+		self.write_options_file()
+
+	######
+	def cb_change_fwbackupmode(self,widget,event):
+		self.destroy_systray_menu()
+		if self.WIN_BACKUP_FIREWALL == True:
+			self.WIN_BACKUP_FIREWALL = False
+		elif self.WIN_BACKUP_FIREWALL == False:
+			self.WIN_BACKUP_FIREWALL = True
+		self.write_options_file()
+
+	######
+	def cb_restore_firewallbackup(self,widget,event,file):
+		fwbak = "%s\\%s" % (self.pfw_dir,file)
+		if os.path.isfile(fwbak):
+			self.debug(text="def cb_restore_firewallbackup: %s" % (fwbak))
+			self.win_firewall_export_on_start()
+			self.netsh_cmdlist = list()
+			self.netsh_cmdlist.append('advfirewall import "%s"' % (fwbak))
+			return self.win_join_netsh_cmd()
+	
 	#######
 	def cb_change_vpndns(self,widget,event):
 		self.destroy_systray_menu()
@@ -2718,6 +2858,15 @@ class Systray:
 			return True
 		return False
 
+	def load_firewall_backups(self):
+		if os.path.exists(self.pfw_dir):
+			content = os.listdir(self.pfw_dir)
+			self.FIREWALL_BACKUPS = list()
+			for file in content:
+				if file.endswith('.bak.wfw'):
+					filepath = "%s\\%s" % (self.pfw_dir,file)
+					self.FIREWALL_BACKUPS.append(file)
+
 	#######
 	def load_ovpn_server(self):
 		if os.path.exists(self.vpn_cfg):
@@ -2904,7 +3053,10 @@ class Systray:
 	def ask_loadorunload_fw(self):
 		try:
 			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
-			dialog.set_markup("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
+			if self.WIN_BACKUP_FIREWALL == True:
+				dialog.set_markup("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
+			else:
+				dialog.set_markup("Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
 			response = dialog.run()
 			dialog.destroy()
 			if self.OS == "win32":
@@ -2913,7 +3065,10 @@ class Systray:
 					self.win_netsh_restore_dns_from_backup()
 						
 				if response == gtk.RESPONSE_YES:
-					self.win_firewall_restore_on_exit()
+					if self.WIN_BACKUP_FIREWALL == True:
+						self.win_firewall_restore_on_exit()
+					else:
+						self.win_firewall_allowout()
 					self.win_netsh_restore_dns_from_backup()
 					
 		except:
