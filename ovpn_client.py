@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.1-gtk"
+CLIENTVERSION="v0.4.2-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -48,10 +48,13 @@ class Systray:
 			self.tray.set_from_stock(gtk.STOCK_PROPERTIES)
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
-			self.tray.set_tooltip(('oVPN.to Client'))			
+			self.tray.set_tooltip(('oVPN.to Client'))
+			self.make_systray_menu(3)
+			self.destroy_systray_menu()
 			if self.UPDATEOVPNONSTART == True and self.OVPN_AUTO_CONNECT_ON_START == False:
 				self.check_remote_update()
 			self.systray_timer()
+			
 		else:
 			sys.exit()
 		
@@ -61,14 +64,19 @@ class Systray:
 		self.DEBUG = False
 		self.BOOTTIME = int(time.time())
 		self.debug_log = False
-		self.OVPN_LATEST = 2310
-		self.OVPN_LATEST_BUILT = "Mar 10 2016"
-		self.OVPN_LATEST_BUILT_TIMESTAMP = 1457564400
-		self.OVPN_DL_URL = False
-		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.10-I603-i686.exe"
-		self.OVPN_WIN_DLHASH_x86 = ".."
-		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.10-I603-x86_64.exe"
-		self.OVPN_WIN_DLHASH_x64 = ".."
+		self.OVPN_LATEST = 2311
+		self.OVPN_LATEST_BUILT = "May 10 2016"
+		self.OVPN_LATEST_BUILT_TIMESTAMP = 1462831200
+		
+		self.OPENVPN_REM_URL = "https://vcp.ovpn.to/files/openvpn"
+		self.OPENVPN_ALT_URL = "https://swupdate.openvpn.net/community/releases"
+		self.OPENVPN_VERSION = "2.3.11"
+		self.OPENVPN_BUILT_V = "I601"
+		
+		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-i686.exe"
+		self.OVPN_WIN_SHA512_x86 = "b6c1e5d9dd80fd6515d9683044dae7cad13c4cb5ac5590be4116263b7cde25e0fef1163deb5a1f1ad646e5fdb84c286308fa8af288692b9c7d4e2b7dbff38bbe"
+		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
+		self.OVPN_WIN_SHA512_x64 = "a59284b98e80c1cd43cfe2f0aee2ebb9d18ca44ffb7035b5a4bb4cb9c2860039943798d4bb8860e065a56be0284f5f23b74eba6a5e17f05df87303ea019c42a3"
 
 		self.MAIN_WINDOW_OPEN = True
 		self.isSMALL_WINDOW = False
@@ -231,7 +239,7 @@ class Systray:
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
-			self.make_systray_menu(event_button, event_time)
+			self.make_systray_menu(event_button)
 
 	#######
 	def on_left_click(self, widget):
@@ -249,14 +257,13 @@ class Systray:
 	"""
 
 	#######
-	def make_systray_menu(self, event_button, event_time):
+	def make_systray_menu(self, event_button):
 		try:
 			self.load_ovpn_server()
 			self.load_firewall_backups()
 			self.systray_menu = gtk.Menu()
 			
-			text = "def make_systray_menu: event %s" % (event_button)
-			self.debug(text=text)
+			self.debug(text="def make_systray_menu: bt=%s" % (event_button))
 			try: 
 				updatemenu = gtk.Menu()
 				updatem = gtk.MenuItem('Options')
@@ -384,8 +391,8 @@ class Systray:
 			sep = gtk.SeparatorMenuItem()
 			self.systray_menu.append(sep)
 			
-#			if len(self.OVPN_SERVER) > 0:
-#				self.make_systray_server_menu()
+	#			if len(self.OVPN_SERVER) > 0:
+	#				self.make_systray_server_menu()
 			
 			if len(self.OVPN_SERVER) > 0:
 				self.make_systray_server_menu()
@@ -431,41 +438,13 @@ class Systray:
 				self.systray_menu.append(quit)
 				# SIGNALS
 				quit.connect('activate', self.on_closing)
-				
+
 			self.systray_menu.show_all()
-			self.systray_menu.popup(None, None, None, event_button, event_time, self.tray)
+			self.systray_menu.popup(None, None, None, event_button, 0, self.tray)
 		except:
 			text="def make_systray_menu: failed"
 			self.debug(text=text)
-	"""
-	#######
-	def make_systray_server_menu(self):
-		try:
-			countrycodefrombefore = 0
-			for menuserver in self.OVPN_SERVER:
-				servershort = menuserver[:3]
-
-				textstring = "%s (%s:%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][2],self.OVPN_SERVER_INFO[servershort][1])
-				countrycode = servershort[:2].lower()
-				if self.OVPN_CONNECTEDto == menuserver:
-					servershort = "[ "+servershort+" ]"
-					serveritem = gtk.ImageMenuItem(servershort)
-				else:
-					serveritem = gtk.ImageMenuItem(textstring)
-					# SIGNALS
-					serveritem.connect('button-press-event', self.call_openvpn, menuserver)
-				img = gtk.Image()
-				imgpath = self.FLAG_IMG[countrycode]
-				img.set_from_file(imgpath)
-				serveritem.set_always_show_image(True)
-				serveritem.set_image(img)				
-				self.systray_menu.append(serveritem)
-				serveritem.show()
-		except:
-			self.destroy_systray_menu()
-			text = "def make_systray_server_menu: failed"
-			self.debug(text=text)
-	"""		
+	
 	#######
 	def make_systray_server_menu(self):
 		try:
@@ -962,15 +941,17 @@ class Systray:
 	def pre0_detect_os(self):
 		self.self_vars()
 		self.OS = sys.platform
+
 		if self.OS == "win32":
-			if self.win_pre1_check_app_dir():
-				if self.win_pre2_check_profiles_win():
-					if self.win_pre3_load_profile_dir_vars():
-						if self.check_config_folders():
-							if self.read_options_file():
-								if self.read_interfaces():
-									if self.write_options_file():
-										return True
+				if self.win_pre1_check_app_dir():
+					if self.win_pre2_check_profiles_win():
+						if self.win_pre3_load_profile_dir_vars():
+							if self.check_config_folders():
+								if self.build_openvpn_dlurl():
+									if self.read_options_file():
+										if self.read_interfaces():
+											if self.write_options_file():
+												return True
 										
 		elif OS == "linux2" :
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))	
@@ -1079,7 +1060,8 @@ class Systray:
 			self.debug(text="Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
 			
 		elif len(self.WIN_TAP_DEVS) == 0:
-			self.errorquit(text=_("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64))
+			self.msgwarn(text="No OpenVPN TAP-Adapter found!")
+			self.upgrade_openvpn()
 				
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
@@ -1114,7 +1096,7 @@ class Systray:
 			
 					
 		if self.WIN_TAP_DEVICE == False:
-			self.errorquit(text=_("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64))
+			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
 		else:
 			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 			self.win_enable_tap_interface()
@@ -1870,8 +1852,7 @@ class Systray:
 		
 		if self.OPENVPN_EXE == False or not os.path.isfile(self.OPENVPN_EXE):
 			if not self.win_select_openvpn():
-				text = _("No OpenVPN TAP-Adapter found! Please install openVPN Version\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)
-				self.errorquit(text=text)
+				self.upgrade_openvpn()
 	
 		text = "Using: %s" % (self.OPENVPN_EXE)
 		self.debug(text=text)		
@@ -1886,9 +1867,8 @@ class Systray:
 			text = "self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATESTBUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATESTBUILT)
 			self.debug(text=text)
 			if self.OVPN_VERSION >= self.OVPN_LATEST:
-				if self.OVPN_BUILT == self.OVPN_LATESTBUILT:
-					text = "self.OVPN_BUILT == self.OVPN_LATESTBUILT: True"
-					self.debug(text=text)
+				if self.OVPN_BUILT == self.OVPN_LATESTBUILT:					
+					self.debug(text="self.OVPN_BUILT == self.OVPN_LATESTBUILT: True")
 					return True
 				else:
 					built_mon = self.OVPN_BUILT[0]
@@ -1903,11 +1883,13 @@ class Systray:
 					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
 						return True
 					else:
-						text = _("Please update your openVPN Version to\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)
-						self.msgwarn(text=text)
+						self.upgrade_openvpn()
+						#text = _("Please update your openVPN Version to\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)
+						#self.msgwarn(text=text)
 			else:
-				text = _("Please update your openVPN Version to\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)
-				self.msgwarn(text=text)
+				self.upgrade_openvpn()
+				#text = _("Please update your openVPN Version to\r\nx86: %s\r\nx64: %s") % (self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64)
+				#self.msgwarn(text=text)
 		except:
 			self.errorquit(text=_("def win_detect_openvpn: failed"))
 
@@ -2211,6 +2193,7 @@ class Systray:
 				self.plaintext_passphrase = fp.read()
 				fp.close()
 				
+			
 			if os.path.exists(self.api_dir) and os.path.exists(self.vpn_dir) and os.path.exists(self.vpn_cfg) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
 				if not os.path.isfile(self.api_upd):
@@ -2234,14 +2217,16 @@ class Systray:
 						if self.form_ask_userid():
 							if self.write_new_apikey_config():
 								if self.check_passphrase():
-									return True
+									return True								
+
 			else:
 				self.errorquit(text = _("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
 			self.errorquit(text="def check_config_folders: failed")
 
 	#######
-	def read_options_file(self):		
+	def read_options_file(self):
+
 		if os.path.isfile(self.opt_file):
 			try:
 				parser = SafeConfigParser()
@@ -2327,8 +2312,8 @@ class Systray:
 					self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
 				except:
 					pass					
-
-					
+				
+				
 				if self.write_options_file():
 					return True
 			except:
@@ -2337,6 +2322,9 @@ class Systray:
 					os.remove(self.opt_file)
 				except:
 					pass
+					
+				
+					
 		else:
 			try:
 				cfg = open(self.opt_file,'w')
@@ -2933,39 +2921,27 @@ class Systray:
 			cfg = open(self.api_upd,'w')
 			cfg.write("0")
 			cfg.close()
-
+	
 	#######
 	def load_flags_from_remote(self,countrycode,imgfile):
 		try:
 			flagfilename = "%s.png" % (countrycode)
 			url = "https://%s/img/flags/%s" % (DOMAIN,flagfilename)
 			r = requests.get(url)
-			body = r.content
 			
 			fp = open(imgfile, "wb")
-			fp.write(body)
+			fp.write(r.content)
 			fp.close()
-
-			try:
-				hasher = hashlib.sha256()
-				with open(imgfile, 'rb') as afile:
-					buf = afile.read()
-					hasher.update(buf)
-				hash = hasher.hexdigest()			
-				if hash == self.FLAG_HASHS[flagfilename]:
-					text = "def load_flags_from_remote: %s hash ok" % (flagfilename)
-					self.debug(text=text)
-					return True
-				else:
-					text = "def load_flags_from_remote: %s hash failed" % (flagfilename)
-					self.msgwarn(text=text)
-					if os.path.isfile(flagfilename):
-						os.remove(flagfilename)					
-					return False
-			except:
-				self.debug(text="def load_flags_from_remote: try hasher %s failed"%(countrycode))
+			
+			hash = self.hash_sha256_file(imgfile)
+			if hash == self.FLAG_HASHS[flagfilename]:
+				self.debug(text="def load_flags_from_remote: %s hash ok" % (flagfilename))
+				return True
+			else:
+				self.msgwarn(text="def load_flags_from_remote: %s hash failed" % (flagfilename))
 				if os.path.isfile(flagfilename):
 					os.remove(flagfilename)
+				return False
 			
 		except:
 			self.debug(text="def load_flags_from_remote: %s failed"%(countrycode))
@@ -2981,10 +2957,9 @@ class Systray:
 				API_ACTION = "loadserverdata"
 				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }			
 				r = requests.post(url,data=values)
-				body = r.content			
 				try:
 					self.OVPN_SERVER_STATS = {}
-					self.OVPN_SERVER_STATS = json.loads(body)				
+					self.OVPN_SERVER_STATS = json.loads(r.content)
 					self.OVPN_SERVER_STATS_LASTUPDATE = self.get_now_unixtime()
 					self.debug(text="def load_serverdata_from_remote: loaded")
 				except:
@@ -2992,7 +2967,90 @@ class Systray:
 					self.OVPN_SERVER_STATS_LASTUPDATE = self.get_now_unixtime()
 			except:
 				self.debug(text="def load_serverdata_from_remote: api request failed")
+				
+	#######
+	def build_openvpn_dlurl(self):
+		self.PLATFORM = self.os_platform()
+		if self.PLATFORM == "AMD64":
+			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-x86_64.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
+			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x64
+		elif self.PLATFORM == "x86":
+			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-i686.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
+			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x86
+		else:
+			self.OPENVPN_DL_URL = False
+			self.msgwarn(text="Platform '%s' not supported" % (self.PLATFORM))
+			return False
+			
+		self.OPENVPN_DL_URL = "%s/%s" % (self.OPENVPN_REM_URL,self.OPENVPN_FILENAME)
+		self.OPENVPN_DL_URL_ALT = "%s/%s" % (self.OPENVPN_ALT_URL,self.OPENVPN_FILENAME)
+		self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.vpn_dir,self.OPENVPN_FILENAME)
+		self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
+		#print "def build_openvpn_dlurl: PLATFORM=%s url='%s'" % (self.PLATFORM,self.OPENVPN_DL_URL)
+		return True
 
+	#######
+	def upgrade_openvpn(self):
+		self.msgwarn(text="Update OpenVPN to %s (%s) (%s)\n\nStart download (~1.7 MB) from:\n'%s'\nto\n'%s'\n\nDownload and verify only!\nNo auto install!" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
+		if self.load_openvpnbin_from_remote() == True:
+			self.errorquit(text="openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'" % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
+		else:
+			self.errorquit(text="openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s" % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
+		
+	#######
+	def load_openvpnbin_from_remote(self):
+		if not self.OPENVPN_DL_URL == False:
+			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO) and self.verify_openvpnbin_dl():
+				return True
+			try:
+				ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
+
+				r1 = requests.get(self.OPENVPN_DL_URL)
+				r2 = requests.get(ascfiledl)
+				
+				fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
+				fp1.write(r1.content)
+				fp1.close()
+				
+				fp2 = open(self.OPENVPN_ASC_FILE, "wb")
+				fp2.write(r2.content)
+				fp2.close()
+				
+				return self.verify_openvpnbin_dl()
+			except:
+				self.debug(text="def load_openvpnbin_from_remote: failed")
+				return False
+		else:
+			return False
+			
+	######
+	def verify_openvpnbin_dl(self):
+		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
+			localhash = self.hash_sha512_file(self.OPENVPN_SAVE_BIN_TO)
+			if self.OPENVPN_FILEHASH == localhash:
+				self.debug(text="def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
+				return True
+			else:
+				self.msgwarn(text="Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'" % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH))
+				try:
+					os.remove(self.OPENVPN_SAVE_BIN_TO)
+				except:
+					self.msgwarn(text="Failed remove file: %s" % (self.OPENVPN_SAVE_BIN_TO))				
+				return False
+		else:
+			self.msgwarn(text="def verify_openvpnbin_dl: file not found '%s'" % (self.OPENVPN_SAVE_BIN_TO))
+			return False
+	
+	#######
+	def os_platform(self):
+		true_platform = os.environ['PROCESSOR_ARCHITECTURE']
+		try:
+			true_platform = os.environ["PROCESSOR_ARCHITEW6432"]
+		except KeyError:
+			pass
+			#true_platform not assigned to if this does not exist
+		return true_platform
+		
 	#######
 	"""
 				
@@ -3130,7 +3188,7 @@ class Systray:
 			translation = gettext.GNUTranslations(open(filename, "rb"))
 		except IOError:
 			translation = gettext.NullTranslations()
-			print "Language file for %s not found" % loc
+			#print "Language file for %s not found" % loc
 		translation.install()
 
 	#######
