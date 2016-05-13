@@ -791,15 +791,11 @@ class Systray:
 			
 	#######		
 	def on_right_click_mainwindow(self, treeview, event):
+		self.destroy_systray_menu()
 		try:
 			path, column, __, __ = self.treeview.get_path_at_pos(int(event.x), int(event.y))
 		except:
-			return False
-		try:
-			self.systray_menu.popdown()
-			self.systray_menu = False
-		except:
-			pass
+			return False		
 		selected_row = int(path[0])
 		servername = self.OVPN_SERVER[selected_row]
 		#print servername
@@ -860,37 +856,25 @@ class Systray:
 	"""
 
 	#######
-	def on_right_click(self, widget, event_button, event_time):
-		#print 'widget = %s' % (widget)
-		#print 'event_button = %s' % (event_button)
+	def on_right_click(self, widget, event, event_time):
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
-			self.make_systray_menu(event_button)
+			self.make_systray_menu(event)
 
 	#######
 	def on_left_click(self, widget):
-		try:
-			self.systray_menu.popdown()
-			self.systray_menu = False
-		except:
-			pass
-			
-	""" *fixme* (unused)	
-	def systray_focus_out(self,widget,event):
-		print 'systray_focus_out'
-		self.systray_menu.popdown()
-		self.systray_menu = False
-	"""
-
+		if not self.systray_menu == False:
+			self.destroy_systray_menu()
+		
 	#######
-	def make_systray_menu(self, event_button):
+	def make_systray_menu(self, event):
 		try:
 			self.load_ovpn_server()
 			self.load_firewall_backups()
 			self.systray_menu = gtk.Menu()
 			
-			self.debug(text="def make_systray_menu: bt=%s" % (event_button))
+			self.debug(text="def make_systray_menu: bt=%s" % (event))
 			try: 
 				updatemenu = gtk.Menu()
 				updatem = gtk.MenuItem('Options')
@@ -1066,12 +1050,31 @@ class Systray:
 				# SIGNALS
 				quit.connect('activate', self.on_closing)
 
+
+			#self.systray_menu.connect('focus-out-event', self.systray_focus_out)
+			#self.systray_menu.connect('focus-in-event', self.systray_focus_out)
+			
+			#self.mouse_in_tray_menu = None
+			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)			
+			self.systray_menu.connect('leave-notify-event', self.systray_notify_event)
+			
 			self.systray_menu.show_all()
-			self.systray_menu.popup(None, None, None, event_button, 0, self.tray)
+			self.systray_menu.popup(None, None, None, event, 0, self.tray)
 		except:
 			text="def make_systray_menu: failed"
 			self.debug(text=text)
-	
+			
+	#######
+	def systray_notify_event(self, widget, event, data = None):
+		self.mouse_in_tray_menu = time.time() + 5
+
+	#######
+	def check_hide_popup(self, data = None):
+		if not self.mouse_in_tray_menu == None:
+			if self.mouse_in_tray_menu < time.time():
+				self.destroy_systray_menu()
+				self.mouse_in_tray_menu = None
+				
 	#######
 	def make_systray_server_menu(self):
 		try:
@@ -1526,11 +1529,12 @@ class Systray:
 	#######	
 	def destroy_systray_menu(self):
 		try:
-			self.systray_menu.popdown()
+			#self.systray_menu.popdown()
+			self.systray_menu.hide()
 			self.systray_menu = False
+			self.debug(text = "def destroy_systray_menu: true")
 		except:
-			text = "def destroy_systray_menu: failed"
-			self.debug(text=text)
+			self.debug(text = "def destroy_systray_menu: failed")
 
 	#######
 	def set_statusbar_text(self,text):
@@ -2674,6 +2678,9 @@ class Systray:
 		text = False
 		systraytext = False
 		
+		if not self.systray_menu == False:
+			self.check_hide_popup()
+		
 		if self.statusbar_freeze == True:
 			time.sleep(1)
 			self.thread_systray_timer = threading.Thread(target=self.systray_timer)
@@ -3000,8 +3007,9 @@ class Systray:
 									   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
 										gtk.STOCK_OPEN, gtk.RESPONSE_OK))
 		filter = gtk.FileFilter()
-		filter.set_name("*.exe")
-		filter.add_pattern("*.exe")
+		filter.set_name("openvpn.exe")
+		filter.add_pattern("openvpn.exe")
+		dialog.add_filter(filter)
 		try:
 			response = dialog.run()
 			
@@ -3016,7 +3024,7 @@ class Systray:
 				return False
 			else:
 				dialog.destroy()
-				return False				
+				return False
 		except:
 			return False
 		
@@ -3035,9 +3043,8 @@ class Systray:
 		if self.OPENVPN_EXE == False or not os.path.isfile(self.OPENVPN_EXE):
 			if not self.win_select_openvpn():
 				self.upgrade_openvpn()
-	
-		text = "Using: %s" % (self.OPENVPN_EXE)
-		self.debug(text=text)		
+
+		self.debug(text = "Using: %s" % (self.OPENVPN_EXE))		
 		try:
 			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()		
 		except:
@@ -3060,11 +3067,10 @@ class Systray:
 					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
 					built_month_int = int(string_built_time.tm_mon)
 					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
-					text = "openvpn built_timestamp = %s self.OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATEST_BUILT_TIMESTAMP)
-					self.debug(text=text)
+					self.debug(text = "openvpn built_timestamp = %s self.OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATEST_BUILT_TIMESTAMP))
 					if built_timestamp >= self.OVPN_LATEST_BUILT_TIMESTAMP:				
 						return True
-
+			
 			self.upgrade_openvpn()
 			
 		except:
