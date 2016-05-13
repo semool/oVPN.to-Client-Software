@@ -46,6 +46,7 @@ class Systray:
 		if self.preboot():
 		
 			self.tray = gtk.StatusIcon()
+			
 			self.tray.set_from_stock(gtk.STOCK_PROPERTIES)
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
@@ -54,7 +55,6 @@ class Systray:
 			if self.UPDATEOVPNONSTART == True and self.OVPN_AUTO_CONNECT_ON_START == False:
 				self.check_remote_update()
 			self.systray_timer()
-			
 		else:
 			sys.exit()
 		
@@ -695,8 +695,6 @@ class Systray:
 				self.debug(text="External Interface = %s"%(self.WIN_EXT_DEVICE))
 				return True
 		
-		
-
 	#######
 	def load_decryption(self):
 		self.debug(text="def load_decryption")
@@ -870,11 +868,25 @@ class Systray:
 	#######
 	def make_systray_menu(self, event):
 		try:
+			self.debug(text="def make_systray_menu: bt=%s" % (event))
 			self.load_ovpn_server()
 			self.load_firewall_backups()
 			self.systray_menu = gtk.Menu()
+			self.make_systray_options_menu()
+			self.make_systray_server_menu()
+			self.make_systray_openvpn_menu()
+			self.make_systray_bottom_menu()
 			
-			self.debug(text="def make_systray_menu: bt=%s" % (event))
+			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)			
+			self.systray_menu.connect('leave-notify-event', self.systray_notify_event)
+			self.systray_menu.show_all()
+			self.systray_menu.popup(None, None, None, event, 0, self.tray)
+		except:
+			text="def make_systray_menu: failed"
+			self.debug(text=text)
+
+	#######
+	def make_systray_options_menu(self):
 			try: 
 				updatemenu = gtk.Menu()
 				updatem = gtk.MenuItem('Options')
@@ -976,8 +988,10 @@ class Systray:
 					switchdebug = gtk.MenuItem('Disable DEBUG Mode')
 					switchdebug.connect('button-press-event', self.cb_switch_debug)					
 				
-				updatemenu.append(switchdebug)					
-					
+				updatemenu.append(switchdebug)
+				
+				sep = gtk.SeparatorMenuItem()
+				self.systray_menu.append(sep)					
 				"""
 				dnsmenu = gtk.Menu()
 				dnsm = gtk.MenuItem('DNS Options')
@@ -995,74 +1009,96 @@ class Systray:
 				"""
 				
 			except:
-				text="def make_systray_menu: updatemenu failed"
-				self.debug(text=text)			
+				self.debug(text="def make_systray_menu: updatemenu failed")	
+		
+	#######
+	def make_systray_server_menu(self):
+		if len(self.OVPN_SERVER) > 0:		
+			try:
+				countrycodefrombefore = 0
+				for menuserver in self.OVPN_SERVER:
+					servershort = menuserver[:3]
 
-				
+					textstring = "%s (%s:%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][2],self.OVPN_SERVER_INFO[servershort][1])
+					countrycode = servershort[:2].lower()
+					
+					if not countrycodefrombefore == countrycode:
+						# create countrygroup menu
+						countrycodefrombefore = countrycode					
+						cgmenu = gtk.Menu()
+						cgm = gtk.ImageMenuItem(countrycode.upper())
+						img = gtk.Image()
+						imgpath = self.FLAG_IMG[countrycode]
+						img.set_from_file(imgpath)
+						cgm.set_always_show_image(True)
+						cgm.set_image(img)					
+						cgm.set_submenu(cgmenu)
+						self.systray_menu.append(cgm)				
+					
+					if self.OVPN_CONNECTEDto == menuserver:
+						servershort = "[ "+servershort+" ]"
+						serveritem = gtk.ImageMenuItem(servershort)
+					else:
+						serveritem = gtk.ImageMenuItem(textstring)
+						# SIGNALS
+						serveritem.connect('button-press-event', self.call_openvpn, menuserver)
+					img = gtk.Image()
+					imgpath = self.FLAG_IMG[countrycode]
+					img.set_from_file(imgpath)
+					serveritem.set_always_show_image(True)
+					serveritem.set_image(img)
+					cgmenu.append(serveritem)
+					serveritem.show()
+
+			except:
+				self.destroy_systray_menu()
+				text = "def make_systray_server_menu: failed"
+				self.debug(text=text)
+
+	#######
+	def make_systray_openvpn_menu(self):
+		if self.STATE_OVPN == True:
 			sep = gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
+			self.systray_menu.append(sep)		
+			# add quit item
+			servershort = self.OVPN_CONNECTEDto[:3]
+			textstring = '[ %s ] IP: %s Port: %s (%s)' % (servershort,self.OVPN_SERVER_INFO[servershort][0],self.OVPN_SERVER_INFO[servershort][1],self.OVPN_SERVER_INFO[servershort][2].upper())
 			
-	#			if len(self.OVPN_SERVER) > 0:
-	#				self.make_systray_server_menu()
-			
-			if len(self.OVPN_SERVER) > 0:
-				self.make_systray_server_menu()
-
-			if self.STATE_OVPN == True:
-				sep = gtk.SeparatorMenuItem()
-				self.systray_menu.append(sep)		
-				# add quit item
-				servershort = self.OVPN_CONNECTEDto[:3]
-				textstring = '[ %s ] IP: %s Port: %s (%s)' % (servershort,self.OVPN_SERVER_INFO[servershort][0],self.OVPN_SERVER_INFO[servershort][1],self.OVPN_SERVER_INFO[servershort][2].upper())
-				
-				disconnect = gtk.ImageMenuItem(textstring)
-				img = gtk.Image()
-				img.set_from_file(self.systray_icon_disconnected)
-				disconnect.set_always_show_image(True)
-				disconnect.set_image(img)
-				self.systray_menu.append(disconnect)
-				# SIGNALS
-				disconnect.connect('activate', self.kill_openvpn)			
-
-			#show server view
-			sep = gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
-			if self.MAINWINDOW_OPEN:
-				mainwindow = gtk.MenuItem('Close')
-			else:
-				mainwindow = gtk.MenuItem('Open')
-			self.systray_menu.append(mainwindow)
+			disconnect = gtk.ImageMenuItem(textstring)
+			img = gtk.Image()
+			img.set_from_file(self.systray_icon_disconnected)
+			disconnect.set_always_show_image(True)
+			disconnect.set_image(img)
+			self.systray_menu.append(disconnect)
 			# SIGNALS
-			mainwindow.connect('activate', self.show_mainwindow)
-			
-			
-			if self.STATE_OVPN == False:
-				sep = gtk.SeparatorMenuItem()
-				self.systray_menu.append(sep)		
-				# show about dialog
-				about = gtk.MenuItem('About')
-				self.systray_menu.append(about)
-				# SIGNALS
-				about.connect('activate', self.show_about_dialog)
-				# add quit item
-				quit = gtk.MenuItem('Quit')
-				self.systray_menu.append(quit)
-				# SIGNALS
-				quit.connect('activate', self.on_closing)
+			disconnect.connect('activate', self.kill_openvpn)	
 
-
-			#self.systray_menu.connect('focus-out-event', self.systray_focus_out)
-			#self.systray_menu.connect('focus-in-event', self.systray_focus_out)
-			
-			#self.mouse_in_tray_menu = None
-			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)			
-			self.systray_menu.connect('leave-notify-event', self.systray_notify_event)
-			
-			self.systray_menu.show_all()
-			self.systray_menu.popup(None, None, None, event, 0, self.tray)
-		except:
-			text="def make_systray_menu: failed"
-			self.debug(text=text)
+	#######
+	def make_systray_bottom_menu(self):
+		#show server view
+		sep = gtk.SeparatorMenuItem()
+		self.systray_menu.append(sep)
+		if self.MAINWINDOW_OPEN:
+			mainwindow = gtk.MenuItem('Close')
+		else:
+			mainwindow = gtk.MenuItem('Open')
+		self.systray_menu.append(mainwindow)
+		# SIGNALS
+		mainwindow.connect('activate', self.show_mainwindow)
+		
+		if self.STATE_OVPN == False:
+			sep = gtk.SeparatorMenuItem()
+			self.systray_menu.append(sep)		
+			# show about dialog
+			about = gtk.MenuItem('About')
+			self.systray_menu.append(about)
+			# SIGNALS
+			about.connect('activate', self.show_about_dialog)
+			# add quit item
+			quit = gtk.MenuItem('Quit')
+			self.systray_menu.append(quit)
+			# SIGNALS
+			quit.connect('activate', self.on_closing)
 			
 	#######
 	def systray_notify_event(self, widget, event, data = None):
@@ -1074,49 +1110,6 @@ class Systray:
 			if self.mouse_in_tray_menu < time.time():
 				self.destroy_systray_menu()
 				self.mouse_in_tray_menu = None
-				
-	#######
-	def make_systray_server_menu(self):
-		try:
-			countrycodefrombefore = 0
-			for menuserver in self.OVPN_SERVER:
-				servershort = menuserver[:3]
-
-				textstring = "%s (%s:%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][2],self.OVPN_SERVER_INFO[servershort][1])
-				countrycode = servershort[:2].lower()
-				
-				if not countrycodefrombefore == countrycode:
-					# create countrygroup menu
-					countrycodefrombefore = countrycode					
-					cgmenu = gtk.Menu()
-					cgm = gtk.ImageMenuItem(countrycode.upper())
-					img = gtk.Image()
-					imgpath = self.FLAG_IMG[countrycode]
-					img.set_from_file(imgpath)
-					cgm.set_always_show_image(True)
-					cgm.set_image(img)					
-					cgm.set_submenu(cgmenu)
-					self.systray_menu.append(cgm)				
-				
-				if self.OVPN_CONNECTEDto == menuserver:
-					servershort = "[ "+servershort+" ]"
-					serveritem = gtk.ImageMenuItem(servershort)
-				else:
-					serveritem = gtk.ImageMenuItem(textstring)
-					# SIGNALS
-					serveritem.connect('button-press-event', self.call_openvpn, menuserver)
-				img = gtk.Image()
-				imgpath = self.FLAG_IMG[countrycode]
-				img.set_from_file(imgpath)
-				serveritem.set_always_show_image(True)
-				serveritem.set_image(img)
-				cgmenu.append(serveritem)
-				serveritem.show()
-
-		except:
-			self.destroy_systray_menu()
-			text = "def make_systray_server_menu: failed"
-			self.debug(text=text)
 
 	#######
 	def check_remote_update_cb(self,widget,event):
@@ -2068,7 +2061,7 @@ class Systray:
 				hasher.update(buf)
 			return hasher.hexdigest()
 
-	######		
+	#######		
 	def load_ca_cert(self):
 		if os.path.isfile(self.CA_FILE):
 			self.CA_FILE_HASH = self.hash_sha512_file(self.CA_FILE)
@@ -2115,7 +2108,6 @@ class Systray:
 		if self.win_join_netsh_cmd():
 			self.WIN_FIREWALL_STARTED = True
 			return True		
-	
 	
 	#######
 	def win_firewall_block_on_exit(self):
@@ -2502,7 +2494,7 @@ class Systray:
 			self.WIN_RESET_FIREWALL = True
 		self.write_options_file()
 
-	######
+	#######
 	def cb_change_fwbackupmode(self,widget,event):
 		self.destroy_systray_menu()
 		if self.WIN_BACKUP_FIREWALL == True:
@@ -2511,7 +2503,7 @@ class Systray:
 			self.WIN_BACKUP_FIREWALL = True
 		self.write_options_file()
 
-	######
+	#######
 	def cb_restore_firewallbackup(self,widget,event,file):
 		fwbak = "%s\\%s" % (self.pfw_dir,file)
 		if os.path.isfile(fwbak):
@@ -2674,7 +2666,7 @@ class Systray:
 	def systray_timer(self):
 		if self.stop_systray_timer == True:
 			return False
-		self.systray_timer_running = True
+		
 		text = False
 		systraytext = False
 		
@@ -2750,10 +2742,18 @@ class Systray:
 		except:
 			pass
 		
-		time.sleep(5)
+		try:
+			if self.systray_timer_running == True:
+				time.sleep(5)
+		except:
+			pass
+		
+		
 		self.thread_systray_timer = threading.Thread(target=self.systray_timer)
 		self.thread_systray_timer.start()
-
+		self.systray_timer_running = True
+		return True
+		
 	#######
 	def try_socket(self,host,port):		
 		try:
@@ -2953,7 +2953,7 @@ class Systray:
 		else:
 			return False
 			
-	######
+	#######
 	def verify_openvpnbin_dl(self):
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 			localhash = self.hash_sha512_file(self.OPENVPN_SAVE_BIN_TO)
@@ -3027,7 +3027,6 @@ class Systray:
 				return False
 		except:
 			return False
-		
 
 	#######
 	def win_detect_openvpn(self):
