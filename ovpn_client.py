@@ -99,6 +99,7 @@ class Systray:
 		self.WIN_TAP_DEVS = list()
 		self.WIN_EXT_DEVICE = False
 		self.WIN_EXT_DHCP = False
+		self.NO_WIN_FIREWALL = False
 		
 		self.OPENVPN_EXE = False
 		self.OPENVPN_SILENT_SETUP = False
@@ -257,6 +258,8 @@ class Systray:
 		self.zip_cfg = "%s\\confs.zip" % (self.vpn_dir)
 		self.zip_crt = "%s\\certs.zip" % (self.vpn_dir)
 		self.api_upd = "%s\\lastupdate.txt" % (self.vpn_dir)
+		if os.path.isfile(self.api_upd):
+			os.remove(self.api_upd)
 		
 		self.dns_dir =  "%s\\dns" % (self.bin_dir)
 		self.dns_d0wntxt =  "%s\\dns.txt" % (self.dns_dir)
@@ -330,13 +333,6 @@ class Systray:
 			
 			if os.path.exists(self.api_dir) and os.path.exists(self.vpn_dir) and os.path.exists(self.vpn_cfg) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
-				if not os.path.isfile(self.api_upd):
-					text = "writing lastupdate to %s" % (self.api_upd)
-					self.debug(text=text)
-					self.reset_last_update()
-					
-				if not os.path.isfile(self.api_upd):
-					self.errorquit(text = _("Creating FILE\n%s\nfailed!") % (self.api_upd))
 					
 				if os.path.isfile(self.api_cfg):
 					self.debug(text="def check_config_folders :True")
@@ -452,9 +448,14 @@ class Systray:
 					self.WIN_BACKUP_FIREWALL = parser.getboolean('oVPN','winbackupfirewall')
 					self.debug(text="self.WIN_BACKUP_FIREWALL = %s" % (self.WIN_RESET_FIREWALL))
 				except:
-					pass					
+					pass
 					
-
+				try:
+					self.NO_WIN_FIREWALL = parser.getboolean('oVPN','nowinfirewall')
+					self.debug(text="self.NO_WIN_FIREWALL = %s" % (self.NO_WIN_FIREWALL))
+				except:
+					pass
+					
 				try:
 					self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
 				except:
@@ -471,13 +472,12 @@ class Systray:
 				except:
 					pass
 					
-				
-					
 		else:
 			try:
 				cfg = open(self.opt_file,'w')
 				parser = SafeConfigParser()
-				parser.add_section('oVPN')
+				
+				parser.add_section('oVPN')				
 				parser.set('oVPN','debugmode','False')
 				parser.set('oVPN','passphrase','False')
 				parser.set('oVPN','lastcfgupdate','0')
@@ -491,6 +491,9 @@ class Systray:
 				parser.set('oVPN','serverviewextend','False')
 				parser.set('oVPN','winresetfirewall','False')
 				parser.set('oVPN','winbackupfirewall','False')
+				parser.set('oVPN','nowinfirewall','False')
+
+				
 				parser.write(cfg)
 				cfg.close()
 				return True
@@ -502,6 +505,7 @@ class Systray:
 		try:
 			cfg = open(self.opt_file,'w')
 			parser = SafeConfigParser()
+			
 			parser.add_section('oVPN')
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 			parser.set('oVPN','passphrase','%s'%(self.plaintext_passphrase))
@@ -516,7 +520,7 @@ class Systray:
 			parser.set('oVPN','serverviewextend','%s'%(self.ENABLE_EXTSERVERVIEW))
 			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
 			parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
-			
+			parser.set('oVPN','nowinfirewall','%s'%(self.NO_WIN_FIREWALL))
 			parser.write(cfg)
 			cfg.close()
 			return True
@@ -1045,31 +1049,37 @@ class Systray:
 					ipv6menu.append(ipv6entry3)
 					
 				fwmenu = gtk.Menu()
-				fwm = gtk.MenuItem('Firewall Options')
+				fwm = gtk.MenuItem('Windows Firewall')
 				fwm.set_submenu(fwmenu)
 				updatemenu.append(fwm)
 				
-				if self.WIN_RESET_FIREWALL == True:
-					fwentry = gtk.MenuItem('Clear Rules on Connect [enabled]')
-					fwentry.connect('button-press-event', self.cb_change_fwresetmode)
-					fwmenu.append(fwentry)					
-				elif self.WIN_RESET_FIREWALL == False:
-					fwentry = gtk.MenuItem('Clear Rules on Connect [disabled]')
-					fwentry.connect('button-press-event', self.cb_change_fwresetmode)
+				if self.STATE_OVPN == False and self.NO_WIN_FIREWALL == False:
+
+					
+					fwentry = gtk.MenuItem('Use Windows Firewall [enabled]')
+					fwentry.connect('button-press-event', self.cb_change_winfirewall)
 					fwmenu.append(fwentry)
 					
-				if self.WIN_BACKUP_FIREWALL == True:
-					fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [enabled]')
-					fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
-					fwmenu.append(fwentry)
-				elif self.WIN_BACKUP_FIREWALL == False:
-					fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [disabled]')
-					fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
-					fwmenu.append(fwentry)
-
-				if self.STATE_OVPN == False:
-					fwrmenu = gtk.Menu()
+					if self.WIN_RESET_FIREWALL == True:
+						fwentry = gtk.MenuItem('Clear Rules on Connect [enabled]')
+						fwentry.connect('button-press-event', self.cb_change_fwresetmode)
+						fwmenu.append(fwentry)					
+					elif self.WIN_RESET_FIREWALL == False:
+						fwentry = gtk.MenuItem('Clear Rules on Connect [disabled]')
+						fwentry.connect('button-press-event', self.cb_change_fwresetmode)
+						fwmenu.append(fwentry)
+						
+					if self.WIN_BACKUP_FIREWALL == True:
+						fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [enabled]')
+						fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
+						fwmenu.append(fwentry)
+					elif self.WIN_BACKUP_FIREWALL == False:
+						fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [disabled]')
+						fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
+						fwmenu.append(fwentry)
+					
 					fwrm = gtk.MenuItem('Restore Firewall Backups')
+					fwrmenu = gtk.Menu()
 					fwrm.set_submenu(fwrmenu)
 					fwmenu.append(fwrm)
 					
@@ -1077,7 +1087,13 @@ class Systray:
 						fwrentry = gtk.MenuItem('%s'%(file))
 						fwrentry.connect('button-press-event', self.cb_restore_firewallbackup, file)
 						fwrmenu.append(fwrentry)
-											
+						
+				elif self.STATE_OVPN == False and self.NO_WIN_FIREWALL == True:
+					fwentry = gtk.MenuItem('Use Windows Firewall [disabled]')
+					fwentry.connect('button-press-event', self.cb_change_winfirewall)
+					fwmenu.append(fwentry)
+																
+																
 				if self.DEBUG == False:
 					switchdebug = gtk.MenuItem('DEBUG Mode [disabled]')
 					switchdebug.connect('button-press-event', self.cb_switch_debug)
@@ -1200,7 +1216,7 @@ class Systray:
 			
 	#######
 	def systray_notify_event(self, widget, event, data = None):
-		self.mouse_in_tray_menu = time.time() + 5
+		self.mouse_in_tray_menu = time.time() + 15
 
 	#######
 	def check_hide_popup(self, data = None):
@@ -1272,9 +1288,7 @@ class Systray:
 		self.set_progressbar(text)
 		try:
 			if len(self.OVPN_SERVER) == 0:
-				cfg = open(self.api_upd,'w')
-				cfg.write("0")
-				cfg.close()		
+				self.reset_last_update()	
 		except:
 			pass
 		self.debug(text="def inThread_timer_check_certdl:")
@@ -2169,6 +2183,8 @@ class Systray:
 
 	#######
 	def win_firewall_start(self):
+		if self.NO_WIN_FIREWALL:
+			return True
 		self.netsh_cmdlist = list()
 		if self.WIN_RESET_FIREWALL == True:
 			self.netsh_cmdlist.append("advfirewall reset")
@@ -2185,6 +2201,8 @@ class Systray:
 
 	#######
 	def win_firewall_allowout(self):
+		if self.NO_WIN_FIREWALL:
+			return True	
 		self.netsh_cmdlist = list()
 		self.netsh_cmdlist.append("advfirewall set allprofiles state on")
 		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
@@ -2196,6 +2214,8 @@ class Systray:
 	
 	#######
 	def win_firewall_block_on_exit(self):
+		if self.NO_WIN_FIREWALL:
+			return True	
 		self.netsh_cmdlist = list()
 		self.netsh_cmdlist.append("advfirewall set allprofiles state on")
 		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
@@ -2205,6 +2225,8 @@ class Systray:
 
 	#######
 	def win_firewall_add_rule_to_vcp(self,option):
+		if self.NO_WIN_FIREWALL:
+			return True	
 		self.debug(text="def win_firewall_add_rule_to_vcp:")
 		self.netsh_cmdlist = list()
 		url = "https://%s" % (DOMAIN)
@@ -2223,6 +2245,8 @@ class Systray:
 
 	#######
 	def win_firewall_export_on_start(self):
+		if self.NO_WIN_FIREWALL:
+			return True	
 		if self.WIN_BACKUP_FIREWALL == False:
 			return True
 		self.debug(text="def win_firewall_export_on_start:")
@@ -2234,6 +2258,8 @@ class Systray:
 
 	#######
 	def win_firewall_restore_on_exit(self):
+		if self.NO_WIN_FIREWALL:
+			return True	
 		if self.WIN_BACKUP_FIREWALL == False:
 			return True	
 		if self.WIN_FIREWALL_STARTED == True:
@@ -2571,6 +2597,16 @@ class Systray:
 		self.write_options_file()
 
 	#######
+	def cb_change_winfirewall(self,widget,event):
+		self.destroy_systray_menu()
+		if self.NO_WIN_FIREWALL == True:
+			self.NO_WIN_FIREWALL = False			
+		elif self.NO_WIN_FIREWALL == False:
+			self.NO_WIN_FIREWALL = True
+		self.write_options_file()
+		self.ask_loadorunload_fw()
+		
+	#######
 	def cb_restore_firewallbackup(self,widget,event,file):
 		fwbak = "%s\\%s" % (self.pfw_dir,file)
 		if os.path.isfile(fwbak):
@@ -2813,10 +2849,8 @@ class Systray:
 			# for end
 			self.OVPN_SERVER.sort()
 		else:
-			cfg = open(self.api_upd,'w')
-			cfg.write("0")
-			cfg.close()
-	
+			self.reset_last_update()
+			
 	#######
 	def load_flags_from_remote(self,countrycode,imgfile):
 		try:
@@ -3103,21 +3137,24 @@ class Systray:
 			
 			if response == gtk.RESPONSE_CANCEL:
 				return False
-			if response == gtk.RESPONSE_CLOSE:
+			elif response == gtk.RESPONSE_CLOSE:
 				self.ask_loadorunload_fw()
 			else:
-				return False			
-			
-			
+				return False
+
 			text=_("close app")
 			self.debug(text=text)
 			self.stop_systray_timer = True
 			self.remove_lock()
+			if os.path.isfile(self.debug_log):
+				os.remove(self.debug_log)			
 			gtk.main_quit()
 			sys.exit()
 
 	#######
 	def ask_loadorunload_fw(self):
+		if self.NO_WIN_FIREWALL:
+			return True
 		try:
 			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
 			if self.WIN_BACKUP_FIREWALL == True:
