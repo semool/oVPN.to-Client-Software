@@ -458,11 +458,12 @@ class Systray:
 				try:
 					self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
 				except:
-					pass					
+					pass
 				
 				
-				if self.write_options_file():
-					return True
+				#if self.write_options_file():
+				return True
+				
 			except:
 				self.msgwarn(text="def read_options_file: read failed")
 				try:
@@ -602,7 +603,7 @@ class Systray:
 		for line in TAPADAPTERS:
 			#self.debug(text="checking line = %s"%(line))
 			for INTERFACE in self.INTERFACES:
-				if len(line) >= 1: self.debug(text="is IF: '%s' listed as TAP in line '%s'?"%(INTERFACE,line))
+				#if len(line) >= 1: self.debug(text="is IF: '%s' listed as TAP in line '%s'?"%(INTERFACE,line))
 				if line.startswith("'%s' {"%(INTERFACE)) and len(line) >= 1:
 					self.debug(text="Found TAP ADAPTER: '%s'" % (INTERFACE))
 					self.INTERFACES.remove(INTERFACE)
@@ -630,7 +631,7 @@ class Systray:
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 			self.debug(text="Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
-			return True
+			#return True
 			
 		else:
 			self.debug(text="self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
@@ -739,6 +740,7 @@ class Systray:
 			self.apidata = crypt.decrypt(b64config).split(",")
 			aesiv = False
 			self.aeskey = False
+			self.plaintext_passphrase = False
 			if len(self.apidata) > 3:
 				USERID = self.apidata[0].split("=")
 				APIKEY = self.apidata[1].split("=")
@@ -2089,7 +2091,7 @@ class Systray:
 			search = '"%s"' % (self.WIN_EXT_DEVICE)
 			list = read.strip(' ').split('\r\n')
 			i, m1, m2, t = 0, 0, 0 ,0
-			self.debug(text="def win_netsh_read_dns_to_backup:")
+			self.debug(text="def win_netsh_read_dns_to_backup: search = %s" % (search))
 			for line in list:
 				if search in line:
 					text = "found: %s in %s line %s" % (search,line,i)
@@ -2741,9 +2743,9 @@ class Systray:
 
 	def load_firewall_backups(self):
 		if os.path.exists(self.pfw_dir):
-			self.body = os.listdir(self.pfw_dir)
+			content = os.listdir(self.pfw_dir)
 			self.FIREWALL_BACKUPS = list()
-			for file in self.body:
+			for file in content:
 				if file.endswith('.bak.wfw'):
 					filepath = "%s\\%s" % (self.pfw_dir,file)
 					self.FIREWALL_BACKUPS.append(file)
@@ -2751,10 +2753,10 @@ class Systray:
 	#######
 	def load_ovpn_server(self):
 		if os.path.exists(self.vpn_cfg):
-			self.body = os.listdir(self.vpn_cfg)
+			content = os.listdir(self.vpn_cfg)
 			#self.debug(text="def load_ovpn_server: self.body = %s " % (self.body))
 			self.OVPN_SERVER = list()
-			for file in self.body:
+			for file in content:
 				if file.endswith('.ovpn.to.ovpn'):
 					filepath = "%s\\%s" % (self.vpn_cfg,file)
 					servername = file[:-5]
@@ -2823,7 +2825,7 @@ class Systray:
 			r = requests.get(url)
 			
 			fp = open(imgfile, "wb")
-			fp.write(r.self.body)
+			fp.write(r.content)
 			fp.close()
 			
 			hash = self.hash_sha256_file(imgfile)
@@ -2852,7 +2854,7 @@ class Systray:
 				r = requests.post(self.APIURL,data=values)
 				try:
 					self.OVPN_SERVER_STATS = {}
-					self.OVPN_SERVER_STATS = json.loads(r.self.body)
+					self.OVPN_SERVER_STATS = json.loads(r.content)
 					self.OVPN_SERVER_STATS_LASTUPDATE = self.get_now_unixtime()
 					self.debug(text="def load_serverdata_from_remote: loaded")
 				except:
@@ -2911,11 +2913,11 @@ class Systray:
 				r2 = requests.get(ascfiledl)
 				
 				fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
-				fp1.write(r1.self.body)
+				fp1.write(r1.content)
 				fp1.close()
 				
 				fp2 = open(self.OPENVPN_ASC_FILE, "wb")
-				fp2.write(r2.self.body)
+				fp2.write(r2.content)
 				fp2.close()
 				
 				return self.verify_openvpnbin_dl()
@@ -3068,7 +3070,7 @@ class Systray:
 			try:
 				url = "https://dns.d0wn.biz/dns.txt"
 				r = requests.get(url)
-				body = r.self.body.split('\n')
+				body = r.content.split('\n')
 				print body
 				try:
 					self.d0wns_DNS = body.split(',')
