@@ -100,6 +100,7 @@ class Systray:
 		self.WIN_EXT_DEVICE = False
 		self.WIN_EXT_DHCP = False
 		self.NO_WIN_FIREWALL = False
+		self.NO_DNS_CHANGE = False
 		
 		self.OPENVPN_EXE = False
 		self.OPENVPN_SILENT_SETUP = False
@@ -242,8 +243,8 @@ class Systray:
 			except: 
 				pass
 		
-		self.opt_file = "%s\\options.cfg" % (self.api_dir)		
-		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)			
+		self.opt_file = "%s\\options.cfg" % (self.api_dir)
+		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
 		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
 		self.prx_dir = "%s\\proxy" % (self.api_dir)
 		
@@ -457,6 +458,12 @@ class Systray:
 					pass
 					
 				try:
+					self.NO_DNS_CHANGE = parser.getboolean('oVPN','nodnschange')
+					self.debug(text="self.NO_DNS_CHANGE = %s" % (self.NO_DNS_CHANGE))
+				except:
+					pass					
+					
+				try:
 					self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
 				except:
 					pass
@@ -492,6 +499,7 @@ class Systray:
 				parser.set('oVPN','winresetfirewall','False')
 				parser.set('oVPN','winbackupfirewall','False')
 				parser.set('oVPN','nowinfirewall','False')
+				parser.set('oVPN','nodnschange','False')
 
 				
 				parser.write(cfg)
@@ -521,6 +529,8 @@ class Systray:
 			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
 			parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
 			parser.set('oVPN','nowinfirewall','%s'%(self.NO_WIN_FIREWALL))
+			parser.set('oVPN','nodnschange','%s'%(self.NO_DNS_CHANGE))
+			
 			parser.write(cfg)
 			cfg.close()
 			return True
@@ -989,35 +999,27 @@ class Systray:
 	#######
 	def make_systray_options_menu(self):
 			try: 
-				updatemenu = gtk.Menu()
-				updatem = gtk.MenuItem('Options')
-				updatem.set_submenu(updatemenu)
+				optionsmenu = gtk.Menu()
+				optionsm = gtk.MenuItem('Options')
+				optionsm.set_submenu(optionsmenu)
 
-				self.systray_menu.append(updatem)
-
-				normalupdate = gtk.MenuItem('Normal Config Update')
-				normalupdate.connect('button-press-event', self.check_remote_update_cb)
-				updatemenu.append(normalupdate)
+				self.systray_menu.append(optionsm)
 				
-				forceupdate = gtk.MenuItem('Forced Config Update')
-				forceupdate.connect('button-press-event', self.cb_force_update)
-				updatemenu.append(forceupdate)
-
-				if self.UPDATEOVPNONSTART == False:
-					autoupdate = gtk.MenuItem('Enable Update on Start')
-				else:
-					autoupdate = gtk.MenuItem('Disable Update on Start')
-				autoupdate.connect('button-press-event', self.cb_switch_autoupdate)
-				updatemenu.append(autoupdate)
-					
-				resetlogin = gtk.MenuItem('Reset API Login')
-				resetlogin.connect('button-press-event', self.cb_form_reask_userid)
-				updatemenu.append(resetlogin)
-				
+				self.make_systray_updates_menu()
+						
 				if self.STATE_OVPN == False:
 					resetextif = gtk.MenuItem('Select Network Adapter')
 					resetextif.connect('button-press-event', self.cb_resetextif)
-					updatemenu.append(resetextif)					
+					optionsmenu.append(resetextif)
+					
+					if self.NO_DNS_CHANGE == False:
+						nodnschange = gtk.MenuItem('DNS Leak Protection [enabled]')
+						nodnschange.connect('button-press-event', self.cb_nodnschange)
+						optionsmenu.append(nodnschange)
+					else:
+						nodnschange = gtk.MenuItem('DNS Leak Protection [disabled]')
+						nodnschange.connect('button-press-event', self.cb_nodnschange)
+						optionsmenu.append(nodnschange)						
 					
 				if self.STATE_OVPN == True:
 					if self.ENABLE_EXTSERVERVIEW == False:
@@ -1025,13 +1027,13 @@ class Systray:
 					else:
 						extserverview = gtk.MenuItem('Disable extended Server-View')
 					extserverview.connect('button-press-event', self.cb_extserverview)
-					updatemenu.append(extserverview)
+					optionsmenu.append(extserverview)
 					
 				
 				ipv6menu = gtk.Menu()
 				ipv6m = gtk.MenuItem('IPv6 Options')
 				ipv6m.set_submenu(ipv6menu)
-				updatemenu.append(ipv6m)
+				optionsmenu.append(ipv6m)
 				
 				if not self.OVPN_CONFIGVERSION == "23x":
 					ipv6entry1 = gtk.MenuItem('Select: IPv4 Entry Server with Exit to IPv4 (standard)')
@@ -1051,11 +1053,9 @@ class Systray:
 				fwmenu = gtk.Menu()
 				fwm = gtk.MenuItem('Windows Firewall')
 				fwm.set_submenu(fwmenu)
-				updatemenu.append(fwm)
+				optionsmenu.append(fwm)
 				
-				if self.STATE_OVPN == False and self.NO_WIN_FIREWALL == False:
-
-					
+				if self.STATE_OVPN == False and self.NO_WIN_FIREWALL == False:					
 					fwentry = gtk.MenuItem('Use Windows Firewall [enabled]')
 					fwentry.connect('button-press-event', self.cb_change_winfirewall)
 					fwmenu.append(fwentry)
@@ -1070,11 +1070,11 @@ class Systray:
 						fwmenu.append(fwentry)
 						
 					if self.WIN_BACKUP_FIREWALL == True:
-						fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [enabled]')
+						fwentry = gtk.MenuItem('Rules: Backup on Start / Restore on Quit [enabled]')
 						fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
 						fwmenu.append(fwentry)
 					elif self.WIN_BACKUP_FIREWALL == False:
-						fwentry = gtk.MenuItem('Restore backuped Rules on Quit/Exit [disabled]')
+						fwentry = gtk.MenuItem('Rules: Backup on Start / Restore on Quit [disabled]')
 						fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
 						fwmenu.append(fwentry)
 					
@@ -1101,7 +1101,7 @@ class Systray:
 					switchdebug = gtk.MenuItem('DEBUG Mode [enabled]')
 					switchdebug.connect('button-press-event', self.cb_switch_debug)
 				
-				updatemenu.append(switchdebug)
+				optionsmenu.append(switchdebug)
 				
 				sep = gtk.SeparatorMenuItem()
 				self.systray_menu.append(sep)					
@@ -1109,7 +1109,7 @@ class Systray:
 				dnsmenu = gtk.Menu()
 				dnsm = gtk.MenuItem('DNS Options')
 				dnsm.set_submenu(dnsmenu)
-				updatemenu.append(dnsm)
+				optionsmenu.append(dnsm)
 				
 				
 				dnsentry1 = gtk.MenuItem('Set DNS for VPN connection')
@@ -1122,7 +1122,36 @@ class Systray:
 				"""
 				
 			except:
-				self.debug(text="def make_systray_menu: updatemenu failed")	
+				self.debug(text="def make_systray_menu: optionsmenu failed")	
+
+	#######
+	def make_systray_updates_menu(self):
+		try:
+			updatesmenu = gtk.Menu()
+			updatesm = gtk.MenuItem("Updates")
+			updatesm.set_submenu(updatesmenu)
+			self.systray_menu.append(updatesm)
+
+			normalupdate = gtk.MenuItem('Normal Config Update')
+			normalupdate.connect('button-press-event', self.check_remote_update_cb)
+			updatesmenu.append(normalupdate)
+			
+			forceupdate = gtk.MenuItem('Forced Config Update')
+			forceupdate.connect('button-press-event', self.cb_force_update)
+			updatesmenu.append(forceupdate)
+
+			if self.UPDATEOVPNONSTART == False:
+				autoupdate = gtk.MenuItem('Enable Update on Start')
+			else:
+				autoupdate = gtk.MenuItem('Disable Update on Start')
+			autoupdate.connect('button-press-event', self.cb_switch_autoupdate)
+			updatesmenu.append(autoupdate)
+				
+			resetlogin = gtk.MenuItem('Reset API Login')
+			resetlogin.connect('button-press-event', self.cb_form_reask_userid)
+			updatesmenu.append(resetlogin)
+		except:
+			self.debug(text="def make_systray_updates_menu: failed")
 		
 	#######
 	def make_systray_server_menu(self):
@@ -1216,7 +1245,7 @@ class Systray:
 			
 	#######
 	def systray_notify_event(self, widget, event, data = None):
-		self.mouse_in_tray_menu = time.time() + 15
+		self.mouse_in_tray_menu = time.time() + 30
 
 	#######
 	def check_hide_popup(self, data = None):
@@ -2006,6 +2035,8 @@ class Systray:
 
 	#######
 	def win_netsh_set_dns_ovpn(self):
+		if self.NO_DNS_CHANGE:
+			return True
 		if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == "172.16.32.1":
 			self.debug(text="def win_netsh_set_dns_ovpn: DNS is %s (no change)" % (self.GATEWAY_DNS1))
 			return True
@@ -2053,6 +2084,8 @@ class Systray:
 
 	#######
 	def win_netsh_restore_dns_from_backup(self):
+		if self.NO_DNS_CHANGE:
+			return True
 		if self.WIN_DNS_CHANGED == False:
 			return True
 		if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == "172.16.32.1":
@@ -2098,6 +2131,8 @@ class Systray:
 
 	#######
 	def win_netsh_read_dns_to_backup(self):
+		if self.NO_DNS_CHANGE:
+			return True
 		try:
 			string = "netsh interface ipv4 show dns"
 			read = subprocess.check_output("%s" % (string),shell=True)
@@ -2546,7 +2581,17 @@ class Systray:
 		self.WIN_RESET_EXT_DEVICE = True
 		self.write_options_file()
 		self.read_interfaces()
-
+		
+	#######
+	def cb_nodnschange(self,widget,event):		
+		self.destroy_systray_menu()
+		if self.NO_DNS_CHANGE == False:
+			self.win_netsh_restore_dns_from_backup()
+			self.NO_DNS_CHANGE = True
+		elif self.NO_DNS_CHANGE == True:
+			self.NO_DNS_CHANGE = False
+		self.write_options_file()
+				
 	#######
 	def cb_extserverview(self,widget,event):
 		self.destroy_systray_menu()
