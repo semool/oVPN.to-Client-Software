@@ -32,7 +32,9 @@ ABOUT_TEXT = """Credits and Cookies go to...
 + ... ungefiltert-surfen.de for WorldWide DNS!
 + ... famfamfam.com for flag and silk icons!
 
-Need Help? Join https://webirc.ovpn.to into Channel #help !
+Need Help?
+
+Join https://webirc.ovpn.to into Channel #help !
 """
 
 DOMAIN = "vcp.ovpn.to"
@@ -59,6 +61,8 @@ class Systray:
 			sys.exit()
 		
 	def self_vars(self):
+		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
+		
 		self.OS = sys.platform
 		self.MAINWINDOW_OPEN = False
 		self.DEBUG = True
@@ -68,7 +72,7 @@ class Systray:
 		self.OVPN_LATEST_BUILT = "May 10 2016"
 		self.OVPN_LATEST_BUILT_TIMESTAMP = 1462831200
 		
-		self.OPENVPN_REM_URL = "https://vcp.ovpn.to/files/openvpn"
+		self.OPENVPN_REM_URL = "https://%s/files/openvpn" % (DOMAIN)
 		self.OPENVPN_ALT_URL = "https://swupdate.openvpn.net/community/releases"
 		self.OPENVPN_VERSION = "2.3.11"
 		self.OPENVPN_BUILT_V = "I601"
@@ -78,27 +82,16 @@ class Systray:
 		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
 		self.OVPN_WIN_SHA512_x64 = "a59284b98e80c1cd43cfe2f0aee2ebb9d18ca44ffb7035b5a4bb4cb9c2860039943798d4bb8860e065a56be0284f5f23b74eba6a5e17f05df87303ea019c42a3"
 
-		self.MAIN_WINDOW_OPEN = True
-		self.isSMALL_WINDOW = False
-		self.SWITCH_SYSTRAY = False
-		self.INFO_WINDOW_ACTIVE = False
-		self.isLOGGEDin = False
-		self.menubar = False
-		self.UPDATE_MENUBAR = False
-		self.statusbar = False
-		self.timer_statusbar_running = False
+		
 		self.timer_ovpn_ping_running = False
-		self.timer_ovpn_reconnect_running = False
 		self.timer_check_certdl_running = False
 		self.statustext_from_before = False
 		self.systraytext_from_before = False
 		self.stop_systray_timer = False
-		self.statusbar_freeze = False
-		self.SYSTRAYon = False
-		self.screen_width = 320
-		self.screen_height = 240
+		
 		self.USERID = False
 		self.STATE_OVPN = False
+		self.LAST_CFG_UPDATE = 0
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
 		self.GATEWAY_DNS2 = False
@@ -106,21 +99,21 @@ class Systray:
 		self.WIN_TAP_DEVS = list()
 		self.WIN_EXT_DEVICE = False
 		self.WIN_EXT_DHCP = False
+		
+		self.OPENVPN_EXE = False
+		self.OPENVPN_SILENT_SETUP = False
+		
 		self.OVPN_SERVER = list()
 		self.OVPN_FAV_SERVER = False
-		#self.OVPN_FAV_SERVER = "BG1.ovpn.to"
-		self.OPENVPN_EXE = False
 		self.OVPN_AUTO_CONNECT_ON_START = False
 		self.OVPN_AUTO_RECONNECT = True
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtime = False
-		self.OVPN_CONNECTEDdistime = False
 		self.OVPN_CONNECTEDtoIP = False
 		self.OVPN_GATEWAY_IP4 = "172.16.32.1"
 		self.OVPN_THREADID = False
 		self.OVPN_RECONNECT_NOW = False
 		self.OVPN_CONFIGVERSION = "23x"
-		self.OPENVPN_SILENT_SETUP = False
 		
 		self.OVPN_PING = list()
 		self.OVPN_isTESTING = False
@@ -128,6 +121,8 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.INTERFACES = False
 		
+		"""
+		self.UPDATE_MENUBAR = False
 		self.d0wns_dns = False
 		self.DNS_SELECTED = False
 		self.DNS_SELECTEDcountry = False
@@ -140,6 +135,7 @@ class Systray:
 		self.d0wns_DICT = {}
 		self.d0wnsIP4s = list()
 		self.d0wns_PING = False
+		"""
 		self.plaintext_passphrase = False
 		
 		self.ENABLE_mainwindow_menubar = False
@@ -374,6 +370,13 @@ class Systray:
 					self.DEBUG = parser.getboolean('oVPN','debugmode')
 				except:
 					pass
+					
+				try:
+					self.LAST_CFG_UPDATE = parser.get('oVPN','lastcfgupdate')
+					if not self.LAST_CFG_UPDATE >= 0:
+						self.LAST_CFG_UPDATE = 0
+				except:
+					pass					
 				
 				try:
 					self.plaintext_passphrase = parser.get('oVPN','passphrase')
@@ -443,6 +446,12 @@ class Systray:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
 					self.debug(text="self.WIN_RESET_FIREWALL = %s" % (self.WIN_RESET_FIREWALL))
 				except:
+					pass
+					
+				try:
+					self.WIN_BACKUP_FIREWALL = parser.getboolean('oVPN','winbackupfirewall')
+					self.debug(text="self.WIN_BACKUP_FIREWALL = %s" % (self.WIN_RESET_FIREWALL))
+				except:
 					pass					
 					
 
@@ -470,6 +479,7 @@ class Systray:
 				parser.add_section('oVPN')
 				parser.set('oVPN','debugmode','False')
 				parser.set('oVPN','passphrase','False')
+				parser.set('oVPN','lastcfgupdate','0')
 				parser.set('oVPN','autoconnect','False')
 				parser.set('oVPN','favserver','False')
 				parser.set('oVPN','winextdevice','False')
@@ -479,6 +489,7 @@ class Systray:
 				parser.set('oVPN','configversion','23x')
 				parser.set('oVPN','serverviewextend','False')
 				parser.set('oVPN','winresetfirewall','False')
+				parser.set('oVPN','winbackupfirewall','False')
 				parser.write(cfg)
 				cfg.close()
 				return True
@@ -491,18 +502,19 @@ class Systray:
 			cfg = open(self.opt_file,'w')
 			parser = SafeConfigParser()
 			parser.add_section('oVPN')
-			parser.set('oVPN','debugmode','%s'%(self.DEBUG))			
+			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 			parser.set('oVPN','passphrase','%s'%(self.plaintext_passphrase))
+			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
 			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
-			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))			
+			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
 			parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
 			parser.set('oVPN','serverviewextend','%s'%(self.ENABLE_EXTSERVERVIEW))
-			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))			
-			#parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))			
+			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
+			parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
 			
 			parser.write(cfg)
 			cfg.close()
@@ -1025,7 +1037,7 @@ class Systray:
 					ipv6entry2.connect('button-press-event', self.cb_change_ipmode2)
 					ipv6menu.append(ipv6entry2)
 				
-				if not self.OVPN_CONFIGVERSION == "23x64":				
+				if not self.OVPN_CONFIGVERSION == "23x64":
 					ipv6entry3 = gtk.MenuItem('Select: IPv6 Entry Server with Exits to IPv6 + IPv4')
 					ipv6entry3.connect('button-press-event', self.cb_change_ipmode3)
 					ipv6menu.append(ipv6entry3)
@@ -1065,11 +1077,11 @@ class Systray:
 						fwrmenu.append(fwrentry)
 											
 				if self.DEBUG == False:
-					switchdebug = gtk.MenuItem('Enable DEBUG Mode')
+					switchdebug = gtk.MenuItem('DEBUG Mode [disabled]')
 					switchdebug.connect('button-press-event', self.cb_switch_debug)
 				else:
-					switchdebug = gtk.MenuItem('Disable DEBUG Mode')
-					switchdebug.connect('button-press-event', self.cb_switch_debug)					
+					switchdebug = gtk.MenuItem('DEBUG Mode [enabled]')
+					switchdebug.connect('button-press-event', self.cb_switch_debug)
 				
 				updatemenu.append(switchdebug)
 				
@@ -1264,47 +1276,37 @@ class Systray:
 		except:
 			pass
 		self.debug(text="def inThread_timer_check_certdl:")
-		if self.curl_api_request(API_ACTION = "lastupdate"):
-			text="Checking for Update"
-			self.set_progressbar(text)
+		if self.API_REQUEST(API_ACTION = "lastupdate"):
+			self.set_progressbar(text=_("Checking for Update"))
 			self.debug(text="def inThread_timer_check_certdl: API_ACTION lastupdate")
 			self.remote_lastupdate = self.curldata
 			if self.check_last_server_update():
-				text = _("Updating oVPN Configurations...")
-				self.set_progressbar(text)
-				if self.curl_api_request(API_ACTION = "getconfigs"):
-					text = _("Requesting oVPN Certificates...")
-					self.set_progressbar(text)
-					if self.curl_api_request(API_ACTION = "requestcerts"):
-						text = _("Requested oVPN Certificates...")
-						self.set_progressbar(text)	
-						while not self.body == "done":
-							text = _("Waiting for oVPN Certificates...")
-							self.set_progressbar(text)
+				self.set_progressbar(text = _("Updating oVPN Configurations..."))
+				if self.API_REQUEST(API_ACTION = "getconfigs"):
+					self.set_progressbar(text = _("Requesting oVPN Certificates..."))
+					if self.API_REQUEST(API_ACTION = "requestcerts"):
+						time.sleep(3)						
+						while not self.body == "done":							
 							time.sleep(3)
-							self.curl_api_request(API_ACTION = "requestcerts")
-							text = _("Downloading oVPN Certificates...")
-							self.set_progressbar(text)							
+							self.API_REQUEST(API_ACTION = "requestcerts")
 							if self.body == "ready":
-								if self.curl_api_request(API_ACTION = "getcerts"):	
+								self.set_progressbar(text = _("Downloading oVPN Certificates..."))						
+								if self.API_REQUEST(API_ACTION = "getcerts"):
 									self.body = False
-									text = _("Extracting oVPN Certificates...")
-									self.set_progressbar(text)										
-									if self.extract_ovpn():								
-										self.debug(text="extraction complete")
-										text = _("Complete!")
-										self.set_progressbar(text)
+									self.set_progressbar(text = _("Extracting oVPN Certificates..."))
+									if self.extract_ovpn():				
+										self.set_progressbar(text = _("Complete!"))
 										self.body = "done"
 										self.timer_check_certdl_running = False
 										self.progressbar.set_fraction(1)
+										self.debug(text="extraction complete")
 										return True
 									else:										
 										self.debug(text="extraction failed")
-										text = _("Error: Extraction failed!")
-										self.set_progressbar(text)										
+										self.set_progressbar(text = _("Error: Extraction failed!"))										
 										self.body = "done"
 										self.timer_check_certdl_running = False
-										self.progressbar.set_fraction(1)
+										self.progressbar.set_fraction(0)
 										return False
 			else:
 				text = _("Certificates and Configs up to date!")
@@ -1316,7 +1318,7 @@ class Systray:
 				
 		else:
 			self.plaintext_passphrase = False
-			self.debug(text="self.curl_api_request(API_ACTION = lastupdate): failed")
+			self.debug(text="self.API_REQUEST(API_ACTION = lastupdate): failed")
 			self.timer_check_certdl_running = False
 			return False
 
@@ -2077,7 +2079,6 @@ class Systray:
 				text=_("Error: Restore Primary DNS Server to %s failed.")%(self.GATEWAY_DNS1)
 				self.msgwarn(text=text)
 				return False
-				
 
 	#######
 	def win_netsh_read_dns_to_backup(self):
@@ -2124,7 +2125,7 @@ class Systray:
 				return True
 		except:
 			self.errorquit(_("Error in def win_netsh_read_dns_to_backup()"))
-
+			
 	#######
 	def hash_sha512_file(self,file):
 		if os.path.isfile(file):
@@ -2220,8 +2221,8 @@ class Systray:
 
 	#######
 	def win_firewall_export_on_start(self):
-		#if self.WIN_BACKUP_FIREWALL == False:
-		#	return True
+		if self.WIN_BACKUP_FIREWALL == False:
+			return True
 		self.debug(text="def win_firewall_export_on_start:")
 		self.netsh_cmdlist = list()
 		if os.path.isfile(self.pfw_bak):
@@ -2446,12 +2447,17 @@ class Systray:
 
 	#######
 	def cb_switch_debug(self,widget,event):
+		self.destroy_systray_menu()
 		if self.DEBUG == False:
 			self.DEBUG = True
+			self.write_options_file()
+			self.msgwarn(text="DEBUG Mode enabled.\nLogfile:\n'%s'" % (self.debug_log))
 		else:
 			self.DEBUG = False
-		self.destroy_systray_menu()
-		self.write_options_file()
+			self.write_options_file()
+			if os.path.isfile(self.debug_log):
+				os.remove(self.debug_log)			
+			self.msgwarn(text="DEBUG Mode disabled.\nLogfile:\n'%s'\ndeleted." % (self.debug_log))
 
 	#######
 	def make_confighash(self):
@@ -2470,42 +2476,21 @@ class Systray:
 
 	#######
 	def check_last_server_update(self):
-		if os.path.isfile(self.api_upd):
-			cfg = open(self.api_upd,'r')
-			read_data = cfg.read()
-			cfg.close()
-			if read_data < self.remote_lastupdate:
-				text = "our last update: %s" % (read_data)
-				self.debug(text=text)
-				return True
-		else:
-			cfg = open(self.api_upd,'wb')
-			cfg.write("0")
-			cfg.close()
+		if self.LAST_CFG_UPDATE < self.remote_lastupdate:
 			return True
 
 	#######
 	def write_last_update(self):
-		try:
-			cfg = open(self.api_upd,'wb')
-			cfg.write("%s" % (self.get_now_unixtime()))
-			cfg.close()
+		self.LAST_CFG_UPDATE = self.get_now_unixtime()
+		if self.write_options_file():
 			return True
-		except:
-			self.debug(text="def write_last_update: Failed")
-			return False
 
 	#######
 	def reset_last_update(self):
-		try:
-			cfg = open(self.api_upd,'wb')
-			cfg.write("0")
-			cfg.close()
+		self.LAST_CFG_UPDATE = 0
+		if self.write_options_file():
 			return True
-		except:
-			self.debug(text="def write_last_update: Failed")
-			return False
-
+	
 	#######
 	def cb_force_update(self,widget,event):
 		self.debug(text="def cb_force_update:")
@@ -2549,21 +2534,21 @@ class Systray:
 		self.destroy_systray_menu()
 		self.OVPN_CONFIGVERSION = "23x"
 		self.write_options_file()
-		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
+		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
 
 	#######
 	def cb_change_ipmode2(self,widget,event):
 		self.destroy_systray_menu()
 		self.OVPN_CONFIGVERSION = "23x46"
 		self.write_options_file()
-		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
+		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
 
 	#######
 	def cb_change_ipmode3(self,widget,event):
 		self.destroy_systray_menu()
 		self.OVPN_CONFIGVERSION = "23x64"
 		self.write_options_file()
-		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://vcp.ovpn.to to use any IPv6 options!")
+		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
 
 	#######
 	def cb_change_fwresetmode(self,widget,event):
@@ -2638,48 +2623,48 @@ class Systray:
 			self.debug(text="def extract_ovpn: failed")
 
 	#######
-	def curl_api_request(self,API_ACTION):
-		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
-		self.API_ACTION = API_ACTION
-		url = self.APIURL
+	def API_REQUEST(self,API_ACTION):
 		
-		if self.API_ACTION == "lastupdate": 
-			self.TO_CURL = "uid=%s&apikey=%s&action=%s" % (self.USERID,self.APIKEY,self.API_ACTION)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }
+		if API_ACTION == "lastupdate": 
+			self.TO_CURL = "uid=%s&apikey=%s&action=%s" % (self.USERID,self.APIKEY,API_ACTION)
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 			
-		if self.API_ACTION == "getconfigs": 
+		if API_ACTION == "getconfigs": 
 			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
 			
-		if self.API_ACTION == "requestcerts":			
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }
+		if API_ACTION == "requestcerts":			
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 			
-		if self.API_ACTION == "getcerts":
+		if API_ACTION == "getcerts":
 			if os.path.isfile(self.zip_crt): os.remove(self.zip_crt)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : self.API_ACTION }
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 			
 		self.body = False
-		text = "def curl_api_request: API_ACTION = %s" % (API_ACTION)
+		text = "def API_REQUEST: API_ACTION = %s" % (API_ACTION)
 		self.debug(text=text)			
 
 		try:
-			r = requests.post(url,data=values)
-			if self.API_ACTION == "getconfigs" or self.API_ACTION == "getcerts":
+			r = requests.post(self.APIURL,data=values)
+			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
 				self.body = r.content
 			else:
 				self.body = r.text
+			
+			if self.body == "wait":
+				self.set_progressbar(text = _("Waiting for oVPN Certificates..."))
+				
 			if self.body.isalnum() and len(self.body) <= 128:
-				self.set_progressbar(text=self.body)
 				self.debug("requests: self.body = %s"%(self.body))
+				
 		except requests.exceptions.ConnectionError as e:
-			text = "def curl_api_request: requests error on: %s = %s" % (self.API_ACTION,e)
+			text = "def API_REQUEST: requests error on: %s = %s" % (API_ACTION,e)
 			self.set_progressbar(text)
 			self.debug(text=text)
 			return False
 		except:
-			text = "def curl_api_request: requests error on: %s failed!" % (self.API_ACTION,e)
-			self.set_progressbar(text)
-			self.debug(text=text)
+			self.msgwarn(text = _("def API_REQUEST: requests error on: %s failed!" % (API_ACTION)))
+			return False
 		
 		
 		if not self.body == False:
@@ -2691,13 +2676,13 @@ class Systray:
 					return True
 			else:
 				text = _("Invalid User-ID / API-Key or Account expired.")
-				self.body = "0"
+				self.body = False
 				self.set_progressbar(text)
 				self.timer_check_certdl_running = False
 				self.progressbar.set_fraction(0)
 				return False
 		
-			if self.API_ACTION == "getconfigs":
+			if API_ACTION == "getconfigs":
 				try:
 					fp = open(self.zip_cfg, "wb")
 					fp.write(self.body)
@@ -2706,7 +2691,7 @@ class Systray:
 				except:
 					return False
 					
-			elif self.API_ACTION == "getcerts":
+			elif API_ACTION == "getcerts":
 				try:			
 					fp = open(self.zip_crt, "wb")
 					fp.write(self.body)
@@ -2715,7 +2700,7 @@ class Systray:
 				except:
 					return False					
 
-			if self.API_ACTION == "requestcerts": 
+			if API_ACTION == "requestcerts": 
 				if self.body == "ready" or self.body == "wait" or self.body == "submitted":
 					return True		
 
@@ -2735,7 +2720,7 @@ class Systray:
 				self.msgwarn(text=text)
 				time.sleep(2)
 				if not self.try_socket(host,port):
-					#text="3) Could not connect to vcp.ovpn.to\nTry setting firewall rule to allowing outbound connections to world!"
+					#text="3) Could not connect to %s\nTry setting firewall rule to allowing outbound connections to world!" % (DOMAIN)
 					#self.win_firewall_allow_outbound()
 					text=_("3) Could not connect to %s"%(DOMAIN))
 					self.msgwarn(text=text)			
@@ -2756,9 +2741,9 @@ class Systray:
 
 	def load_firewall_backups(self):
 		if os.path.exists(self.pfw_dir):
-			content = os.listdir(self.pfw_dir)
+			self.body = os.listdir(self.pfw_dir)
 			self.FIREWALL_BACKUPS = list()
-			for file in content:
+			for file in self.body:
 				if file.endswith('.bak.wfw'):
 					filepath = "%s\\%s" % (self.pfw_dir,file)
 					self.FIREWALL_BACKUPS.append(file)
@@ -2766,10 +2751,10 @@ class Systray:
 	#######
 	def load_ovpn_server(self):
 		if os.path.exists(self.vpn_cfg):
-			content = os.listdir(self.vpn_cfg)
-			#self.debug(text="def load_ovpn_server: content = %s " % (content))
+			self.body = os.listdir(self.vpn_cfg)
+			#self.debug(text="def load_ovpn_server: self.body = %s " % (self.body))
 			self.OVPN_SERVER = list()
-			for file in content:
+			for file in self.body:
 				if file.endswith('.ovpn.to.ovpn'):
 					filepath = "%s\\%s" % (self.vpn_cfg,file)
 					servername = file[:-5]
@@ -2838,7 +2823,7 @@ class Systray:
 			r = requests.get(url)
 			
 			fp = open(imgfile, "wb")
-			fp.write(r.content)
+			fp.write(r.self.body)
 			fp.close()
 			
 			hash = self.hash_sha256_file(imgfile)
@@ -2861,13 +2846,13 @@ class Systray:
 
 		if (self.OVPN_SERVER_STATS_LASTUPDATE < self.get_now_unixtime()-600) and self.OVPN_CONNECTEDtime > 15 and (self.OVPN_PING_STAT >= 0 or self.OVPN_PING_STAT <= 500):
 			try:
-				url = "https://%s:%s/%s" % (DOMAIN,PORT,API)
+				self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 				API_ACTION = "loadserverdata"
 				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }			
-				r = requests.post(url,data=values)
+				r = requests.post(self.APIURL,data=values)
 				try:
 					self.OVPN_SERVER_STATS = {}
-					self.OVPN_SERVER_STATS = json.loads(r.content)
+					self.OVPN_SERVER_STATS = json.loads(r.self.body)
 					self.OVPN_SERVER_STATS_LASTUPDATE = self.get_now_unixtime()
 					self.debug(text="def load_serverdata_from_remote: loaded")
 				except:
@@ -2926,11 +2911,11 @@ class Systray:
 				r2 = requests.get(ascfiledl)
 				
 				fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
-				fp1.write(r1.content)
+				fp1.write(r1.self.body)
 				fp1.close()
 				
 				fp2 = open(self.OPENVPN_ASC_FILE, "wb")
-				fp2.write(r2.content)
+				fp2.write(r2.self.body)
 				fp2.close()
 				
 				return self.verify_openvpnbin_dl()
@@ -3083,7 +3068,7 @@ class Systray:
 			try:
 				url = "https://dns.d0wn.biz/dns.txt"
 				r = requests.get(url)
-				body = r.content.split('\n')
+				body = r.self.body.split('\n')
 				print body
 				try:
 					self.d0wns_DNS = body.split(',')
