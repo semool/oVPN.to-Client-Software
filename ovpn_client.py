@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.4-gtk"
+CLIENTVERSION="v0.4.5-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -3323,28 +3323,28 @@ class Systray:
 					self.win_firewall_block_on_exit()
 					self.win_netsh_restore_dns_from_backup()
 					if self.DEBUG:
-						self.msgwarn(text="Previous Firewall Rules restored and blocked outbound!")
+						self.msgwarn(text="Firewall rules restored and block outbound!")
 					return True
 					
 				if self.WIN_BACKUP_FIREWALL and not self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
 					self.win_firewall_restore_on_exit()
 					self.win_netsh_restore_dns_from_backup()
 					if self.DEBUG:
-						self.msgwarn(text="Previous Firewall Rules restored and blocked outbound!")
+						self.msgwarn(text="Firewall: rules restored!")
 					return True
 					
 				if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
 					self.win_firewall_block_on_exit()
 					self.win_netsh_restore_dns_from_backup()
 					if self.DEBUG:
-						self.msgwarn(text="Previous Firewall Rules restored and blocked outbound!")
+						self.msgwarn(text="Firewall: block outbound!")
 					return True
 				
 				if not self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
 					self.win_firewall_allowout()
 					self.win_netsh_restore_dns_from_backup()
 					if self.DEBUG:
-						self.msgwarn(text="Previous Firewall Rules restored and blocked outbound!")
+						self.msgwarn(text="Firewall: allow outbound!")
 					return True
 				
 			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
