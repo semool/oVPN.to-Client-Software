@@ -304,7 +304,7 @@ class Systray:
 				
 			if not os.path.isfile(self.lock_file):
 				self.LOCK = open(self.lock_file,'wb')
-				self.LOCK.write("%s" % (self.get_now_unixtime()))
+				self.LOCK.write("%s" % (int(time.time())))
 				
 			if not os.path.exists(self.vpn_dir):
 				if self.DEBUG: print("vpn_dir %s not found, creating." % (self.vpn_dir))
@@ -949,7 +949,7 @@ class Systray:
 					self.OVPN_PING = list()
 					self.OVPN_PING_STAT = self.OVPN_PING_LAST
 					self.OVPN_isTESTING = False
-				now = self.get_now_unixtime()
+				now = int(time.time())
 				connectedseconds = now - self.OVPN_CONNECTEDtime
 				m, s = divmod(connectedseconds, 60)
 				h, m = divmod(m, 60)
@@ -1078,48 +1078,51 @@ class Systray:
 					fwm.set_submenu(fwmenu)
 					optionsmenu.append(fwm)
 				
-				if self.STATE_OVPN == False and self.NO_WIN_FIREWALL == False:					
-					fwentry = gtk.MenuItem('Use Windows Firewall [enabled]')
+					if self.NO_WIN_FIREWALL == False:
+						opt = "[enabled]"
+					else:
+						opt = "[disabled]"							
+					fwentry = gtk.MenuItem("Use Windows Firewall %s" % (opt))
 					fwentry.connect('button-press-event', self.cb_change_winfirewall)
 					fwmenu.append(fwentry)
-					
+						
+					###					
 					if self.WIN_RESET_FIREWALL == True:
-						fwentry = gtk.MenuItem('Clear Rules on Connect [enabled]')
-						fwentry.connect('button-press-event', self.cb_change_fwresetmode)
-						fwmenu.append(fwentry)
-					elif self.WIN_RESET_FIREWALL == False:
-						fwentry = gtk.MenuItem('Clear Rules on Connect [disabled]')
-						fwentry.connect('button-press-event', self.cb_change_fwresetmode)
-						fwmenu.append(fwentry)
-
-					if self.WIN_BACKUP_FIREWALL == True:
-						fwentry = gtk.MenuItem('Rules: Backup on Start / Restore on Quit [enabled]')
-						fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
-						fwmenu.append(fwentry)
-					elif self.WIN_BACKUP_FIREWALL == False:
-						fwentry = gtk.MenuItem('Rules: Backup on Start / Restore on Quit [disabled]')
-						fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
-						fwmenu.append(fwentry)
-					
-					if self.WIN_DONT_ASK_FW_EXIT == True:
-						fwentry = gtk.MenuItem('Do not ask for FW on Quit [enabled]')
-						fwentry.connect('button-press-event', self.cb_change_fwdontaskonexit)
-						fwmenu.append(fwentry)
-
-						if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
-							fwentry = gtk.MenuItem('Always Block Internet on Quit [enabled]')
-							fwentry.connect('button-press-event', self.cb_change_fwblockonexit)
-							fwmenu.append(fwentry)
-						elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
-							fwentry = gtk.MenuItem('Always Block Internet on Quit [disabled]')
-							fwentry.connect('button-press-event', self.cb_change_fwblockonexit)
-							fwmenu.append(fwentry)
+						opt = "[enabled]"
 					else:
-						fwentry = gtk.MenuItem('Do not ask for FW on Quit [disabled]')
-						fwentry.connect('button-press-event', self.cb_change_fwdontaskonexit)
-						fwmenu.append(fwentry)						
+						opt = "[disabled]"						
+					fwentry = gtk.MenuItem("Clear Rules on Connect %s" % (opt))
+					fwentry.connect('button-press-event', self.cb_change_fwresetmode)
+					fwmenu.append(fwentry)
 					
+					###
+					if self.WIN_BACKUP_FIREWALL == True:
+						opt = "[enabled]"
+					else:
+						opt = "[disabled]"
+					fwentry = gtk.MenuItem("Backup on Start / Restore on Quit %s" % (opt))
+					fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
+					fwmenu.append(fwentry)
 					
+					###
+					if self.WIN_DONT_ASK_FW_EXIT == True:
+						opt = "[enabled]"
+					else:
+						opt = "[disabled]"
+					fwentry = gtk.MenuItem("Do not ask for FW on Quit %s" % (opt))
+					fwentry.connect('button-press-event', self.cb_change_fwdontaskonexit)
+					fwmenu.append(fwentry)
+
+					###
+					if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
+						opt = "[enabled]"
+					else:
+						opt = "[disabled]"
+					fwentry = gtk.MenuItem("Always Block Internet on Quit %s" % (opt))
+					fwentry.connect('button-press-event', self.cb_change_fwblockonexit)
+					fwmenu.append(fwentry)							
+					
+					###
 					fwrm = gtk.MenuItem('Restore Firewall Backups')
 					fwrmenu = gtk.Menu()
 					fwrm.set_submenu(fwrmenu)
@@ -1128,20 +1131,14 @@ class Systray:
 					for file in self.FIREWALL_BACKUPS:
 						fwrentry = gtk.MenuItem('%s'%(file))
 						fwrentry.connect('button-press-event', self.cb_restore_firewallbackup, file)
-						fwrmenu.append(fwrentry)
-						
-				elif self.STATE_OVPN == False and self.NO_WIN_FIREWALL == True:
-					fwentry = gtk.MenuItem('Use Windows Firewall [disabled]')
-					fwentry.connect('button-press-event', self.cb_change_winfirewall)
-					fwmenu.append(fwentry)
-																
+						fwrmenu.append(fwrentry)														
 																
 				if self.DEBUG == False:
-					switchdebug = gtk.MenuItem('DEBUG Mode [disabled]')
-					switchdebug.connect('button-press-event', self.cb_switch_debug)
+					opt = "[enabled]"
 				else:
-					switchdebug = gtk.MenuItem('DEBUG Mode [enabled]')
-					switchdebug.connect('button-press-event', self.cb_switch_debug)
+					opt = "[disabled]"
+				switchdebug = gtk.MenuItem("DEBUG Mode %s" % (opt))
+				switchdebug.connect('button-press-event', self.cb_switch_debug)
 				
 				optionsmenu.append(switchdebug)
 				
@@ -1943,7 +1940,7 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
-		self.OVPN_CONNECTEDtime = self.get_now_unixtime()
+		self.OVPN_CONNECTEDtime = int(time.time())
 		self.mainwindow_menubar()
 		if not self.openvpn_check_files():
 			return False		
@@ -2602,7 +2599,7 @@ class Systray:
 
 	#######
 	def write_last_update(self):
-		self.LAST_CFG_UPDATE = self.get_now_unixtime()
+		self.LAST_CFG_UPDATE = int(time.time())
 		if self.write_options_file():
 			return True
 
@@ -2688,6 +2685,8 @@ class Systray:
 			self.WIN_RESET_FIREWALL = False
 		elif self.WIN_RESET_FIREWALL == False:
 			self.WIN_RESET_FIREWALL = True
+			if not self.win_firewall_export_on_start():
+				self.msgwarn(text="Could not export Windows Firewall Backup!")
 		self.write_options_file()
 
 	#######
@@ -2697,6 +2696,8 @@ class Systray:
 			self.WIN_BACKUP_FIREWALL = False
 		elif self.WIN_BACKUP_FIREWALL == False:
 			self.WIN_BACKUP_FIREWALL = True
+			if not self.win_firewall_export_on_start():
+				self.msgwarn(text="Could not export Windows Firewall Backup!")			
 		self.write_options_file()
 
 	#######
@@ -2887,16 +2888,33 @@ class Systray:
 		return True
 		
 	#######
-	def try_socket(self,host,port):		
+	def try_socket(self,host,port):
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			result = s.connect_ex((host, port))
-			s.close()		
+			s.close()
 		except:
 			result = False
 		if result == 0:
-			return True
+			if host == self.OVPN_GATEWAY_IP4 and port == 1080:
+				return self.check_myip()
+			else:
+				return True
 		return False
+	
+	#######
+	def check_myip(self):
+		# *** fixme *** missing ipv6 support
+		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
+			try:
+				url = "http://%s/myip4" % (self.OVPN_GATEWAY_IP4)
+				r = requests.get(url)
+				if r.content == self.OVPN_CONNECTEDtoIP:
+					return True
+			except:
+				return False
+		else:
+			return True
 
 	def load_firewall_backups(self):
 		if os.path.exists(self.pfw_dir):
@@ -3001,20 +3019,19 @@ class Systray:
 		if self.APIKEY == False or self.plaintext_passphrase == False or self.ENABLE_EXTSERVERVIEW == False:
 			return False
 
-		if (self.OVPN_SERVER_STATS_LASTUPDATE < self.get_now_unixtime()-600) and self.OVPN_CONNECTEDtime > 15 and (self.OVPN_PING_STAT >= 0 or self.OVPN_PING_STAT <= 500):
+		if (self.OVPN_SERVER_STATS_LASTUPDATE < int(time.time())-600) and self.OVPN_CONNECTEDtime > 15 and (self.OVPN_PING_STAT >= 0 or self.OVPN_PING_STAT <= 500):
 			try:
-				self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 				API_ACTION = "loadserverdata"
 				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }			
 				r = requests.post(self.APIURL,data=values)
 				try:
 					self.OVPN_SERVER_STATS = {}
 					self.OVPN_SERVER_STATS = json.loads(r.content)
-					self.OVPN_SERVER_STATS_LASTUPDATE = self.get_now_unixtime()
+					self.OVPN_SERVER_STATS_LASTUPDATE = int(time.time())
 					self.debug(text="def load_serverdata_from_remote: loaded")
 				except:
 					self.debug(text="def load_serverdata_from_remote: json decode error")
-					self.OVPN_SERVER_STATS_LASTUPDATE = self.get_now_unixtime()
+					self.OVPN_SERVER_STATS_LASTUPDATE = int(time.time())
 			except:
 				self.debug(text="def load_serverdata_from_remote: api request failed")
 				
@@ -3429,10 +3446,6 @@ class Systray:
 			translation = gettext.NullTranslations()
 			#print "Language file for %s not found" % loc
 		translation.install()
-
-	#######
-	def get_now_unixtime(self):
-		return int(time.time())
 
 	#######
 	def msgwarn(self,text):
