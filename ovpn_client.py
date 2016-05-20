@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.6-gtk"
+CLIENTVERSION="v0.4.7-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -51,8 +51,8 @@ class Systray:
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip(('oVPN.to Client'))
-			self.load_ovpn_server()
-			#self.tray.set_from_stock(gtk.STOCK_EXECUTE)			
+			#self.load_ovpn_server()
+			#self.tray.set_from_stock(gtk.STOCK_EXECUTE)
 			if self.UPDATEOVPNONSTART == True: # and self.OVPN_AUTO_CONNECT_ON_START == False:
 				self.check_remote_update()
 			if self.TAP_BLOCKOUTBOUND == True:
@@ -195,7 +195,7 @@ class Systray:
 			"Intern 21) dnscrypt": {"ip":self.OVPN_GATEWAY_IP4,"port":"5353","proto":"udp"},
 			"Intern 22) nntp-50001 Binary SSL user=ovpn,pass=free": {"ip":self.OVPN_GATEWAY_IP4,"port":"50001","proto":"tcp"},
 			"Intern 23) nntp-50002 Binary SSL user=ovpn,pass=free": {"ip":self.OVPN_GATEWAY_IP4,"port":"50002","proto":"tcp"}
-		}		
+		}
 
 	#######
 	def preboot(self):
@@ -261,7 +261,7 @@ class Systray:
 		if self.DEBUG: 
 			for profile in self.profiles:
 				print("Profile: %s" % (profile))
-			print("def check_profiles_win end")		
+			print("def check_profiles_win end")
 
 	#######
 	def win_pre3_load_profile_dir_vars(self):
@@ -328,7 +328,7 @@ class Systray:
 				if self.DEBUG: print("api_dir %s not found, creating." % (self.api_dir))
 				os.mkdir(self.api_dir)
 				
-			if os.path.isfile(self.lock_file):				
+			if os.path.isfile(self.lock_file):
 				try:
 					os.remove(self.lock_file)
 				except:
@@ -344,7 +344,7 @@ class Systray:
 
 			if not os.path.exists(self.vpn_cfg):
 				if self.DEBUG: print("vpn_cfg %s not found, creating." % (self.vpn_cfg))
-				os.mkdir(self.vpn_cfg)			
+				os.mkdir(self.vpn_cfg)
 
 			if not os.path.exists(self.prx_dir):
 				if self.DEBUG: print("prx_dir %s not found, creating." % (self.prx_dir))
@@ -383,7 +383,7 @@ class Systray:
 						if self.form_ask_userid():
 							if self.write_new_apikey_config():
 								if self.check_passphrase():
-									return True								
+									return True
 
 			else:
 				self.errorquit(text = _("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
@@ -408,7 +408,7 @@ class Systray:
 					if not self.LAST_CFG_UPDATE >= 0:
 						self.LAST_CFG_UPDATE = 0
 				except:
-					pass					
+					pass
 				
 				try:
 					if self.plaintext_passphrase == False:
@@ -418,15 +418,16 @@ class Systray:
 						else:
 							self.PPP_NO_SAVE = False
 					else:
-						self.debug(text="self.plaintext_passphrase set, no read from cfg '%s'" % (self.plaintext_passphrase))
+						self.debug(text="def read_options_file: self.plaintext_passphrase = '-NOT_FALSE-'")
 				except:
-					pass					
+					pass
 
 					
 				try:
 					self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
 					if self.OVPN_AUTO_CONNECT_ON_START == "False": 
 						self.OVPN_AUTO_CONNECT_ON_START = False
+					self.debug(text="self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
 				except:
 					pass
 				
@@ -435,6 +436,7 @@ class Systray:
 					self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
 					if self.OVPN_FAV_SERVER == "False": 
 						self.OVPN_FAV_SERVER = False
+					self.debug(text="self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 				except:
 					pass
 
@@ -443,6 +445,7 @@ class Systray:
 					self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
 					if self.WIN_EXT_DEVICE == "False": 
 						self.WIN_EXT_DEVICE = False
+					self.debug(text="self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
 				except:
 					pass
 
@@ -451,6 +454,7 @@ class Systray:
 					self.WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
 					if self.WIN_TAP_DEVICE == "False": 
 						self.WIN_TAP_DEVICE = False
+					self.debug(text="self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
 				except:
 					pass
 
@@ -465,76 +469,75 @@ class Systray:
 					
 				try:
 					self.UPDATEOVPNONSTART = parser.getboolean('oVPN','updateovpnonstart')
-					self.debug(text="self.UPDATEOVPNONSTART = %s" % (self.UPDATEOVPNONSTART))
+					self.debug(text="self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
 				except:
 					pass
 					
 				try:
 					ocfgv = parser.get('oVPN','configversion')
-					self.debug(text="self.OVPN_CONFIGVERSION = %s" % (self.OVPN_CONFIGVERSION))
 					if ocfgv == "23x" or ocfgv == "23x46" or ocfgv == "23x64":
 						self.OVPN_CONFIGVERSION = ocfgv
 					else:
 						self.OVPN_CONFIGVERSION = "23x"
+					self.debug(text="self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
 				except:
 					pass
 					
 				try:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
-					self.debug(text="self.WIN_RESET_FIREWALL = %s" % (self.WIN_RESET_FIREWALL))
+					self.debug(text="self.WIN_RESET_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except:
 					pass
 					
 				try:
 					self.WIN_BACKUP_FIREWALL = parser.getboolean('oVPN','winbackupfirewall')
-					self.debug(text="self.WIN_BACKUP_FIREWALL = %s" % (self.WIN_RESET_FIREWALL))
+					self.debug(text="self.WIN_BACKUP_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except:
 					pass
 					
 				try:
 					self.NO_WIN_FIREWALL = parser.getboolean('oVPN','nowinfirewall')
-					self.debug(text="self.NO_WIN_FIREWALL = %s" % (self.NO_WIN_FIREWALL))
+					self.debug(text="self.NO_WIN_FIREWALL = '%s'" % (self.NO_WIN_FIREWALL))
 				except:
 					pass
 					
 				try:
 					self.WIN_DONT_ASK_FW_EXIT = parser.getboolean('oVPN','winnoaskfwonexit')
-					self.debug(text="self.WIN_DONT_ASK_FW_EXIT = %s" % (self.WIN_DONT_ASK_FW_EXIT))
+					self.debug(text="self.WIN_DONT_ASK_FW_EXIT = '%s'" % (self.WIN_DONT_ASK_FW_EXIT))
 				except:
 					pass
 					
 				try:
 					self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = parser.getboolean('oVPN','winfwblockonexit')
-					self.debug(text="self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = %s" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
+					self.debug(text="self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = '%s'" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
 				except:
 					pass
 					
 				try:
 					self.TAP_BLOCKOUTBOUND = parser.getboolean('oVPN','wintapblockoutbound')
-					self.debug(text="self.TAP_BLOCKOUTBOUND = %s" % (self.TAP_BLOCKOUTBOUND))
+					self.debug(text="self.TAP_BLOCKOUTBOUND = '%s'" % (self.TAP_BLOCKOUTBOUND))
 				except:
-					pass					
+					pass
 					
 				try:
 					self.NO_DNS_CHANGE = parser.getboolean('oVPN','nodnschange')
-					self.debug(text="self.NO_DNS_CHANGE = %s" % (self.NO_DNS_CHANGE))
+					self.debug(text="self.NO_DNS_CHANGE = '%s'" % (self.NO_DNS_CHANGE))
 				except:
-					pass					
+					pass
 					
 				try:
 					if self.plaintext_passphrase == False:
 						self.ENABLE_EXTSERVERVIEW = False
 					else:
 						self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
+					self.debug(text="self.ENABLE_EXTSERVERVIEW = '%s'" % (self.ENABLE_EXTSERVERVIEW))
 				except:
 					pass
-				
 
-						
 				return True
 				
 			except:
-				self.msgwarn(text="def read_options_file: read failed")
+				self.msgwarn(text="def read_options_file: failed!")
 				try:
 					os.remove(self.opt_file)
 				except:
@@ -552,7 +555,7 @@ class Systray:
 				parser.set('oVPN','autoconnect','False')
 				parser.set('oVPN','favserver','False')
 				parser.set('oVPN','winextdevice','False')
-				parser.set('oVPN','wintapdevice','False')				
+				parser.set('oVPN','wintapdevice','False')
 				parser.set('oVPN','openvpnexe','False')
 				parser.set('oVPN','updateovpnonstart','False')
 				parser.set('oVPN','configversion','23x')
@@ -607,7 +610,7 @@ class Systray:
 			cfg.close()
 			return True
 		except:
-			self.debug(text="def write_options_file: failed")		
+			self.debug(text="def write_options_file: failed")
 			
 	#######
 	def read_interfaces(self):
@@ -746,8 +749,7 @@ class Systray:
 			self.debug(text="close tap interface selector")
 			if not self.WIN_TAP_DEVICE == False:
 				dialogWindow.destroy()
-			
-					
+
 		if self.WIN_TAP_DEVICE == False:
 			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
 		else:
@@ -756,7 +758,7 @@ class Systray:
 			self.debug(text="remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
 			if len(self.INTERFACES) > 1:
 				if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
-					self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))					
+					self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
 					return True
 				else:
 					dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
@@ -840,11 +842,11 @@ class Systray:
 				USERID = self.apidata[0].split("=")
 				APIKEY = self.apidata[1].split("=")
 				CFGSHA = self.apidata[2].split("=")
-				if len(USERID) == 2 and USERID[1] > 1 and USERID[1].isdigit():					
+				if len(USERID) == 2 and USERID[1] > 1 and USERID[1].isdigit():
 					#self.debug(text="def read_apikey_config USERID = %s :True" % (USERID))
 					#self.debug(text="def read_apikey_config USERID = profile-folder :True" % (USERID))
-					if len(APIKEY) == 2 and len(APIKEY[1]) == 128 and APIKEY[1].isalnum():						
-						#self.debug(text="def read_apikey_config APIKEY len = %s :True" % (len(APIKEY)))			
+					if len(APIKEY) == 2 and len(APIKEY[1]) == 128 and APIKEY[1].isalnum():
+						#self.debug(text="def read_apikey_config APIKEY len = %s :True" % (len(APIKEY)))
 						if len(CFGSHA) == 2 and len(CFGSHA[1]) == 64 and CFGSHA[1].isalnum():
 							#self.debug(text="def read_apikey_config CFGSHA = %s" % (CFGSHA))
 							self.APIKEY = APIKEY[1]
@@ -889,7 +891,7 @@ class Systray:
 			self.aeskeyhash = False
 			self.hash2aes = False
 			self.text2aes = False
-			self.paddata = False			
+			self.paddata = False
 			return True
 		except:
 			return False
@@ -900,7 +902,7 @@ class Systray:
 		try:
 			path, column, __, __ = self.treeview.get_path_at_pos(int(event.x), int(event.y))
 		except:
-			return False		
+			return False
 		selected_row = int(path[0])
 		servername = self.OVPN_SERVER[selected_row]
 		#print servername
@@ -921,7 +923,7 @@ class Systray:
 			disconnect.show()
 			disconnect.connect('activate', self.kill_openvpn)
 			context_menu_servertab.append(disconnect)
-		else:		
+		else:
 			connect = gtk.MenuItem('Connect to %s'%(servername))
 			connect.show()
 			context_menu_servertab.append(connect)
@@ -985,16 +987,16 @@ class Systray:
 					self.call_openvpn(None,None,self.OVPN_FAV_SERVER)
 					self.OVPN_AUTO_CONNECT_ON_START = False
 			except:
-				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")		
+				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
 		elif self.STATE_OVPN == True:
 		
-			if self.OVPN_PING_STAT == -1:							
+			if self.OVPN_PING_STAT == -1:
 				text = _("oVPN is connecting to %s")%(self.OVPN_CONNECTEDto)
 				systraytext = text
 				systrayicon = self.systray_icon_connect
 				self.debug(text=text)
 			elif self.OVPN_PING_STAT == -2:
-				self.OVPN_isTESTING = True									
+				self.OVPN_isTESTING = True
 				text = _("oVPN is testing connection to %s") % (self.OVPN_CONNECTEDto)
 				systraytext = text
 				systrayicon = self.systray_icon_hourglass
@@ -1063,13 +1065,13 @@ class Systray:
 			self.systray_menu = gtk.Menu()
 			self.debug(text="def make_systray_menu: bt=%s" % (event))
 			self.load_ovpn_server()
-			self.load_firewall_backups()			
+			self.load_firewall_backups()
 			self.make_systray_options_menu()
 			self.make_systray_server_menu()
 			self.make_systray_openvpn_menu()
 			self.make_systray_bottom_menu()
 			
-			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)			
+			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)
 			self.systray_menu.connect('leave-notify-event', self.systray_notify_event)
 			self.systray_menu.show_all()
 			self.systray_menu.popup(None, None, None, event, 0, self.tray)
@@ -1100,7 +1102,7 @@ class Systray:
 					else:
 						nodnschange = gtk.MenuItem('DNS Leak Protection [disabled]')
 						nodnschange.connect('button-press-event', self.cb_nodnschange)
-						optionsmenu.append(nodnschange)						
+						optionsmenu.append(nodnschange)
 					
 				if self.STATE_OVPN == True:
 					if self.ENABLE_EXTSERVERVIEW == False:
@@ -1154,18 +1156,18 @@ class Systray:
 					if self.NO_WIN_FIREWALL == False:
 						opt = "[enabled]"
 					else:
-						opt = "[disabled]"							
+						opt = "[disabled]"
 					fwentry = gtk.MenuItem("Use Windows Firewall %s" % (opt))
 					fwentry.connect('button-press-event', self.cb_change_winfirewall)
 					fwmenu.append(fwentry)
 					
 					if self.NO_WIN_FIREWALL == False:
 
-						###					
+						###
 						if self.WIN_RESET_FIREWALL == True:
 							opt = "[enabled]"
 						else:
-							opt = "[disabled]"						
+							opt = "[disabled]"
 						fwentry = gtk.MenuItem("Clear Rules on Connect %s" % (opt))
 						fwentry.connect('button-press-event', self.cb_change_fwresetmode)
 						fwmenu.append(fwentry)
@@ -1196,7 +1198,7 @@ class Systray:
 								opt = "[disabled]"
 							fwentry = gtk.MenuItem("Always Block Internet on Quit %s" % (opt))
 							fwentry.connect('button-press-event', self.cb_change_fwblockonexit)
-							fwmenu.append(fwentry)							
+							fwmenu.append(fwentry)
 						
 						###
 						fwrm = gtk.MenuItem('Restore Firewall Backups')
@@ -1207,8 +1209,8 @@ class Systray:
 						for file in self.FIREWALL_BACKUPS:
 							fwrentry = gtk.MenuItem('%s'%(file))
 							fwrentry.connect('button-press-event', self.cb_restore_firewallbackup, file)
-							fwrmenu.append(fwrentry)														
-																
+							fwrmenu.append(fwrentry)
+						
 				if self.DEBUG == True:
 					opt = "[enabled]"
 				else:
@@ -1219,7 +1221,7 @@ class Systray:
 				optionsmenu.append(switchdebug)
 				
 				sep = gtk.SeparatorMenuItem()
-				self.systray_menu.append(sep)					
+				self.systray_menu.append(sep)
 				"""
 				dnsmenu = gtk.Menu()
 				dnsm = gtk.MenuItem('DNS Options')
@@ -1237,7 +1239,7 @@ class Systray:
 				"""
 				
 			except:
-				self.debug(text="def make_systray_menu: optionsmenu failed")	
+				self.debug(text="def make_systray_menu: optionsmenu failed")
 			
 	#######
 	def make_systray_updates_menu(self):
@@ -1260,7 +1262,7 @@ class Systray:
 			
 			###
 			if self.UPDATEOVPNONSTART == False:
-				opt = "[disabled]"				
+				opt = "[disabled]"
 			else:
 				opt = "[disabled]"
 			autoupdate = gtk.MenuItem('Update on Start %s' % (opt))
@@ -1280,7 +1282,7 @@ class Systray:
 				
 				clearphcfg = gtk.MenuItem('Clear Passphrase from CFG')
 				clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
-				updatesmenu.append(clearphcfg)				
+				updatesmenu.append(clearphcfg)
 			
 		except:
 			self.debug(text="def make_systray_updates_menu: failed")
@@ -1298,7 +1300,7 @@ class Systray:
 					
 					if not countrycodefrombefore == countrycode:
 						# create countrygroup menu
-						countrycodefrombefore = countrycode					
+						countrycodefrombefore = countrycode
 						cgmenu = gtk.Menu()
 						countryname = self.COUNTRYNAMES[countrycode.upper()]
 						cgm = gtk.ImageMenuItem(countryname)
@@ -1334,7 +1336,7 @@ class Systray:
 	def make_systray_openvpn_menu(self):
 		if self.STATE_OVPN == True:
 			sep = gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)		
+			self.systray_menu.append(sep)
 			# add quit item
 			servershort = self.OVPN_CONNECTEDto[:3]
 			textstring = '[ %s ] IP: %s Port: %s (%s)' % (servershort,self.OVPN_SERVER_INFO[servershort][0],self.OVPN_SERVER_INFO[servershort][1],self.OVPN_SERVER_INFO[servershort][2].upper())
@@ -1363,7 +1365,7 @@ class Systray:
 		
 		if self.STATE_OVPN == False:
 			sep = gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)		
+			self.systray_menu.append(sep)
 			# show about dialog
 			about = gtk.MenuItem('About')
 			self.systray_menu.append(about)
@@ -1402,7 +1404,7 @@ class Systray:
 
 	#######
 	def check_remote_update(self):
-		if self.timer_check_certdl_running == False:	
+		if self.timer_check_certdl_running == False:
 			if self.check_inet_connection():
 				self.debug(text="def check_remote_update:")
 				if self.check_passphrase():
@@ -1455,7 +1457,7 @@ class Systray:
 		self.set_progressbar(text)
 		try:
 			if len(self.OVPN_SERVER) == 0:
-				self.reset_last_update()	
+				self.reset_last_update()
 		except:
 			pass
 		self.debug(text="def inThread_timer_check_certdl:")
@@ -1515,7 +1517,7 @@ class Systray:
 			about_dialog = gtk.AboutDialog()
 			self.about_dialog = about_dialog
 			about_dialog.set_destroy_with_parent (True)
-			about_dialog.set_name('oVPN.to')		
+			about_dialog.set_name('oVPN.to')
 			about_dialog.set_version('Client %s'%(CLIENTVERSION))
 			about_dialog.set_copyright('(C) 2010 - 2016 oVPN.to')
 			about_dialog.set_comments((ABOUT_TEXT))
@@ -1553,7 +1555,7 @@ class Systray:
 					optionsmenu.append(del_FAV)
 
 				if not self.OVPN_FAV_SERVER == False and self.STATE_OVPN == False:
-					con_FAV = gtk.MenuItem("Connect to %s" % (self.OVPN_FAV_SERVER))				
+					con_FAV = gtk.MenuItem("Connect to %s" % (self.OVPN_FAV_SERVER))
 					con_FAV.connect('button-release-event',self.call_openvpn,self.OVPN_FAV_SERVER)
 					optionsmenu.append(con_FAV)
 					
@@ -1659,7 +1661,7 @@ class Systray:
 		column = gtk.TreeViewColumn('Proto',cell)
 		column.add_attribute(cell,"text",4)
 		column.set_sort_column_id(4)
-		treeview.append_column(column)				
+		treeview.append_column(column)
 
 		cell = gtk.CellRendererText()
 		column = gtk.TreeViewColumn('Cipher',cell)
@@ -1670,7 +1672,7 @@ class Systray:
 		if len(self.OVPN_SERVER_STATS) > 0:
 			cell = gtk.CellRendererText()
 			column = gtk.TreeViewColumn('Mbps',cell)
-			column.add_attribute(cell,"text",6)			
+			column.add_attribute(cell,"text",6)
 			#column.set_sort_column_id(6)
 			treeview.append_column(column)
 			
@@ -1678,7 +1680,7 @@ class Systray:
 			column = gtk.TreeViewColumn('Link',cell)
 			column.add_attribute(cell,"text",7)
 			column.set_sort_column_id(7)
-			treeview.append_column(column)			
+			treeview.append_column(column)
 		
 			cell = gtk.CellRendererText()
 			column = gtk.TreeViewColumn('VLAN IPv4',cell)
@@ -1688,12 +1690,12 @@ class Systray:
 			cell = gtk.CellRendererText()
 			column = gtk.TreeViewColumn('VLAN IPv6',cell)
 			column.add_attribute(cell,"text",9)
-			treeview.append_column(column)			
+			treeview.append_column(column)
 			
 			cell = gtk.CellRendererText()
 			column = gtk.TreeViewColumn('Load',cell)
 			column.add_attribute(cell,"text",10)
-			treeview.append_column(column)		
+			treeview.append_column(column)
 			
 			cell = gtk.CellRendererText()
 			column = gtk.TreeViewColumn('Processor',cell)
@@ -1719,7 +1721,7 @@ class Systray:
 			column = gtk.TreeViewColumn('Status',cell)
 			column.add_attribute(cell,"text",15)
 			column.set_sort_column_id(15)
-			treeview.append_column(column)			
+			treeview.append_column(column)
 			
 		
 		"""
@@ -1807,7 +1809,7 @@ class Systray:
 			return self.form_ask_passphrase()
 		else:
 			if self.read_apikey_config():
-				return self.compare_confighash()	
+				return self.compare_confighash()
 			self.plaintext_passphrase == False
 
 	#######
@@ -1824,7 +1826,7 @@ class Systray:
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
-			self.WIN_TAP_DEVICE = model[index][0]			
+			self.WIN_TAP_DEVICE = model[index][0]
 			self.debug(text="selected tap IF: %s" % (self.WIN_TAP_DEVICE))
 		return
 
@@ -1838,7 +1840,7 @@ class Systray:
 				self.context_menu_servertab.popdown()
 			except:
 				pass
-			self.mainwindow_menubar()	
+			self.mainwindow_menubar()
 			text = "oVPN AutoConnect: %s" % (server)
 			self.set_statusbar_text(text)
 			return True
@@ -1855,16 +1857,16 @@ class Systray:
 				self.context_menu_servertab.popdown()
 			except:
 				pass
-			self.mainwindow_menubar()			
+			self.mainwindow_menubar()
 			text = "oVPN AutoConnect: removed %s" % (server)
 			self.set_statusbar_text(text)
 			return True
 		except:
-			self.msgwarn(text="def del_ovpn_favorite_server: failed")			
+			self.msgwarn(text="def del_ovpn_favorite_server: failed")
 
 	#######	
 	def call_openvpn(self,widget,event,server):
-		self.destroy_systray_menu()		
+		self.destroy_systray_menu()
 		try:
 			self.context_menu_servertab.popdown()
 		except:
@@ -2032,7 +2034,7 @@ class Systray:
 		self.OVPN_CONNECTEDtime = int(time.time())
 		self.mainwindow_menubar()
 		if not self.openvpn_check_files():
-			return False		
+			return False
 		if not self.win_firewall_start():
 			text = _("def inThread_spawn_openvpn_process: Could not start Windows Firewall!");
 			self.debug(text=text)
@@ -2130,7 +2132,7 @@ class Systray:
 							self.debug(text=text)
 		except:
 			text = "def win_clear_ipv6_addr: failed"
-			self.debug(text=text)	
+			self.debug(text=text)
 
 	#######
 	def inThread_timer_openvpn_reconnect(self):
@@ -2153,10 +2155,10 @@ class Systray:
 	#######
 	def kill_openvpn(self,*args):
 		self.OVPN_AUTO_RECONNECT = False
-		self.OVPN_RECONNECT_NOW = False		
+		self.OVPN_RECONNECT_NOW = False
 		self.destroy_systray_menu()
 		self.mainwindow_menubar()
-		self.debug(text="def kill_openvpn")	
+		self.debug(text="def kill_openvpn")
 		exe = self.OPENVPN_EXE.split("\\")[-1]
 		string = "taskkill /im %s /f" % (exe)
 		try:
@@ -2249,12 +2251,12 @@ class Systray:
 				else:
 					string = 'interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2)
 					self.netsh_cmdlist.append(string)
-					if self.win_join_netsh_cmd():						
+					if self.win_join_netsh_cmd():
 						self.debug(text=_("Secondary DNS Server restored to %s")%(self.GATEWAY_DNS2))
 						return True
-					else:						
+					else:
 						self.msgwarn(text=_("Error: Restore Secondary DNS Server to %s failed.")%(self.GATEWAY_DNS2))
-						return False	
+						return False
 			else:
 				self.msgwarn(text=_("Error: Restore Primary DNS Server to %s failed.")%(self.GATEWAY_DNS1))
 				return False
@@ -2283,7 +2285,7 @@ class Systray:
 					if "DNS" in line:
 						m2=i+1
 						try:
-							dns1 = line.strip().split(":")[1].lstrip()							
+							dns1 = line.strip().split(":")[1].lstrip()
 							if self.isValueIPv4(dns1):
 								self.GATEWAY_DNS1 = dns1
 								self.debug(text="1st DNS '%s' IF: %s backuped" % (dns1,search))
@@ -2296,13 +2298,13 @@ class Systray:
 						if self.isValueIPv4(dns2):
 								self.GATEWAY_DNS2 = dns2
 								self.debug(text="2nd DNS '%s' IF: %s backuped" % (dns1,search))
-								break					
+								break
 					except:
 						self.debug(text="def win_netsh_read_dns_to_backup: 2nd DNS failed read on line '%s' search '%s'" % (line,search))
 
 				i+=1
 			self.debug(text="self.GATEWAY_DNS1 = %s + self.GATEWAY_DNS2 = %s"%(self.GATEWAY_DNS1,self.GATEWAY_DNS2))
-			if not self.GATEWAY_DNS1 == False:				
+			if not self.GATEWAY_DNS1 == False:
 				return True
 		except:
 			self.errorquit(_("Error in def win_netsh_read_dns_to_backup()"))
@@ -2340,7 +2342,7 @@ class Systray:
 				except:
 					text="Error:\nSSL Root Certificate for %s not loaded %s" % (DOMAIN,self.CA_FILE)
 					self.msgwarn(text=text)
-					return False					
+					return False
 			else:
 				text = "Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH)
 				self.msgwarn(text=text)
@@ -2348,7 +2350,7 @@ class Systray:
 		else:
 			text="Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE)
 			self.msgwarn(text=text)
-			return False	
+			return False
 
 	#######
 	def win_firewall_start(self):
@@ -2377,7 +2379,7 @@ class Systray:
 		try:
 			if self.NO_WIN_FIREWALL == True:
 				return True
-			if self.TAP_BLOCKOUTBOUND == True:			
+			if self.TAP_BLOCKOUTBOUND == True:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
 				self.win_firewall_whitelist_ovpn_on_tap(option="add")
 				self.netsh_cmdlist = list()
@@ -2403,12 +2405,12 @@ class Systray:
 		self.netsh_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
 		if self.win_join_netsh_cmd():
 			self.WIN_FIREWALL_STARTED = True
-			return True		
+			return True
 	
 	#######
 	def win_firewall_block_on_exit(self):
 		if self.NO_WIN_FIREWALL == True:
-			return True	
+			return True
 		self.netsh_cmdlist = list()
 		self.netsh_cmdlist.append("advfirewall set allprofiles state on")
 		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
@@ -2427,7 +2429,7 @@ class Systray:
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
-		self.netsh_cmdlist = list()	
+		self.netsh_cmdlist = list()
 		for entry,value in self.WHITELIST_PUBLIC_PROFILE.iteritems():
 			ip = value["ip"]
 			port = value["port"]
@@ -2470,13 +2472,13 @@ class Systray:
 	#######
 	def win_firewall_add_rule_to_vcp(self,option):
 		if self.NO_WIN_FIREWALL == True:
-			return True	
+			return True
 		self.debug(text="def win_firewall_add_rule_to_vcp:")
 		self.netsh_cmdlist = list()
 		if option == "add":
 			actionstring = "action=allow"
 		elif option == "delete":
-			actionstring = ""		
+			actionstring = ""
 		url = "https://%s" % (DOMAIN)
 		ips = ["178.17.170.116",self.OVPN_GATEWAY_IP4]
 		port = 443
@@ -2492,7 +2494,7 @@ class Systray:
 	#######
 	def win_firewall_export_on_start(self):
 		if self.NO_WIN_FIREWALL == True:
-			return True	
+			return True
 		if self.WIN_BACKUP_FIREWALL == False:
 			return True
 		self.debug(text="def win_firewall_export_on_start:")
@@ -2505,11 +2507,11 @@ class Systray:
 	#######
 	def win_firewall_restore_on_exit(self):
 		if self.NO_WIN_FIREWALL == True:
-			return True	
+			return True
 		if self.WIN_BACKUP_FIREWALL == False:
-			return True	
+			return True
 		if self.WIN_FIREWALL_STARTED == True:
-			self.debug(text="def win_firewall_restore_on_exit:")		
+			self.debug(text="def win_firewall_restore_on_exit:")
 			self.netsh_cmdlist = list()
 			self.netsh_cmdlist.append("advfirewall reset")
 			if os.path.isfile(self.pfw_bak):
@@ -2541,6 +2543,8 @@ class Systray:
 
 	#######
 	def win_firewall_modify_rule(self,option):
+		if self.NO_WIN_FIREWALL == True:
+			return True
 		self.netsh_cmdlist = list()
 		rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
 		if option == "add":
@@ -2568,7 +2572,7 @@ class Systray:
 				self.debug(text="def win_join_netsh_cmd: %s failed" % (fullstring))
 		if len(self.netsh_cmdlist) == i:
 			self.netsh_cmdlist = list()
-			return True			
+			return True
 
 	#######
 	def isValueIPv4(self,value):
@@ -2579,7 +2583,7 @@ class Systray:
 						#self.debug(text="def isValueIPv4: n = %s"%(n))
 						if not n >= 0 and not n <= 255:
 							return False
-				return True	
+				return True
 		except:
 			return False
 
@@ -2614,13 +2618,13 @@ class Systray:
 				ph1 = ph1Entry.get_text().rstrip()
 				saveph = checkbox.get_active()
 				self.debug(text="checkbox saveph = %s" %(saveph))
-									
+
 				if response == gtk.RESPONSE_CANCEL:
 					print "response: btn cancel %s" % (response)
 					self.plaintext_passphrase = False
 					dialogWindow.destroy()
 					return False
-				
+
 				elif response == gtk.RESPONSE_OK:
 					if len(ph1) > 0:
 						self.plaintext_passphrase = ph1
@@ -2631,7 +2635,7 @@ class Systray:
 									self.PPP_NO_SAVE = False
 									self.write_options_file()
 									dialogWindow.destroy()
-									return True									
+									return True
 								else:
 									self.PPP_NO_SAVE = True
 									#self.plaintext_passphrase = False
@@ -2696,12 +2700,12 @@ class Systray:
 			dialogBox.pack_start(apikeyLabel,False,False,0)
 			dialogBox.pack_start(apikeyEntry,False,False,0)
 
-			dialogBox.pack_start(ph0Label,False,False,0)			
+			dialogBox.pack_start(ph0Label,False,False,0)
 			dialogBox.pack_start(ph1Label,False,False,0)
 			dialogBox.pack_start(ph1Entry,False,False,0)
 			
 			dialogBox.pack_start(ph2Label,False,False,0)
-			dialogBox.pack_start(ph2Entry,False,False,0)		
+			dialogBox.pack_start(ph2Entry,False,False,0)
 			
 			dialogWindow.show_all()
 			response = dialogWindow.run()
@@ -2712,7 +2716,7 @@ class Systray:
 			ph2 = ph2Entry.get_text().rstrip()
 			
 			dialogWindow.destroy()
-			if response == gtk.RESPONSE_OK:			
+			if response == gtk.RESPONSE_OK:
 				if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum() and ph1 == ph2 and len(ph1) > 0:
 					self.USERID, self.profile = userid, userid
 					self.APIKEY = apikey
@@ -2742,7 +2746,7 @@ class Systray:
 	def cb_clear_passphrase_ram(self,widget,event):
 		self.destroy_systray_menu()
 		self.plaintext_passphrase = False
-		self.ENABLE_EXTSERVERVIEW = False		
+		self.ENABLE_EXTSERVERVIEW = False
 		self.APIKEY = False
 		self.CFGSHA = False
 
@@ -2750,7 +2754,7 @@ class Systray:
 	def cb_clear_passphrase_cfg(self,widget,event):
 		self.destroy_systray_menu()
 		self.plaintext_passphrase = False
-		self.ENABLE_EXTSERVERVIEW = False		
+		self.ENABLE_EXTSERVERVIEW = False
 		self.APIKEY = False
 		self.CFGSHA = False
 		self.write_options_file()
@@ -2811,7 +2815,7 @@ class Systray:
 
 	#######
 	def cb_switch_autoupdate(self,widget,event):
-		self.debug(text="def cb_switch_autoupdate:")	
+		self.debug(text="def cb_switch_autoupdate:")
 		self.destroy_systray_menu()
 		if self.UPDATEOVPNONSTART == False:
 			self.UPDATEOVPNONSTART = True
@@ -2824,7 +2828,7 @@ class Systray:
 	def cb_resetextif(self,widget,event):
 		self.destroy_systray_menu()
 		self.WIN_EXT_DEVICE = False
-		self.WIN_TAP_DEVICE = False		
+		self.WIN_TAP_DEVICE = False
 		self.WIN_RESET_EXT_DEVICE = True
 		self.write_options_file()
 		self.read_interfaces()
@@ -2848,7 +2852,7 @@ class Systray:
 				#self.debug(text="def cb_extserverview: self.plaintext_passphrase = '%s'" % (self.plaintext_passphrase))
 				self.debug(text="def cb_extserverview: self.plaintext_passphrase = '-NOT_FALSE-'")
 		else:
-			self.plaintext_passphrase = False
+			#self.plaintext_passphrase = False
 			self.ENABLE_EXTSERVERVIEW = False
 		self.write_options_file()
 
@@ -2857,7 +2861,7 @@ class Systray:
 		self.destroy_systray_menu()
 		self.OVPN_CONFIGVERSION = "23x"
 		self.write_options_file()
-		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
+		#self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
 
 	#######
 	def cb_change_ipmode2(self,widget,event):
@@ -2892,7 +2896,7 @@ class Systray:
 		elif self.WIN_BACKUP_FIREWALL == False:
 			self.WIN_BACKUP_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn(text="Could not export Windows Firewall Backup!")			
+				self.msgwarn(text="Could not export Windows Firewall Backup!")
 		self.write_options_file()
 
 	#######
@@ -2922,14 +2926,14 @@ class Systray:
 		elif self.TAP_BLOCKOUTBOUND == False:
 			self.TAP_BLOCKOUTBOUND = True
 			
-		if self.win_firewall_tap_blockoutbound():			
+		if self.win_firewall_tap_blockoutbound():
 			self.write_options_file()
 		
 	#######
 	def cb_change_winfirewall(self,widget,event):
 		self.destroy_systray_menu()
 		if self.NO_WIN_FIREWALL == True:
-			self.NO_WIN_FIREWALL = False			
+			self.NO_WIN_FIREWALL = False
 		elif self.NO_WIN_FIREWALL == False:
 			self.NO_WIN_FIREWALL = True
 		self.write_options_file()
@@ -2964,7 +2968,7 @@ class Systray:
 	#######
 	def extract_ovpn(self):
 		try:
-			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):			
+			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):
 				z1file = zipfile.ZipFile(self.zip_cfg)
 				z2file = zipfile.ZipFile(self.zip_crt)
 				if os.path.isdir(self.vpn_cfg):
@@ -3000,7 +3004,7 @@ class Systray:
 			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
 			
-		if API_ACTION == "requestcerts":			
+		if API_ACTION == "requestcerts":
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 			
 		if API_ACTION == "getcerts":
@@ -3009,7 +3013,7 @@ class Systray:
 			
 		self.body = False
 		text = "def API_REQUEST: API_ACTION = %s" % (API_ACTION)
-		self.debug(text=text)			
+		self.debug(text=text)
 
 		try:
 			r = requests.post(self.APIURL,data=values)
@@ -3059,17 +3063,17 @@ class Systray:
 					return False
 					
 			elif API_ACTION == "getcerts":
-				try:			
+				try:
 					fp = open(self.zip_crt, "wb")
 					fp.write(self.body)
 					fp.close()
 					return True
 				except:
-					return False					
+					return False
 
 			if API_ACTION == "requestcerts": 
 				if self.body == "ready" or self.body == "wait" or self.body == "submitted":
-					return True		
+					return True
 
 	#######
 	def check_inet_connection(self):
@@ -3090,7 +3094,7 @@ class Systray:
 					#text="3) Could not connect to %s\nTry setting firewall rule to allowing outbound connections to world!" % (DOMAIN)
 					#self.win_firewall_allow_outbound()
 					text=_("3) Could not connect to %s"%(DOMAIN))
-					self.msgwarn(text=text)			
+					self.msgwarn(text=text)
 					return False
 		return True
 		
@@ -3143,7 +3147,7 @@ class Systray:
 					filepath = "%s\\%s" % (self.vpn_cfg,file)
 					servername = file[:-5]
 					countrycode = servername[:2].lower()
-					servershort = servername[:3].upper()					
+					servershort = servername[:3].upper()
 					try:
 						serverinfo = self.OVPN_SERVER_INFO[servershort]
 					except:
@@ -3157,7 +3161,7 @@ class Systray:
 										port = int(line.split()[2])
 										if self.isValueIPv4(ip) and port > 0 and port < 65535:
 											serverinfo.append(ip)
-											serverinfo.append(port)																						
+											serverinfo.append(port)
 									except:
 										self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file) )
 
@@ -3184,7 +3188,7 @@ class Systray:
 							self.OVPN_SERVER_INFO[servershort] = serverinfo
 					try:
 						flagicon = self.FLAG_IMG[countrycode]
-					except:						
+					except:
 						imgfile = '%s\\ico\\flags\\%s.png' % (self.bin_dir,countrycode)
 						if not os.path.isfile(imgfile):
 							if not self.load_flags_from_remote(countrycode,imgfile):
@@ -3229,7 +3233,7 @@ class Systray:
 		if (self.OVPN_SERVER_STATS_LASTUPDATE < int(time.time())-600) and self.OVPN_CONNECTEDtime > 15 and (self.OVPN_PING_STAT >= 0 or self.OVPN_PING_STAT <= 500):
 			try:
 				API_ACTION = "loadserverdata"
-				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }			
+				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 				r = requests.post(self.APIURL,data=values)
 				try:
 					self.OVPN_SERVER_STATS = {}
@@ -3272,7 +3276,7 @@ class Systray:
 				return True
 				#if self.read_interfaces():
 				#	return True
-					
+
 		if self.verify_openvpnbin_dl():
 			self.errorquit(text="openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'" % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
 		else:
@@ -3321,7 +3325,7 @@ class Systray:
 				try:
 					os.remove(self.OPENVPN_SAVE_BIN_TO)
 				except:
-					self.msgwarn(text="Failed remove file: %s" % (self.OPENVPN_SAVE_BIN_TO))				
+					self.msgwarn(text="Failed remove file: %s" % (self.OPENVPN_SAVE_BIN_TO))
 				return False
 		else:
 			#self.msgwarn(text="def verify_openvpnbin_dl: file not found '%s'" % (self.OPENVPN_SAVE_BIN_TO))
@@ -3361,6 +3365,7 @@ class Systray:
 		dialog = gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,gtk.FILE_CHOOSER_ACTION_OPEN,
 									   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
 										gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+		dialog.set_default_response(gtk.RESPONSE_OK)
 		filter = gtk.FileFilter()
 		filter.set_name("openvpn.exe")
 		filter.add_pattern("openvpn.exe")
@@ -3370,7 +3375,7 @@ class Systray:
 			
 			if response == gtk.RESPONSE_OK:
 				self.OPENVPN_EXE = dialog.get_filename()
-				self.debug(text = "selected: %s" % (self.OPENVPN_EXE)	)
+				self.debug(text = "selected: %s" % (self.OPENVPN_EXE))
 				dialog.destroy()
 				return True
 			elif response == gtk.RESPONSE_CANCEL:
@@ -3385,20 +3390,26 @@ class Systray:
 
 	#######
 	def win_detect_openvpn(self):
+		#self.read_options_file()
+		#if self.OPENVPN_EXE == False:
 		os_programfiles = "PROGRAMFILES PROGRAMFILES(x86) PROGRAMW6432"
 		for getenv in os_programfiles.split():
 			programfiles = os.getenv(getenv)
-			self.OPENVPN_DIR = "%s\\OpenVPN\\bin" % (programfiles)
-			file = "%s\\openvpn.exe" % (self.OPENVPN_DIR)
+			OPENVPN_DIR = "%s\\OpenVPN\\bin" % (programfiles)
+			file = "%s\\openvpn.exe" % (OPENVPN_DIR)
 			if os.path.isfile(file):
 				self.debug(text="def win_detect_openvpn: %s" % (file))
 				self.OPENVPN_EXE = file
+				self.OPENVPN_DIR = OPENVPN_DIR
 				break
-		
+
+		if self.OPENVPN_DIR == False:
+			self.OPENVPN_DIR = self.OPENVPN_EXE.rsplit('\\', 1)[0]
+
 		if self.OPENVPN_EXE == False or not os.path.isfile(self.OPENVPN_EXE):
 			if not self.win_select_openvpn():
 				self.upgrade_openvpn()
-				
+
 		if not self.openvpn_check_files():
 			self.msgwarn(text="WARNING! Failed to verify files in\n'%s'!" % (self.OPENVPN_DIR))
 			
@@ -3412,9 +3423,9 @@ class Systray:
 			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
 			self.OVPN_LATESTBUILT = self.OVPN_LATEST_BUILT.split()
 			text = "self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATESTBUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATESTBUILT)
-			self.debug(text=text)		
+			self.debug(text=text)
 			if self.OVPN_VERSION >= self.OVPN_LATEST:
-				if self.OVPN_BUILT == self.OVPN_LATESTBUILT:					
+				if self.OVPN_BUILT == self.OVPN_LATESTBUILT:
 					self.debug(text="self.OVPN_BUILT == self.OVPN_LATESTBUILT: True")
 					return True
 				else:
@@ -3437,26 +3448,37 @@ class Systray:
 
 	#######
 	def openvpn_check_files(self):
-		if not self.CHECK_FILEHASHS:
-			return True
-		dir = self.OPENVPN_DIR
-		if os.path.exists(dir):
-			content = os.listdir(dir)
-			filename = self.openvpn_filename_exe()
-			hashs = self.OPENVPN_FILEHASHS[filename]
-			#self.debug(text="hashs = '%s'" % (hashs))
-			for file in content:
-				if file.endswith('.exe') or file.endswith('.dll'):
-					filepath = "%s\\%s" % (dir,file)					
-					hasha = self.hash_sha512_file(filepath)
-					hashb = hashs[file]
-					if hasha == hashb:
-						self.debug("Verified Hash: '%s' OK!" % (file))
+		try:
+			if not self.CHECK_FILEHASHS:
+				return True
+			self.OPENVPN_DIR = self.OPENVPN_EXE.rsplit('\\', 1)[0]
+			self.debug(text="def openvpn_check_files: self.OPENVPN_DIR = '%s'" % (self.OPENVPN_DIR))
+			dir = self.OPENVPN_DIR
+			if os.path.exists(dir):
+				content = os.listdir(dir)
+				filename = self.openvpn_filename_exe()
+				hashs = self.OPENVPN_FILEHASHS[filename]
+				#self.debug(text="hashs = '%s'" % (hashs))
+				for file in content:
+					if file.endswith('.exe') or file.endswith('.dll'):
+						filepath = "%s\\%s" % (dir,file)
+						hasha = self.hash_sha512_file(filepath)
+						hashb = hashs[file]
+						if hasha == hashb:
+							self.debug("Verified Hash: '%s' OK!" % (file))
+						else:
+							self.debug("Invalid Hash: '%s'! is '%s' != '%s'" % (filepath,hasha,hashb))
+							return False
 					else:
-						self.debug("Invalid Hash: '%s'! is '%s' != '%s'" % (filepath,hasha,hashb))
-				else:
-					return False
-			return True
+						self.debug(text=="Invalid content '%s' in '%s'" % (file,self.OPENVPN_DIR))
+						return False
+				return True
+			else:
+				self.debug(text="Error! '%s' not found!" % (self.OPENVPN_DIR))
+				return False
+		except:
+			self.debug(text="def openvpn_check_files: failed!")
+			return False
 	
 	#######
 	def openvpn_filename_exe(self):
@@ -3464,7 +3486,10 @@ class Systray:
 			arch = "x86_64"
 		elif self.PLATFORM == "x86":
 			arch = "i686"
-		return "openvpn-install-%s-%s-%s.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,arch)			
+		else:
+			self.errorquit("arch '%s' not supported!" % (self.PLATFORM))
+		self.debug("def openvpn_filename_exe: arch = '%s'" % (arch))
+		return "openvpn-install-%s-%s-%s.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,arch)
 	
 	#######
 	def os_platform(self):
@@ -3543,7 +3568,7 @@ class Systray:
 			self.stop_systray_timer = True
 			self.remove_lock()
 			if os.path.isfile(self.debug_log):
-				os.remove(self.debug_log)			
+				os.remove(self.debug_log)
 			gtk.main_quit()
 			sys.exit()
 
@@ -3575,7 +3600,7 @@ class Systray:
 				
 				if not self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
 					self.win_firewall_allowout()
-					self.win_netsh_restore_dns_from_backup()					
+					self.win_netsh_restore_dns_from_backup()
 					self.debug(text="Firewall: allow outbound!")
 					return True
 				
@@ -3680,8 +3705,8 @@ def app():
 	try:
 		gtk.gdk.threads_init()
 		gtk.main()
-	except KeyboardInterrupt:
-		print('KeyboardInterrupt')
+	except:
+		sys.exit()
 
 if __name__ == "__main__":
 	app()
