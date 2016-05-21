@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.7-gtk"
+CLIENTVERSION="v0.4.8-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -144,6 +144,7 @@ class Systray:
 		"""
 		self.plaintext_passphrase = False
 		self.PPP_NO_SAVE = True
+		self.LOAD_ACCINFO = True
 		
 		self.ENABLE_mainwindow_menubar = False
 		
@@ -159,6 +160,8 @@ class Systray:
 		self.OVPN_SERVER_INFO = {}
 		self.OVPN_SERVER_STATS = {}
 		self.OVPN_SERVER_STATS_LASTUPDATE = 0
+		self.OVPN_ACCDATA = {}
+		self.OVPN_ACCDATA_LASTUPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
 		self.ENABLE_EXTSERVERVIEW = False
@@ -527,9 +530,31 @@ class Systray:
 					
 				try:
 					if self.plaintext_passphrase == False:
+						self.LOAD_ACCINFO = False
+					else:
+						self.LOAD_ACCINFO = parser.getboolean('oVPN','loadaccinfo')
+						if self.LOAD_ACCINFO == True:
+							if self.read_apikey_config() == True and self.compare_confighash() == True:
+								pass
+							else:
+								self.plaintext_passphrase = False
+								self.LOAD_ACCINFO = False
+					self.debug(text="self.LOAD_ACCINFO = '%s'" % (self.LOAD_ACCINFO))
+				except:
+					pass
+					
+				try:
+					if self.plaintext_passphrase == False:
 						self.ENABLE_EXTSERVERVIEW = False
 					else:
 						self.ENABLE_EXTSERVERVIEW = parser.getboolean('oVPN','serverviewextend')
+						if self.ENABLE_EXTSERVERVIEW == True:
+							if self.read_apikey_config() == True and self.compare_confighash() == True:
+								pass
+							else:
+								self.plaintext_passphrase = False
+								self.ENABLE_EXTSERVERVIEW = False
+					
 					self.debug(text="self.ENABLE_EXTSERVERVIEW = '%s'" % (self.ENABLE_EXTSERVERVIEW))
 				except:
 					pass
@@ -545,7 +570,7 @@ class Systray:
 					
 		else:
 			try:
-				cfg = open(self.opt_file,'w')
+				cfg = open(self.opt_file,'wb')
 				parser = SafeConfigParser()
 				
 				parser.add_section('oVPN')
@@ -567,6 +592,7 @@ class Systray:
 				parser.set('oVPN','winnoaskfwonexit','False')
 				parser.set('oVPN','winfwblockonexit','False')
 				parser.set('oVPN','wintapblockoutbound','False')
+				parser.set('oVPN','loadaccinfo','False')
 				
 				parser.write(cfg)
 				cfg.close()
@@ -605,6 +631,7 @@ class Systray:
 			parser.set('oVPN','winnoaskfwonexit','%s'%(self.WIN_DONT_ASK_FW_EXIT))
 			parser.set('oVPN','winfwblockonexit','%s'%(self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
 			parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
+			parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCINFO))
 			
 			parser.write(cfg)
 			cfg.close()
@@ -896,7 +923,7 @@ class Systray:
 		except:
 			return False
 			
-	#######		
+	#######
 	def on_right_click_mainwindow(self, treeview, event):
 		self.destroy_systray_menu()
 		try:
@@ -930,7 +957,7 @@ class Systray:
 			connect.connect('button-release-event',self.call_openvpn,servername)
 		sep = gtk.SeparatorMenuItem()
 		sep.show()
-		context_menu_servertab.append(sep)	
+		context_menu_servertab.append(sep)
 		
 		if self.OVPN_FAV_SERVER == servername:
 			delfavorite = gtk.MenuItem('Remove AutoConnect: %s'%(servername))
@@ -953,13 +980,13 @@ class Systray:
 		#path = gtk.tree_path_new_from_string(path)
 		print 'path=%s'%(path)
 		#selected_path = gtk.TreePath(path)
-		#path = self.mainwindow_liststore.get_path(path)
-		for row in self.mainwindow_liststore:			
+		#path = serverliststore.get_path(path)
+		for row in serverliststore:			
 			#print 'row.path[0]=%s'%(row.path[0])
 			if row.path[0] == int(path):
 				print 'row.path[0]==path, row[6]=%s' %(row[6])
-				#self.mainwindow_liststore[6] = (row.path == path)
-				print self.mainwindow_liststore[6]
+				#serverliststore[6] = (row.path == path)
+				print serverliststore[6]
 	"""
 
 	#######
@@ -1089,7 +1116,15 @@ class Systray:
 				self.systray_menu.append(optionsm)
 				
 				self.make_systray_updates_menu()
-						
+
+				if self.LOAD_ACCINFO == True:
+					opt = "[enabled]"
+				else:
+					opt = "[disabled]"
+				switchaccinfo = gtk.MenuItem("Load Account Info %s" % (opt))
+				switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
+				optionsmenu.append(switchaccinfo)
+				
 				if self.STATE_OVPN == False:
 					resetextif = gtk.MenuItem('Select Network Adapter')
 					resetextif.connect('button-press-event', self.cb_resetextif)
@@ -1210,7 +1245,9 @@ class Systray:
 							fwrentry = gtk.MenuItem('%s'%(file))
 							fwrentry.connect('button-press-event', self.cb_restore_firewallbackup, file)
 							fwrmenu.append(fwrentry)
-						
+							
+
+				
 				if self.DEBUG == True:
 					opt = "[enabled]"
 				else:
@@ -1469,25 +1506,25 @@ class Systray:
 				if self.API_REQUEST(API_ACTION = "getconfigs"):
 					self.set_progressbar(text = _("Requesting oVPN Certificates..."))
 					if self.API_REQUEST(API_ACTION = "requestcerts"):
-						time.sleep(3)						
-						while not self.body == "done":							
+						time.sleep(3)
+						while not self.body == "done":
 							time.sleep(3)
 							self.API_REQUEST(API_ACTION = "requestcerts")
 							if self.body == "ready":
-								self.set_progressbar(text = _("Downloading oVPN Certificates..."))						
+								self.set_progressbar(text = _("Downloading oVPN Certificates..."))
 								if self.API_REQUEST(API_ACTION = "getcerts"):
 									self.body = False
 									self.set_progressbar(text = _("Extracting oVPN Certificates..."))
-									if self.extract_ovpn():				
+									if self.extract_ovpn():
 										self.set_progressbar(text = _("Complete!"))
 										self.body = "done"
 										self.timer_check_certdl_running = False
 										self.progressbar.set_fraction(1)
 										self.debug(text="extraction complete")
 										return True
-									else:										
+									else:
 										self.debug(text="extraction failed")
-										self.set_progressbar(text = _("Error: Extraction failed!"))										
+										self.set_progressbar(text = _("Error: Extraction failed!"))
 										self.body = "done"
 										self.timer_check_certdl_running = False
 										self.progressbar.set_fraction(0)
@@ -1580,24 +1617,65 @@ class Systray:
 
 	#######
 	def mainwindow_ovpn_server(self):
-		self.notebook = gtk.Notebook()	
-		label = gtk.Label(_("oVPN Server"))
-		vbox = gtk.VBox(False,1)	
-		self.notebook.append_page(vbox,label)
-		self.mainwindow_vbox.add(self.notebook)
-		mainframe = gtk.Frame()
-		vbox.pack_start(mainframe,True,True,0)
-		mainframe.set_label("Anonymous oVPN Server")
-		#if self.OVPN_SERVER_STATS > 0:
-		#	self.debug(text="%s"%(self.OVPN_SERVER_STATS))
+		#self.load_serverdata_from_remote()
+		notebook = gtk.Notebook()
+		self.mainwindow_vbox.add(notebook)
+		
+		label1 = gtk.Label(_("oVPN Server"))
+		vbox1 = gtk.VBox(False,1)
+		notebook.append_page(vbox1,label1)
+		serverframe = gtk.Frame()
+		vbox1.pack_start(serverframe,True,True,0)
+		serverframe.set_label("Anonymous oVPN Server")
+		
+		if self.LOAD_ACCINFO == True:
+			label2 = gtk.Label(_("Account"))
+			vbox2 = gtk.VBox(False,1)
+			notebook.append_page(vbox2,label2)
+			accframe = gtk.Frame()
+			vbox2.pack_start(accframe,True,True,0)
+			accframe.set_label("Account Information")
+		
+			for key, value in sorted(self.OVPN_ACCDATA.iteritems()):
+				value1 = False
+				if key == "1":
+					head = "User-ID"
+				elif key == "2":
+					head = "Service"
+					value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+				elif key == "3":
+					head = "Balance"
+				elif key == "4":
+					head = "Saved Days"
+				elif key == "5":
+					head = "Last Login"
+					value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+				elif key == "6":
+					head = "Login Count"
+				elif key == "7":
+					head = "Login Fail Count"
+				elif key == "8":
+					head = "Last Failed Login"
+					value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+				elif key == "9":
+					head = "eMail verified"
+				if value1 == False:
+					value1 = value
+				text = "%s: %s" % (head,value1)
+				self.debug(text="key [%s] = '%s' value = '%s'" % (key,head,value))
+
+				entry = gtk.Entry(max=0)
+				entry.set_text(text)
+				entry.set_editable(0)
+				vbox2.pack_start(entry,False,False,0)
+
 		""" build serverlist """
 		""" *fixme* we should do any checks before adding remote text to output ! """
 		if len(self.OVPN_SERVER_STATS) > 0:
-			liststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
+			serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
 		else:
-			liststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str)
-		self.mainwindow_liststore = liststore
-		treeview = gtk.TreeView(liststore)
+			serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str)
+		treeview = gtk.TreeView(serverliststore)
 		self.treeview = treeview
 		for server in self.OVPN_SERVER:
 			countrycode = server[:2].lower()
@@ -1630,9 +1708,9 @@ class Systray:
 				else:
 					statustext = "n/a"
 					
-				liststore.append([countryimg,server,serverip,serverport,serverproto,servercipher,live,uplink,vlanip4,vlanip6,cpuload,cpuinfo,raminfo,hddinfo,traffic,statustext])
+				serverliststore.append([countryimg,server,serverip,serverport,serverproto,servercipher,live,uplink,vlanip4,vlanip6,cpuload,cpuinfo,raminfo,hddinfo,traffic,statustext])
 			else:
-				liststore.append([countryimg,server,serverip,serverport,serverproto,servercipher])
+				serverliststore.append([countryimg,server,serverip,serverport,serverproto,servercipher])
 
 		cell = gtk.CellRendererPixbuf()
 		column = gtk.TreeViewColumn('Country',cell)
@@ -1739,20 +1817,21 @@ class Systray:
 		scrolledwindow = gtk.ScrolledWindow()
 		scrolledwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 		scrolledwindow.add(treeview)
-		mainframe.add(scrolledwindow)
+		serverframe.add(scrolledwindow)
 
 		""" statusbar """
-		label = gtk.Label()
+		labelx = gtk.Label()
 		text = "Welcome to oVPN.to! Have a nice and anonymous day!"
-		self.statusbar_text = label
+		self.statusbar_text = labelx
 		self.statusbar_text.set_label(text)
-		vbox.pack_start(label,False,False,0)
+		vbox1.pack_start(labelx,False,False,0)
 
 	#######
 	def show_mainwindow(self,widget):
 		self.destroy_systray_menu()
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
+			self.load_accinfo_from_remote()
 			try:
 				mainwindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
 				self.mainwindow = mainwindow
@@ -2004,7 +2083,10 @@ class Systray:
 						time.sleep(6)
 				else:
 					time.sleep(4)
-				self.load_serverdata_from_remote()
+				if self.OVPN_CONNECTEDtime > 15 and (self.OVPN_PING_STAT >= 0 or self.OVPN_PING_STAT <= 500):
+					if (self.OVPN_SERVER_STATS_LASTUPDATE < int(time.time())-600):
+						self.load_serverdata_from_remote()
+				self.load_accinfo_from_remote()
 				try:
 					pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 					pingthread.start()
@@ -2340,22 +2422,21 @@ class Systray:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
 					return True
 				except:
-					text="Error:\nSSL Root Certificate for %s not loaded %s" % (DOMAIN,self.CA_FILE)
-					self.msgwarn(text=text)
+					self.msgwarn(text="Error:\nSSL Root Certificate for %s not loaded %s" % (DOMAIN,self.CA_FILE))
 					return False
 			else:
-				text = "Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH)
-				self.msgwarn(text=text)
+				self.msgwarn(text = "Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH))
 				return False
 		else:
-			text="Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE)
-			self.msgwarn(text=text)
+			self.msgwarn(text="Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE))
 			return False
 
 	#######
 	def win_firewall_start(self):
 		if self.NO_WIN_FIREWALL == True:
 			return True
+		if self.NO_DNS_CHANGE == False:
+			self.win_ipconfig_flushdns()
 		self.netsh_cmdlist = list()
 		if self.WIN_RESET_FIREWALL == True:
 			self.netsh_cmdlist.append("advfirewall reset")
@@ -2557,22 +2638,42 @@ class Systray:
 
 	#######
 	def win_join_netsh_cmd(self):
-		self.pfw_cmd = "netsh.exe"
 		i=0
 		for cmd in self.netsh_cmdlist:
-			fullstring = "%s %s" % (self.pfw_cmd,cmd)
+			fullstring = "netsh.exe %s" % (cmd)
 			try: 
 				exitcode = subprocess.call("%s" % (fullstring),shell=True)
 				if exitcode == 0:
-					self.debug(text="netshOK: %s: exitcode = %s" % (fullstring,exitcode))
+					self.debug(text="netshOK: '%s': exitcode = %s" % (fullstring,exitcode))
 					i+=1
 				else:
-					self.debug(text="netshERROR: %s: exitcode = %s" % (fullstring,exitcode))
+					self.debug(text="netshERROR: '%s': exitcode = %s" % (fullstring,exitcode))
 			except:
-				self.debug(text="def win_join_netsh_cmd: %s failed" % (fullstring))
+				self.debug(text="def win_join_netsh_cmd: '%s' failed" % (fullstring))
 		if len(self.netsh_cmdlist) == i:
 			self.netsh_cmdlist = list()
 			return True
+
+	def win_ipconfig_flushdns(self):
+		try: 
+			fullstring = "ipconfig.exe /flushdns"
+			exitcode = subprocess.call("%s" % (fullstring),shell=True)
+			if exitcode == 0:
+				self.debug(text="%s: exitcode = %s" % (fullstring,exitcode))
+				return True
+			else:
+				self.debug(text="%s: exitcode = %s" % (fullstring,exitcode))
+		except:
+			self.debug(text="def win_join_ipconfig_cmd: '%s' failed" % (fullstring))
+
+	#######
+	def win_ipconfig_displaydns(self):
+		try: 
+			fullstring = "ipconfig.exe /displaydns"
+			out = subprocess.check_output("%s" % (fullstring),shell=True)
+			return out
+		except:
+			self.debug(text="def win_ipconfig_displaydns: failed" % (fullstring))
 
 	#######
 	def isValueIPv4(self,value):
@@ -2791,11 +2892,12 @@ class Systray:
 	#######
 	def check_last_server_update(self,remote_lastupdate):
 		if self.LAST_CFG_UPDATE < remote_lastupdate:
+			self.remote_lastupdate = remote_lastupdate
 			return True
 
 	#######
 	def write_last_update(self):
-		self.LAST_CFG_UPDATE = int(time.time())
+		self.LAST_CFG_UPDATE = self.remote_lastupdate
 		if self.write_options_file():
 			return True
 
@@ -2842,18 +2944,21 @@ class Systray:
 		elif self.NO_DNS_CHANGE == True:
 			self.NO_DNS_CHANGE = False
 		self.write_options_file()
-				
+
 	#######
 	def cb_extserverview(self,widget,event):
 		self.destroy_systray_menu()
 		if self.ENABLE_EXTSERVERVIEW == False:
 			if self.check_passphrase() == True:
 				self.ENABLE_EXTSERVERVIEW = True
+				self.load_serverdata_from_remote()
 				#self.debug(text="def cb_extserverview: self.plaintext_passphrase = '%s'" % (self.plaintext_passphrase))
 				self.debug(text="def cb_extserverview: self.plaintext_passphrase = '-NOT_FALSE-'")
 		else:
 			#self.plaintext_passphrase = False
 			self.ENABLE_EXTSERVERVIEW = False
+			self.OVPN_SERVER_STATS = {}
+			self.OVPN_SERVER_STATS_LASTUPDATE = 0
 		self.write_options_file()
 
 	#######
@@ -2941,6 +3046,7 @@ class Systray:
 		
 	#######
 	def cb_restore_firewallbackup(self,widget,event,file):
+		self.destroy_systray_menu()
 		fwbak = "%s\\%s" % (self.pfw_dir,file)
 		if os.path.isfile(fwbak):
 			self.debug(text="def cb_restore_firewallbackup: %s" % (fwbak))
@@ -2948,7 +3054,23 @@ class Systray:
 			self.netsh_cmdlist = list()
 			self.netsh_cmdlist.append('advfirewall import "%s"' % (fwbak))
 			return self.win_join_netsh_cmd()
+
+	#######
+	def cb_switch_accinfo(self,widget,event):
+		self.destroy_systray_menu()
+		if self.LOAD_ACCINFO == True:
+			self.LOAD_ACCINFO = False
+			self.OVPN_ACCDATA = {}
+			self.OVPN_ACCDATA_LASTUPDATE = 0
+		elif self.LOAD_ACCINFO == False:
+			self.LOAD_ACCINFO = True
+			if self.plaintext_passphrase == False:
+				self.form_ask_passphrase()
+			if not self.read_apikey_config():
+				self.LOAD_ACCINFO = False
+		self.write_options_file()
 	
+			
 	#######
 	def cb_change_vpndns(self,widget,event):
 		self.destroy_systray_menu()
@@ -3230,23 +3352,45 @@ class Systray:
 		if self.APIKEY == False or self.plaintext_passphrase == False or self.ENABLE_EXTSERVERVIEW == False:
 			return False
 
-		if (self.OVPN_SERVER_STATS_LASTUPDATE < int(time.time())-600) and self.OVPN_CONNECTEDtime > 15 and (self.OVPN_PING_STAT >= 0 or self.OVPN_PING_STAT <= 500):
+		try:
+			API_ACTION = "loadserverdata"
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+			r = requests.post(self.APIURL,data=values)
 			try:
-				API_ACTION = "loadserverdata"
-				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-				r = requests.post(self.APIURL,data=values)
-				try:
-					self.OVPN_SERVER_STATS = {}
+				self.OVPN_SERVER_STATS = {}
+				if not r.content == "AUTHERROR":
 					self.OVPN_SERVER_STATS = json.loads(r.content)
 					self.OVPN_SERVER_STATS_LASTUPDATE = int(time.time())
 					self.debug(text="def load_serverdata_from_remote: loaded")
 					return True
-				except:
-					self.debug(text="def load_serverdata_from_remote: json decode error")
-					self.OVPN_SERVER_STATS_LASTUPDATE = int(time.time())
 			except:
-				self.debug(text="def load_serverdata_from_remote: api request failed")
-				
+				self.debug(text="def load_serverdata_from_remote: json decode error")
+				self.OVPN_SERVER_STATS_LASTUPDATE = int(time.time())
+		except:
+			self.debug(text="def load_serverdata_from_remote: api request failed")
+
+	#######
+	def load_accinfo_from_remote(self):
+		if self.APIKEY == False or self.plaintext_passphrase == False or self.LOAD_ACCINFO == False:
+			return False
+		if (self.OVPN_ACCDATA_LASTUPDATE < int(time.time())-600):
+			try:
+				API_ACTION = "accinfo"
+				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+				r = requests.post(self.APIURL,data=values)
+				try:
+					if not r.content == "AUTHERROR":
+						self.OVPN_ACCDATA = {}
+						self.OVPN_ACCDATA = json.loads(r.content)
+						self.OVPN_ACCDATA_LASTUPDATE = int(time.time())
+						self.debug(text="def load_accinfo_from_remote: loaded '%s'" % (self.OVPN_ACCDATA))
+						return True
+				except:
+					self.debug(text="def load_accinfo_from_remote: json decode error")
+					self.OVPN_ACCDATA_LASTUPDATE = int(time.time())
+			except:
+				self.debug(text="def load_accinfo_from_remote: api request failed")
+
 	#######
 	def build_openvpn_dlurl(self):
 		self.PLATFORM = self.os_platform()
@@ -3403,7 +3547,7 @@ class Systray:
 				self.OPENVPN_DIR = OPENVPN_DIR
 				break
 
-		if self.OPENVPN_DIR == False:
+		if self.OPENVPN_DIR == False and not self.OPENVPN_EXE == False:
 			self.OPENVPN_DIR = self.OPENVPN_EXE.rsplit('\\', 1)[0]
 
 		if self.OPENVPN_EXE == False or not os.path.isfile(self.OPENVPN_EXE):
@@ -3537,8 +3681,13 @@ class Systray:
 				self.dialogWindow_form_ask_passphrase.destroy()
 			except: 
 				pass
+			try: 
+				self.mainwindow.destroy()
+				self.MAINWINDOW_OPEN = False
+			except: 
+				pass
 			self.WINDOW_QUIT_OPEN = True
-			try:			
+			try:
 				dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_NONE)
 				dialog.set_markup("Do you really want to quit?")
 				dialog.add_button(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL)
