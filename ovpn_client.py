@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9-gtk"
+CLIENTVERSION="v0.4.9a-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -51,9 +51,7 @@ class Systray:
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip(('oVPN.to Client'))
-			#self.load_ovpn_server()
-			#self.tray.set_from_stock(gtk.STOCK_EXECUTE)
-			if self.UPDATEOVPNONSTART == True and self.check_inet_connection() == True: # and self.OVPN_AUTO_CONNECT_ON_START == False:
+			if self.UPDATEOVPNONSTART == True and self.check_inet_connection() == True:
 				self.check_remote_update()
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.win_firewall_tap_blockoutbound()
@@ -2196,7 +2194,7 @@ class Systray:
 					try:
 						t1 = time.time()
 						s = socket.socket(family, socktype)
-						s.settimeout(3)
+						#s.settimeout(3)
 						s.connect(sockaddr)
 						t2 = time.time()
 						s.close()
@@ -3285,8 +3283,8 @@ class Systray:
 		self.debug(text=text)
 		
 		try:
-			if self.check_inet_connection() == False:
-				return False
+			#if self.check_inet_connection() == False:
+			#	return False
 			r = requests.post(self.APIURL,data=values)
 			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
 				self.body = r.content
@@ -3365,7 +3363,7 @@ class Systray:
 	def try_socket(self,host,port):
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.settimeout(3)
+			#s.settimeout(3)
 			result = s.connect_ex((host, port))
 			s.close()
 		except:
@@ -3587,7 +3585,7 @@ class Systray:
 		if not self.OPENVPN_DL_URL == False:
 			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 				return self.verify_openvpnbin_dl()
-			self.msgwarn(text="Install OpenVPN %s (%s) (%s)\n\nStart download (~1.8 MB) from:\n'%s'\nto\n'%s'" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
+			self.msgwarn(text="Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
 			try:
 				ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
 				
@@ -3707,19 +3705,18 @@ class Systray:
 				self.upgrade_openvpn()
 
 		if not self.openvpn_check_files():
-			self.msgwarn(text="WARNING! Failed to verify files in\n'%s'!" % (self.OPENVPN_DIR))
+			self.msgwarn(text="WARNING! Failed to verify files in\n'%s'\n\nIs latest OpenVPN installed?" % (self.OPENVPN_DIR))
 			
 		self.debug(text = "Using: %s" % (self.OPENVPN_EXE))
 		try:
 			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
 		except:
-			self.errorquit(text=_("Could not detect openVPN Version!"))
+			self.errorquit(text="Could not detect openVPN Version!")
 		try:
 			self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
 			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
 			self.OVPN_LATESTBUILT = self.OVPN_LATEST_BUILT.split()
-			text = "self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATESTBUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATESTBUILT)
-			self.debug(text=text)
+			self.debug(text="self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATESTBUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATESTBUILT))
 			if self.OVPN_VERSION >= self.OVPN_LATEST:
 				if self.OVPN_BUILT == self.OVPN_LATESTBUILT:
 					self.debug(text="self.OVPN_BUILT == self.OVPN_LATESTBUILT: True")
