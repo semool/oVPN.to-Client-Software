@@ -23,7 +23,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9c-gtk"
+CLIENTVERSION="v0.4.9d-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -224,11 +224,18 @@ class Systray:
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))
 		else: 
 			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))
-			
+
 	#######
 	def win_pre1_check_app_dir(self):
 		os_appdata = os.getenv('APPDATA')
-		self.app_dir = "%s\\ovpn" % (os_appdata)
+		alt_appdata = "appdata"
+		if os.path.exists("appdata"):
+			print "alternative folder found"
+			self.app_dir = "%s\\ovpn" % (alt_appdata)
+			self.bin_dir = "."
+		else:
+			self.app_dir = "%s\\ovpn" % (os_appdata)
+			self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
 		if not os.path.exists(self.app_dir):
 			if self.DEBUG: print("win_pre1_check_app_dir %s not found, creating." % (self.app_dir))
 			os.mkdir(self.app_dir)
@@ -273,7 +280,7 @@ class Systray:
 	#######
 	def win_pre3_load_profile_dir_vars(self):
 		self.api_dir = "%s\\%s" % (self.app_dir,self.profile)
-		self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
+		
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		
 		self.debug_log = "%s\\client_debug.log" % (self.api_dir)
