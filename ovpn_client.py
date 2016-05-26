@@ -22,7 +22,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9a-gtk"
+CLIENTVERSION="v0.4.9b-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -621,8 +621,8 @@ class Systray:
 				parser.set('oVPN','winbackupfirewall','False')
 				parser.set('oVPN','nowinfirewall','False')
 				parser.set('oVPN','nodnschange','False')
-				parser.set('oVPN','winnoaskfwonexit','False')
-				parser.set('oVPN','winfwblockonexit','False')
+				parser.set('oVPN','winnoaskfwonexit','True')
+				parser.set('oVPN','winfwblockonexit','True')
 				parser.set('oVPN','wintapblockoutbound','False')
 				parser.set('oVPN','loadaccinfo','False')
 				parser.set('oVPN','mydns','False')
@@ -965,6 +965,7 @@ class Systray:
 
 	#######
 	def make_context_menu_servertab(self,servername):
+		
 		context_menu_servertab = gtk.Menu()
 		
 		if self.OVPN_CONNECTEDto == servername:
@@ -1000,10 +1001,13 @@ class Systray:
 	#######
 	def make_context_menu_servertab_d0wns_dnsmenu(self,servername):
 		try:
-			if len(self.MYDNS) == 0:
+			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
+			if len(self.d0wns_DNS) == 0:
+				self.debug(text="len(self.d0wns_DNS) == 0")
 				return False
+			
 			dnsmenu = gtk.Menu()
-			dnsm = gtk.MenuItem("Change DNS @ %s" % (servername))
+			dnsm = gtk.MenuItem("Change DNS:")
 			dnsm.set_submenu(dnsmenu)
 			
 			try:
@@ -1072,6 +1076,7 @@ class Systray:
 					dnssubmenu.append(setsecdns)
 			dnsm.show_all()
 			self.context_menu_servertab.append(dnsm)
+			#self.cgmenu.append(dnsm)
 		except:
 			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: failed!")
 
@@ -1158,14 +1163,26 @@ class Systray:
 		
 		try:
 			if self.systray_timer_running == True:
-				time.sleep(5)
+				time.sleep(1)
+				if self.LOAD_ACCINFO == True:
+					if self.load_accinfo_from_remote():
+						if self.load_serverdata_from_remote():
+							time.sleep(1)
+						
+				elif self.ENABLE_EXTSERVERVIEW == True:
+					if self.load_serverdata_from_remote():
+						if self.load_accinfo_from_remote():
+							time.sleep(1)
+				
+				
 		except:
 			pass
 		
 		
+		self.systray_timer_running = True
 		self.thread_systray_timer = threading.Thread(target=self.systray_timer)
 		self.thread_systray_timer.start()
-		self.systray_timer_running = True
+		
 		return True
 	
 	#######
@@ -1411,9 +1428,9 @@ class Systray:
 		if len(self.OVPN_SERVER) > 0:
 			try:
 				countrycodefrombefore = 0
-				for menuserver in self.OVPN_SERVER:
-					servershort = menuserver[:3]
-					
+				for servername in self.OVPN_SERVER:
+					servershort = servername[:3]
+
 					textstring = "%s (%s:%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][2],self.OVPN_SERVER_INFO[servershort][1])
 					countrycode = servershort[:2].lower()
 					
@@ -1421,6 +1438,7 @@ class Systray:
 						# create countrygroup menu
 						countrycodefrombefore = countrycode
 						cgmenu = gtk.Menu()
+						self.cgmenu = cgmenu
 						countryname = self.COUNTRYNAMES[countrycode.upper()]
 						cgm = gtk.ImageMenuItem(countryname)
 						img = gtk.Image()
@@ -1431,13 +1449,16 @@ class Systray:
 						cgm.set_submenu(cgmenu)
 						self.systray_menu.append(cgm)
 					
-					if self.OVPN_CONNECTEDto == menuserver:
+					#self.make_context_menu_servertab_d0wns_dnsmenu()
+					
+					if self.OVPN_CONNECTEDto == servername:
 						servershort = "[ "+servershort+" ]"
 						serveritem = gtk.ImageMenuItem(servershort)
 					else:
 						serveritem = gtk.ImageMenuItem(textstring)
 						# SIGNALS
-						serveritem.connect('button-press-event', self.call_openvpn, menuserver)
+						serveritem.connect('button-press-event', self.call_openvpn, servername)
+						
 					img = gtk.Image()
 					imgpath = self.FLAG_IMG[countrycode]
 					img.set_from_file(imgpath)
@@ -1445,6 +1466,7 @@ class Systray:
 					serveritem.set_image(img)
 					cgmenu.append(serveritem)
 					serveritem.show()
+					
 			except:
 				self.destroy_systray_menu()
 				text = "def make_systray_server_menu: failed"
@@ -1691,7 +1713,15 @@ class Systray:
 
 	#######
 	def mainwindow_ovpn_server(self):
-		#self.load_serverdata_from_remote()
+		"""
+		if self.LOAD_ACCINFO == True:
+			if self.load_accinfo_from_remote():
+				self.load_serverdata_from_remote()
+				
+		elif self.ENABLE_EXTSERVERVIEW == True:
+			if self.load_serverdata_from_remote():
+				self.load_accinfo_from_remote()
+		"""
 		notebook = gtk.Notebook()
 		self.mainwindow_vbox.add(notebook)
 		
@@ -1709,7 +1739,17 @@ class Systray:
 		vbox1.pack_start(serverframe,True,True,0)
 		serverframe.set_label("Anonymous oVPN Server")
 		
-		if self.LOAD_ACCINFO == True:
+		if len(self.OVPN_ACCDATA) == 0:
+			label2 = gtk.Label(_("Account"))
+			vbox2 = gtk.VBox(False,1)
+			notebook.append_page(vbox2,label2)
+			accframe = gtk.Frame()
+			vbox2.pack_start(accframe,True,True,0)
+			if self.LOAD_ACCINFO == True:
+				accframe.set_label("No data found. Maybe no internet available or data not yet loaded...")
+			else:
+				accframe.set_label("Option -> 'Load Account Info disabled!")
+		elif len(self.OVPN_ACCDATA) > 0:
 			label2 = gtk.Label(_("Account"))
 			vbox2 = gtk.VBox(False,1)
 			notebook.append_page(vbox2,label2)
@@ -2108,7 +2148,8 @@ class Systray:
 						try:
 							ip = line.split()[1]
 							port = int(line.split()[2])
-							if (self.isValueIPv4(ip) or self.isValueIPv6(ip)) and port > 0 and port < 65535:
+							# *** fixme *** need ipv6 check here
+							if self.isValueIPv4(ip) and port > 0 and port < 65535:
 								self.OVPN_CONNECTEDtoIP = ip
 								self.OVPN_CONNECTEDtoPort = port
 							#break
@@ -2221,10 +2262,7 @@ class Systray:
 						time.sleep(2)
 				else:
 					time.sleep(3)
-				if self.OVPN_CONNECTEDtime > 15 and (self.OVPN_PING_STAT >= 0 or self.OVPN_PING_STAT <= 500):
-					if (self.LAST_OVPN_SERVER_STATS_UPDATE < int(time.time())-600):
-						self.load_serverdata_from_remote()
-				self.load_accinfo_from_remote()
+				
 				try:
 					pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 					pingthread.start()
@@ -2280,10 +2318,9 @@ class Systray:
 			self.STATE_OVPN = True
 			exitcode = subprocess.check_output("%s" % (self.ovpn_string),shell=True)
 		except subprocess.CalledProcessError as e:
-			self.debug(text="exitcode: output = %s" %(e.output))
-			self.OVPN_AUTO_RECONNECT = False
+			self.debug(text="def inThread_spawn_openvpn_process: openvpn crashed, output = '%s'" %(e.output))
 		except:
-			self.debug(text="exitcode: failed")
+			self.debug(text="def inThread_spawn_openvpn_process: failed!")
 			self.OVPN_AUTO_RECONNECT = False
 		self.win_firewall_modify_rule(option="delete")
 		
@@ -2391,7 +2428,7 @@ class Systray:
 	#######
 	def inThread_timer_openvpn_reconnect(self):
 		#self.debug("def inThread_timer_openvpn_reconnect")
-		time.sleep(10)
+		time.sleep(8)
 		if self.OVPN_RECONNECT_NOW == True and self.OVPN_AUTO_RECONNECT == True and self.STATE_OVPN == False:
 			self.call_openvpn(None,None,self.call_ovpn_srv)
 			self.debug(text="oVPN process crashed and restarted.")
@@ -3089,14 +3126,9 @@ class Systray:
 		if self.ENABLE_EXTSERVERVIEW == False:
 			if self.check_passphrase() == True:
 				self.ENABLE_EXTSERVERVIEW = True
-				if self.STATE_OVPN == False:
-					self.msgwarn(text="Extended Server-View loads Data only with connected oVPN!")
-				else:
-					self.LAST_OVPN_SERVER_STATS_UPDATE = 0
-				#self.debug(text="def cb_extserverview: self.PASSPHRASE = '%s'" % (self.PASSPHRASE))
+				self.LAST_OVPN_SERVER_STATS_UPDATE = 0
 				self.debug(text="def cb_extserverview: self.PASSPHRASE = '-NOT_FALSE-'")
 		else:
-			#self.PASSPHRASE = False
 			self.ENABLE_EXTSERVERVIEW = False
 			self.OVPN_SERVER_STATS = {}
 			self.LAST_OVPN_SERVER_STATS_UPDATE = 0
@@ -3209,7 +3241,7 @@ class Systray:
 		self.destroy_systray_menu()
 		if self.LOAD_ACCINFO == True:
 			self.LOAD_ACCINFO = False
-			self.OVPN_ACCDATA = {}
+			#self.OVPN_ACCDATA = {}
 			self.LAST_OVPN_ACCDATA_UPDATE = 0
 		elif self.LOAD_ACCINFO == False:
 			self.LOAD_ACCINFO = True
@@ -3363,7 +3395,7 @@ class Systray:
 	def try_socket(self,host,port):
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			#s.settimeout(3)
+			s.settimeout(3)
 			result = s.connect_ex((host, port))
 			s.close()
 		except:
@@ -3504,50 +3536,68 @@ class Systray:
 	def load_serverdata_from_remote(self):
 		if self.APIKEY == False or self.PASSPHRASE == False or self.ENABLE_EXTSERVERVIEW == False:
 			return False
-		try:
-			if self.check_inet_connection() == False:
-				return False
-			API_ACTION = "loadserverdata"
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-			r = requests.post(self.APIURL,data=values)
+		if (self.LAST_OVPN_SERVER_STATS_UPDATE < int(time.time())-600):
 			try:
-				self.OVPN_SERVER_STATS = {}
-				if not r.content == "AUTHERROR":
-					self.OVPN_SERVER_STATS = json.loads(r.content)
+				API_ACTION = "loadserverdata"
+				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+				r = requests.post(self.APIURL,data=values,timeout=(1,1))
+				try:
+					if not r.content == "AUTHERROR":
+						if len(r.content) > 128:
+							self.OVPN_SERVER_STATS = {}
+							self.OVPN_SERVER_STATS = json.loads(r.content)
+							self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())
+							self.debug(text="def load_serverdata_from_remote: loaded")
+							return True
+						else:
+							self.debug(text="def load_serverdata_from_remote: len(r.content) = '%s', retry in 60 sec" % (len(r.content)))
+							self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())-540
+							return False
+					else:
+						self.ENABLE_EXTSERVERVIEW == False
+						return False
+				except:
+					self.debug(text="def load_serverdata_from_remote: json decode error")
 					self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())
-					self.debug(text="def load_serverdata_from_remote: loaded")
-					return True
 			except:
-				self.debug(text="def load_serverdata_from_remote: json decode error")
-				self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())
-		except:
-			self.debug(text="def load_serverdata_from_remote: api request failed")
+				self.debug(text="def load_serverdata_from_remote: api request failed, retry in 60 sec")
+				self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())-540
+				return False
+		else:
+			return True
 
 	#######
 	def load_accinfo_from_remote(self):
 		if self.APIKEY == False or self.PASSPHRASE == False or self.LOAD_ACCINFO == False:
 			return False
-		if (self.LAST_OVPN_ACCDATA_UPDATE < int(time.time())-600):
+		if (self.LAST_OVPN_ACCDATA_UPDATE < int(time.time())-3600):
 			try:
-				if self.check_inet_connection() == False:
-					self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())
-					return False
 				API_ACTION = "accinfo"
 				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-				r = requests.post(self.APIURL,data=values)
+				r = requests.post(self.APIURL,data=values,timeout=(1,1))
 				try:
 					if not r.content == "AUTHERROR":
-						self.OVPN_ACCDATA = {}
-						self.OVPN_ACCDATA = json.loads(r.content)
-						self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())
-						self.debug(text="def load_accinfo_from_remote: loaded '%s'" % (self.OVPN_ACCDATA))
-						return True
+						if len(r.content) > 32:
+							self.OVPN_ACCDATA = {}
+							self.OVPN_ACCDATA = json.loads(r.content)
+							self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())
+							self.debug(text="def load_accinfo_from_remote: loaded '%s'" % (self.OVPN_ACCDATA))
+							return True
+						else:
+							self.debug(text="def load_accinfo_from_remote: len(r.content) = '%s', retry in 60 sec" % (len(r.content)))
+							self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())-3540
+							return False
+					else:
+						self.LOAD_ACCINFO == False
+						return False
 				except:
 					self.debug(text="def load_accinfo_from_remote: json decode error")
 					self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())
 			except:
-				self.debug(text="def load_accinfo_from_remote: api request failed")
-				self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())
+				self.debug(text="def load_accinfo_from_remote: api request failed, retry in 60 sec")
+				self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())-3540
+		else:
+			return True
 
 	#######
 	def build_openvpn_dlurl(self):
@@ -3644,7 +3694,7 @@ class Systray:
 			if exitcode == 0:
 				if self.OPENVPN_SILENT_SETUP:
 					self.msgwarn(text="OpenVPN Setup OK!")
-				self.debug(text="def win_install_openvpn: '%s' exitcode = %s" % (fullstring,exitcode))	
+				self.debug(text="def win_install_openvpn: '%s' exitcode = %s" % (fullstring,exitcode))
 				return True
 			else:
 				self.debug(text="def win_install_openvpn: '%s' exitcode = %s" % (fullstring,exitcode))
