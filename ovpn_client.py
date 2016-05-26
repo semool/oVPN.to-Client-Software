@@ -19,10 +19,11 @@ import gettext
 import locale
 import requests
 import json
+#import atexit
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9b-gtk"
+CLIENTVERSION="v0.4.9c-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -56,6 +57,7 @@ class Systray:
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.win_firewall_tap_blockoutbound()
 			self.systray_timer()
+			#atexit.register(self.on_closing,widget="atexit")
 		else:
 			sys.exit()
 		
@@ -114,6 +116,7 @@ class Systray:
 		self.OVPN_AUTO_RECONNECT = True
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtime = False
+		self.OVPN_CONNECTEDseconds = 0
 		self.OVPN_CONNECTEDtoIP = False
 		self.OVPN_GATEWAY_IP4 = "172.16.32.1"
 		self.OVPN_THREADID = False
@@ -127,6 +130,7 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.INTERFACES = False
 		
+		self.d0wns_DNS = {}
 		"""
 		self.UPDATE_MENUBAR = False
 		self.d0wns_dns = False
@@ -1003,6 +1007,7 @@ class Systray:
 		try:
 			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
 			if len(self.d0wns_DNS) == 0:
+				self.load_d0wns_dns_from_remote()
 				self.debug(text="len(self.d0wns_DNS) == 0")
 				return False
 			
@@ -1138,6 +1143,7 @@ class Systray:
 					self.OVPN_isTESTING = False
 				now = int(time.time())
 				connectedseconds = now - self.OVPN_CONNECTEDtime
+				self.OVPN_CONNECTEDseconds = connectedseconds
 				m, s = divmod(connectedseconds, 60)
 				h, m = divmod(m, 60)
 				d, h = divmod(h, 24)
@@ -1811,7 +1817,7 @@ class Systray:
 				vlanip4 = self.OVPN_SERVER_STATS[servershort]["vlanip4"]
 				vlanip6 = self.OVPN_SERVER_STATS[servershort]["vlanip6"]
 				traffic = self.OVPN_SERVER_STATS[servershort]["traffic"]["eth0"]
-				live = self.OVPN_SERVER_STATS[servershort]["traffic"]["live"]
+				live = "%s M" % (self.OVPN_SERVER_STATS[servershort]["traffic"]["live"])
 				uplink = self.OVPN_SERVER_STATS[servershort]["traffic"]["uplink"]
 				cpuload = self.OVPN_SERVER_STATS[servershort]["cpu"]["cpu-load"]
 				
@@ -1965,7 +1971,8 @@ class Systray:
 				self.MAINWINDOW_OPEN = False
 				self.debug(text="mainwindow failed")
 		else:
-			self.mainwindow.destroy()
+			#self.mainwindow.destroy()
+			self.mainwindow.hide()
 			self.MAINWINDOW_OPEN = False
 			#self.destroy_systray_menu()
 			self.debug(text="mainwindow destroy")
@@ -2256,7 +2263,7 @@ class Systray:
 						pingsum += int(ping)
 					self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 				if self.OVPN_PING_STAT >= 0:
-					if self.OVPN_CONNECTEDtime > 20:
+					if self.OVPN_CONNECTEDseconds > 20:
 						time.sleep(10)
 					else:
 						time.sleep(2)
@@ -2290,7 +2297,7 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
-		self.OVPN_CONNECTEDtime = int(time.time())
+		
 		self.mainwindow_menubar()
 		if not self.openvpn_check_files():
 			self.OVPN_CONNECTEDto = False
@@ -2300,6 +2307,7 @@ class Systray:
 			self.debug(text=text)
 			self.OVPN_CONNECTEDto = False
 			return False
+		self.OVPN_CONNECTEDtime = int(time.time())
 		self.win_firewall_modify_rule(option="add")
 		self.win_clear_ipv6_addr()
 		
@@ -2331,6 +2339,8 @@ class Systray:
 		self.STATE_OVPN = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtoIP = False
+		self.OVPN_CONNECTEDtime = 0
+		self.OVPN_CONNECTEDseconds = 0
 		self.OVPN_THREADID = False
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
@@ -3536,11 +3546,13 @@ class Systray:
 	def load_serverdata_from_remote(self):
 		if self.APIKEY == False or self.PASSPHRASE == False or self.ENABLE_EXTSERVERVIEW == False:
 			return False
+		if self.STATE_OVPN == False or self.OVPN_CONNECTEDseconds < 30:
+			return False
 		if (self.LAST_OVPN_SERVER_STATS_UPDATE < int(time.time())-600):
 			try:
 				API_ACTION = "loadserverdata"
 				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-				r = requests.post(self.APIURL,data=values,timeout=(1,1))
+				r = requests.post(self.APIURL,data=values,timeout=(3,3))
 				try:
 					if not r.content == "AUTHERROR":
 						if len(r.content) > 128:
@@ -3570,11 +3582,13 @@ class Systray:
 	def load_accinfo_from_remote(self):
 		if self.APIKEY == False or self.PASSPHRASE == False or self.LOAD_ACCINFO == False:
 			return False
+		if self.STATE_OVPN == False or self.OVPN_CONNECTEDseconds < 30:
+			return False
 		if (self.LAST_OVPN_ACCDATA_UPDATE < int(time.time())-3600):
 			try:
 				API_ACTION = "accinfo"
 				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-				r = requests.post(self.APIURL,data=values,timeout=(1,1))
+				r = requests.post(self.APIURL,data=values,timeout=(3,3))
 				try:
 					if not r.content == "AUTHERROR":
 						if len(r.content) > 32:
@@ -3974,15 +3988,18 @@ class Systray:
 
 	#######
 	def on_closing(self, widget):
+		print "def on_closing: widget = '%s'" % (widget)
 		self.destroy_systray_menu()
 		if self.WINDOW_QUIT_OPEN == True:
 			self.QUIT_DIALOG.destroy()
 			return False
 		if self.STATE_OVPN == True:
-			return False
+			self.kill_openvpn()
+			#return False
 		else:
 			try: 
 				self.about_dialog.destroy()
+				self.WINDOW_ABOUT_OPEN = False
 			except:	
 				pass
 			try: 
@@ -4167,6 +4184,7 @@ def app():
 		gtk.gdk.threads_init()
 		gtk.main()
 	except:
+		print "undef except"
 		sys.exit()
 
 if __name__ == "__main__":
