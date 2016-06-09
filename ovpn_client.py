@@ -23,7 +23,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9f-gtk"
+CLIENTVERSION="v0.4.9g-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -1158,7 +1158,7 @@ class Systray:
 					if self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 86400:
 						self.OVPN_CONNECTEDtimetext = "( %02d:%02d )" % (h,m)
 					elif self.OVPN_CONNECTEDseconds >= 86400:
-						self.OVPN_CONNECTEDtimetext = "( %d:%02d:%02d:%02d )" % (d,h,m)
+						self.OVPN_CONNECTEDtimetext = "( %d:%02d:%02d )" % (d,h,m)
 					else:
 						self.OVPN_CONNECTEDtimetext = "(~)"
 					textfull = "oVPN is connected %s to %s [%s]:%s ( %s / %s ms )" % (self.OVPN_CONNECTEDtimetext,self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
@@ -2567,41 +2567,57 @@ class Systray:
 
 	#######
 	def win_netsh_restore_dns_from_backup(self):
-		if self.NO_DNS_CHANGE == True:
-			return True
-		if self.WIN_DNS_CHANGED == False:
-			return True
-		if self.check_dns_is_whitelisted() == True:
-			return True
-			
-		self.netsh_cmdlist = list()
-		
-		if self.WIN_EXT_DHCP == True:
-			self.netsh_cmdlist.append(string = 'interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
-			if self.win_join_netsh_cmd():
-				self.debug(text="Primary DNS Server restored to DHCP.")
+		try:
+			if self.NO_DNS_CHANGE == True:
 				return True
-			else:
-				self.debug(text="Error: Restoring your Primary DNS Server to DHCP failed."%(self.GATEWAY_DNS2))
-				return False
+			if self.WIN_DNS_CHANGED == False:
+				return True
+			if self.check_dns_is_whitelisted() == True:
+				return True
+				
+			self.netsh_cmdlist = list()
 			
-		if not self.GATEWAY_DNS1 == self.OVPN_GATEWAY_IP4:
-			self.netsh_cmdlist.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
-			if self.win_join_netsh_cmd():
-				self.debug(text="Primary DNS Server restored to: %s"%(self.GATEWAY_DNS1))
-				if self.GATEWAY_DNS2 == False:
-					return True
-				else:
-					self.netsh_cmdlist.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
+			try:
+				if self.WIN_EXT_DHCP == True:
+					self.netsh_cmdlist.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
 					if self.win_join_netsh_cmd():
-						self.debug(text=_("Secondary DNS Server restored to %s")%(self.GATEWAY_DNS2))
+						self.debug(text="DNS restored to DHCP.")
 						return True
 					else:
-						self.msgwarn(text=_("Error: Restore Secondary DNS Server to %s failed.")%(self.GATEWAY_DNS2))
 						return False
-			else:
-				self.msgwarn(text=_("Error: Restore Primary DNS Server to %s failed.")%(self.GATEWAY_DNS1))
-				return False
+			except:
+				self.debug(text="def win_netsh_restore_dns_from_backup: restore DHCP on IF: '%s' failed " % (self.WIN_EXT_DEVICE))
+			
+			try:
+				if not self.GATEWAY_DNS1 == self.OVPN_GATEWAY_IP4:
+					self.netsh_cmdlist.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
+					if self.win_join_netsh_cmd():
+						self.debug(text="Primary DNS restored to: %s"%(self.GATEWAY_DNS1))
+						if self.GATEWAY_DNS2 == False:
+							return True
+						else:
+							self.netsh_cmdlist.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
+							if self.win_join_netsh_cmd():
+								self.debug(text=_("Secondary DNS restored to %s")%(self.GATEWAY_DNS2))
+								return True
+							else:
+								self.msgwarn(text=_("Error: Restore Secondary DNS to %s failed.")%(self.GATEWAY_DNS2))
+								return False
+					else:
+						self.msgwarn(text=_("Error: Restore Primary DNS to %s failed.")%(self.GATEWAY_DNS1))
+						return False
+				else:
+					self.netsh_cmdlist.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
+					if self.win_join_netsh_cmd():
+						self.debug(text="DNS restored to DHCP")
+						return True
+					else:
+						return False
+			except:
+				self.debug(text="def win_netsh_restore_dns_from_backup: Restore DNS failed")
+
+		except:
+			self.debug(text="def win_netsh_restore_dns_from_backup: failed")
 
 	#######
 	def win_netsh_read_dns_to_backup(self):
@@ -2646,8 +2662,11 @@ class Systray:
 						self.debug(text="def win_netsh_read_dns_to_backup: 2nd DNS failed read on line '%s' search '%s'" % (line,search))
 				
 				i+=1
-			self.debug(text="self.GATEWAY_DNS1 = %s + self.GATEWAY_DNS2 = %s"%(self.GATEWAY_DNS1,self.GATEWAY_DNS2))
+			self.debug(text="def win_netsh_read_dns_to_backup: self.GATEWAY_DNS1 = %s + self.GATEWAY_DNS2 = %s"%(self.GATEWAY_DNS1,self.GATEWAY_DNS2))
 			if not self.GATEWAY_DNS1 == False:
+				return True
+			else:
+				self.WIN_EXT_DHCP = True
 				return True
 		except:
 			self.errorquit(text="def win_netsh_read_dns_to_backup: failed!")
@@ -4078,23 +4097,22 @@ class Systray:
 				pass
 			self.WINDOW_QUIT_OPEN = True
 			try:
-				dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_NONE)
+				#dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_NONE)
+				dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup("Do you really want to quit?")
-				dialog.add_button(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL)
-				dialog.add_button(gtk.STOCK_QUIT,gtk.RESPONSE_CLOSE)
+				#dialog.add_button(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL)
+				#dialog.add_button(gtk.STOCK_QUIT,gtk.RESPONSE_CLOSE)
 				response = dialog.run()
-				
-				if response == gtk.RESPONSE_CANCEL:
-					dialog.destroy()
+				dialog.destroy()
+				if response == gtk.RESPONSE_NO:
 					self.WINDOW_QUIT_OPEN = False
 					return False
-				elif response == gtk.RESPONSE_CLOSE:
-					dialog.destroy()
+				elif response == gtk.RESPONSE_YES:
 					self.WINDOW_QUIT_OPEN = False
-					self.ask_loadorunload_fw()
+					if self.ask_loadorunload_fw() == False:
+						return False
 				else:
-					dialog.destroy()
 					self.WINDOW_QUIT_OPEN = False
 					return False
 			except:
@@ -4107,89 +4125,92 @@ class Systray:
 			self.debug(text="close app")
 			self.stop_systray_timer = True
 			self.remove_lock()
-			#if os.path.isfile(self.debug_log):
-			#	os.remove(self.debug_log)
 			gtk.main_quit()
 			sys.exit()
 
 	#######
 	def ask_loadorunload_fw(self):
-		if self.NO_WIN_FIREWALL:
+		if self.NO_WIN_FIREWALL == True:
 			return True
 		try:
-			if self.WIN_DONT_ASK_FW_EXIT:
-
-				if self.WIN_BACKUP_FIREWALL and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
+			if self.WIN_DONT_ASK_FW_EXIT == True:
+				if self.WIN_BACKUP_FIREWALL == True and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 					self.win_firewall_restore_on_exit()
 					self.win_firewall_block_on_exit()
 					self.win_netsh_restore_dns_from_backup()
 					self.debug(text="Firewall rules restored and block outbound!")
 					return True
 					
-				if self.WIN_BACKUP_FIREWALL and not self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
+				elif self.WIN_BACKUP_FIREWALL == True and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_restore_on_exit()
 					self.win_netsh_restore_dns_from_backup()
 					self.debug(text="Firewall: rules restored!")
 					return True
 					
-				if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
+				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 					self.win_firewall_block_on_exit()
 					self.win_netsh_restore_dns_from_backup()
 					self.debug(text="Firewall: block outbound!")
 					return True
 				
-				if not self.WIN_ALWAYS_BLOCK_FW_ON_EXIT:
+				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_allowout()
 					self.win_netsh_restore_dns_from_backup()
 					self.debug(text="Firewall: allow outbound!")
 					return True
-			try:
-				dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
-				if self.WIN_BACKUP_FIREWALL == True:
-					dialog.set_markup("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
-				else:
-					dialog.set_markup("Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
-				response = dialog.run()
-				
-				if response == gtk.RESPONSE_NO:
-					dialog.destroy()
-					self.win_firewall_block_on_exit()
-					self.win_netsh_restore_dns_from_backup()
-					return True
-				elif response == gtk.RESPONSE_YES:
-					dialog.destroy()
+			else:
+				try:
+					dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
 					if self.WIN_BACKUP_FIREWALL == True:
-						self.win_firewall_restore_on_exit()
+						text = "Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
+						dialog.set_markup()
 					else:
-						self.win_firewall_allowout()
-					self.win_netsh_restore_dns_from_backup()
-					return True
-				else:
+						text = "Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
+						
+					dialog.set_markup(text)
+					self.debug(text="def ask_loadorunload_fw: text = '%s'" % (text))
+					response = dialog.run()
 					dialog.destroy()
+					self.debug(text="def ask_loadorunload_fw: dialog response = '%s'" % (response))
+					if response == gtk.RESPONSE_NO:
+						self.debug(text="def ask_loadorunload_fw: dialog response = NO '%s'" % (response))
+						#dialog.destroy()
+						self.win_firewall_block_on_exit()
+						self.win_netsh_restore_dns_from_backup()
+						return True
+					elif response == gtk.RESPONSE_YES:
+						self.debug(text="def ask_loadorunload_fw: dialog response = YES '%s'" % (response))
+						#dialog.destroy()
+						if self.WIN_BACKUP_FIREWALL == True:
+							self.win_firewall_restore_on_exit()
+						else:
+							self.win_firewall_allowout()
+						self.win_netsh_restore_dns_from_backup()
+						return True
+					else:
+						self.debug(text="def ask_loadorunload_fw: dialog response = ELSE '%s'" % (response))
+						#dialog.destroy()
+						return False
+				except:
+					self.msgwarn(text="def ask_loadorunload_fw: dialog failed")
 					return False
-			except:
-				self.msgwarn(text="def ask_loadorunload_fw: dialog failed")
-				return False
 		except:
 			self.msgwarn(text="def ask_loadorunload_fw: failed")
+			return False
 
 	#######
 	def remove_lock(self):
 		if os.path.isfile(self.lock_file):
-			text=_("close lock")
-			self.debug(text=text)
+			self.debug(text="close lock")
 			self.LOCK.close()
 			try:
 				os.remove(self.lock_file)
-				text=_("remove lock")
-				self.debug(text=text)
+				self.debug(text="remove lock")
 				return True
 			except:
-				text=_("remove lock failed")
-				self.msgwarn(text=text)
+				self.msgwarn(text="remove lock failed")
 		else:
-			text=_("Could not delete LOCK. File not found.")
-			self.msgwarn(text=text)
+			self.msgwarn(text="Could not delete LOCK. File not found.")
 
 	#######
 	def errorquit(self,text):
