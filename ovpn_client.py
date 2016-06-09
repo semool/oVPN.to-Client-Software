@@ -23,7 +23,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9e-gtk"
+CLIENTVERSION="v0.4.9f-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -1144,26 +1144,29 @@ class Systray:
 				#systrayicon = self.systray_icon_disconnected
 				#self.debug(text=text)
 			else:
-				if self.OVPN_isTESTING == True:
-					self.OVPN_PING = list()
-					self.OVPN_PING_STAT = self.OVPN_PING_LAST
-					self.OVPN_isTESTING = False
-				now = int(time.time())
-				connectedseconds = now - self.OVPN_CONNECTEDtime
-				self.OVPN_CONNECTEDseconds = connectedseconds
-				m, s = divmod(connectedseconds, 60)
-				h, m = divmod(m, 60)
-				d, h = divmod(h, 24)
-				if self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 86400:
-					self.OVPN_CONNECTEDtimetext = "( %02d:%02d )" % (h,m)
-				elif self.OVPN_CONNECTEDseconds >= 86400:
-					self.OVPN_CONNECTEDtimetext = "( %d:%02d:%02d:%02 )" % (d,h,m)
-				else:
-					self.OVPN_CONNECTEDtimetext = "(~)"
-				textfull = "oVPN is connected %s to %s [%s]:%s ( %s / %s ms )" % (self.OVPN_CONNECTEDtimetext,self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
-				textsmall = "oVPN is connected to %s [%s]:%s (%s)" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
-				systraytext = textsmall
-				systrayicon = self.systray_icon_connected
+				try:
+					if self.OVPN_isTESTING == True:
+						self.OVPN_PING = list()
+						self.OVPN_PING_STAT = self.OVPN_PING_LAST
+						self.OVPN_isTESTING = False
+					now = int(time.time())
+					connectedseconds = now - self.OVPN_CONNECTEDtime
+					self.OVPN_CONNECTEDseconds = connectedseconds
+					m, s = divmod(connectedseconds, 60)
+					h, m = divmod(m, 60)
+					d, h = divmod(h, 24)
+					if self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 86400:
+						self.OVPN_CONNECTEDtimetext = "( %02d:%02d )" % (h,m)
+					elif self.OVPN_CONNECTEDseconds >= 86400:
+						self.OVPN_CONNECTEDtimetext = "( %d:%02d:%02d:%02d )" % (d,h,m)
+					else:
+						self.OVPN_CONNECTEDtimetext = "(~)"
+					textfull = "oVPN is connected %s to %s [%s]:%s ( %s / %s ms )" % (self.OVPN_CONNECTEDtimetext,self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+					textsmall = "oVPN is connected to %s [%s]:%s (%s)" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
+					systraytext = textsmall
+					systrayicon = self.systray_icon_connected
+				except:
+					self.debug(text="def systray_timer: systraytext failed")
 		try:
 			if not self.systraytext_from_before == systraytext and not systraytext == False:
 				self.systraytext_from_before = systraytext
@@ -1990,6 +1993,18 @@ class Systray:
 		self.statusbar_text.set_label(text)
 		vbox1.pack_start(labelx,False,False,0)
 
+	#######
+	def redraw_mainwindow_vbox(self):
+		try:
+			if self.MAINWINDOW_OPEN == True:
+				self.mainwindow_vbox.destroy()
+				self.mainwindow_vbox = gtk.VBox(False,1)
+				self.mainwindow.add(self.mainwindow_vbox)
+				self.mainwindow_ovpn_server()
+				self.mainwindow.show_all()
+		except:
+			self.debug(text="def redraw_mainwindow_vbox: failed")
+	
 	#######
 	def show_mainwindow(self,widget):
 		self.destroy_systray_menu()
@@ -3609,6 +3624,7 @@ class Systray:
 							self.OVPN_SERVER_STATS = json.loads(r.content)
 							self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())
 							self.debug(text="def load_serverdata_from_remote: loaded")
+							self.redraw_mainwindow_vbox()
 							return True
 						else:
 							self.debug(text="def load_serverdata_from_remote: len(r.content) = '%s', retry in 60 sec" % (len(r.content)))
@@ -4088,8 +4104,7 @@ class Systray:
 				
 			if self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True:
 				self.win_firewall_add_rule_to_vcp(option="delete")
-			text=_("close app")
-			self.debug(text=text)
+			self.debug(text="close app")
 			self.stop_systray_timer = True
 			self.remove_lock()
 			#if os.path.isfile(self.debug_log):
@@ -4128,33 +4143,35 @@ class Systray:
 					self.win_netsh_restore_dns_from_backup()
 					self.debug(text="Firewall: allow outbound!")
 					return True
+			try:
+				dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
+				if self.WIN_BACKUP_FIREWALL == True:
+					dialog.set_markup("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
+				else:
+					dialog.set_markup("Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
+				response = dialog.run()
 				
-			dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
-			if self.WIN_BACKUP_FIREWALL == True:
-				dialog.set_markup("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
-			else:
-				dialog.set_markup("Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
-			response = dialog.run()
-			
-			if self.OS == "win32":
 				if response == gtk.RESPONSE_NO:
+					dialog.destroy()
 					self.win_firewall_block_on_exit()
 					self.win_netsh_restore_dns_from_backup()
+					return True
 				elif response == gtk.RESPONSE_YES:
+					dialog.destroy()
 					if self.WIN_BACKUP_FIREWALL == True:
 						self.win_firewall_restore_on_exit()
 					else:
 						self.win_firewall_allowout()
 					self.win_netsh_restore_dns_from_backup()
+					return True
 				else:
 					dialog.destroy()
 					return False
-			
-			dialog.destroy()
-			
+			except:
+				self.msgwarn(text="def ask_loadorunload_fw: dialog failed")
+				return False
 		except:
-			text = "def ask_loadorunload_fw: failed"
-			self.msgwarn(text=text)
+			self.msgwarn(text="def ask_loadorunload_fw: failed")
 
 	#######
 	def remove_lock(self):
