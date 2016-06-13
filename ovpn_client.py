@@ -23,7 +23,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9g-gtk"
+CLIENTVERSION="v0.4.9h-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -913,8 +913,8 @@ class Systray:
 							self.APIKEY = APIKEY[1]
 							self.CFGSHA = CFGSHA[1]
 							return True
-			text = _("Invalid Passphrase!")
-			self.set_statusbar_text(text)
+			#text = _("Invalid Passphrase!")
+			#self.set_statusbar_text(text)
 			self.debug(text="def read_apikey_config passphrase :False")
 			self.form_ask_passphrase()
 			return False
@@ -1546,7 +1546,7 @@ class Systray:
 			disconnect.set_image(img)
 			self.systray_menu.append(disconnect)
 			# SIGNALS
-			disconnect.connect('activate', self.kill_openvpn)	
+			disconnect.connect('activate', self.kill_openvpn)
 
 	#######
 	def make_systray_bottom_menu(self):
@@ -1686,7 +1686,7 @@ class Systray:
 			else:
 				text = _("Certificates and Configs up to date!")
 				self.set_progressbar(text)
-				self.set_statusbar_text(text)
+				#self.set_statusbar_text(text)
 				self.progressbar.set_fraction(1)
 				self.timer_check_certdl_running = False
 				return True
@@ -1848,150 +1848,176 @@ class Systray:
 				entry.set_editable(0)
 				vbox2.pack_start(entry,False,False,0)
 
+
 		""" build serverlist """
 		""" *fixme* we should do any checks before adding remote text to output ! """
-		if len(self.OVPN_SERVER_STATS) > 0:
-			serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
-		else:
-			serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str)
-		treeview = gtk.TreeView(serverliststore)
-		self.treeview = treeview
-		for server in self.OVPN_SERVER:
-			countrycode = server[:2].lower()
-			servershort = server[:3].upper()
-			imgpath = self.FLAG_IMG[countrycode]
-			countryimg = gtk.gdk.pixbuf_new_from_file(imgpath)
-			serverip  = self.OVPN_SERVER_INFO[servershort][0]
-			serverport = self.OVPN_SERVER_INFO[servershort][1]
-			serverproto = self.OVPN_SERVER_INFO[servershort][2]
-			servercipher = self.OVPN_SERVER_INFO[servershort][3]
+		try:
 			if len(self.OVPN_SERVER_STATS) > 0:
-				vlanip4 = self.OVPN_SERVER_STATS[servershort]["vlanip4"]
-				vlanip6 = self.OVPN_SERVER_STATS[servershort]["vlanip6"]
-				traffic = self.OVPN_SERVER_STATS[servershort]["traffic"]["eth0"]
-				live = "%s M" % (self.OVPN_SERVER_STATS[servershort]["traffic"]["live"])
-				uplink = self.OVPN_SERVER_STATS[servershort]["traffic"]["uplink"]
-				cpuload = self.OVPN_SERVER_STATS[servershort]["cpu"]["cpu-load"]
-				
-				cpuinfo = self.OVPN_SERVER_STATS[servershort]["info"]["cpu"]
-				raminfo = self.OVPN_SERVER_STATS[servershort]["info"]["ram"]
-				hddinfo = self.OVPN_SERVER_STATS[servershort]["info"]["hdd"]
-				
-				serverstatus = self.OVPN_SERVER_STATS[servershort]["status"]
-				if serverstatus == "0":
-					statustext = "DEAD"
-				elif serverstatus == "1":
-					statustext = "OK"
-				elif serverstatus == "2":
-					statustext = "n/a"
-				else:
-					statustext = "n/a"
-					
-				serverliststore.append([countryimg,server,serverip,serverport,serverproto,servercipher,live,uplink,vlanip4,vlanip6,cpuload,cpuinfo,raminfo,hddinfo,traffic,statustext])
+				serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
 			else:
-				serverliststore.append([countryimg,server,serverip,serverport,serverproto,servercipher])
-
-		cell = gtk.CellRendererPixbuf()
-		column = gtk.TreeViewColumn(' Country ',cell)
-		column.add_attribute(cell,"pixbuf",0)
-		treeview.append_column(column)
-		
-		cell = gtk.CellRendererText()
-		column = gtk.TreeViewColumn(' Server ',cell)
-		column.add_attribute(cell,"text",1)
-		#column.set_sort_column_id(1)
-		treeview.append_column(column)
-		
-		cell = gtk.CellRendererText()
-		column = gtk.TreeViewColumn(' IPv4 ',cell)
-		column.add_attribute(cell,"text",2)
-		#column.set_sort_column_id(2)
-		treeview.append_column(column)
-		
-		cell = gtk.CellRendererText()
-		column = gtk.TreeViewColumn(' Port ',cell)
-		column.add_attribute(cell,"text",3)
-		#column.set_sort_column_id(3)
-		treeview.append_column(column)
-		
-		cell = gtk.CellRendererText()
-		column = gtk.TreeViewColumn(' Proto ',cell)
-		column.add_attribute(cell,"text",4)
-		#column.set_sort_column_id(4)
-		treeview.append_column(column)
-
-		cell = gtk.CellRendererText()
-		column = gtk.TreeViewColumn(' Cipher ',cell)
-		column.add_attribute(cell,"text",5)
-		#column.set_sort_column_id(5)
-		treeview.append_column(column)
-		
-		if len(self.OVPN_SERVER_STATS) > 0:
-			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' Mbps ',cell)
-			column.add_attribute(cell,"text",6)
-			#column.set_sort_column_id(6)
+				serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str)
+			treeview = gtk.TreeView(serverliststore)
+			self.treeview = treeview
+			
+			cell = gtk.CellRendererPixbuf()
+			column = gtk.TreeViewColumn(' Country ',cell)
+			column.add_attribute(cell,"pixbuf",0)
 			treeview.append_column(column)
 			
 			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' Link ',cell)
-			column.add_attribute(cell,"text",7)
-			#column.set_sort_column_id(7)
-			treeview.append_column(column)
-		
-			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' VLAN IPv4 ',cell)
-			column.add_attribute(cell,"text",8)
+			column = gtk.TreeViewColumn(' Server ',cell)
+			column.add_attribute(cell,"text",1)
+			#column.set_sort_column_id(1)
 			treeview.append_column(column)
 			
 			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' VLAN IPv6 ',cell)
-			column.add_attribute(cell,"text",9)
+			column = gtk.TreeViewColumn(' IPv4 ',cell)
+			column.add_attribute(cell,"text",2)
+			#column.set_sort_column_id(2)
 			treeview.append_column(column)
 			
 			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' Load ',cell)
-			column.add_attribute(cell,"text",10)
+			column = gtk.TreeViewColumn(' Port ',cell)
+			column.add_attribute(cell,"text",3)
+			#column.set_sort_column_id(3)
 			treeview.append_column(column)
 			
 			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' Processor ',cell)
-			column.add_attribute(cell,"text",11)
+			column = gtk.TreeViewColumn(' Proto ',cell)
+			column.add_attribute(cell,"text",4)
+			#column.set_sort_column_id(4)
 			treeview.append_column(column)
 
 			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' RAM ',cell)
-			column.add_attribute(cell,"text",12)
+			column = gtk.TreeViewColumn(' Cipher ',cell)
+			column.add_attribute(cell,"text",5)
+			#column.set_sort_column_id(5)
 			treeview.append_column(column)
-
-			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn(' HDD ',cell)
-			column.add_attribute(cell,"text",13)
-			treeview.append_column(column)
-
-			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn('Traffic',cell)
-			column.add_attribute(cell,"text",14)
-			treeview.append_column(column)
+				
+			if len(self.OVPN_SERVER_STATS) > 0:
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' Mbps ',cell)
+				column.add_attribute(cell,"text",6)
+				#column.set_sort_column_id(6)
+				treeview.append_column(column)
+				
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' Link ',cell)
+				column.add_attribute(cell,"text",7)
+				#column.set_sort_column_id(7)
+				treeview.append_column(column)
 			
-			cell = gtk.CellRendererText()
-			column = gtk.TreeViewColumn('Status',cell)
-			column.add_attribute(cell,"text",15)
-			column.set_sort_column_id(15)
-			treeview.append_column(column)
-		
-		treeview.connect("button_release_event",self.on_right_click_mainwindow)
-		scrolledwindow = gtk.ScrolledWindow()
-		scrolledwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-		scrolledwindow.add(treeview)
-		serverframe.add(scrolledwindow)
-		
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' VLAN IPv4 ',cell)
+				column.add_attribute(cell,"text",8)
+				treeview.append_column(column)
+				
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' VLAN IPv6 ',cell)
+				column.add_attribute(cell,"text",9)
+				treeview.append_column(column)
+				
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' Load ',cell)
+				column.add_attribute(cell,"text",10)
+				treeview.append_column(column)
+				
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' Processor ',cell)
+				column.add_attribute(cell,"text",11)
+				treeview.append_column(column)
+
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' RAM ',cell)
+				column.add_attribute(cell,"text",12)
+				treeview.append_column(column)
+
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' HDD ',cell)
+				column.add_attribute(cell,"text",13)
+				treeview.append_column(column)
+
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn('Traffic',cell)
+				column.add_attribute(cell,"text",14)
+				treeview.append_column(column)
+				
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn('Status',cell)
+				column.add_attribute(cell,"text",15)
+				column.set_sort_column_id(15)
+				treeview.append_column(column)
+			
+			for server in self.OVPN_SERVER:
+				print "def mainwindow_ovpn_server: %s" % (server)
+				countrycode = server[:2].lower()
+				servershort = server[:3].upper()
+				imgpath = self.FLAG_IMG[countrycode]
+				countryimg = gtk.gdk.pixbuf_new_from_file(imgpath)
+				serverip  = self.OVPN_SERVER_INFO[servershort][0]
+				serverport = self.OVPN_SERVER_INFO[servershort][1]
+				serverproto = self.OVPN_SERVER_INFO[servershort][2]
+				servercipher = self.OVPN_SERVER_INFO[servershort][3]
+				if len(self.OVPN_SERVER_STATS) == 0:
+					serverliststore.append([countryimg,server,serverip,serverport,serverproto,servercipher])
+				else:
+					print "len(self.OVPN_SERVER_STATS) = %s" % (len(self.OVPN_SERVER_STATS))
+					try:
+						vlanip4 = self.OVPN_SERVER_STATS[servershort]["vlanip4"]
+						vlanip6 = self.OVPN_SERVER_STATS[servershort]["vlanip6"]
+						traffic = self.OVPN_SERVER_STATS[servershort]["traffic"]["eth0"]
+						live = "%s M" % (self.OVPN_SERVER_STATS[servershort]["traffic"]["live"])
+						uplink = self.OVPN_SERVER_STATS[servershort]["traffic"]["uplink"]
+						cpuload = self.OVPN_SERVER_STATS[servershort]["cpu"]["cpu-load"]
+						
+						cpuinfo = self.OVPN_SERVER_STATS[servershort]["info"]["cpu"]
+						raminfo = self.OVPN_SERVER_STATS[servershort]["info"]["ram"]
+						hddinfo = self.OVPN_SERVER_STATS[servershort]["info"]["hdd"]
+						
+						serverstatus = self.OVPN_SERVER_STATS[servershort]["status"]
+						if serverstatus == "0":
+							statustext = "DEAD"
+						elif serverstatus == "1":
+							statustext = "OK"
+						elif serverstatus == "2":
+							statustext = "n/a"
+						else:
+							statustext = "n/a"
+						serverliststore.append([countryimg,server,serverip,serverport,serverproto,servercipher,live,uplink,vlanip4,vlanip6,cpuload,cpuinfo,raminfo,hddinfo,traffic,statustext])
+					except:
+						vlanip4 = "n/a"
+						vlanip6 = "n/a"
+						traffic = "n/a"
+						live = "n/a"
+						uplink = "n/a"
+						cpuload = "n/a"
+						
+						cpuinfo = "n/a"
+						raminfo = "n/a"
+						hddinfo = "n/a"
+						
+						statustext = "n/a"
+						serverliststore.append([countryimg,server,serverip,serverport,serverproto,servercipher,live,uplink,vlanip4,vlanip6,cpuload,cpuinfo,raminfo,hddinfo,traffic,statustext])
+						self.debug(text="extended serverliststore getdata failed on '%s'" % (server))
+
+			try:
+				treeview.connect("button_release_event",self.on_right_click_mainwindow)
+				scrolledwindow = gtk.ScrolledWindow()
+				scrolledwindow.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+				scrolledwindow.add(treeview)
+				serverframe.add(scrolledwindow)
+			except:
+				self.debug(text="treeview.connect failed")
+		except:
+			self.debug(text="def mainwindow_ovpn_server: server-window failed")
+
 		### statusbar
 		labelx = gtk.Label()
 		text = "Welcome to oVPN.to! Have a nice and anonymous day!"
 		self.statusbar_text = labelx
 		self.statusbar_text.set_label(text)
 		vbox1.pack_start(labelx,False,False,0)
+		
 
 	#######
 	def redraw_mainwindow_vbox(self):
@@ -2022,8 +2048,10 @@ class Systray:
 				
 				self.mainwindow_vbox = gtk.VBox(False,1)
 				self.mainwindow.add(self.mainwindow_vbox)
-				
-				self.mainwindow_ovpn_server()
+				try:
+					self.mainwindow_ovpn_server()
+				except:
+					self.debug(text="def show_mainwindow: self.mainwindow_ovpn_server() failed")
 				
 				self.mainwindow_menubar()
 				
@@ -2033,7 +2061,7 @@ class Systray:
 				return True
 			except:
 				self.MAINWINDOW_OPEN = False
-				self.debug(text="mainwindow failed")
+				self.debug(text="def show_mainwindow: mainwindow failed")
 		else:
 			self.mainwindow.destroy()
 			#self.mainwindow.hide()
@@ -2131,8 +2159,11 @@ class Systray:
 
 	#######
 	def set_statusbar_text(self,text):
-		if self.MAINWINDOW_OPEN == True:
-			self.statusbar_text.set_label(text)
+		try:
+			if self.MAINWINDOW_OPEN == True:
+				self.statusbar_text.set_label(text)
+		except:
+			self.debug(text="def set_statusbar_text: text = '%s' failed" % (text))
 
 	#######
 	def check_passphrase(self):
@@ -2373,7 +2404,7 @@ class Systray:
 			return False
 		self.OVPN_CONNECTEDtime = int(time.time())
 		self.win_firewall_modify_rule(option="add")
-		self.win_clear_ipv6_addr()
+		self.win_clear_ipv6()
 		
 		""" *** fixme *** try to get output into live log window
 		try:
@@ -2399,7 +2430,7 @@ class Systray:
 		if os.path.isfile(self.ovpn_sessionlog):
 			os.remove(self.ovpn_sessionlog)
 		
-		self.win_clear_ipv6_addr()
+		self.win_clear_ipv6()
 		self.STATE_OVPN = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtoIP = False
@@ -2451,17 +2482,50 @@ class Systray:
 				pass
 
 	#######
-	def win_clear_ipv6_addr(self):
-		if self.OVPN_CONFIGVERSION == "23x":
-			return
-		
+	def win_clear_ipv6(self):
+		self.win_clear_ipv6_dns()
+		self.win_clear_ipv6_addr()
+		self.win_clear_ipv6_routes()
+
+	#######
+	def win_clear_ipv6_dns(self):
 		try:
-			string = "netsh interface ipv6 show addresses \"%s\"" % (self.WIN_TAP_DEVICE)
+			string = 'netsh.exe interface ipv6 show dnsservers "%s"' % (self.WIN_TAP_DEVICE)
+			self.debug(text="def win_clear_ipv6_dns = '%s'" % (string))
 			read = subprocess.check_output("%s" % (string),shell=True)
 			read = read.strip().decode('cp1258','ignore')
 			list = read.strip(' ').split('\r\n')
 			for line in list:
-				if " fd48:8bea:68a5:" in line or " fe80::" in line:
+				#print line
+				if " fd48:8bea:68a5:" in line:
+					#print line
+					ipv6addr = line.split("    ")[2]
+					#print ipv6addr
+					if ipv6addr.startswith("fd48:8bea:68a5:"):
+						string = 'netsh interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
+						try:
+							cmd = subprocess.check_output("%s" % (string),shell=True)
+							text = "def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,string)
+							self.debug(text=text)
+						except subprocess.CalledProcessError as e:
+							text = "def win_clear_ipv6_dns: %s %s failed '%s': %s" % (ipv6addr,self.WIN_TAP_DEVICE,string,e.output)
+							self.debug(text=text)
+						except:
+							text = "def win_clear_ipv6_dns: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,string)
+							self.debug(text=text)
+		except:
+			self.debug(text="def win_clear_ipv6_dns: failed")
+
+	#######
+	def win_clear_ipv6_addr(self):
+		try:
+			string = 'netsh.exe interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
+			self.debug(text="def win_clear_ipv6_addr: string = '%s'" % (string))
+			read = subprocess.check_output("%s" % (string),shell=True)
+			read = read.strip().decode('cp1258','ignore')
+			list = read.strip(' ').split('\r\n')
+			for line in list:
+				if " fd48:8bea:68a5:" in line:
 					if not "%" in line:
 						ipv6addr = line.split()[1]
 						string = "netsh interface ipv6 delete address address=\"%s\" interface=\"%s\"" % (ipv6addr,self.WIN_TAP_DEVICE)
@@ -2475,16 +2539,11 @@ class Systray:
 						except:
 							text = "def win_clear_ipv6_addr: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,string)
 							self.debug(text=text)
-			self.win_clear_ipv6_routes()
 		except:
-			text = "def win_clear_ipv6_addr: failed"
-			self.debug(text=text)
+			self.debug(text="def win_clear_ipv6_addr: failed")
 
 	#######
 	def win_clear_ipv6_routes(self):
-		if self.OVPN_CONFIGVERSION == "23x":
-			return
-		
 		try:
 			string = "netsh.exe interface ipv6 show route"
 			read = subprocess.check_output("%s" % (string),shell=True)
@@ -2502,7 +2561,7 @@ class Systray:
 	#######
 	def inThread_timer_openvpn_reconnect(self):
 		#self.debug("def inThread_timer_openvpn_reconnect")
-		time.sleep(8)
+		time.sleep(5)
 		if self.OVPN_RECONNECT_NOW == True and self.OVPN_AUTO_RECONNECT == True and self.STATE_OVPN == False:
 			self.call_openvpn(None,None,self.call_ovpn_srv)
 			self.debug(text="oVPN process crashed and restarted.")
@@ -2513,6 +2572,7 @@ class Systray:
 				self.debug("def inThread_timer_openvpn_reconnect starting ping timer")
 				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 				pingthread.start()
+			
 			threading.Thread(target=self.inThread_timer_openvpn_reconnect).start()
 			return True
 
