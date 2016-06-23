@@ -18,5 +18,6 @@
 + https://vcp.ovpn.to/files/ovpn_cli/dev_v011.7z
 + https://vcp.ovpn.to/files/ovpn_cli/build-dev-v026_p3.zip
 + https://vcp.ovpn.to/files/ovpn_cli/build-dev-v026_p4.zip
++ https://vcp.ovpn.to/files/ovpn_cli/build-dev-v049j.zip
 
 
