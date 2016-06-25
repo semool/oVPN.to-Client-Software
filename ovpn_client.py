@@ -21,7 +21,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9k-gtk"
+CLIENTVERSION="v0.4.9l-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -2300,7 +2300,12 @@ class Systray:
 
 	#######
 	def openvpn(self,server):
-		if self.STATE_OVPN == False:
+		if self.STATE_OVPN == True:
+			self.debug(text="def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
+			self.debug(text="Change oVPN to %s" %(server))
+			self.kill_openvpn()
+			self.call_openvpn(None,None,server)
+		else:
 			self.OVPN_AUTO_RECONNECT = True
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
@@ -2319,17 +2324,20 @@ class Systray:
 								self.OVPN_CONNECTEDtoPort = port
 							#break
 						except:
-							self.errorquit(text="Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
+							self.msgwarn(text="Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
+							return False
+					
 					if "proto " in line:
 						try:
 							proto = line.split()[1]
 							if proto.lower()  == "tcp" or proto.lower() == "udp":
 								self.OVPN_CONNECTEDtoProtocol = proto
 						except:
-							self.errorquit(text="Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
+							self.msgwarn(text="Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
+							return False
 			else:
+				self.msgwarn(text="Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
 				return False
-				
 			
 			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.vpn_dir)
 			self.ovpn_server_dir = "%s\\%s" % (self.vpn_cfg,self.ovpn_server_LOWER)
@@ -2337,26 +2345,32 @@ class Systray:
 			self.ovpn_tls_key = "%s\\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_cli_crt = "%s\\client%s.crt" % (self.ovpn_server_dir,self.USERID)
 			self.ovpn_cli_key = "%s\\client%s.key" % (self.ovpn_server_dir,self.USERID)
-			if self.DEBUG == True:
-				self.ovpn_string = "\"%s\" --config \"%s\" --ca \"%s\" --cert \"%s\" --key \"%s\" --tls-auth \"%s\" --log \"%s\" --dev-node \"%s\" " % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.ovpn_sessionlog,self.WIN_TAP_DEVICE)
-			else:
-				self.ovpn_string = "\"%s\" --config \"%s\" --ca \"%s\" --cert \"%s\" --key \"%s\" --tls-auth \"%s\" --dev-node \"%s\" " % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
-			
+			if not os.path.isdir(self.ovpn_server_dir) or \
+				not os.path.isfile(self.ovpn_cert_ca) or \
+				not os.path.isfile(self.ovpn_tls_key) or \
+				not os.path.isfile(self.ovpn_cli_crt) or \
+				not os.path.isfile(self.ovpn_cli_key):
+					self.msgwarn(text="Error: Files missing: '%s' % (self.ovpn_server_dir)")
+					return False
 			try:
+				ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
+				if self.DEBUG == True:
+					self.ovpn_string = '%s --log "%s"' % (ovpn_string,self.ovpn_sessionlog)
+				else:
+					self.ovpn_string = ovpn_string
 				self.call_ovpn_srv = server
 				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
 				thread_spawn_openvpn_process.start()
 				self.OVPN_THREADID = threading.currentThread()
 				self.debug(text="Started: oVPN %s on Thread: %s" % (server,self.OVPN_THREADID))
 			except:
-				text="Error! Unable to start thread: oVPN %s " % (server)
-				self.set_statusbar_text(text)
-				self.msgwarn(text=text)
-				
-			if self.OVPN_AUTO_RECONNECT == True:
-				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == True")
-				self.OVPN_RECONNECT_NOW = False
-				try:
+				self.msgwarn(text="Error: Unable to start thread: oVPN %s " % (server))
+				return False
+
+			try:
+				if self.OVPN_AUTO_RECONNECT == True:
+					self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == True")
+					self.OVPN_RECONNECT_NOW = False
 					thread_timer_openvpn_reconnect = threading.Thread(target=self.inThread_timer_openvpn_reconnect)
 					thread_timer_openvpn_reconnect.start()
 					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
@@ -2364,18 +2378,14 @@ class Systray:
 					text = "oVPN Watchdog enabled. Connecting to %s" % (server)
 					self.set_statusbar_text(text)
 					self.debug(text=text)
-				except:
-					text = "Could not start oVPN Watchdog"
-					self.set_statusbar_text(text)
-					self.debug(text=text)
-			else:
-				self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == False")
-				
-		else:
-			self.debug(text="def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
-			self.debug(text="Change oVPN to %s" %(server))
-			self.kill_openvpn()
-			self.call_openvpn(None,None,server)
+				else:
+					self.debug("def openvpn: self.OVPN_AUTO_RECONNECT == False")
+			except:
+				text = "Could not start oVPN Watchdog"
+				self.set_statusbar_text(text)
+				self.debug(text=text)
+				return False
+
 
 	#######
 	def inThread_timer_ovpn_ping(self):
@@ -2494,6 +2504,7 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.OVPN_PING = list()
+		self.LAST_PING_EXEC = 0
 		self.debug(text="def call_openvpn exitcode = %s" %(exitcode))
 		if self.OVPN_AUTO_RECONNECT == True:
 			self.debug(text="def inThread_spawn_openvpn_process: auto-reconnect %s" %(self.call_ovpn_srv))
@@ -2625,6 +2636,7 @@ class Systray:
 	def kill_openvpn(self,*args):
 		self.OVPN_AUTO_RECONNECT = False
 		self.OVPN_RECONNECT_NOW = False
+		self.LAST_PING_EXEC = 0
 		self.destroy_systray_menu()
 		self.debug(text="def kill_openvpn")
 		exe = self.OPENVPN_EXE.split("\\")[-1]
@@ -4135,7 +4147,7 @@ class Systray:
 						return False
 				return True
 			else:
-				self.debug(text="Error! '%s' not found!" % (self.OPENVPN_DIR))
+				self.debug(text="Error: '%s' not found!" % (self.OPENVPN_DIR))
 				return False
 		except:
 			self.debug(text="def openvpn_check_files: failed!")
