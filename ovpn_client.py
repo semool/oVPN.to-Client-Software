@@ -21,7 +21,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9l-gtk"
+CLIENTVERSION="v0.4.9m-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -2386,7 +2386,6 @@ class Systray:
 				self.debug(text=text)
 				return False
 
-
 	#######
 	def inThread_timer_ovpn_ping(self):
 		if self.timer_ovpn_ping_running == False:
@@ -2397,7 +2396,6 @@ class Systray:
 		if self.STATE_OVPN == False:
 			self.debug("leaving timer_ovpn_ping")
 			self.OVPN_PING_STAT = -1
-			self.LAST_PING_EXEC = 0
 			self.OVPN_PING = list()
 			self.timer_ovpn_ping_running = False
 			return
@@ -2421,7 +2419,6 @@ class Systray:
 							self.debug(text="ping=%s"%(self.OVPN_PING_LAST))
 							self.LAST_PING_EXEC = int(time.time())
 					except:
-						self.LAST_PING_EXEC = int(time.time())-10
 						self.OVPN_PING_LAST = -2
 						pass
 			except:
@@ -2458,6 +2455,7 @@ class Systray:
 			return False
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
+		self.LAST_PING_EXEC = 0
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
 		if not self.openvpn_check_files():
 			self.OVPN_CONNECTEDto = False
@@ -2504,7 +2502,6 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.OVPN_PING = list()
-		self.LAST_PING_EXEC = 0
 		self.debug(text="def call_openvpn exitcode = %s" %(exitcode))
 		if self.OVPN_AUTO_RECONNECT == True:
 			self.debug(text="def inThread_spawn_openvpn_process: auto-reconnect %s" %(self.call_ovpn_srv))
@@ -2636,7 +2633,6 @@ class Systray:
 	def kill_openvpn(self,*args):
 		self.OVPN_AUTO_RECONNECT = False
 		self.OVPN_RECONNECT_NOW = False
-		self.LAST_PING_EXEC = 0
 		self.destroy_systray_menu()
 		self.debug(text="def kill_openvpn")
 		exe = self.OPENVPN_EXE.split("\\")[-1]
