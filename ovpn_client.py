@@ -15,15 +15,13 @@ import zipfile
 import subprocess
 import threading
 import socket
-import gettext
-import locale
 import requests
 import json
 #import atexit
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9j-gtk"
+CLIENTVERSION="v0.4.9k-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -60,7 +58,7 @@ class Systray:
 			#atexit.register(self.on_closing,widget="atexit")
 		else:
 			sys.exit()
-		
+	
 	def self_vars(self):
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		
@@ -94,6 +92,8 @@ class Systray:
 		self.USERID = False
 		self.STATE_OVPN = False
 		self.LAST_CFG_UPDATE = 0
+		self.LAST_CHECK_MYIP = 0
+		self.LAST_PING_EXEC = 0
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
 		self.GATEWAY_DNS2 = False
@@ -105,7 +105,8 @@ class Systray:
 		self.NO_WIN_FIREWALL = False
 		self.NO_DNS_CHANGE = False
 		self.MYDNS = {}
-		
+		self.NETSH_CMDLIST = list()
+		self.ROUTE_CMDLIST = list()
 		
 		self.OPENVPN_EXE = False
 		self.OPENVPN_SILENT_SETUP = False
@@ -118,7 +119,9 @@ class Systray:
 		self.OVPN_CONNECTEDtime = False
 		self.OVPN_CONNECTEDseconds = 0
 		self.OVPN_CONNECTEDtoIP = False
-		self.OVPN_GATEWAY_IP4 = "172.16.32.1"
+		self.GATEWAY_OVPN_IP4A = "172.16.32.1"
+		self.GATEWAY_OVPN_IP4B = "172.16.48.1"
+		self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4A
 		self.OVPN_THREADID = False
 		self.OVPN_RECONNECT_NOW = False
 		self.OVPN_CONFIGVERSION = "23x"
@@ -150,8 +153,6 @@ class Systray:
 		self.PPP_NO_SAVE = True
 		self.LOAD_ACCINFO = True
 		
-		self.ENABLE_mainwindow_menubar = False
-		
 		self.FLAG_IMG = {}
 		self.FLAG_HASHS = {'ad.png':'8adee4d665c8119ec4f5ad5c43a9a85450e0001c275b6a0ee178ffbf95c4c043','ae.png':'6f20d866841c4514782a46142df22b70b8da9783c513e3d41d8f3313483fe38d','af.png':'c1054fb8d9595948aa96bc57c9ab6fb6b3770d2ee7e09ba7e46b09b21bf51bcd','ag.png':'0dfb5c39e2a3eebe18b431cf41c8c892ab5f1249caa09d43fa1dd7394d486cd7','ai.png':'721542818b00e197fea04303b0afc24763017c14b8cd791dfaf08411d9a99cae','al.png':'3f7278c0c4272b6ff65293c18cdbb7e2e272f59dabe16619c22051d319ef44e0','am.png':'e34d4e7961e7e994775dddfa994e4d9f709876634d36facff6bac70155597c23','an.png':'4c9bd8548dfa58fdf9e6ac703f94c8b96d8136c42b06fbdc8e2d8817e592ffde','ao.png':'49b0a50005440417bd679d03d4d78f9ba0d1c457285c97e94f36e56b1e8b623b','ar.png':'776fbb0600f99ccdc44e2ee7f8b6559988c443f3a754792585b1b7008aaedb91','as.png':'3ef7f1b82b2f28cae0c7df163c5ce9227ef37244da85118374869fc5f2e05868','at.png':'a3acc39d4b61f9cc1056c19176d1559f0dacbb0587a700afdbe4d881040ccd52','au.png':'a7f9683bc4240ef940ee3d4aaf127515add30d25b0b2179a6cdec23944635603','aw.png':'2dc58a1fcd65957140fa06ba9b2f1bd1b3643724cef0905e23e1561a5b3dfa5b','ax.png':'3f38a42fd54e4c7cb1154026f734bc444f9cc942b8b91f099cc65dccf6c7f431','az.png':'45da74f4c8a50cfc13ff612e9052a7df77fae155e20c2b67ec34c4e3d46dcebe','ba.png':'8aab9c83759b1a121043ae5526d7bd4174d6612c7d0c697609731e9f7b819b6b','bb.png':'93977880a9ae72940ed7560758b51a1ba32d27aa5fd2ad5ca38d86fe10061c1a','bd.png':'174d63b291981bb85bc6e90975b23dfd0538a28af9cd99e3530d750dfedf1807','be.png':'45f75a63fadde9018fa5698884c7fb0b2788e8f72ee1f405698b872d59674262','bf.png':'9069275d6c18aaf67463b1fffb7cdefe10da76cd955ee2c5022cff06efa241f2','bg.png':'c4838a24ad388f934b04dbf9dba02a8bc6e9e58d0a1076477b47b5987a5c2d64','bh.png':'d8dfd5dc5157e30aa9e241e4a7d13513dedf608045b6736716ea6c5ca4047855','bi.png':'f2489dfb66723f8585830a51ec1ff4f5a514f5b6fd8bfa423e2880118e18ba75','bj.png':'3eb78453cea7aac6afca9a54ec8a2b0d4998df40a0c5494534992fc38f5c2402','bm.png':'e8087faf03f478266cc279382009391155615af6a7f3eaa47b21717ce8eaa401','bn.png':'05a6a5da710bdd98eb1d8c9b097b687a34ace268e106bd3437298d0ffc8a7473','bo.png':'a802b4b4b31e9c87062e725760b052083ca0d2cc2cced10f44731688289c4ca5','br.png':'dff6f4d907290bdbe74812bf73b590f268694e0a30e64b4bb24b803a47b3e319','bs.png':'aabf518642010552de4ed24400d5d40fa7e6bf1142a183f4989dad88d7cede5e','bt.png':'ae10dea2abad314551038e08771857c6d67d3684487782275c094dab5dfda21e','bv.png':'f8dc302371c809ebda3e9183c606264601f8dd851d2b1878fd25f0f6abe2988c','bw.png':'166ffee51259387356bdadeb22cdc7d053fc89ef6f51ae3c774d522a4dfaf08e','by.png':'cc2b61fff898086df311b22f06fcb400e64c4627ef8495755b24e2f7f3e05429','bz.png':'f7ca75c8e16fb2a11cb30d9f9e7006505a719601b84a6135f478f62a7ff214f1','ca.png':'3a6c5facc8613948b81833101a2ff8c3a114813ce24077585faee268b8ffb541','catalonia.png':'58665da49b1ebca85993de6e799f423b4589359b2eb43cb6b8bb81223fc02b10','cc.png':'25d60905c65429304e895c47dfb9da424190d9be01d924b75cc5cb76a1bdf39c','cd.png':'d26464766b63c4c361821355ca7a36ef288ef72fd6bad23421c695e1dd527743','cf.png':'a476f7f6228a456d767f2f97b73b736cee01a64f0acdac1d0721dcd609476e8a','cg.png':'9b8814baab3cff79d037ee1cf49ecd8993d95169d4d8090d9a7d0eccf18d26fd','_ch.png':'da8c749e3f0119f91875ddaa116f265d440150c8f647dd3f634a0eb0b474e2c9','ch.png':'1a847144ea964355e4abd101179c374d3fd6c7c75f1ad58ca2d3b0946a1cd40f','ci.png':'4a5179c7a54ce4395781fbb535bbffb03b4bdbd56046f9209d4f415b1ad5b19c','ck.png':'38d9b787d10aafadd8aa1deeae343dff8fee30d230d86dfab14df9002dfecb01','cl.png':'516cde928be7cf45bedd28cb9bed291035aa9106a21335a922ca1e0987a8fdb6','cm.png':'3e785d74c3a21a99972a38b021eb475d99940239bc0bc1a4020bc77a9ecf70e1','cn.png':'7058233b5bdfdd4279e92e9dfe64bd4a61afd7e76d97dba498ce1d5777b92185','co.png':'ddbda18a0e3a272e63f2a3e734893bd848fceb76855057ad263823edbb4ca4df','cr.png':'f22dbafc8eaee237cac9a35777e98818868e2e87e47b640bbf4c487afc10b07e','cs.png':'3fe11c2a0b4c2b50035c224d2e6c87ba19a05663811c459d4e3a2f780aede957','cu.png':'9fc72810592496349d14e13a4c5b61b8cae7388be4d5d395ac2bf99d2f3ed4fa','cv.png':'22650dac4b404ca32e73fe64df90e21a955ec8f67a3dc2ef50135d342143dabb','cx.png':'8dc0ef0ae06c717937acbf0bafd947cc9a0c9984bd6839bc6ba22c82857acd43','cy.png':'bd7198c76594a6ed1147412a4e37d1ae258d1fd9358d96ded9b524dbeea7bc30','cz.png':'0f39366d88fabe6f6f5c7a3cb6a11165de6bc6bc2108802c49df5f9840bc6541','de.png':'3323814006fe6739493d27057954941830b59eff37ebaac994310e17c522dd57','dj.png':'4be41bfd725282adc410a23488c290028b8a433e614dffaa49d0cb28d6bbb39f','dk.png':'0c9213be3a5cbc5d656093ca415d2b9f52de067d8ed5d7cfd704ce8cd0564d2c','dm.png':'c91813a9d0753c4f99503e7123c1b40b2c805ae36128afb9eb6384c275c38195','do.png':'505c31334e03e2280f5fe3ebbbc210f71f5ee7242c9021c3d5727ec4114b5b68','dz.png':'f2ea00daa66609ba95a18dac13f3ba0a3d2522f8edbcd109e5fd25fcf1289591','ec.png':'ab0ecc4936f0623e3e298ee6f45d88d208e13b72453ec1bbe2be0abdbefeabbb','ee.png':'6ebe8f7e33db530652a0b1c6394ec4f50a2fcc0b4a31d1ab33db65d6815dd087','eg.png':'e4c44b7ce8a72720e2ab8b38b8885fca36dda04daa14ae37909bbd501d853074','eh.png':'61eda51aebe540c16219767b5c8e64b821d6f857832d8594086fb871c817fd19','england.png':'24c0c0d1e833516a54d890cb63adcd6acbb40c14eac80e5bcd07d92df9ff4cfb','er.png':'cabe5eaa395a681fd51029ef603449bf31914b934f9aaa73486ca55ec77c31ba','es.png':'e9aa6fcf5e814e25b7462ed594643e25979cf9c04f3a68197b5755b476ac38a7','et.png':'69975a423a5a5eb1cc33c554756b6d97e9f52f8253f818a9190db1784e55558f','europeanunion.png':'75bd9bf0f8d27cff7b8005c1a1808d75923ab1ee606f7220b4b35616e3e5a8ad','fam.png':'dec6c95977d90a7e468b2b823d74cd92a79ba623ac3705028eeaf3669ba98906','fi.png':'543f426fb35ad2c761641a67977c8faf0d940d4054d0dc1d7433987ebc3aa181','fj.png':'bc4f5f74e61dfe349dcbc110cfcb0342d0adb0c052652831f3995dfa63bb9b70','fk.png':'e0bd7b739e42aeaac268f77133fc70a228e115553662811c015d2e082da054d6','fm.png':'8c115aeccde699d03d5124eb30f853129cde0f03e94e9d255eda0eae9ea58c28','fo.png':'5b9e9e43b1f7969c97a72b65de12afd2429e83d1e644fc21eca48b59a489d82a','fr.png':'79a39793efbf8217efbbc840e1b2041fe995363a5f12f0c01dd4d1462e5eb842','ga.png':'78565ad916ce1cf8580860cff6184756cf9fbf08f80d04197f567a8f181f9a4b','gb.png':'5d72c5a8bef80fca6f99f476e15ec95ce2d5e5f65c6dab9ee8e56348be0d39fc','gd.png':'859d360193bdc3118b13ded0bc1fe9356deb442090daa91f700267035e9dfecc','ge.png':'a911818976d012613a3cd0afa6f8e996cdffc3a32ba82d88899e69fbc55f67be','gf.png':'79a39793efbf8217efbbc840e1b2041fe995363a5f12f0c01dd4d1462e5eb842','gh.png':'375fa90eeba5f017b1bfa833e8b9257cde8a0d9f23f668fd508952278b096f22','gi.png':'e86dcc7ad5556b7202d34b1cbac72e3bb0b97b19fc43919ac7321da94a8f3973','gl.png':'2ef3adddb67b87cd2f61652cc6c807556bce0b63433958cc8ad49b8a3b4ff0ae','gm.png':'8f4511b0ca233ebe65e9c435b0d620a58bc607700469c9b4ea446d2b5db79952','gn.png':'a6216497c02291a2ea9b2a04d111362fd44f60e754ff74c81561ee730922dc98','gp.png':'6731b1de195ee6d2f1591c37bb86bc5806a43d559e881ab71f11628852388add','gq.png':'a15608299afdeed2939b687d4bee10e9440395f61d69e402c37a81b4f34bc6ef','gr.png':'5648d2078756ae0b084312c46b02d82905cd9fb84262267cafcf9b71828ac358','gs.png':'1f9d0507de88efae157e75f35c25265f5d9d3f06579178fccbbf50987029c93f','gt.png':'0be4d466871ec85bb3892855ae498b2a78e8fca992024ec7efcc119d08b1a844','gu.png':'b7114f95668c77e6293cb3138bf908989089179c37501a70fdc49eedb73c3d45','gw.png':'720539b86c555880637aef705aff4a2c5497a4b5efd633c1835371aee5d6a7ad','gy.png':'b09eae1eaca0581c47b0064825061e3939ee8a938c4c51d004b0868372f13413','hk.png':'21a3c54b0f51243f34747eeb2feb2b2627c29133e6e3a8a1126b7bda81708dab','hm.png':'a7f9683bc4240ef940ee3d4aaf127515add30d25b0b2179a6cdec23944635603','hn.png':'feb47c8bef0dde53d8f4596fe4791d21a8d0ea060aa5b44e1d16d2583cac63e1','hr.png':'b4d87ecdeef29042f05b26ad81fbfece47292270eb0cfb10ab132f18c3ce98cd','ht.png':'4b60e9e656f44feb7b97a0adac55107fe043fbbc0407950e283451d21d2a9050','hu.png':'61a2cecf8326a8da732499312a098f89d050d13546f6204e6204de38c550437e','id.png':'1f85c9e9a1a0def09db35b63b9aae2a3c4f92202d701322621c8cfddf8880162','ie.png':'c04b1e73243fab30031bcd1b13bbe6ffe5e0e931d2125a6312e239056a972cb4','il.png':'5432e244f03e3973153451b1ec88d649459580eab66e2df936fe2f70f2fed823','in.png':'0aa7543328f3fddde96ab8fc7e3a8b85732de57de6e84447b22964971f399f28','io.png':'00653024642da7ae95c9b56770c878d482cce1bfa7478d41e9f15abc61e1c46c','iq.png':'abf11b67187d489d9321ca074a83bf613b08cf9a9de9565fd923088e51096ab7','ir.png':'2354a8a69f05bf7b0fcfc5ed2f89facd8bd1d692d34513acc066103417783c44','is.png':'82327740504dcaa478299427e9f66903b832b684283e7493d68bfe4808727798','it.png':'c7992f57d67156f994a38c6bb4ec72fa57601a284558db5e065c02dc36ee9d8c','jm.png':'92244b267742bbbfbce7f548d5bd5e75449ee446f53032ab3bef03e53ec7fda1','jo.png':'d5d3b3c24da6db1b1cb098da2f8216aab85a2ba04d2088ad97495bbbb3b99da4','jp.png':'5efce88ac7228ea159bcf7fd1cc56d73c19428394218706524bac0e9151d4c61','ke.png':'38512a3038a8e8f4032aa627157463a0fe942f948159beadbd5c10974ae86a82','kg.png':'98caea2321d6742c57073d56ec0135a7c8bb97e65b9fd062a78c11f42a502e38','kh.png':'5d8706b032eba89228abe0180923cbe1445a27dbb8126b340a9fa4a0ca41827e','ki.png':'652161e3308e25802890895e4bbed778493ec36ced3fa740d8fd83b495f620d0','km.png':'569e0181ef9ac05189ba2a88ebe1de0b2763ba54f737a8251d74b5a94609c2d6','kn.png':'1729d04153ae46884480bc9f995f0852915159e1a0e9c47fac199316ebce1353','kp.png':'6bb1d910ab5186e0cf5518492442f6231470920e22250ad48a27a520b1d376e0','kr.png':'6fdd24bd96b3a482bc058d5c9bcfd6f1c664d91bbd47658d65ac5d852535f7fd','kw.png':'345630ebda3d8a5798bc5447ba38c694921596981289b6c494cab31d5c43e350','ky.png':'c6fe83ab80ec3c1af2e81b2409673af43a0a610eecc0f2e8233d2f3886a48255','kz.png':'b639f1e1e00cf0973f7feaf673326300e13de6e830aad5eb08937bf56ee77c3b','la.png':'d56dc25b3ef4af93f12db2b58b72c293e85da54d8615dae008290a73bdb6d0bd','lb.png':'24efc04e761e01ac6c0aea8941bce30038fe3af40eef643c2cb9f96d1efa0230','lc.png':'fc9572f63afedd18082ff89cc8e9c2b51abbf09610a381939672b763da655f31','li.png':'1235def1c1d682ce8a6c0ec7e569972cd27c70f1c72fb0f2c1ba651895af8eaa','lk.png':'2ea160f5aa9c7155d9b0a15029afe24e4309294b3b61fab6f79442481c6f3c53','lr.png':'008caee046d6d14e91edebcb74343133c4592a2a636f53535c01acbb1757f5ea','ls.png':'a9117dc093a45c55b48faa85495b8e91c4b1bf8ac52ca9e791efe329bd297aa9','lt.png':'23ddd0c23304f715e7c5e47f893afbc827a3504ec6f6f828b4d0beb93eafbd62','lu.png':'6f5ef26b9bebad3c5c6572533d23761e2afa46372a9b350bd08214abda19ada4','lv.png':'0153d9f72dcd5563daedd27f7e0407aee3f39fef74e8d75951777da986e05257','ly.png':'75bfedebfb9cc57d3ed2a6fc640c7540195604bacbd8cc8301b3a053deed199a','ma.png':'61b4918e0904f58a113f7132366b1ad9d458dc5311c505f3b9b94b8458620ee2','mc.png':'d29f945dba8413eb510d42b8b4bfe4e2bdf2bd81158254c4279d056cb0d4b5e2','md.png':'0b4e15588de7b1370b9aedb0cd642b53ecb5352bce6c646e06634c79cecf787e','me.png':'3081af04bbaf03a33b15a177af37f0e46ffdc09469bdd3200795f52626a6d693','mg.png':'cde4f13166c5a8ca794977b62911e567cdf7bb6b420c934f0c5b284df81c25c2','mh.png':'2c90e947b0b12087942c92d69afb98af57e6de1e5acb2059854d91817c3b2176','mk.png':'3c47fe838cab9f56788986f6d46b0b57bcc31b7e7365f6d152bd33dd8c57c48c','ml.png':'b0a3a403ea590be753788de634af4c557d05ae4d2b99e739953208d24eb2b1ac','mm.png':'ecb1de767e97ae04cc8fc646f0a533069bb6f5e87e67c8cff13fc8c88799d6a9','mn.png':'c6e6741d6773b599129eb5ead073d8cd5c59386aab87e80f2e7d0b9ffe2ae505','mo.png':'679136a489c373c80a4b8777411af88256904fdb276e8a15885f5f52baca1dbc','mp.png':'604d309375c31da91dce706037f4b3f1047fd04e82eedacc9d804f4abbaa70e2','mq.png':'990809b24a79d60ddf9c22d555f4c99ca53a2a06773e0da2db4905aa35104056','mr.png':'a74f38227aec752324c052e9dd1851122748801ccec7aef5ecfbaa0f94390e8c','ms.png':'31947948b6ba38909344a0a095c1b20dbc3532a8694c4c98b0d065976c172280','mt.png':'a20c8a35e42004c904e1a06115a9657b170d8090ebe26e96592139e1c8a9e358','mu.png':'5af9de01b0475f0f9e7ed942d4196de6e6ee018a2f24a5162e3dcb833e5cd3d4','mv.png':'d95a38f3825323e8bc65bbe40bc0092c569bd8835ecf5ec7c15d2446bb2fb7c8','mw.png':'be1c170846c234e90ad8b4000ee3ad324d524d8b31e7701540a8cd69f0666db7','mx.png':'656fb035a56a50a6431312527b106f65c7e03bb8711778018c8dc466d1d445ee','my.png':'1e7866925f0e0d350f2c74aa8ac3542be6e90b3c2be3c7f6b1ba0b641b53de9d','mz.png':'a421c9817192c8297e62b03d45309aea3672c8f5574443bab798822f4e5815a1','na.png':'b8dfe39c1ebe4ba174840ba7170a160a48f2b334ee84ea4f39d894a6e54c19ec','nc.png':'34268f88af259368d197e0cdc5448ee6d292704f37794cf1a2e65ff8643f6161','ne.png':'d9bfbea18ec6b302dc3903f8b2e68e15354b6568a39c2f9e38b1c14f910ce225','nf.png':'28a73055985dd55360513b5d178b6b722ce9000c9ee367cbe61d8bb717928501','ng.png':'4c4996cf57a4843fde19bd8b0daf0bde0c471fbd41e0a64ecf45fbab2dfefdfd','ni.png':'8054835206a359ca1b9cae507439a088fb33834c8daabb3f336bf4004abc2aeb','nl.png':'1546928846ee0a8377fd30865d4c43cef501eba7d775d494b98d1ce699627a4a','no.png':'f8dc302371c809ebda3e9183c606264601f8dd851d2b1878fd25f0f6abe2988c','np.png':'1e5b552bdfe4c2663f4e287c49d8a57a561c97d497f56212aab6782e942b3240','nr.png':'58d723462b9d68ae1293bb40f72d4a3006fc0f4b0eb96ec08c30c6d07cbc8d69','nu.png':'7dfe8222c16cc1070beb9fa11b6c969ffc6f7482832288950270a125bb774e50','nz.png':'095ebba705ab72032d0c17ca3936f7012a404a778a23a685c2cf943f22d9880e','om.png':'59509c4182f08201f20fb0039ba9477dfa3b3028ae602056f86a9cc982f0ff9f','pa.png':'48fc49c3010bd1530dd86066a61d5a9addadbf31e021c928da9da0cfa0d165f3','pe.png':'aa9ecf69a7d07664c50371368d4b6ab9e1f7f2dc31e0ef3693d8ff2cbab7427a','pf.png':'8346bfd255be99c8bdea0e4f8d6039ac824d4a85c4a974b0cfec245eb9c58318','pg.png':'04cd8be0fbd25ccd8017fb3d9a0a2b511adc215a168dbfe671386ce6a783c802','ph.png':'609f7123d9d23ec401c90b88f677a19125ca24e2899ebe1f3c75598623fdd251','pk.png':'19851391a22a4eee0c6a3bc4b9dec8ec2ee15d0133a8f7c8844f599c261219fb','pl.png':'34f6a1822d880608e7124d2ea0e3da4cd9b3a3b3b7d18171b61031cedbe6e72f','pm.png':'f007111a5672954f4b499ef9bae12bd9e741b7084bbe3c55bea6fd651ee61a27','pn.png':'a02a747916b3a5ed5283b6261258906408ef112351512627db0f2dda57b686cc','pr.png':'4fdcbf2a4a9ca30c22451dca2582c65c473889f75c78d2e6e1253aae82ac1d1a','ps.png':'e53ff276a447b9962ce84b38926dd1f088d6db653f8e936b5c19bfb4584aa688','pt.png':'ba636f1cb6bfd323dac1fb079cd002b5d486ed5eff54f4c4744b81316b257e96','pw.png':'ef5cee4b6289acfae6721efa130076f096d6a3481acad71178016416b17b6b29','py.png':'bd60963b2eb84d58eb01e118a2d0ba5453c717e8564a8fdb4aa10dd6b6473044','qa.png':'140a569d8ed63a59005323a6e06b704a908741c17e0b46b191b2316e2a62e1f7','re.png':'79a39793efbf8217efbbc840e1b2041fe995363a5f12f0c01dd4d1462e5eb842','ro.png':'0f83abcca7f07368819e3268d42f161edabcee4b56329c67de93779c1fba3ec5','rs.png':'a00b9d05c78c62b3eaee82acb12c2d39cc8f63381ee3563b6b8fc6c285dd4efc','ru.png':'c6e9489e25e7854a58db93acc5a91b3cc023d33a70c4931dce8d2ef2868b5e94','rw.png':'9e0e80b9ec85c4066624ea17a501b0ceeed5353dc27cf956203ab8254263e381','sa.png':'8a82f9366b0218584e72ba24eefdbf0f9dd6030480219e39f13cf1e7fe87a03a','sb.png':'6d4a0283689892275b974704a1b87e65a67af641d8b7034a661b4dbb91bd8416','scotland.png':'500ffdc39a41504133171107588f13ad7a7ebce53fc28b423fa45e3e80f27ce9','sc.png':'ca20860642968fd26776098e80b113d8b9a1d48360837ed8ded94d65b0dc9abf','sd.png':'e0cbd1960cc662ea059c0438b92449a25b6753fada4734875545ba0f79098ce2','se.png':'dc67a89a0d57005dad961a1213206395e0dfd8c7825249a0611e140bf211e323','sg.png':'84684a25002cca288c03df18dc0b2636e38a36dfdcb3d1a7a654aad1009efb17','sh.png':'6a95c6905aa2fc09fe242e417d82b12350c048f606337e1d2cc31e38579c8b88','si.png':'a2eb02e5ee0cdfb2911e2ae65cb45e070e116cd9c471422e62c9710246fe7209','sj.png':'f8dc302371c809ebda3e9183c606264601f8dd851d2b1878fd25f0f6abe2988c','sk.png':'dfad70c1a7d2e9aca6c8e11a5a61b16e5f6ce8bf5a28d4b47c479189ace5ffba','sl.png':'0532248fc289611fe2255aa94cbed9de496f9fcd144eee6fcedd2a1eb25ee554','sm.png':'9510efe392a1a661b235c71faaed1f58730b42472caa0f73a7853b1e10d584d5','sn.png':'cbef42bf392f983769bebb6f52b15b2468b633ecdac03204b492fefb694c6d95','so.png':'c1ee2a03d7d92ed81609c610f6bb8b1c211e4da3018162dff14cee0d96c65451','sr.png':'f24fdccbff3e936cbebd5a2beebc30a44cdca6ad85e77ce733009ca88b64fc34','st.png':'356b2af9a06d0db9b05f04c528cf7ccfca73090b29148090ca227f53611d8fba','sv.png':'9722f682cdac58479490bd4ad3e2988aaf69fff9f73c4795f586fd6537cc97af','sy.png':'24c2811e92c20a88522cd9872020bdce2f882d6718962eac26f5fb4c97e14ded','sz.png':'3af4d71e471cbd7d856300a36ee6cde5fc4d29e647f90cb934b0e6f82ffdc1fb','tc.png':'fcac6aff645d8048d395b4a1e0f418be4d823c51525ecbec1d6622e72de9620a','td.png':'2a2e1bd51f95d45678decd51701d3542673f9263fac5bd8d09fe6c70daf69511','tf.png':'8c8d63683cc5ba2b8533f6a7db65cac7b137e5957d37df734e96634ccd0cf2e3','tg.png':'95a500c7fb39f20d5c2687e174626c8cad7969389437feb825257e6cce3cd833','th.png':'9301b5300fa18b50f774512c3549ded45bf41c30359d1824ced7cca0cc75e216','tj.png':'776630c76b77c04a84aa0edb87decb646643c53d519949df2113a5cac4592095','tk.png':'64d2bb4ebc19d7ce6b32a640ef6831c0f3587c54686e3780e5736108b24bcc12','tl.png':'ca5fb285fc6b36cd5d03290983b96d029b0d584a6c03725728a2435969df2636','tm.png':'5012ff744573ece2ed5e8f6aeb6de891bae03a21700141511173d0a9d35a4237','tn.png':'fbf8002c6785f2bc3a7b1074b1b08d6fa96033b3a58f6e362e90e76162064c83','to.png':'f045097a337487211f80bfeaa3391aac99a5b54950380bd32c3d1c96b512f0c8','tr.png':'292d592f7fa1df2fa653ecc1e03d5eb2ae68277c6df264f762aefb8218e23454','tt.png':'393ae78c5cdf66036d404f65822a90abc168672d0a1c5093e4259ce1606e7298','tv.png':'81770d0d4d6ee76a8286becd00d111ea1ffd3220267651f95f559898f76b8d58','tw.png':'e59c331045b010a83f46ad25c592cf3f5415271b612fc9db8d32cf9158447dc6','tz.png':'4bf0a8872442348835eb7cb88cad7ef7992ab7017c2777281493214413bc3d5f','ua.png':'9ae2f204178855c4fdb29ce75a0a1b2588fc3db3a7084d29715876bacd293508','ug.png':'42cd5a9bc8408d673b97fa04e528a194772f85c2f3aa756e1386045cdaa10538','uk.png':'5d72c5a8bef80fca6f99f476e15ec95ce2d5e5f65c6dab9ee8e56348be0d39fc','um.png':'7c655058691a6c837db9aac3c2f8662d8e06a6ebd3dd495cca6e691a67c1bf64','us.png':'36cce5cae3d2e0045b2b2b6cbffdad7a0aba3e99919cc219bbf0578efdc45585','uy.png':'9ab4ccd42c3869331626b86e9074502e47ad19db3253b3596f719bd850ff736e','uz.png':'a2870e6e9927c9ff0b80e6a58b95adb3463714f00733e9c3ddd3be1a2d5d17b5','va.png':'4ceb52d9a612b80c931d9530c273b1b608f32b9507e6b7009a48599eeb7f93e2','vc.png':'0bf42ce1f486108fa32afaba7976f0dea5dbbca2049b559f23d57a052124b6e2','ve.png':'6d04de1086b124d5843753e2bd55f137c2537bd47e0d5ea2c55ff3bc1da7293c','vg.png':'f3720add09557825a652d8998ac7bedf84239e5b9aecbdcffb3930383b7e4682','vi.png':'943fb60916b4286295f32e632fe5a046275e5cf84e87119a94f7f5e1b429e052','vn.png':'d05aa8078604f4560d99aacf12c80e400651e4ef9b0860b3ad478c2d8b08e36d','vu.png':'39779ad6848267e90357d3795bbb396deee7f20722f8e3d6c6be098a6f5f347e','wales.png':'a20ef40f442f089d0a5f5dcd089a76babd86f0fe3c243d9c8e50c6c0e4aef3ab','wf.png':'893ed4ccb23353f597bb7e9544ef8c376c896fc4f6fe56e4ca14aab70e49203e','ws.png':'7eb7d48fd72f83b5bcee0cc9bac9c24ad42c81927e8d336b6fd05fd9aefa0dcb','ye.png':'c2785bb08c181f8708b9a640ff8fe15d5ab5779af8095d11307542b6f03343a3','yt.png':'da7d65c048969b86d3815ed42134336609c9e8d5aead0a18194c025caf64c019','za.png':'48188165205cc507cd36c3465b00b2cd97c1cc315209b8f086f20af607055e49','zm.png':'794a2df87b0952ffd0fbcf18c9f61f713cff6cfafcc4b551745204d930fc1967','zw.png':'b546d55dd33c7049ef9bbfe4b665c785489b3470a04e6a2db4fda1fea403dc62'}
 		self.COUNTRYNAMES = {
@@ -177,31 +178,32 @@ class Systray:
 		self.WIN_DONT_ASK_FW_EXIT = False
 		self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
 		self.WIN_DNS_CHANGED = False
+		self.LAST_FAILED_CHECKFILE = False
 		self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"
 		self.WHITELIST_PUBLIC_PROFILE = {
-			"Intern 01) oVPN Connection Check": {"ip":self.OVPN_GATEWAY_IP4,"port":"80","proto":"tcp"},
-			"Intern 02) https://vcp.ovpn.to": {"ip":self.OVPN_GATEWAY_IP4,"port":"443","proto":"tcp"},
-			"Intern 03) IRC": {"ip":self.OVPN_GATEWAY_IP4,"port":"6697","proto":"tcp"},
-			"Intern 04) DNS": {"ip":self.OVPN_GATEWAY_IP4,"port":"53","proto":"tcp"},
-			"Intern 05) DNS": {"ip":self.OVPN_GATEWAY_IP4,"port":"53","proto":"udp"},
-			"Intern 06) SSH": {"ip":self.OVPN_GATEWAY_IP4,"port":"22","proto":"tcp"},
-			"Intern 07) SOCKS": {"ip":self.OVPN_GATEWAY_IP4,"port":"1080","proto":"tcp"},
-			"Intern 08) HTTP": {"ip":self.OVPN_GATEWAY_IP4,"port":"3128","proto":"tcp"},
-			"Intern 09) SOCKS Random": {"ip":self.OVPN_GATEWAY_IP4,"port":"1081","proto":"tcp"},
-			"Intern 10) HTTP Random": {"ip":self.OVPN_GATEWAY_IP4,"port":"3129","proto":"tcp"},
-			"Intern 11) STUNNEL HTTP": {"ip":self.OVPN_GATEWAY_IP4,"port":"8081","proto":"tcp"},
-			"Intern 12) STUNNEL SOCKS": {"ip":self.OVPN_GATEWAY_IP4,"port":"8080","proto":"tcp"},
-			"Intern 13) TOR SOCKS": {"ip":self.OVPN_GATEWAY_IP4,"port":"9100","proto":"tcp"},
-			"Intern 14) JABBER client": {"ip":self.OVPN_GATEWAY_IP4,"port":"5222","proto":"tcp"},
-			"Intern 15) JABBER transfer": {"ip":self.OVPN_GATEWAY_IP4,"port":"5000","proto":"tcp"},
-			"Intern 16) AnoMail IMAPs": {"ip":self.OVPN_GATEWAY_IP4,"port":"993","proto":"tcp"},
-			"Intern 17) AnoMail POP3s": {"ip":self.OVPN_GATEWAY_IP4,"port":"995","proto":"tcp"},
-			"Intern 18) AnoMail SMTPs": {"ip":self.OVPN_GATEWAY_IP4,"port":"587","proto":"tcp"},
-			"Intern 19) ZNC": {"ip":self.OVPN_GATEWAY_IP4,"port":"6444","proto":"tcp"},
-			"Intern 20) dnscrypt": {"ip":self.OVPN_GATEWAY_IP4,"port":"5353","proto":"tcp"},
-			"Intern 21) dnscrypt": {"ip":self.OVPN_GATEWAY_IP4,"port":"5353","proto":"udp"},
-			"Intern 22) nntp-50001 Binary SSL user=ovpn,pass=free": {"ip":self.OVPN_GATEWAY_IP4,"port":"50001","proto":"tcp"},
-			"Intern 23) nntp-50002 Binary SSL user=ovpn,pass=free": {"ip":self.OVPN_GATEWAY_IP4,"port":"50002","proto":"tcp"}
+			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
+			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
+			"Intern 03) IRC": {"ip":self.GATEWAY_OVPN_IP4A,"port":"6697","proto":"tcp"},
+			"Intern 04) DNS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"53","proto":"tcp"},
+			"Intern 05) DNS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"53","proto":"udp"},
+			"Intern 06) SSH": {"ip":self.GATEWAY_OVPN_IP4A,"port":"22","proto":"tcp"},
+			"Intern 07) SOCKS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"1080","proto":"tcp"},
+			"Intern 08) HTTP": {"ip":self.GATEWAY_OVPN_IP4A,"port":"3128","proto":"tcp"},
+			"Intern 09) SOCKS Random": {"ip":self.GATEWAY_OVPN_IP4A,"port":"1081","proto":"tcp"},
+			"Intern 10) HTTP Random": {"ip":self.GATEWAY_OVPN_IP4A,"port":"3129","proto":"tcp"},
+			"Intern 11) STUNNEL HTTP": {"ip":self.GATEWAY_OVPN_IP4A,"port":"8081","proto":"tcp"},
+			"Intern 12) STUNNEL SOCKS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"8080","proto":"tcp"},
+			"Intern 13) TOR SOCKS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"9100","proto":"tcp"},
+			"Intern 14) JABBER client": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5222","proto":"tcp"},
+			"Intern 15) JABBER transfer": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5000","proto":"tcp"},
+			"Intern 16) AnoMail IMAPs": {"ip":self.GATEWAY_OVPN_IP4A,"port":"993","proto":"tcp"},
+			"Intern 17) AnoMail POP3s": {"ip":self.GATEWAY_OVPN_IP4A,"port":"995","proto":"tcp"},
+			"Intern 18) AnoMail SMTPs": {"ip":self.GATEWAY_OVPN_IP4A,"port":"587","proto":"tcp"},
+			"Intern 19) ZNC": {"ip":self.GATEWAY_OVPN_IP4A,"port":"6444","proto":"tcp"},
+			"Intern 20) dnscrypt": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5353","proto":"tcp"},
+			"Intern 21) dnscrypt": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5353","proto":"udp"},
+			"Intern 22) nntp-50001 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50001","proto":"tcp"},
+			"Intern 23) nntp-50002 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50002","proto":"tcp"}
 		}
 
 	#######
@@ -219,11 +221,11 @@ class Systray:
 											return True
 										
 		elif OS == "linux2" :
-			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))
+			self.errorquit(text="Operating System not supported: %s" % (self.OS))
 		elif OS == "darwin":
-			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))
+			self.errorquit(text="Operating System not supported: %s" % (self.OS))
 		else: 
-			self.errorquit(text = _("Operating System not supported: %s") % (self.OS))
+			self.errorquit(text="Operating System not supported: %s" % (self.OS))
 
 	#######
 	def win_pre1_check_app_dir(self):
@@ -253,50 +255,38 @@ class Systray:
 		for profile in self.profiles_unclean:
 			if profile.isdigit():
 				self.profiles.append(profile)
-				
 		self.profiles_count = len(self.profiles)
-		if self.DEBUG: print("_check_profiles_win profiles_count %s" % (self.profiles_count))
-		
+		self.debug(text="def win_pre2_check_profiles_win: profiles_count %s" % (self.profiles_count))
 		if self.profiles_count == 0:
-			if self.DEBUG: print("No profiles found")
+			self.debug(text="No profiles found")
 			if self.USERID == False:
 				self.debug(text="spawn popup userid = %s" % (self.USERID))
 				if self.form_ask_userid():
-					#if self.win_pre3_load_profile_dir_vars():
 					return True
-				
 		elif self.profiles_count == 1 and self.profiles[0] > 1:
-			self.profile = self.profiles[0]
-			self.USERID = self.profile
+			self.USERID = self.profiles[0]
 			return True
 		elif self.profiles_count > 1:
-			self.errorquit(text = _("Multiple profiles not yet implemented.\nPlease empty or rename profile-folders to *.bak (non int)\n %s") % (self.app_dir))
-		
-		if self.DEBUG: 
-			for profile in self.profiles:
-				print("Profile: %s" % (profile))
-			print("def check_profiles_win end")
+			if not self.select_userid() == True:
+				self.errorquit(text="Select User-ID failed!")
+			return True
 
 	#######
 	def win_pre3_load_profile_dir_vars(self):
-		self.api_dir = "%s\\%s" % (self.app_dir,self.profile)
-		
-		self.lock_file = "%s\\lock.file" % (self.app_dir)
+		self.api_dir = "%s\\%s" % (self.app_dir,self.USERID)
 		
 		self.debug_log = "%s\\client_debug.log" % (self.api_dir)
-		if self.DEBUG == True:
+		if os.path.isfile(self.debug_log):
 			try:
-				dbg = open(self.debug_log,'wb')
-				dbg.write("DEBUG_LOG START\r\n")
-				dbg.close()
-			except: 
+				os.remove(self.debug_log)
+			except:
 				pass
-		
+
+		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		self.opt_file = "%s\\options.cfg" % (self.api_dir)
 		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
 		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
 		self.prx_dir = "%s\\proxy" % (self.api_dir)
-		
 		self.stu_dir = "%s\\stunnel" % (self.api_dir)
 		self.pfw_dir = "%s\\pfw" % (self.api_dir)
 		self.pfw_bak = "%s\\pfw.%s.bak.wfw" % (self.pfw_dir,self.BOOTTIME)
@@ -320,21 +310,40 @@ class Systray:
 		self.dns_d0wntxt =  "%s\\dns.txt" % (self.dns_dir)
 		self.dns_ung =  "%s\\ungefiltert" % (self.dns_dir)
 		self.dns_ung_alphaindex =  "%s\\alphaindex.txt" % (self.dns_ung)
-			
-		self.taskbar_icon = "%s\\ico\\earth.png" % (self.bin_dir)
 		
-		self.systray_icon_connected = "%s\\ico\\292.ico" % (self.bin_dir)
-		self.systray_icon_disconnected = "%s\\ico\\263.ico" % (self.bin_dir)
-		self.systray_icon_connect = "%s\\ico\\396.ico" % (self.bin_dir)
-		self.systray_icon_hourglass = "%s\\ico\\205.ico" % (self.bin_dir)
-		self.systray_icon_syncupdate = "%s\\ico\\266.ico" % (self.bin_dir)
-		self.systray_icon_greenshield = "%s\\ico\\074.ico" % (self.bin_dir)
+		self.ico_dir = "%s\\ico" % (self.bin_dir)
+		if not os.path.isdir(self.ico_dir):
+			return False
+		self.taskbar_icon = "%s\\earth.png" % (self.ico_dir)
+		self.systray_icon_connected = "%s\\292.ico" % (self.ico_dir)
+		self.systray_icon_disconnected = "%s\\263.ico" % (self.ico_dir)
+		self.systray_icon_connect = "%s\\396.ico" % (self.ico_dir)
+		self.systray_icon_hourglass = "%s\\205.ico" % (self.ico_dir)
+		self.systray_icon_syncupdate = "%s\\266.ico" % (self.ico_dir)
+		self.systray_icon_greenshield = "%s\\074.ico" % (self.ico_dir)
 		
 		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
 		
 		if not self.load_ca_cert():
 			return False
 		
+		self.WINDIR = os.getenv('WINDIR')
+		if os.path.isdir(self.WINDIR):
+			self.WIN_NETSH_EXE = "%s\\system32\\netsh.exe" % (self.WINDIR)
+			self.WIN_ROUTE_EXE = "%s\\system32\\route.exe" % (self.WINDIR)
+			self.WIN_IPCONFIG_EXE = "%s\\system32\\ipconfig.exe" % (self.WINDIR)
+		else:
+			self.errorquit(text="Error: WINDIR '%s' not found!" % (self.WINDIR))
+			
+		if not os.path.isfile(self.WIN_NETSH_EXE):
+			self.errorquit(text="Error: self.WIN_NETSH_EXE '%s' not found!" % (self.WIN_NETSH_EXE))
+
+		if not os.path.isfile(self.WIN_ROUTE_EXE):
+			self.errorquit(text="Error: self.WIN_ROUTE_EXE '%s' not found!" % (self.WIN_ROUTE_EXE))
+			
+		if not os.path.isfile(self.WIN_IPCONFIG_EXE):
+			self.errorquit(text="Error: self.WIN_IPCONFIG_EXE '%s' not found!" % (self.WIN_IPCONFIG_EXE))
+			
 		self.debug(text="win_pre3_load_profile_dir_vars loaded")
 		return True
 
@@ -351,7 +360,7 @@ class Systray:
 				try:
 					os.remove(self.lock_file)
 				except:
-					self.errorquit(_("Could not remove lock file.\nFile itself locked because another oVPN Client instance running?"))
+					self.errorquit(text="Could not remove lock file.\nFile itself locked because another oVPN Client instance running?")
 				
 			if not os.path.isfile(self.lock_file):
 				self.LOCK = open(self.lock_file,'wb')
@@ -417,7 +426,7 @@ class Systray:
 									return True
 
 			else:
-				self.errorquit(text = _("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
+				self.errorquit(text="Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!" % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
 			self.errorquit(text="def check_config_folders: failed")
 
@@ -512,10 +521,13 @@ class Systray:
 						self.OVPN_CONFIGVERSION = "23x"
 						
 					if self.OVPN_CONFIGVERSION == "23x":
+						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4A
 						self.vpn_cfg = self.vpn_cfgip4
 					elif self.OVPN_CONFIGVERSION == "23x46":
+						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
 						self.vpn_cfg = self.vpn_cfgip46
 					elif self.OVPN_CONFIGVERSION == "23x64":
+						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
 						self.vpn_cfg = self.vpn_cfgip64
 						
 					self.move_configs()
@@ -684,7 +696,7 @@ class Systray:
 			return True
 		except:
 			self.debug(text="def write_options_file: failed")
-			
+
 	#######
 	def read_interfaces(self):
 		if self.OS == "win32":
@@ -705,7 +717,7 @@ class Systray:
 	def win_read_interfaces(self):
 		self.win_detect_openvpn()
 		self.INTERFACES = list()
-		string = "netsh interface show interface"
+		string = "netsh.exe interface show interface"
 		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		ADAPTERS = ADAPTERS.split('\r\n')
 		LANG = "undef"
@@ -717,7 +729,7 @@ class Systray:
 			LANG = "DE"
 		elif ADAPTERS[1].endswith("Interface Name"):
 			LANG = "EN"
-		else:			
+		else:
 			self.errorquit(text="Error reading your Interfaces from netsh.exe. Contact support@ovpn.to with Error-ID:\nADAPTERS[1]=(%s)\n" % (ADAPTERS[1]))
 		
 		text = "def win_read_interfaces: LANG = %s" % (LANG)
@@ -753,7 +765,7 @@ class Systray:
 		self.INTERFACES.pop(0)
 		self.debug(text="INTERFACES: %s"%(self.INTERFACES))
 		if len(self.INTERFACES)	< 2:
-			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
+			self.errorquit(text="Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed.")
 		#self.win_detect_openvpn()
 		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
 		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
@@ -798,7 +810,7 @@ class Systray:
 		else:
 			self.debug(text="self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
-			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
+			text = "Multiple TAPs found!\n\nPlease select your TAP Adapter!"
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
 			dialogBox = dialogWindow.get_content_area()
@@ -813,24 +825,24 @@ class Systray:
 				self.debug(text="add tap interface '%s' to combobox" % (INTERFACE))
 				liststore.append([INTERFACE])
 			combobox.set_model(liststore)
-			combobox.connect('changed',self.tap_interface_selector_changed_cb)
+			combobox.connect('changed',self.cb_tap_interface_selector_changed)
 
 			dialogBox.pack_start(combobox,False,False,0)
 			dialogWindow.show_all()
 			self.debug(text="open tap interface selector")
 			dialogWindow.run()
 			self.debug(text="close tap interface selector")
-			if not self.WIN_TAP_DEVICE == False:
-				dialogWindow.destroy()
+			dialogWindow.destroy()
+			#if not self.WIN_TAP_DEVICE == False:
+				
 
 		if self.WIN_TAP_DEVICE == False:
-			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
+			self.errorquit(text="No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s" % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
 		else:
 			badchars = ["%","&","$"]
 			for char in badchars:
 				if char in self.WIN_TAP_DEVICE:
 					self.errorquit(text="Invalid characters in self.WIN_TAP_DEVICE = '%s'" % char)
-		
 			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 			self.win_enable_tap_interface()
 			self.debug(text="remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
@@ -840,7 +852,7 @@ class Systray:
 					return True
 				else:
 					dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
-					text = _("Choose your External Network Adapter!")
+					text = "Choose your External Network Adapter!"
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
 					dialogBox = dialogWindow.get_content_area()
@@ -855,22 +867,49 @@ class Systray:
 						self.debug(text="add interface %s to combobox" % (INTERFACE))
 						liststore.append([INTERFACE])
 					combobox.set_model(liststore)
-					combobox.connect('changed',self.interface_selector_changed_cb)
+					combobox.connect('changed',self.cb_interface_selector_changed)
 						
 					dialogBox.pack_start(combobox,False,False,0)
 					dialogWindow.show_all()
 					self.debug(text="open interface selector")
 					dialogWindow.run()
 					self.debug(text="close interface selector")
+					dialogWindow.destroy()
 					if not self.WIN_EXT_DEVICE == False:
-						dialogWindow.destroy()
 						return True
 			elif len(self.INTERFACES) < 1:
-				self.errorquit(text=_("No Network Adapter found!"))
+				self.errorquit(text="No Network Adapter found!")
 			else:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
 				self.debug(text="External Interface = %s"%(self.WIN_EXT_DEVICE))
 				return True
+
+	#######
+	def select_userid(self):
+		dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
+		text = "Please select your User-ID!"
+		dialogWindow.set_title(text)
+		dialogWindow.set_markup(text)
+		dialogBox = dialogWindow.get_content_area()
+		liststore = gtk.ListStore(str)
+		combobox = gtk.ComboBox(liststore)
+		cell = gtk.CellRendererText()
+		combobox.pack_start(cell, True)
+		combobox.add_attribute(cell, 'text', 0)
+		combobox.set_wrap_width(5)
+		for userid in self.profiles:
+			self.debug(text="add userid '%s' to combobox" % (userid))
+			liststore.append([userid])
+		combobox.set_model(liststore)
+		combobox.connect('changed',self.cb_select_userid)
+		dialogBox.pack_start(combobox,False,False,0)
+		dialogWindow.show_all()
+		self.debug(text="open userid selector")
+		dialogWindow.run()
+		self.debug(text="close userid interface selector")
+		dialogWindow.destroy()
+		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.app_dir,self.USERID)):
+			return True
 
 	#######
 	def load_decryption(self):
@@ -956,7 +995,7 @@ class Systray:
 			return True
 		except:
 			return False
-			
+
 	#######
 	def on_right_click_mainwindow(self, treeview, event):
 		self.destroy_systray_menu()
@@ -1056,11 +1095,11 @@ class Systray:
 					img = gtk.Image()
 					imgfile = self.FLAG_IMG[countrycode]
 				except:
-					imgfile = '%s\\ico\\flags\\%s.png' % (self.bin_dir,countrycode)
+					imgfile = '%s\\flags\\%s.png' % (self.ico_dir,countrycode)
 					
 				if not os.path.isfile(imgfile):
 					if not self.load_flags_from_remote(countrycode,imgfile):
-						imgfile = '%s\\ico\\flags\\00.png' % (self.bin_dir)
+						imgfile = '%s\\flags\\00.png' % (self.ico_dir)
 						self.FLAG_IMG[countrycode] = imgfile
 				
 				if os.path.isfile(imgfile):
@@ -1096,8 +1135,7 @@ class Systray:
 	def systray_timer(self):
 		if self.stop_systray_timer == True:
 			return False
-	
-		text = False
+		self.systray_timer_running = True
 		systraytext = False
 		
 		""" *** fixme *** try to get output
@@ -1111,13 +1149,11 @@ class Systray:
 			self.check_hide_popup()
 		
 		if self.timer_check_certdl_running == True:
-			text = _("Checking for Updates!")
-			systraytext = text
+			systraytext = "Checking for Updates!"
 			systrayicon = self.systray_icon_syncupdate
 			
 		elif self.STATE_OVPN == False:
-			text = _("oVPN disconnected!")
-			systraytext = text
+			systraytext = "oVPN disconnected!"
 			systrayicon = self.systray_icon_disconnected
 			try:
 				if self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
@@ -1128,16 +1164,14 @@ class Systray:
 		elif self.STATE_OVPN == True:
 		
 			if self.OVPN_PING_STAT == -1:
-				text = _("oVPN is connecting to %s")%(self.OVPN_CONNECTEDto)
-				systraytext = text
+				systraytext = "oVPN is connecting to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_connect
-				self.debug(text=text)
+				self.debug(text=systraytext)
 			elif self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
-				text = _("oVPN is testing connection to %s") % (self.OVPN_CONNECTEDto)
-				systraytext = text
+				systraytext = "oVPN is testing connection to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_hourglass
-				self.debug(text=text)
+				self.debug(text=systraytext)
 			#elif self.OVPN_PING_LAST == 9999:
 				#text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
 				#systraytext = text
@@ -1149,61 +1183,55 @@ class Systray:
 						self.OVPN_PING = list()
 						self.OVPN_PING_STAT = self.OVPN_PING_LAST
 						self.OVPN_isTESTING = False
-					now = int(time.time())
-					connectedseconds = now - self.OVPN_CONNECTEDtime
+					connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 					self.OVPN_CONNECTEDseconds = connectedseconds
 					m, s = divmod(connectedseconds, 60)
 					h, m = divmod(m, 60)
 					d, h = divmod(h, 24)
-					if self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 86400:
+					if self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 60:
+						self.OVPN_CONNECTEDtimetext = "( %02d:%02d:%02d )" % (h,m,s)
+					elif self.OVPN_CONNECTEDseconds >= 60 and self.OVPN_CONNECTEDseconds < 86400:
 						self.OVPN_CONNECTEDtimetext = "( %02d:%02d )" % (h,m)
 					elif self.OVPN_CONNECTEDseconds >= 86400:
 						self.OVPN_CONNECTEDtimetext = "( %d:%02d:%02d )" % (d,h,m)
-					else:
-						self.OVPN_CONNECTEDtimetext = "(~)"
+					#if self.check_myip() == True:
 					textfull = "oVPN is connected %s to %s [%s]:%s ( %s / %s ms )" % (self.OVPN_CONNECTEDtimetext,self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
-					textsmall = "oVPN is connected to %s [%s]:%s (%s)" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
+					textsmall = " oVPN is connected to %s [%s]:%s (%s)" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
 					systraytext = textsmall
 					systrayicon = self.systray_icon_connected
 				except:
 					self.debug(text="def systray_timer: systraytext failed")
+		
 		try:
 			if not self.systraytext_from_before == systraytext and not systraytext == False:
 				self.systraytext_from_before = systraytext
 				self.tray.set_from_file(systrayicon)
-				self.tray.set_tooltip(('%s'%(systraytext)))
+				self.tray.set_tooltip(systraytext)
 			
 			#fixme: memoryleak
 			if self.MAINWINDOW_OPEN == True:
 				if not self.statustext_from_before == textfull:
 					self.set_statusbar_text(textfull)
 					self.statustext_from_before = textfull
-			
 		except:
 			pass
 		
 		try:
 			if self.systray_timer_running == True:
-				time.sleep(1)
-				if self.LOAD_ACCINFO == True:
-					if self.load_accinfo_from_remote():
-						if self.load_serverdata_from_remote():
-							pass
-							#time.sleep(1)
-						
-				elif self.ENABLE_EXTSERVERVIEW == True:
-					if self.load_serverdata_from_remote():
-						if self.load_accinfo_from_remote():
-							pass
-							#time.sleep(1)
-				
-				
+				if self.ENABLE_EXTSERVERVIEW == True and self.LOAD_ACCINFO == True:
+					if self.load_serverdata_from_remote() == True and self.load_accinfo_from_remote() == True:
+						self.redraw_mainwindow_vbox()
+				elif self.ENABLE_EXTSERVERVIEW == True and self.LOAD_ACCINFO == False:
+					if self.load_serverdata_from_remote() == True:
+						self.redraw_mainwindow_vbox()
+				elif self.ENABLE_EXTSERVERVIEW == False and self.LOAD_ACCINFO == True:
+					if self.load_accinfo_from_remote() == True:
+						self.redraw_mainwindow_vbox()
 		except:
 			pass
 		
-		
-		self.systray_timer_running = True
 		self.thread_systray_timer = threading.Thread(target=self.systray_timer)
+		time.sleep(1)
 		self.thread_systray_timer.start()
 		
 		return True
@@ -1527,8 +1555,7 @@ class Systray:
 					
 			except:
 				self.destroy_systray_menu()
-				text = "def make_systray_server_menu: failed"
-				self.debug(text=text)
+				self.debug(text="def make_systray_server_menu: failed")
 
 	#######
 	def make_systray_openvpn_menu(self):
@@ -1538,7 +1565,6 @@ class Systray:
 			# add quit item
 			servershort = self.OVPN_CONNECTEDto[:3]
 			textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
-			
 			disconnect = gtk.ImageMenuItem(textstring)
 			img = gtk.Image()
 			img.set_from_file(self.systray_icon_disconnected)
@@ -1560,7 +1586,6 @@ class Systray:
 		self.systray_menu.append(mainwindow)
 		# SIGNALS
 		mainwindow.connect('activate', self.show_mainwindow)
-		
 		if self.STATE_OVPN == False:
 			sep = gtk.SeparatorMenuItem()
 			self.systray_menu.append(sep)
@@ -1615,7 +1640,7 @@ class Systray:
 			self.progressbarfraction = 0.1
 			self.progresswindow = gtk.Window(type=gtk.WINDOW_TOPLEVEL)
 			self.progresswindow.set_default_size(250,128)
-			self.progresswindow.set_border_width(6)
+			#self.progresswindow.set_border_width(6)
 			self.progresswindow.set_title("oVPN Server Update")
 			self.progresswindow.set_icon_from_file(self.systray_icon_syncupdate)
 			self.progressbar = gtk.ProgressBar()
@@ -1642,60 +1667,63 @@ class Systray:
 
 	#######
 	def inThread_timer_check_certdl(self):
-		self.timer_check_certdl_running = True
-		text="Checking for oVPN Updates..."
-		self.set_progressbar(text)
 		try:
-			self.load_ovpn_server()
-			if len(self.OVPN_SERVER) == 0:
-				self.reset_last_update()
-		except:
-			pass
-		self.debug(text="def inThread_timer_check_certdl:")
-		if self.API_REQUEST(API_ACTION = "lastupdate"):
-			self.set_progressbar(text=_("Checking for Update"))
-			self.debug(text="def inThread_timer_check_certdl: API_ACTION lastupdate")
-			if self.check_last_server_update(self.curldata):
-				self.set_progressbar(text = _("Updating oVPN Configurations..."))
-				if self.API_REQUEST(API_ACTION = "getconfigs"):
-					self.set_progressbar(text = _("Requesting oVPN Certificates..."))
-					if self.API_REQUEST(API_ACTION = "requestcerts"):
-						time.sleep(3)
-						while not self.body == "done":
+			self.timer_check_certdl_running = True
+			text="Checking for oVPN Updates..."
+			self.set_progressbar(text)
+			try:
+				self.load_ovpn_server()
+				if len(self.OVPN_SERVER) == 0:
+					self.reset_last_update()
+			except:
+				pass
+			self.debug(text="def inThread_timer_check_certdl:")
+			if self.API_REQUEST(API_ACTION = "lastupdate"):
+				self.set_progressbar(text="Checking for Update...")
+				self.debug(text="def inThread_timer_check_certdl: API_ACTION lastupdate")
+				if self.check_last_server_update(self.curldata):
+					self.set_progressbar(text="Updating oVPN Configurations...")
+					if self.API_REQUEST(API_ACTION = "getconfigs"):
+						self.set_progressbar(text="Requesting oVPN Certificates...")
+						if self.API_REQUEST(API_ACTION = "requestcerts"):
 							time.sleep(3)
-							self.API_REQUEST(API_ACTION = "requestcerts")
-							if self.body == "ready":
-								self.set_progressbar(text = _("Downloading oVPN Certificates..."))
-								if self.API_REQUEST(API_ACTION = "getcerts"):
-									self.body = False
-									self.set_progressbar(text = _("Extracting oVPN Certificates..."))
-									if self.extract_ovpn():
-										self.set_progressbar(text = _("Complete!"))
-										self.body = "done"
-										self.timer_check_certdl_running = False
-										self.progressbar.set_fraction(1)
-										self.debug(text="extraction complete")
-										return True
-									else:
-										self.debug(text="extraction failed")
-										self.set_progressbar(text = _("Error: Extraction failed!"))
-										self.body = "done"
-										self.timer_check_certdl_running = False
-										self.progressbar.set_fraction(0)
-										return False
+							while not self.body == "done":
+								time.sleep(3)
+								self.API_REQUEST(API_ACTION = "requestcerts")
+								if self.body == "ready":
+									self.set_progressbar(text="Downloading oVPN Certificates...")
+									if self.API_REQUEST(API_ACTION = "getcerts"):
+										self.body = False
+										self.set_progressbar(text="Extracting oVPN Certificates...")
+										if self.extract_ovpn():
+											self.set_progressbar(text="Complete!")
+											self.body = "done"
+											self.timer_check_certdl_running = False
+											self.progressbar.set_fraction(1)
+											self.debug(text="extraction complete")
+											return True
+										else:
+											self.debug(text="extraction failed")
+											self.set_progressbar(text="Error: Extraction failed!")
+											self.body = "done"
+											self.timer_check_certdl_running = False
+											self.progressbar.set_fraction(0)
+											return False
+				else:
+					text = "Certificates and Configs up to date!"
+					self.set_progressbar(text)
+					#self.set_statusbar_text(text)
+					self.progressbar.set_fraction(1)
+					self.timer_check_certdl_running = False
+					return True
+					
 			else:
-				text = _("Certificates and Configs up to date!")
-				self.set_progressbar(text)
-				#self.set_statusbar_text(text)
-				self.progressbar.set_fraction(1)
+				self.PASSPHRASE = False
+				self.debug(text="self.API_REQUEST(API_ACTION = lastupdate): failed")
 				self.timer_check_certdl_running = False
-				return True
-				
-		else:
-			self.PASSPHRASE = False
-			self.debug(text="self.API_REQUEST(API_ACTION = lastupdate): failed")
-			self.timer_check_certdl_running = False
-			return False
+				return False
+		except:
+			self.debug(text="def inThread_timer_check_certdl: failed")
 
 	#######
 	def show_about_dialog(self, widget):
@@ -1714,72 +1742,15 @@ class Systray:
 			about_dialog.set_comments((ABOUT_TEXT))
 			about_dialog.set_authors(['oVPN.to <support@ovpn.to>'])
 			response = about_dialog.run()
+			about_dialog.destroy()
 			if not response == None:
 				self.debug(text="def show_about_dialog: response = '%s'" % (response))
-				about_dialog.destroy()
 				self.WINDOW_ABOUT_OPEN = False
 		except:
 			self.debug(text="def show_about_dialog: failed")
 
 	#######
-	""" fixme """
-	def mainwindow_menubar(self):
-		if self.ENABLE_mainwindow_menubar == True:
-			try:
-				self.mb.destroy()
-				print 'menubar destroy1'
-			except:
-				pass
-			try:
-				self.mb = gtk.MenuBar()
-				
-				#self.mainwindow_vbox.add(self.mb)
-				self.mainwindow_vbox.pack_start(self.mb,False,False,0)
-				optionsmenu = gtk.Menu()
-				options = gtk.MenuItem('Options')
-				options.set_submenu(optionsmenu)
-
-				
-				if not self.OVPN_FAV_SERVER == False:
-					del_FAV = gtk.MenuItem("Disable AutoConnect")
-					del_FAV.connect('button-release-event',self.del_ovpn_favorite_server,self.OVPN_FAV_SERVER)
-					optionsmenu.append(del_FAV)
-
-				if not self.OVPN_FAV_SERVER == False and self.STATE_OVPN == False:
-					con_FAV = gtk.MenuItem("Connect to %s" % (self.OVPN_FAV_SERVER))
-					con_FAV.connect('button-release-event',self.call_openvpn,self.OVPN_FAV_SERVER)
-					optionsmenu.append(con_FAV)
-					
-				if self.STATE_OVPN == True:
-					disconnect = gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
-					disconnect.connect('activate', self.kill_openvpn)
-					optionsmenu.append(disconnect)
-				
-				
-					
-				forceupdate = gtk.MenuItem("Force Server-Config Update")
-				forceupdate.connect('activate', )
-				optionsmenu.append(forceupdate)
-					
-				self.mb.append(options)
-				self.mb.show_all()
-			except:
-				try:
-					self.mb.destroy()
-				except:
-					pass
-
-	#######
 	def mainwindow_ovpn_server(self):
-		"""
-		if self.LOAD_ACCINFO == True:
-			if self.load_accinfo_from_remote():
-				self.load_serverdata_from_remote()
-				
-		elif self.ENABLE_EXTSERVERVIEW == True:
-			if self.load_serverdata_from_remote():
-				self.load_accinfo_from_remote()
-		"""
 		notebook = gtk.Notebook()
 		self.mainwindow_vbox.add(notebook)
 		
@@ -1789,7 +1760,7 @@ class Systray:
 			mode = "IPv4 + IPv6"
 		elif self.OVPN_CONFIGVERSION == "23x64":
 			mode = "IPv6 + IPv4"
-			
+		
 		label1 = gtk.Label("oVPN Server [ %s ]" % (mode))
 		vbox1 = gtk.VBox(False,1)
 		notebook.append_page(vbox1,label1)
@@ -1798,7 +1769,7 @@ class Systray:
 		serverframe.set_label("Anonymous oVPN Server")
 		
 		if len(self.OVPN_ACCDATA) == 0:
-			label2 = gtk.Label(_("Account"))
+			label2 = gtk.Label("Account")
 			vbox2 = gtk.VBox(False,1)
 			notebook.append_page(vbox2,label2)
 			accframe = gtk.Frame()
@@ -1808,7 +1779,7 @@ class Systray:
 			else:
 				accframe.set_label("Option -> 'Load Account Info disabled!")
 		elif len(self.OVPN_ACCDATA) > 0:
-			label2 = gtk.Label(_("Account"))
+			label2 = gtk.Label("Account")
 			vbox2 = gtk.VBox(False,1)
 			notebook.append_page(vbox2,label2)
 			accframe = gtk.Frame()
@@ -1853,7 +1824,7 @@ class Systray:
 		""" *fixme* we should do any checks before adding remote text to output ! """
 		try:
 			if len(self.OVPN_SERVER_STATS) > 0:
-				serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,gtk.gdk.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
+				serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,gtk.gdk.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
 			else:
 				serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,str,str,str,str,str,str)
 			treeview = gtk.TreeView(serverliststore)
@@ -1881,103 +1852,108 @@ class Systray:
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Port ',cell)
+				column = gtk.TreeViewColumn(' IPv6 ',cell)
 				column.add_attribute(cell,"text",4)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Proto ',cell)
+				column = gtk.TreeViewColumn(' Port ',cell)
 				column.add_attribute(cell,"text",5)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' MTU ',cell)
+				column = gtk.TreeViewColumn(' Proto ',cell)
 				column.add_attribute(cell,"text",6)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Cipher ',cell)
+				column = gtk.TreeViewColumn(' MTU ',cell)
 				column.add_attribute(cell,"text",7)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Mbps ',cell)
+				column = gtk.TreeViewColumn(' Cipher ',cell)
 				column.add_attribute(cell,"text",8)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Link ',cell)
+				column = gtk.TreeViewColumn(' Mbps ',cell)
 				column.add_attribute(cell,"text",9)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' VLAN IPv4 ',cell)
+				column = gtk.TreeViewColumn(' Link ',cell)
 				column.add_attribute(cell,"text",10)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' VLAN IPv6 ',cell)
+				column = gtk.TreeViewColumn(' VLAN IPv4 ',cell)
 				column.add_attribute(cell,"text",11)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Processor ',cell)
+				column = gtk.TreeViewColumn(' VLAN IPv6 ',cell)
 				column.add_attribute(cell,"text",12)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' RAM ',cell)
+				column = gtk.TreeViewColumn(' Processor ',cell)
 				column.add_attribute(cell,"text",13)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' HDD ',cell)
+				column = gtk.TreeViewColumn(' RAM ',cell)
 				column.add_attribute(cell,"text",14)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Traffic ',cell)
+				column = gtk.TreeViewColumn(' HDD ',cell)
 				column.add_attribute(cell,"text",15)
 				treeview.append_column(column)
-
+				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Load ',cell)
+				column = gtk.TreeViewColumn(' Traffic ',cell)
 				column.add_attribute(cell,"text",16)
 				treeview.append_column(column)
 
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' oVPN ',cell)
+				column = gtk.TreeViewColumn(' Load ',cell)
 				column.add_attribute(cell,"text",17)
 				treeview.append_column(column)
-				
+
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' oSSH ',cell)
+				column = gtk.TreeViewColumn(' oVPN ',cell)
 				column.add_attribute(cell,"text",18)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' SOCK ',cell)
+				column = gtk.TreeViewColumn(' oSSH ',cell)
 				column.add_attribute(cell,"text",19)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' HTTP ',cell)
+				column = gtk.TreeViewColumn(' SOCK ',cell)
 				column.add_attribute(cell,"text",20)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' TINC ',cell)
+				column = gtk.TreeViewColumn(' HTTP ',cell)
 				column.add_attribute(cell,"text",21)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' PING4 ',cell)
+				column = gtk.TreeViewColumn(' TINC ',cell)
 				column.add_attribute(cell,"text",22)
 				treeview.append_column(column)
 				
 				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' PING6 ',cell)
+				column = gtk.TreeViewColumn(' PING4 ',cell)
 				column.add_attribute(cell,"text",23)
+				treeview.append_column(column)
+				
+				cell = gtk.CellRendererText()
+				column = gtk.TreeViewColumn(' PING6 ',cell)
+				column.add_attribute(cell,"text",24)
 				treeview.append_column(column)
 			else:
 				cell = gtk.CellRendererPixbuf()
@@ -2021,7 +1997,7 @@ class Systray:
 				servershort = server[:3].upper()
 				imgpath = self.FLAG_IMG[countrycode]
 				countryimg = gtk.gdk.pixbuf_new_from_file(imgpath)
-				serverip  = self.OVPN_SERVER_INFO[servershort][0]
+				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
 				serverport = self.OVPN_SERVER_INFO[servershort][1]
 				serverproto = self.OVPN_SERVER_INFO[servershort][2]
 				servercipher = self.OVPN_SERVER_INFO[servershort][3]
@@ -2035,7 +2011,7 @@ class Systray:
 				except:
 					servermtu = 1500
 				if len(self.OVPN_SERVER_STATS) == 0:
-					serverliststore.append([countryimg,server,serverip,serverport,serverproto,servermtu,servercipher,])
+					serverliststore.append([countryimg,server,serverip4,serverport,serverproto,servermtu,servercipher,])
 				else:
 					#print "len(self.OVPN_SERVER_STATS) = %s" % (len(self.OVPN_SERVER_STATS))
 					try:
@@ -2056,6 +2032,7 @@ class Systray:
 							cputinc = "%s %%" % (self.OVPN_SERVER_STATS[servershort]["cpu"]["cpu-tinc"])
 							ping4 = self.OVPN_SERVER_STATS[servershort]["pings"]["ipv4"]
 							ping6 = self.OVPN_SERVER_STATS[servershort]["pings"]["ipv6"]
+							serverip6 = self.OVPN_SERVER_STATS[servershort]["extip6"]
 						except:
 							vlanip4 = "n/a"
 							vlanip6 = "n/a"
@@ -2073,21 +2050,22 @@ class Systray:
 							cputinc = "n/a"
 							ping4 = "0"
 							ping6 = "0"
+							serverip6 = "n/a"
 							self.debug(text="serverliststore failed: #1 %s" % (server))
 						
 						try:
 							serverstatus = self.OVPN_SERVER_STATS[servershort]["status"]
 							if serverstatus == "0":
 								statustext = "DEAD"
-								statusimgpath = "%s\\ico\\bullet_red.png" % (self.bin_dir)
+								statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
 							elif serverstatus == "1":
 								statustext = "OK"
-								statusimgpath = "%s\\ico\\bullet_green.png" % (self.bin_dir)
+								statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
 							elif serverstatus == "2":
 								statustext = "n/a"
-								statusimgpath = "%s\\ico\\bullet_white.png" % (self.bin_dir)
+								statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 						except:
-							statusimgpath = "%s\\ico\\bullet_white.png" % (self.bin_dir)
+							statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 						statusimg = gtk.gdk.pixbuf_new_from_file(statusimgpath)
 					except:
 						vlanip4 = "n/a"
@@ -2106,13 +2084,14 @@ class Systray:
 						cputinc = "n/a"
 						ping4 = "0"
 						ping6 = "0"
+						serverip6 = "n/a"
 						statustext = "n/a"
-						statusimgpath = "%s\\ico\\bullet_white.png" % (self.bin_dir)
+						statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 						statusimg = gtk.gdk.pixbuf_new_from_file(statusimgpath)
 
 						self.debug(text="extended serverliststore getdata failed on '%s'" % (server))
 					try:
-						serverliststore.append([statusimg,countryimg,server,serverip,serverport,serverproto,servermtu,servercipher,live,uplink,vlanip4,vlanip6,cpuinfo,raminfo,hddinfo,traffic,cpuload,cpuovpn,cpusshd,cpusock,cpuhttp,cputinc,ping4,ping6])
+						serverliststore.append([statusimg,countryimg,server,serverip4,serverip6,serverport,serverproto,servermtu,servercipher,live,uplink,vlanip4,vlanip6,cpuinfo,raminfo,hddinfo,traffic,cpuload,cpuovpn,cpusshd,cpusock,cpuhttp,cputinc,ping4,ping6])
 					except:
 						self.debug(text="serverliststore.append: failed '%s'" % (server))
 			try:
@@ -2150,38 +2129,31 @@ class Systray:
 		self.destroy_systray_menu()
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
-			#self.load_accinfo_from_remote()
 			try:
 				mainwindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
 				self.mainwindow = mainwindow
 				mainwindow.connect("destroy",self.show_mainwindow)
 				mainwindow.set_title("oVPN.to Client %s"%(CLIENTVERSION))
 				mainwindow.set_icon_name(gtk.STOCK_HOME)
-				mainwindow.set_default_size(640,480)
-				mainwindow.set_border_width(4)
-				
+				if self.ENABLE_EXTSERVERVIEW == True:
+					mainwindow.set_default_size(900,640)
+				else:
+					mainwindow.set_default_size(480,640)
 				self.mainwindow_vbox = gtk.VBox(False,1)
 				self.mainwindow.add(self.mainwindow_vbox)
-				try:
-					self.mainwindow_ovpn_server()
-				except:
-					self.debug(text="def show_mainwindow: self.mainwindow_ovpn_server() failed")
-				
-				self.mainwindow_menubar()
-				
+				self.mainwindow_ovpn_server()
 				mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
-				#print 'mainwindow created'
 				return True
 			except:
 				self.MAINWINDOW_OPEN = False
 				self.debug(text="def show_mainwindow: mainwindow failed")
+				return False
 		else:
 			self.mainwindow.destroy()
-			#self.mainwindow.hide()
 			self.MAINWINDOW_OPEN = False
-			#self.destroy_systray_menu()
 			self.debug(text="mainwindow destroy")
+			return False
 
 	#######
 	def cb_del_dns(self,widget,event,data):
@@ -2290,31 +2262,12 @@ class Systray:
 			self.PASSPHRASE == False
 
 	#######
-	def interface_selector_changed_cb(self, combobox):
-		model = combobox.get_model()
-		index = combobox.get_active()
-		if index > -1:
-			self.WIN_EXT_DEVICE = model[index][0]
-			self.debug(text="selected IF: %s" % (self.WIN_EXT_DEVICE))
-		return
-
-	#######
-	def tap_interface_selector_changed_cb(self, combobox):
-		model = combobox.get_model()
-		index = combobox.get_active()
-		if index > -1:
-			self.WIN_TAP_DEVICE = model[index][0]
-			self.debug(text="selected tap IF: %s" % (self.WIN_TAP_DEVICE))
-		return
-
-	#######
 	def set_ovpn_favorite_server(self,widget,event,server):
 		try:
 			self.OVPN_FAV_SERVER = server
 			self.OVPN_AUTO_CONNECT_ON_START = True
 			self.write_options_file()
 			self.destroy_context_menu_servertab()
-			self.mainwindow_menubar()
 			text = "oVPN AutoConnect: %s" % (server)
 			self.set_statusbar_text(text)
 			return True
@@ -2328,7 +2281,6 @@ class Systray:
 			self.OVPN_AUTO_CONNECT_ON_START = False
 			self.write_options_file()
 			self.destroy_context_menu_servertab()
-			self.mainwindow_menubar()
 			text = "oVPN AutoConnect: removed %s" % (server)
 			self.set_statusbar_text(text)
 			return True
@@ -2339,7 +2291,6 @@ class Systray:
 	def call_openvpn(self,widget,event,server):
 		self.destroy_systray_menu()
 		self.destroy_context_menu_servertab()
-		self.mainwindow_menubar()
 		try:
 			thread_openvpn = threading.Thread(target=lambda server=server: self.openvpn(server))
 			thread_openvpn.start()
@@ -2350,7 +2301,6 @@ class Systray:
 	#######
 	def openvpn(self,server):
 		if self.STATE_OVPN == False:
-			self.mainwindow_menubar()
 			self.OVPN_AUTO_RECONNECT = True
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
@@ -2369,14 +2319,14 @@ class Systray:
 								self.OVPN_CONNECTEDtoPort = port
 							#break
 						except:
-							self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file) )
+							self.errorquit(text="Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
 					if "proto " in line:
 						try:
 							proto = line.split()[1]
 							if proto.lower()  == "tcp" or proto.lower() == "udp":
 								self.OVPN_CONNECTEDtoProtocol = proto
 						except:
-							self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (self.ovpn_server_config_file) )
+							self.errorquit(text="Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
 			else:
 				return False
 				
@@ -2397,9 +2347,9 @@ class Systray:
 				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
 				thread_spawn_openvpn_process.start()
 				self.OVPN_THREADID = threading.currentThread()
-				self.debug(text=_("Started: oVPN %s on Thread: %s") %(server,self.OVPN_THREADID))
+				self.debug(text="Started: oVPN %s on Thread: %s" % (server,self.OVPN_THREADID))
 			except:
-				text=_("Error! Unable to start thread: oVPN %s ")%(server)
+				text="Error! Unable to start thread: oVPN %s " % (server)
 				self.set_statusbar_text(text)
 				self.msgwarn(text=text)
 				
@@ -2414,7 +2364,6 @@ class Systray:
 					text = "oVPN Watchdog enabled. Connecting to %s" % (server)
 					self.set_statusbar_text(text)
 					self.debug(text=text)
-					self.mainwindow_menubar()
 				except:
 					text = "Could not start oVPN Watchdog"
 					self.set_statusbar_text(text)
@@ -2430,68 +2379,63 @@ class Systray:
 
 	#######
 	def inThread_timer_ovpn_ping(self):
-		
 		if self.timer_ovpn_ping_running == False:
 			self.OVPN_PING_STAT = -2
 			self.debug(text="def inThread_timer_ovpn_ping")
 			self.timer_ovpn_ping_running = True
 		
-		if self.STATE_OVPN == True:
-			if self.OS == "win32":
-				time.sleep(2)
-				""" *** fixme *** pass to own function """
-				try:
-					ai_list = socket.getaddrinfo(self.OVPN_GATEWAY_IP4,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
-				except:
-					pass
-				
-				for (family, socktype, proto, canon, sockaddr) in ai_list:
-					addr, port = sockaddr[0:2]
-					try:
-						t1 = time.time()
-						s = socket.socket(family, socktype)
-						#s.settimeout(3)
-						s.connect(sockaddr)
-						t2 = time.time()
-						s.close()
-					except:
-						self.OVPN_PING_LAST = -2
-						pass
-					else:
-						self.OVPN_PING_LAST = int((t2-t1)*1000)
-						#self.debug(text="ping=%s"%(self.OVPN_PING_LAST))
-				
-				pingsum = 0
-				if self.OVPN_PING_LAST > 0:
-					self.OVPN_PING.append(self.OVPN_PING_LAST)
-				if len(self.OVPN_PING) > 12:
-					self.OVPN_PING.pop(0)
-				if len(self.OVPN_PING) > 0:
-					for ping in self.OVPN_PING:
-						pingsum += int(ping)
-					self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
-				if self.OVPN_PING_STAT >= 0:
-					if self.OVPN_CONNECTEDseconds > 16:
-						time.sleep(5)
-					else:
-						time.sleep(2)
-				else:
-					time.sleep(3)
-				
-				try:
-					pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
-					pingthread.start()
-					self.OVPN_PING_TIMER_THREADID = threading.currentThread()
-					#self.debug(text="done: rejoin def inThread_timer_ovpn_ping() %s: total threads: %s, ping=%s" %(self.OVPN_PING_TIMER_THREADID,threading.active_count(),OVPN_PING_out))	
-					return True
-				except:
-					self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
-				
-		elif self.STATE_OVPN == False:
+		if self.STATE_OVPN == False:
 			self.debug("leaving timer_ovpn_ping")
 			self.OVPN_PING_STAT = -1
+			self.LAST_PING_EXEC = 0
 			self.OVPN_PING = list()
 			self.timer_ovpn_ping_running = False
+			return
+		elif self.STATE_OVPN == True:
+			try:
+				ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
+				for (family, socktype, proto, canon, sockaddr) in ai_list:
+					randint = random.randint(30,120)
+					try:
+						if self.LAST_PING_EXEC < int(time.time())-randint:
+							t1 = time.time()
+							s = socket.socket(family, socktype)
+							s.connect(sockaddr)
+							t2 = time.time()
+							s.close()
+							PING = (t2-t1)*1000
+							if PING > 0 and PING < 1:
+								self.OVPN_PING_LAST = round(PING,3)
+							elif PING > 1:
+								self.OVPN_PING_LAST = int(PING)
+							self.debug(text="ping=%s"%(self.OVPN_PING_LAST))
+							self.LAST_PING_EXEC = int(time.time())
+					except:
+						self.LAST_PING_EXEC = int(time.time())-10
+						self.OVPN_PING_LAST = -2
+						pass
+			except:
+				self.debug(text="def inThread_timer_ovpn_ping: failed ai_list")
+			
+			pingsum = 0
+			if self.OVPN_PING_LAST > 0:
+				self.OVPN_PING.append(self.OVPN_PING_LAST)
+			if len(self.OVPN_PING) > 8192:
+				self.OVPN_PING.pop(0)
+			if len(self.OVPN_PING) > 0:
+				for ping in self.OVPN_PING:
+					pingsum += int(ping)
+				self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
+			
+			time.sleep(2)
+			try:
+				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
+				pingthread.start()
+				self.OVPN_PING_TIMER_THREADID = threading.currentThread()
+				#self.debug(text="done: rejoin def inThread_timer_ovpn_ping() %s: total threads: %s, ping=%s" %(self.OVPN_PING_TIMER_THREADID,threading.active_count(),OVPN_PING_out))	
+				return True
+			except:
+				self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
 
 	#######
 	def inThread_spawn_openvpn_process(self):
@@ -2505,14 +2449,11 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.debug(text="def call_openvpn self.OVPN_CONNECTEDto = %s" %(self.OVPN_CONNECTEDto))
-		
-		self.mainwindow_menubar()
 		if not self.openvpn_check_files():
 			self.OVPN_CONNECTEDto = False
 			return False
 		if not self.win_firewall_start():
-			text = _("def inThread_spawn_openvpn_process: Could not start Windows Firewall!");
-			self.debug(text=text)
+			self.debug(text="def inThread_spawn_openvpn_process: Could not start Windows Firewall!")
 			self.OVPN_CONNECTEDto = False
 			return False
 		self.OVPN_CONNECTEDtime = int(time.time())
@@ -2557,42 +2498,39 @@ class Systray:
 		if self.OVPN_AUTO_RECONNECT == True:
 			self.debug(text="def inThread_spawn_openvpn_process: auto-reconnect %s" %(self.call_ovpn_srv))
 			self.OVPN_RECONNECT_NOW = True
-		self.mainwindow_menubar()
 
 	#######
 	def read_gateway_from_routes(self):
 		try:
-			self.debug(text="def read_ovpn_routes:")
-			string = "route.exe print"
-			self.OVPN_READ_ROUTES = subprocess.check_output("%s" % (string),shell=True)
-			#self.debug(text="self.OVPN_READ_ROUTES = %s"%(self.OVPN_READ_ROUTES))
-			split = self.OVPN_READ_ROUTES.split('\r\n')
-			#self.debug(text="split=%s"%(split))
-			for line in split:
-				#self.debug(text="%s"%(line))
-				if "%s"%(self.OVPN_CONNECTEDtoIP) in line:
-					self.debug(text="def read_ovpn_routes: %s"%(line))
+			output = self.win_return_route_cmd('print')
+			for line in output:
+				split = line.split()
+				try:
+					if split[0] == "0.0.0.0" and split[1] == "0.0.0.0":
+						self.GATEWAY_LOCAL = split[2]
+						self.debug(text="self.GATEWAY_LOCAL #1: %s" % (self.GATEWAY_LOCAL))
+						return True
+				except:
+					pass
+				if self.OVPN_CONNECTEDtoIP in line:
+					self.debug(text="def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
 					self.GATEWAY_LOCAL = line.split()[2]
-					self.debug(text="self.GATEWAY_LOCAL: %s"%(self.GATEWAY_LOCAL))
+					self.debug(text="self.GATEWAY_LOCAL #2: %s" % (self.GATEWAY_LOCAL))
+					return True
 		except:
 			self.debug(text="def read_gateway_from_routes: failed")
 
-	#######	
+	#######
 	def del_ovpn_routes(self):
-		self.read_gateway_from_routes()
-		if not self.GATEWAY_LOCAL == False:
-			self.debug(text="def del_ovpn_routes")
-			string1 = "route.exe DELETE %s MASK 255.255.255.255 %s" % (self.OVPN_CONNECTEDtoIP,self.GATEWAY_LOCAL)
-			string2 = "route.exe DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.OVPN_GATEWAY_IP4)
-			string3 = "route.exe DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.OVPN_GATEWAY_IP4)
-			try: 
-				self.OVPN_DEL_ROUTES1 = subprocess.check_output("%s" % (string1),shell=True)
-				self.OVPN_DEL_ROUTES2 = subprocess.check_output("%s" % (string2),shell=True)
-				self.OVPN_DEL_ROUTES3 = subprocess.check_output("%s" % (string3),shell=True)
-				self.debug(text="self.OVPN_DEL_ROUTES: %s, %s, %s"%(self.OVPN_DEL_ROUTES1,self.OVPN_DEL_ROUTES2,self.OVPN_DEL_ROUTES3))
-			except:
-				self.debug(text="def del_ovpn_routes: failed")
-				pass
+		try:
+			if self.read_gateway_from_routes():
+				if not self.GATEWAY_LOCAL == False:
+					self.ROUTE_CMDLIST.append("DELETE %s MASK 255.255.255.255 %s" % (self.OVPN_CONNECTEDtoIP,self.GATEWAY_LOCAL))
+					self.ROUTE_CMDLIST.append("DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
+					self.ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
+					return self.win_join_route_cmd()
+		except:
+			self.debug(text="def del_ovpn_routes: failed")
 
 	#######
 	def win_clear_ipv6(self):
@@ -2603,19 +2541,17 @@ class Systray:
 	#######
 	def win_clear_ipv6_dns(self):
 		try:
-			string = 'netsh.exe interface ipv6 show dnsservers "%s"' % (self.WIN_TAP_DEVICE)
-			self.debug(text="def win_clear_ipv6_dns = '%s'" % (string))
-			read = subprocess.check_output("%s" % (string),shell=True)
-			read = read.strip().decode('cp1258','ignore')
-			list = read.strip(' ').split('\r\n')
-			for line in list:
+			netshcmd = 'interface ipv6 show dnsservers "%s"' % (self.WIN_TAP_DEVICE)
+			self.debug(text="def win_clear_ipv6_dns: netshcmd = '%s'" % (netshcmd))
+			netsh_output = self.win_return_netsh_cmd(netshcmd)
+			for line in netsh_output:
 				#print line
-				if " fd48:8bea:68a5:" in line:
+				if "fd48:8bea:68a5:" in line:
 					#print line
 					ipv6addr = line.split("    ")[2]
 					#print ipv6addr
 					if ipv6addr.startswith("fd48:8bea:68a5:"):
-						string = 'netsh interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
+						string = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
 						try:
 							cmd = subprocess.check_output("%s" % (string),shell=True)
 							text = "def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,string)
@@ -2632,44 +2568,40 @@ class Systray:
 	#######
 	def win_clear_ipv6_addr(self):
 		try:
-			string = 'netsh.exe interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
-			self.debug(text="def win_clear_ipv6_addr: string = '%s'" % (string))
-			read = subprocess.check_output("%s" % (string),shell=True)
-			read = read.strip().decode('cp1258','ignore')
-			list = read.strip(' ').split('\r\n')
-			for line in list:
-				if " fd48:8bea:68a5:" in line:
-					if not "%" in line:
-						ipv6addr = line.split()[1]
-						string = "netsh interface ipv6 delete address address=\"%s\" interface=\"%s\"" % (ipv6addr,self.WIN_TAP_DEVICE)
-						try:
-							cmd = subprocess.check_output("%s" % (string),shell=True)
-							text = "def win_clear_ipv6_addr: removed %s '%s'" % (ipv6addr,string)
-							self.debug(text=text)
-						except subprocess.CalledProcessError as e:
-							text = "def win_clear_ipv6_addr: %s %s failed '%s': %s" % (ipv6addr,self.WIN_TAP_DEVICE,string,e.output)
-							self.debug(text=text)
-						except:
-							text = "def win_clear_ipv6_addr: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,string)
-							self.debug(text=text)
+			try:
+				netshcmd = 'interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
+				self.debug(text="def win_clear_ipv6_addr: netshcmd = '%s'" % (netshcmd))
+				netsh_output = self.win_return_netsh_cmd(netshcmd)
+				try:
+					for line in netsh_output:
+						if " fd48:8bea:68a5:" in line:
+							#print line
+							if not "%" in line:
+								ipv6addr = line.split()[1]
+								netshcmd = 'interface ipv6 delete address address="%s" interface="%s"' % (ipv6addr,self.WIN_TAP_DEVICE)
+								self.NETSH_CMDLIST.append(netshcmd)
+					if len(self.NETSH_CMDLIST) > 0:
+						self.win_join_netsh_cmd()
+				except:
+					self.debug(text="def win_clear_ipv6_addr: failed #2")
+			except:
+				self.debug(text="def win_clear_ipv6_addr: failed #1")
 		except:
 			self.debug(text="def win_clear_ipv6_addr: failed")
 
 	#######
 	def win_clear_ipv6_routes(self):
 		try:
-			string = "netsh.exe interface ipv6 show route"
-			read = subprocess.check_output("%s" % (string),shell=True)
-			read = read.strip().decode('cp1258','ignore')
-			list = read.strip(' ').split('\r\n')
-			for line in list:
-				if " fd48:8bea:68a5:" in line or " fe80::" in line:
+			netshcmd = 'interface ipv6 show route'
+			netsh_output = self.win_return_netsh_cmd(netshcmd)
+			self.debug(text="def win_clear_ipv6_routes: netshcmd = '%s'" % (netshcmd))
+			for line in netsh_output:
+				if "fd48:8bea:68a5:" in line:
 					ipv6 = line.split()[3]
-					string = "route DELETE %s" % (ipv6)
-					read = subprocess.check_output("%s" % (string),shell=True)
-					self.debug(text="def win_clear_ipv6_routes: %s %s" % (ipv6,read))
+					output = self.win_return_route_cmd("DELETE %s" % (ipv6))
+					self.debug(text="def win_clear_ipv6_routes: %s %s" % (ipv6,output))
 		except:
-			pass
+			self.debug(text="def win_clear_ipv6_routes: failed")
 
 	#######
 	def inThread_timer_openvpn_reconnect(self):
@@ -2694,7 +2626,6 @@ class Systray:
 		self.OVPN_AUTO_RECONNECT = False
 		self.OVPN_RECONNECT_NOW = False
 		self.destroy_systray_menu()
-		self.mainwindow_menubar()
 		self.debug(text="def kill_openvpn")
 		exe = self.OPENVPN_EXE.split("\\")[-1]
 		string = "taskkill /F /IM %s" % (exe)
@@ -2712,27 +2643,26 @@ class Systray:
 		if self.check_dns_is_whitelisted() == True:
 			return True
 		servername = self.OVPN_CONNECTEDto
-		self.netsh_cmdlist = list()
 		try:
 			pridns = self.MYDNS[servername]["primary"]["ip4"]
-			self.netsh_cmdlist.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,pridns))
-			self.netsh_cmdlist.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,pridns))
+			self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,pridns))
+			self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,pridns))
 			try:
 				secdns = self.MYDNS[servername]["secondary"]["ip4"]
-				self.netsh_cmdlist.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,secdns))
-				self.netsh_cmdlist.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,secdns))
+				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,secdns))
+				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,secdns))
 			except:
 				pass
 		except:
 			pass
-			if len(self.netsh_cmdlist) == 0:
+			if len(self.NETSH_CMDLIST) == 0:
 				if self.GATEWAY_DNS1 == "127.0.0.1":
 					setdns = "127.0.0.1"
 				else:
-					setdns = self.OVPN_GATEWAY_IP4
-				self.netsh_cmdlist.append("interface ip set dnsservers \"%s\" static %s primary no" % (self.WIN_EXT_DEVICE,setdns))
-				self.netsh_cmdlist.append("interface ip set dnsservers \"%s\" static %s primary no" % (self.WIN_TAP_DEVICE,setdns))
-		if self.win_join_netsh_cmd():
+					setdns = self.GATEWAY_OVPN_IP4A
+				self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,setdns))
+				self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,setdns))
+		if self.win_join_netsh_cmd() == True:
 			self.WIN_DNS_CHANGED = True
 			return True
 		else:
@@ -2747,12 +2677,9 @@ class Systray:
 				return True
 			if self.check_dns_is_whitelisted() == True:
 				return True
-				
-			self.netsh_cmdlist = list()
-			
 			try:
 				if self.WIN_EXT_DHCP == True:
-					self.netsh_cmdlist.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
+					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
 					if self.win_join_netsh_cmd():
 						self.debug(text="DNS restored to DHCP.")
 						return True
@@ -2762,25 +2689,25 @@ class Systray:
 				self.debug(text="def win_netsh_restore_dns_from_backup: restore DHCP on IF: '%s' failed " % (self.WIN_EXT_DEVICE))
 			
 			try:
-				if not self.GATEWAY_DNS1 == self.OVPN_GATEWAY_IP4:
-					self.netsh_cmdlist.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
+				if not self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4A:
+					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
 					if self.win_join_netsh_cmd():
 						self.debug(text="Primary DNS restored to: %s"%(self.GATEWAY_DNS1))
 						if self.GATEWAY_DNS2 == False:
 							return True
 						else:
-							self.netsh_cmdlist.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
+							self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
 							if self.win_join_netsh_cmd():
-								self.debug(text=_("Secondary DNS restored to %s")%(self.GATEWAY_DNS2))
+								self.debug(text="Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
 								return True
 							else:
-								self.msgwarn(text=_("Error: Restore Secondary DNS to %s failed.")%(self.GATEWAY_DNS2))
+								self.msgwarn(text="Error: Restore Secondary DNS to %s failed." % (self.GATEWAY_DNS2))
 								return False
 					else:
-						self.msgwarn(text=_("Error: Restore Primary DNS to %s failed.")%(self.GATEWAY_DNS1))
+						self.msgwarn(text="Error: Restore Primary DNS to %s failed." % (self.GATEWAY_DNS1))
 						return False
 				else:
-					self.netsh_cmdlist.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
+					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
 					if self.win_join_netsh_cmd():
 						self.debug(text="DNS restored to DHCP")
 						return True
@@ -2797,14 +2724,12 @@ class Systray:
 		if self.NO_DNS_CHANGE == True:
 			return True
 		try:
-			string = "netsh interface ipv4 show dns"
-			read = subprocess.check_output("%s" % (string),shell=True)
-			read = read.strip().decode('cp1258','ignore')
+			netshcmd = 'interface ipv4 show dns'
+			netsh_output = self.win_return_netsh_cmd(netshcmd)
 			search = '"%s"' % (self.WIN_EXT_DEVICE)
-			list = read.strip(' ').split('\r\n')
 			i, m1, m2, t = 0, 0, 0 ,0
 			self.debug(text="def win_netsh_read_dns_to_backup: search = %s" % (search))
-			for line in list:
+			for line in netsh_output:
 				if search in line:
 					self.debug(text="found: %s in %s line %s" % (search,line,i))
 					m1=i+1
@@ -2889,20 +2814,19 @@ class Systray:
 			return True
 		if self.NO_DNS_CHANGE == False:
 			self.win_ipconfig_flushdns()
-		self.netsh_cmdlist = list()
 		if self.WIN_RESET_FIREWALL == True:
-			self.netsh_cmdlist.append("advfirewall reset")
-		#self.netsh_cmdlist.append("advfirewall set privateprofile logging filename \"%s\"" % (self.pfw_private_log))
-		#self.netsh_cmdlist.append("advfirewall set publicprofile logging filename \"%s\"" % (self.pfw_public_log))
-		#self.netsh_cmdlist.append("advfirewall set domainprofile logging filename \"%s\"" % (self.pfw_domain_log))
-		self.netsh_cmdlist.append("advfirewall set allprofiles state on")
-		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
-		self.netsh_cmdlist.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
+			self.NETSH_CMDLIST.append("advfirewall reset")
+		#self.NETSH_CMDLIST.append("advfirewall set privateprofile logging filename \"%s\"" % (self.pfw_private_log))
+		#self.NETSH_CMDLIST.append("advfirewall set publicprofile logging filename \"%s\"" % (self.pfw_public_log))
+		#self.NETSH_CMDLIST.append("advfirewall set domainprofile logging filename \"%s\"" % (self.pfw_domain_log))
+		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
+		self.NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
+		self.NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
 		if self.TAP_BLOCKOUTBOUND == True:
 			opt = "blockoutbound"
 		else:
 			opt = "allowoutbound"
-		self.netsh_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,%s" % (opt))
+		self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,%s" % (opt))
 		if self.win_join_netsh_cmd():
 			self.WIN_FIREWALL_STARTED = True
 			return True
@@ -2915,12 +2839,10 @@ class Systray:
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
 				self.win_firewall_whitelist_ovpn_on_tap(option="add")
-				self.netsh_cmdlist = list()
-				self.netsh_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
+				self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
 			else:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
-				self.netsh_cmdlist = list()
-				self.netsh_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")		
+				self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")		
 			self.win_join_netsh_cmd()
 			self.debug(text="Block outbound on TAP!\n\nAllow Whitelist to Internal oVPN Services\n\n'%s'\n\nSee all Rules:\n Windows Firewall with Advanced Security\n --> Outgoing Rules" % (self.WHITELIST_PUBLIC_PROFILE))
 			return True
@@ -2931,11 +2853,10 @@ class Systray:
 	def win_firewall_allowout(self):
 		if self.NO_WIN_FIREWALL == True:
 			return True	
-		self.netsh_cmdlist = list()
-		self.netsh_cmdlist.append("advfirewall set allprofiles state on")
-		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
-		self.netsh_cmdlist.append("advfirewall set domainprofile firewallpolicy blockinbound,allowoutbound")
-		self.netsh_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
+		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
+		self.NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
+		self.NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,allowoutbound")
+		self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
 		if self.win_join_netsh_cmd():
 			self.WIN_FIREWALL_STARTED = True
 			return True
@@ -2944,11 +2865,10 @@ class Systray:
 	def win_firewall_block_on_exit(self):
 		if self.NO_WIN_FIREWALL == True:
 			return True
-		self.netsh_cmdlist = list()
-		self.netsh_cmdlist.append("advfirewall set allprofiles state on")
-		self.netsh_cmdlist.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
-		self.netsh_cmdlist.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
-		self.netsh_cmdlist.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
+		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
+		self.NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
+		self.NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
+		self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
 		return self.win_join_netsh_cmd()
 
 	#######
@@ -2960,7 +2880,6 @@ class Systray:
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
-		self.netsh_cmdlist = list()
 		for entry,value in self.WHITELIST_PUBLIC_PROFILE.iteritems():
 			ip = value["ip"]
 			port = value["port"]
@@ -2968,7 +2887,7 @@ class Systray:
 			
 			rule_name = "(oVPN) Allow OUT on TAP: %s %s:%s %s" % (entry,ip,port,protocol)
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=public dir=out %s" % (option,rule_name,ip,port,protocol,actionstring)
-			self.netsh_cmdlist.append(rule_string)
+			self.NETSH_CMDLIST.append(rule_string)
 			self.debug(text="Whitelist: %s %s %s %s" % (entry,ip,port,protocol))
 		self.win_join_netsh_cmd()
 		return True
@@ -2978,19 +2897,18 @@ class Systray:
 		if self.NO_WIN_FIREWALL == True:
 			return True
 		self.debug(text="def win_firewall_add_rule_to_vcp:")
-		self.netsh_cmdlist = list()
 		if option == "add":
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
 		url = "https://%s" % (DOMAIN)
-		ips = ["178.17.170.116",self.OVPN_GATEWAY_IP4]
+		ips = ["178.17.170.116",self.GATEWAY_OVPN_IP4A]
 		port = 443
 		protocol = "tcp"
 		for ip in ips:
 			rule_name = "(oVPN) Allow OUT on EXT: %s %s:%s %s" % (url,ip,port,protocol)
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out %s" % (option,rule_name,ip,port,protocol,actionstring)
-			self.netsh_cmdlist.append(rule_string)
+			self.NETSH_CMDLIST.append(rule_string)
 		if self.win_join_netsh_cmd():
 			self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
 			return True
@@ -3002,10 +2920,9 @@ class Systray:
 		if self.WIN_BACKUP_FIREWALL == False:
 			return True
 		self.debug(text="def win_firewall_export_on_start:")
-		self.netsh_cmdlist = list()
 		if os.path.isfile(self.pfw_bak):
 			os.remove(self.pfw_bak)
-		self.netsh_cmdlist.append('advfirewall export "%s"' % (self.pfw_bak))
+		self.NETSH_CMDLIST.append('advfirewall export "%s"' % (self.pfw_bak))
 		return self.win_join_netsh_cmd()
 
 	#######
@@ -3016,17 +2933,15 @@ class Systray:
 			return True
 		if self.WIN_FIREWALL_STARTED == True:
 			self.debug(text="def win_firewall_restore_on_exit:")
-			self.netsh_cmdlist = list()
-			self.netsh_cmdlist.append("advfirewall reset")
+			self.NETSH_CMDLIST.append("advfirewall reset")
 			if os.path.isfile(self.pfw_bak):
-				self.netsh_cmdlist.append('advfirewall import "%s"' % (self.pfw_bak))
+				self.NETSH_CMDLIST.append('advfirewall import "%s"' % (self.pfw_bak))
 			return self.win_join_netsh_cmd()
 
 	#######
 	def win_enable_tap_interface(self):
 		self.debug(text="def win_enable_tap_interface:")
-		self.netsh_cmdlist = list()
-		self.netsh_cmdlist.append('interface set interface "%s" ENABLED'%(self.WIN_TAP_DEVICE))
+		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_TAP_DEVICE))
 		return self.win_join_netsh_cmd()
 
 	#######
@@ -3034,14 +2949,12 @@ class Systray:
 	*fixme* (unused)
 	def win_disable_interface(self):
 		self.debug(text="def win_disable_interface:")
-		self.netsh_cmdlist = list()
-		self.netsh_cmdlist.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
+		self.NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
 		return self.win_join_netsh_cmd()		
 		
 	def win_ensable_interface(self):
 		self.debug(text="def win_ensable_interface:")
-		self.netsh_cmdlist = list()
-		self.netsh_cmdlist.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
+		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
 		return self.win_join_netsh_cmd()
 	"""
 
@@ -3049,54 +2962,119 @@ class Systray:
 	def win_firewall_modify_rule(self,option):
 		if self.NO_WIN_FIREWALL == True:
 			return True
-		self.netsh_cmdlist = list()
 		rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
 		if option == "add":
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
 		if option == "delete":
 			rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
 		#self.debug(text="def pfw: %s"%(rule_string))
-		self.netsh_cmdlist.append(rule_string)
+		self.NETSH_CMDLIST.append(rule_string)
 		return self.win_join_netsh_cmd()
 
 	#######
-	def win_join_netsh_cmd(self):
-		i=0
-		for cmd in self.netsh_cmdlist:
-			fullstring = "netsh.exe %s" % (cmd)
+	def win_return_netsh_cmd(self,cmd):
+		if os.path.isfile(self.WIN_NETSH_EXE):
+			netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
 			try: 
-				exitcode = subprocess.call("%s" % (fullstring),shell=True)
-				if exitcode == 0:
-					self.debug(text="netshOK: '%s': exitcode = %s" % (fullstring,exitcode))
-					i+=1
-				else:
-					self.debug(text="netshERROR: '%s': exitcode = %s" % (fullstring,exitcode))
+				read = subprocess.check_output('%s' % (netshcmd),shell=True)
+				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
+				#self.debug(text="def win_return_netsh_cmd: output = '%s'" % (output))
+				return output
 			except:
-				self.debug(text="def win_join_netsh_cmd: '%s' failed" % (fullstring))
-		if len(self.netsh_cmdlist) == i:
-			self.netsh_cmdlist = list()
-			return True
+				self.debug(text="def win_return_netsh_cmd: '%s' failed" % (netshcmd))
+		else:
+			self.errorquit(text="Error: netsh.exe not found!")
 
-	def win_ipconfig_flushdns(self):
-		try: 
-			fullstring = "ipconfig.exe /flushdns"
-			exitcode = subprocess.call("%s" % (fullstring),shell=True)
-			if exitcode == 0:
-				self.debug(text="%s: exitcode = %s" % (fullstring,exitcode))
+	#######
+	def win_join_netsh_cmd(self):
+		if os.path.isfile(self.WIN_NETSH_EXE):
+			i=0
+			for cmd in self.NETSH_CMDLIST:
+				netshcmd = '"%s" %s' % (self.WIN_NETSH_EXE,cmd)
+				try: 
+					exitcode = subprocess.call('%s' % (netshcmd),shell=True)
+					if exitcode == 0:
+						self.debug(text="netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
+						i+=1
+					else:
+						self.debug(text="netshERROR: '%s': exitcode = %s" % (netshcmd,exitcode))
+				except:
+					self.debug(text="def win_join_netsh_cmd: '%s' failed" % (netshcmd))
+			
+			if len(self.NETSH_CMDLIST) == i:
+				self.NETSH_CMDLIST = list()
 				return True
 			else:
-				self.debug(text="%s: exitcode = %s" % (fullstring,exitcode))
-		except:
-			self.debug(text="def win_join_ipconfig_cmd: '%s' failed" % (fullstring))
+				self.NETSH_CMDLIST = list()
+				return False
+		else:
+			self.errorquit(text="Error: netsh.exe not found!")
+
+	def win_return_route_cmd(self,cmd):
+		if os.path.isfile(self.WIN_ROUTE_EXE):
+			routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
+			try: 
+				read = subprocess.check_output('%s' % (routecmd),shell=True)
+				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
+				#self.debug(text="def win_return_route_cmd: output = '%s'" % (output))
+				return output
+			except:
+				self.debug(text="def win_return_route_cmd: '%s' failed" % (routecmd))
+				return False
+		else:
+			self.errorquit(text="Error: route.exe not found!")
+
+	#######
+	def win_join_route_cmd(self):
+		if os.path.isfile(self.WIN_ROUTE_EXE):
+			i=0
+			for cmd in self.ROUTE_CMDLIST:
+				routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
+				try: 
+					exitcode = subprocess.call('%s' % (routecmd),shell=True)
+					if exitcode == 0:
+						self.debug(text="routeOK: '%s': exitcode = %s" % (routecmd,exitcode))
+						i+=1
+					else:
+						self.debug(text="routeERROR: '%s': exitcode = %s" % (routecmd,exitcode))
+				except:
+					self.debug(text="def win_join_route_cmd: '%s' failed" % (routecmd))
+			
+			if len(self.ROUTE_CMDLIST) == i:
+				self.ROUTE_CMDLIST = list()
+				return True
+			else:
+				self.ROUTE_CMDLIST = list()
+				return False
+		else:
+			self.errorquit(text="Error: route.exe not found!")
+
+	def win_ipconfig_flushdns(self):
+		if os.path.isfile(self.WIN_IPCONFIG_EXE):
+			try: 
+				cmdstring = '"%s" /flushdns' % (self.WIN_IPCONFIG_EXE)
+				exitcode = subprocess.call("%s" % (cmdstring),shell=True)
+				if exitcode == 0:
+					self.debug(text="%s: exitcode = %s" % (cmdstring,exitcode))
+					return True
+				else:
+					self.debug(text="%s: exitcode = %s" % (cmdstring,exitcode))
+			except:
+				self.debug(text="def win_join_ipconfig_cmd: '%s' failed" % (cmdstring))
+		else:
+			self.errorquit(text="def win_ipconfig_flushdns: ipconfig.exe not found!")
 
 	#######
 	def win_ipconfig_displaydns(self):
-		try: 
-			fullstring = "ipconfig.exe /displaydns"
-			out = subprocess.check_output("%s" % (fullstring),shell=True)
-			return out
-		except:
-			self.debug(text="def win_ipconfig_displaydns: failed" % (fullstring))
+		if os.path.isfile(self.WIN_IPCONFIG_EXE):
+			try: 
+				cmdstring = '"%s" /displaydns' % (self.WIN_IPCONFIG_EXE)
+				out = subprocess.check_output("%s" % (cmdstring),shell=True)
+				return out
+			except:
+				self.debug(text="def win_ipconfig_displaydns: failed" % (cmdstring))
+		else:
+			self.errorquit(text="def win_ipconfig_displaydns: ipconfig.exe not found!")
 
 	#######
 	def isValueIPv4(self,value):
@@ -3126,8 +3104,9 @@ class Systray:
 		if self.timer_check_certdl_running == False:
 			try:
 				dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK_CANCEL)
-				dialogWindow.set_title(_("Enter your Passphrase"))
-				dialogWindow.set_markup(_("Enter your Passphrase"))	
+				text = "Enter your Passphrase"
+				dialogWindow.set_title(text)
+				dialogWindow.set_markup(text)
 				dialogBox = dialogWindow.get_content_area()
 				checkbox = gtk.CheckButton("Save Passphrase in File?")
 				checkbox.show()
@@ -3190,8 +3169,8 @@ class Systray:
 	def form_ask_userid(self):
 		try:
 			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK_CANCEL)
-			dialogWindow.set_title(_("oVPN.to Setup"))
-			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
+			dialogWindow.set_title("oVPN.to Setup")
+			dialogWindow.set_markup("Enter your oVPN.to Details")
 			dialogBox = dialogWindow.get_content_area()
 			
 			useridEntry = gtk.Entry()
@@ -3244,7 +3223,7 @@ class Systray:
 			dialogWindow.destroy()
 			if response == gtk.RESPONSE_OK:
 				if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum() and ph1 == ph2 and len(ph1) > 0:
-					self.USERID, self.profile = userid, userid
+					self.USERID = userid
 					self.APIKEY = apikey
 					self.PASSPHRASE = ph1
 					return True
@@ -3260,6 +3239,33 @@ class Systray:
 				if self.check_passphrase():
 					return True
 		return False
+
+	#######
+	def cb_interface_selector_changed(self, combobox):
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.WIN_EXT_DEVICE = model[index][0]
+			self.debug(text="selected IF: %s" % (self.WIN_EXT_DEVICE))
+		return
+		
+	######
+	def cb_select_userid(self, combobox):
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1 and model[index][0].isdigit() and model[index][0] > 1:
+			self.USERID = model[index][0]
+			self.debug(text="selected USERID: %s" % (self.USERID))
+		return
+
+	#######
+	def cb_tap_interface_selector_changed(self, combobox):
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.WIN_TAP_DEVICE = model[index][0]
+			self.debug(text="selected tap IF: %s" % (self.WIN_TAP_DEVICE))
+		return
 
 	#######
 	def cb_form_reask_userid(self,widget,event):
@@ -3406,6 +3412,7 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		#self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
+		self.redraw_mainwindow_vbox()
 
 	#######
 	def cb_change_ipmode2(self,widget,event):
@@ -3415,6 +3422,7 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
+		self.redraw_mainwindow_vbox()
 
 	# *** fixme: need isValueIPv6 first! ***
 	#######
@@ -3496,8 +3504,7 @@ class Systray:
 		if os.path.isfile(fwbak):
 			self.debug(text="def cb_restore_firewallbackup: %s" % (fwbak))
 			self.win_firewall_export_on_start()
-			self.netsh_cmdlist = list()
-			self.netsh_cmdlist.append('advfirewall import "%s"' % (fwbak))
+			self.NETSH_CMDLIST.append('advfirewall import "%s"' % (fwbak))
 			return self.win_join_netsh_cmd()
 
 	#######
@@ -3588,7 +3595,7 @@ class Systray:
 				self.body = r.text
 			
 			if self.body == "wait":
-				self.set_progressbar(text = _("Waiting for oVPN Certificates..."))
+				self.set_progressbar(text="Waiting for oVPN Certificates...")
 				
 			if self.body.isalnum() and len(self.body) <= 128:
 				self.debug("requests: self.body = %s"%(self.body))
@@ -3599,7 +3606,7 @@ class Systray:
 			self.debug(text=text)
 			return False
 		except:
-			self.msgwarn(text = _("def API_REQUEST: requests error on: %s failed!" % (API_ACTION)))
+			self.msgwarn(text="def API_REQUEST: requests error on: %s failed!" % (API_ACTION))
 			return False
 		
 		if not self.body == False:
@@ -3610,7 +3617,7 @@ class Systray:
 					self.curldata = self.curldata[1]
 					return True
 			else:
-				text = _("Invalid User-ID / API-Key or Account expired.")
+				text = "Invalid User-ID / API-Key or Account expired."
 				self.body = False
 				self.set_progressbar(text)
 				self.timer_check_certdl_running = False
@@ -3647,7 +3654,7 @@ class Systray:
 			"""
 			if not self.try_socket(DOMAIN,443) == True:
 				self.debug(text="def check_inet_connection: failed 2 !")
-				#self.win_firewall_add_rule_to_vcp(option="add")
+				self.win_firewall_add_rule_to_vcp(option="add")
 				if not self.try_socket(DOMAIN,443) == True:
 					self.win_firewall_add_rule_to_vcp(option="delete")
 					self.debug(text="def check_inet_connection: failed 3 !")
@@ -3657,6 +3664,7 @@ class Systray:
 
 	#######
 	def try_socket(self,host,port):
+		self.debug(text="def try_socket: %s:%s" % (host,port))
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(3)
@@ -3665,7 +3673,7 @@ class Systray:
 		except:
 			return False
 		if result == 0:
-			if host == self.OVPN_GATEWAY_IP4 and port == 1080:
+			if host == self.GATEWAY_OVPN_IP4A and port == 1080:
 				return self.check_myip()
 			else:
 				return True
@@ -3674,14 +3682,22 @@ class Systray:
 	#######
 	def check_myip(self):
 		# *** fixme *** missing ipv6 support
-		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
-			try:
-				url = "http://%s/myip4" % (self.OVPN_GATEWAY_IP4)
-				r = requests.get(url)
-				if r.content == self.OVPN_CONNECTEDtoIP:
-					return True
-			except:
-				return False
+		if (self.LAST_CHECK_MYIP < int(time.time())-60):
+			self.debug(text="def check_myip: True")
+			if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
+				try:
+					url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
+					r = requests.get(url)
+					if r.content == self.OVPN_CONNECTEDtoIP:
+						self.debug(text="def check_myip: True")
+						self.LAST_CHECK_MYIP = int(time.time())
+						return True
+				except:
+					self.debug(text="def check_myip: False")
+					self.LAST_CHECK_MYIP = int(time.time())-50
+					return False
+			else:
+				return True
 		else:
 			return True
 
@@ -3700,9 +3716,9 @@ class Systray:
 			content = os.listdir(self.vpn_cfgold)
 			for file in content:
 				if file.endswith('.ovpn.to.ovpn') or file.endswith('.ovpn.to') or file.endswith('.txt') or file.endswith('.log'):
-					fullstring = 'move /Y "%s\\%s" "%s\\"' % (self.vpn_cfgold,file,self.vpn_cfg)
-					self.debug(text="def move_configs: '%s'" % fullstring)
-					exitcode = subprocess.call('%s' % (fullstring),shell=True)
+					netshcmd = 'move /Y "%s\\%s" "%s\\"' % (self.vpn_cfgold,file,self.vpn_cfg)
+					self.debug(text="def move_configs: '%s'" % netshcmd)
+					exitcode = subprocess.call('%s' % (netshcmd),shell=True)
 					if exitcode == 0:
 						self.debug(text="def move_configs: exitcode = %s" % (exitcode))
 					else:
@@ -3722,7 +3738,6 @@ class Systray:
 						servername = file[:-5]
 						countrycode = servername[:2].lower()
 						servershort = servername[:3].upper()
-
 						if os.path.isfile(filepath):
 							#print filepath
 							serverinfo = list()
@@ -3767,16 +3782,15 @@ class Systray:
 										mtu = 1500
 										serverinfo.append(mtu)
 										self.debug(text="Could not read mtu from config: %s" % (self.ovpn_server_config_file))
-
 							# end: for line in open(filepath)
 							self.OVPN_SERVER_INFO[servershort] = serverinfo
 						try:
 							flagicon = self.FLAG_IMG[countrycode]
 						except:
-							imgfile = '%s\\ico\\flags\\%s.png' % (self.bin_dir,countrycode)
+							imgfile = '%s\\flags\\%s.png' % (self.ico_dir,countrycode)
 							if not os.path.isfile(imgfile):
 								if not self.load_flags_from_remote(countrycode,imgfile):
-									imgfile = '%s\\ico\\flags\\00.png' % (self.bin_dir)
+									imgfile = '%s\\flags\\00.png' % (self.ico_dir)
 							self.FLAG_IMG[countrycode] = imgfile
 						self.OVPN_SERVER.append(servername)
 						#self.debug(text="def load_ovpn_server: file = %s " % (file))
@@ -3814,7 +3828,9 @@ class Systray:
 	def load_serverdata_from_remote(self):
 		if self.APIKEY == False or self.PASSPHRASE == False or self.ENABLE_EXTSERVERVIEW == False:
 			return False
-		if self.STATE_OVPN == False or self.OVPN_CONNECTEDseconds < 16:
+		#if self.STATE_OVPN == False or self.OVPN_CONNECTEDseconds < 16:
+		#	return False
+		if self.MAINWINDOW_OPEN == False:
 			return False
 		if (self.LAST_OVPN_SERVER_STATS_UPDATE < int(time.time())-600):
 			try:
@@ -3828,7 +3844,7 @@ class Systray:
 							self.OVPN_SERVER_STATS = json.loads(r.content)
 							self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())
 							self.debug(text="def load_serverdata_from_remote: loaded")
-							self.redraw_mainwindow_vbox()
+							#self.redraw_mainwindow_vbox()
 							return True
 						else:
 							self.debug(text="def load_serverdata_from_remote: len(r.content) = '%s', retry in 60 sec" % (len(r.content)))
@@ -3839,19 +3855,22 @@ class Systray:
 						return False
 				except:
 					self.debug(text="def load_serverdata_from_remote: json decode error")
-					self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())
+					self.ENABLE_EXTSERVERVIEW == False
+					return False
 			except:
 				self.debug(text="def load_serverdata_from_remote: api request failed, retry in 60 sec")
 				self.LAST_OVPN_SERVER_STATS_UPDATE = int(time.time())-540
 				return False
 		else:
-			return True
+			return False
 
 	#######
 	def load_accinfo_from_remote(self):
 		if self.APIKEY == False or self.PASSPHRASE == False or self.LOAD_ACCINFO == False:
 			return False
-		if self.STATE_OVPN == False or self.OVPN_CONNECTEDseconds < 16:
+		#if self.STATE_OVPN == False or self.OVPN_CONNECTEDseconds < 16:
+		#	return False
+		if self.MAINWINDOW_OPEN == False:
 			return False
 		if (self.LAST_OVPN_ACCDATA_UPDATE < int(time.time())-600):
 			try:
@@ -3866,6 +3885,7 @@ class Systray:
 							self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())
 							#self.debug(text="def load_accinfo_from_remote: loaded '%s'" % (self.OVPN_ACCDATA))
 							self.debug(text="def load_accinfo_from_remote: loaded")
+							#self.redraw_mainwindow_vbox()
 							return True
 						else:
 							self.debug(text="def load_accinfo_from_remote: len(r.content) = '%s', retry in 60 sec" % (len(r.content)))
@@ -3876,12 +3896,14 @@ class Systray:
 						return False
 				except:
 					self.debug(text="def load_accinfo_from_remote: json decode error")
-					self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())
+					self.LOAD_ACCINFO == False
+					return False
 			except:
 				self.debug(text="def load_accinfo_from_remote: api request failed, retry in 60 sec")
 				self.LAST_OVPN_ACCDATA_UPDATE = int(time.time())-540
+				return False
 		else:
-			return True
+			return False
 
 	#######
 	def build_openvpn_dlurl(self):
@@ -3962,33 +3984,41 @@ class Systray:
 
 	#######
 	def win_install_openvpn(self):
-		if self.OPENVPN_SILENT_SETUP:
+		if self.OPENVPN_SILENT_SETUP == True:
 			# silent install
-			installtodir = "%s\\bin" % (self.vpn_dir)
-			options = "/SELECT_SHORTCUTS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=0"
-			parameters = '/S %s /D="%s"' % (options,installtodir)	
-			fullstring = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,parameters)
+			installtodir = "%s\\runtime" % (self.vpn_dir)
+			options = "/S /SELECT_SHORTCUTS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
+			parameters = '%s /D=%s' % (options,installtodir)
+			netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,parameters)
+			self.debug(text="def win_install_openvpn: silent cmd =\n'%s'" % (netshcmd))
+			self.OPENVPN_DIR = installtodir
 		else:
 			# popup install
-			fullstring = '"%s"' % (self.OPENVPN_SAVE_BIN_TO)
+			netshcmd = '"%s"' % (self.OPENVPN_SAVE_BIN_TO)
 		
 		self.debug(text="def win_install_openvpn: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
 		try: 
-			exitcode = subprocess.call("%s" % (fullstring),shell=True)
+			exitcode = subprocess.call(netshcmd,shell=True)
 			if exitcode == 0:
-				if self.OPENVPN_SILENT_SETUP:
-					self.msgwarn(text="OpenVPN Setup OK!")
-				self.debug(text="def win_install_openvpn: '%s' exitcode = %s" % (fullstring,exitcode))
+				if self.OPENVPN_SILENT_SETUP == True:
+					self.debug(text="def win_install_openvpn: silent OK!")
+				else:
+					self.debug(text="def win_install_openvpn:\n\n'%s'\n\nexitcode = %s" % (netshcmd,exitcode))
 				return True
 			else:
-				self.debug(text="def win_install_openvpn: '%s' exitcode = %s" % (fullstring,exitcode))
+				self.debug(text="def win_install_openvpn: '%s' exitcode = %s" % (netshcmd,exitcode))
 				return False
 		except:
-			self.debug(text="def win_install_openvpn: '%s' failed" % (fullstring))
+			self.debug(text="def win_install_openvpn: '%s' failed" % (netshcmd))
 			return False
 
 	#######
 	def win_select_openvpn(self):
+		#try:
+		#	if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
+		#		return False
+		#except:
+		#	pass
 		self.msgwarn(text="OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!")
 		dialog = gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,gtk.FILE_CHOOSER_ACTION_OPEN,
 									   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
@@ -4000,18 +4030,13 @@ class Systray:
 		dialog.add_filter(filter)
 		try:
 			response = dialog.run()
-			
+			dialog.destroy()
 			if response == gtk.RESPONSE_OK:
 				self.OPENVPN_EXE = dialog.get_filename()
 				self.debug(text = "selected: %s" % (self.OPENVPN_EXE))
-				dialog.destroy()
 				return True
-			elif response == gtk.RESPONSE_CANCEL:
-				self.debug(text = "Closed, no files selected")
-				dialog.destroy()
-				return False
 			else:
-				dialog.destroy()
+				self.debug(text = "Closed, no files selected")
 				return False
 		except:
 			return False
@@ -4020,26 +4045,34 @@ class Systray:
 	def win_detect_openvpn(self):
 		#self.read_options_file()
 		#if self.OPENVPN_EXE == False:
-		os_programfiles = "PROGRAMFILES PROGRAMFILES(x86) PROGRAMW6432"
-		for getenv in os_programfiles.split():
-			programfiles = os.getenv(getenv)
-			OPENVPN_DIR = "%s\\OpenVPN\\bin" % (programfiles)
-			file = "%s\\openvpn.exe" % (OPENVPN_DIR)
+		if self.OPENVPN_DIR == False:
+			os_programfiles = "PROGRAMFILES PROGRAMFILES(x86) PROGRAMW6432"
+			for getenv in os_programfiles.split():
+				programfiles = os.getenv(getenv)
+				OPENVPN_DIR = "%s\\OpenVPN\\bin" % (programfiles)
+				file = "%s\\openvpn.exe" % (OPENVPN_DIR)
+				if os.path.isfile(file):
+					self.debug(text="def win_detect_openvpn: %s" % (file))
+					self.OPENVPN_EXE = file
+					self.OPENVPN_DIR = OPENVPN_DIR
+					break
+		elif os.path.isdir(self.OPENVPN_DIR):
+			file = "%s\\bin\\openvpn.exe" % (self.OPENVPN_DIR)
 			if os.path.isfile(file):
-				self.debug(text="def win_detect_openvpn: %s" % (file))
 				self.OPENVPN_EXE = file
-				self.OPENVPN_DIR = OPENVPN_DIR
-				break
+			else:
+				self.OPENVPN_DIR = False
 		
 		if self.OPENVPN_DIR == False and not self.OPENVPN_EXE == False:
 			self.OPENVPN_DIR = self.OPENVPN_EXE.rsplit('\\', 1)[0]
 		
-		if self.OPENVPN_EXE == False or not os.path.isfile(self.OPENVPN_EXE):
+		if self.OPENVPN_EXE == False or (not os.path.isfile(self.OPENVPN_EXE) or self.OPENVPN_EXE == False):
 			if not self.win_select_openvpn():
-				self.upgrade_openvpn()
-
+				if self.upgrade_openvpn():
+					self.win_detect_openvpn()
+		
 		if not self.openvpn_check_files():
-			self.msgwarn(text="WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n32bit x86 = '%s'\n64bit x64 = '%s'\n\n[debug self.LAST_FAILED_CHECKFILE = '%s']" % (self.OPENVPN_DIR,self.OVPN_WIN_DL_URL_x86,self.OVPN_WIN_DL_URL_x64,self.LAST_FAILED_CHECKFILE))
+			self.msgwarn(text="WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']" % (self.OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE))
 			
 		self.debug(text = "Using: %s" % (self.OPENVPN_EXE))
 		try:
@@ -4071,7 +4104,7 @@ class Systray:
 			self.upgrade_openvpn()
 			
 		except:
-			self.errorquit(text=_("def win_detect_openvpn: failed"))
+			self.errorquit(text="def win_detect_openvpn: failed")
 
 	#######
 	def openvpn_check_files(self):
@@ -4131,7 +4164,7 @@ class Systray:
 
 	#######
 	def check_dns_is_whitelisted(self):
-		#if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.OVPN_GATEWAY_IP4 or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
+		#if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4 or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
 		if self.GATEWAY_DNS1 == "127.0.0.1":
 			self.debug(text="def check_dns_is_whitelisted: True")
 			return True
@@ -4259,28 +4292,26 @@ class Systray:
 
 	#######
 	def on_closing(self, widget):
-		print "def on_closing: widget = '%s'" % (widget)
 		self.destroy_systray_menu()
 		if self.WINDOW_QUIT_OPEN == True:
 			self.QUIT_DIALOG.destroy()
 			return False
 		if self.STATE_OVPN == True:
-			self.kill_openvpn()
-			#return False
+			return False
 		else:
 			try: 
 				self.about_dialog.destroy()
 				self.WINDOW_ABOUT_OPEN = False
-			except:	
+			except:
 				pass
-			try: 
+			try:
 				self.dialogWindow_form_ask_passphrase.destroy()
-			except: 
+			except:
 				pass
-			try: 
+			try:
 				self.mainwindow.destroy()
 				self.MAINWINDOW_OPEN = False
-			except: 
+			except:
 				pass
 			self.WINDOW_QUIT_OPEN = True
 			try:
@@ -4395,12 +4426,14 @@ class Systray:
 				self.debug(text="remove lock")
 				return True
 			except:
-				self.msgwarn(text="remove lock failed")
+				sys.exit()
 		else:
-			self.msgwarn(text="Could not delete LOCK. File not found.")
+			sys.exit()
 
 	#######
 	def errorquit(self,text):
+		if self.DEBUG == False:
+			self.DEBUG = True
 		text = "errorquit: %s" % (text)
 		self.debug(text=text)
 		try:
@@ -4430,6 +4463,7 @@ class Systray:
 
 	#######
 	def init_localization(self):
+		return
 		loc = locale.getdefaultlocale()[0][0:2]
 		filename = "locale/messages_%s.mo" % loc
 		try:
@@ -4441,6 +4475,8 @@ class Systray:
 
 	#######
 	def msgwarn(self,text):
+		if self.DEBUG == False:
+			self.DEBUG = True
 		try:
 			self.debug(text=text)
 			message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
