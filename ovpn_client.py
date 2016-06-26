@@ -21,7 +21,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9m-gtk"
+CLIENTVERSION="v0.4.9n-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -87,6 +87,7 @@ class Systray:
 		self.timer_check_certdl_running = False
 		self.statustext_from_before = False
 		self.systraytext_from_before = False
+		self.systrayicon_from_before = False
 		self.stop_systray_timer = False
 		
 		self.USERID = False
@@ -805,8 +806,6 @@ class Systray:
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 			self.debug(text="Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
-			#return True
-			
 		else:
 			self.debug(text="self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
@@ -814,7 +813,6 @@ class Systray:
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
 			dialogBox = dialogWindow.get_content_area()
-
 			liststore = gtk.ListStore(str)
 			combobox = gtk.ComboBox(liststore)
 			cell = gtk.CellRendererText()
@@ -826,16 +824,11 @@ class Systray:
 				liststore.append([INTERFACE])
 			combobox.set_model(liststore)
 			combobox.connect('changed',self.cb_tap_interface_selector_changed)
-
 			dialogBox.pack_start(combobox,False,False,0)
 			dialogWindow.show_all()
-			self.debug(text="open tap interface selector")
 			dialogWindow.run()
-			self.debug(text="close tap interface selector")
 			dialogWindow.destroy()
-			#if not self.WIN_TAP_DEVICE == False:
-				
-
+		
 		if self.WIN_TAP_DEVICE == False:
 			self.errorquit(text="No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s" % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
 		else:
@@ -856,7 +849,6 @@ class Systray:
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
 					dialogBox = dialogWindow.get_content_area()
-					
 					liststore = gtk.ListStore(str)
 					combobox = gtk.ComboBox(liststore)
 					cell = gtk.CellRendererText()
@@ -868,7 +860,6 @@ class Systray:
 						liststore.append([INTERFACE])
 					combobox.set_model(liststore)
 					combobox.connect('changed',self.cb_interface_selector_changed)
-						
 					dialogBox.pack_start(combobox,False,False,0)
 					dialogWindow.show_all()
 					self.debug(text="open interface selector")
@@ -1135,7 +1126,8 @@ class Systray:
 	def systray_timer(self):
 		if self.stop_systray_timer == True:
 			return False
-		self.systray_timer_running = True
+		if not self.systray_menu == False:
+			self.check_hide_popup()
 		systraytext = False
 		
 		""" *** fixme *** try to get output
@@ -1145,13 +1137,9 @@ class Systray:
 			pass
 		"""
 		
-		if not self.systray_menu == False:
-			self.check_hide_popup()
-		
 		if self.timer_check_certdl_running == True:
 			systraytext = "Checking for Updates!"
 			systrayicon = self.systray_icon_syncupdate
-			
 		elif self.STATE_OVPN == False:
 			systraytext = "oVPN disconnected!"
 			systrayicon = self.systray_icon_disconnected
@@ -1162,7 +1150,6 @@ class Systray:
 			except:
 				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
 		elif self.STATE_OVPN == True:
-		
 			if self.OVPN_PING_STAT == -1:
 				systraytext = "oVPN is connecting to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_connect
@@ -1172,12 +1159,7 @@ class Systray:
 				systraytext = "oVPN is testing connection to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_hourglass
 				self.debug(text=systraytext)
-			#elif self.OVPN_PING_LAST == 9999:
-				#text = _("oVPN connection to %s is unstable or timed out.") % (self.OVPN_CONNECTEDto)
-				#systraytext = text
-				#systrayicon = self.systray_icon_disconnected
-				#self.debug(text=text)
-			else:
+			elif self.OVPN_PING_STAT > 0:
 				try:
 					if self.OVPN_isTESTING == True:
 						self.OVPN_PING = list()
@@ -1205,9 +1187,10 @@ class Systray:
 		try:
 			if not self.systraytext_from_before == systraytext and not systraytext == False:
 				self.systraytext_from_before = systraytext
-				self.tray.set_from_file(systrayicon)
 				self.tray.set_tooltip(systraytext)
-			
+			if not self.systrayicon_from_before == systrayicon:
+				self.systrayicon_from_before = systrayicon
+				self.tray.set_from_file(systrayicon)
 			#fixme: memoryleak
 			if self.MAINWINDOW_OPEN == True:
 				if not self.statustext_from_before == textfull:
@@ -1232,8 +1215,8 @@ class Systray:
 		
 		self.thread_systray_timer = threading.Thread(target=self.systray_timer)
 		time.sleep(1)
+		self.systray_timer_running = True
 		self.thread_systray_timer.start()
-		
 		return True
 
 	#######
