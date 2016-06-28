@@ -15,9 +15,10 @@
 + C:\Python27\Scripts\pip.exe install setuptools
 
 # Developer Imports: 
-+ https://vcp.ovpn.to/files/ovpn_cli/dev_v011.7z
++ https://vcp.ovpn.to/files/ovpn_cli/build-dev-v011.7z
 + https://vcp.ovpn.to/files/ovpn_cli/build-dev-v026_p3.zip
 + https://vcp.ovpn.to/files/ovpn_cli/build-dev-v026_p4.zip
 + https://vcp.ovpn.to/files/ovpn_cli/build-dev-v049j.zip
++ https://vcp.ovpn.to/files/ovpn_cli/build-dev-v049q.zip
 
 
