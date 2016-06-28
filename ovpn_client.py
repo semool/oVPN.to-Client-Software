@@ -21,7 +21,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9p-gtk"
+CLIENTVERSION="v0.4.9q-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -2568,7 +2568,6 @@ class Systray:
 		self.debug(text="def inThread_spawn_openvpn_process")
 		exitcode = False
 		self.win_enable_tap_interface()
-		self.win_netsh_set_dns_ovpn()
 		if not self.openvpn_check_files():
 			self.OVPN_CONNECTEDto = False
 			return False
@@ -2592,7 +2591,7 @@ class Systray:
 			pingthread.start()
 		self.inThread_jump_server_running = False
 		self.call_redraw_mainwindow_vbox()
-		
+		self.win_netsh_set_dns_ovpn()
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
 		#except subprocess.CalledProcessError as e:
@@ -2809,6 +2808,7 @@ class Systray:
 		if self.check_dns_is_whitelisted() == True:
 			return True
 		servername = self.OVPN_CONNECTEDto
+		self.debug(text="def win_netsh_set_dns_ovpn: go servername = '%s'" % (servername))
 		try:
 			pridns = self.MYDNS[servername]["primary"]["ip4"]
 			self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,pridns))
@@ -2818,9 +2818,9 @@ class Systray:
 				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,secdns))
 				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,secdns))
 			except:
-				pass
+				self.debug(text="def win_netsh_set_dns_ovpn: secdns not found")
 		except:
-			pass
+			self.debug(text="def win_netsh_set_dns_ovpn: pridns not found")
 			if len(self.NETSH_CMDLIST) == 0:
 				if self.GATEWAY_DNS1 == "127.0.0.1":
 					setdns = "127.0.0.1"
