@@ -21,7 +21,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9o-gtk"
+CLIENTVERSION="v0.4.9p-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -120,7 +120,6 @@ class Systray:
 		self.OVPN_SERVER = list()
 		self.OVPN_FAV_SERVER = False
 		self.OVPN_AUTO_CONNECT_ON_START = False
-		self.OVPN_AUTO_RECONNECT = True
 		self.OVPN_CALL_SRV = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtime = False
@@ -130,7 +129,6 @@ class Systray:
 		self.GATEWAY_OVPN_IP4B = "172.16.48.1"
 		self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4A
 		self.OVPN_THREADID = False
-		self.OVPN_RECONNECT_NOW = False
 		self.OVPN_CONFIGVERSION = "23x"
 		self.OPENVPN_DIR = False
 		
@@ -178,7 +176,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 15
+		self.LOAD_DATA_EVERY = 66
 		self.LOAD_SRVDATA = False
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
@@ -1173,13 +1171,6 @@ class Systray:
 		if self.timer_check_certdl_running == True:
 			systraytext = "Checking for Updates!"
 			systrayicon = self.systray_icon_syncupdate
-		try:
-			if self.OVPN_CONNECTEDto == False and self.OVPN_CONNECTEDtoIP == False and not self.OVPN_CALL_SRV == False and self.OVPN_RECONNECT_NOW == True:
-				systraytext = "Reconnecting!"
-				statusbar_text = systraytext
-				systrayicon = self.systray_icon_hourglass
-		except:
-			pass
 		
 		if self.STATE_OVPN == False:
 			systraytext = "Disconnected! Have a nice and anonymous day!"
@@ -1187,8 +1178,9 @@ class Systray:
 			systrayicon = self.systray_icon_disconnected
 			try:
 				if self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
-					self.call_openvpn(self.OVPN_FAV_SERVER)
 					self.OVPN_AUTO_CONNECT_ON_START = False
+					self.debug(text="def systray_timer: self.OVPN_AUTO_CONNECT_ON_START")
+					self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
 			except:
 				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
 		elif self.STATE_OVPN == True:
@@ -2403,7 +2395,7 @@ class Systray:
 		self.destroy_context_menu_servertab()
 		try:
 			self.OVPN_FAV_SERVER = server
-			self.OVPN_AUTO_CONNECT_ON_START = True
+			#self.OVPN_AUTO_CONNECT_ON_START = True
 			self.write_options_file()
 			text = "oVPN AutoConnect: %s" % (server)
 			self.set_statusbar_text(text)
@@ -2436,9 +2428,8 @@ class Systray:
 	def cb_kill_openvpn(self,widget,event):
 		#self.destroy_context_menu_servertab()
 		self.destroy_systray_menu()
+		self.OVPN_AUTO_CONNECT_ON_START = False
 		self.debug(text="def cb_kill_openvpn")
-		self.OVPN_AUTO_RECONNECT = False
-		self.OVPN_RECONNECT_NOW = False
 		killthread = threading.Thread(target=self.inThread_kill_openvpn)
 		killthread.start()
 
@@ -2504,9 +2495,12 @@ class Systray:
 
 	#######
 	def openvpn(self,server):
+		while self.timer_check_certdl_running == True:
+			self.debug(text="def openvpn: sleep while timer_check_certdl_running")
+			time.sleep(0.5)
+		self.debug(text="def openvpn: server = '%s'" % (server))
 		self.OVPN_CALL_SRV = server
 		if self.STATE_OVPN == False:
-			self.OVPN_AUTO_RECONNECT = True
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
 			
@@ -2584,17 +2578,6 @@ class Systray:
 			return False
 		self.win_firewall_modify_rule(option="add")
 		self.win_clear_ipv6()
-		
-		""" *** fixme *** try to get output into live log window
-		try:
-			self.STATE_OVPN = True
-			process = subprocess.Popen("%s" % (self.ovpn_string), stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1)
-			self.OPENVPN_PROC_output, self.OPENVPN_PROC_error = process.communicate()
-		except:
-			self.debug(text="openvpn process failed")
-			self.OVPN_AUTO_RECONNECT = False
-		self.win_firewall_modify_rule(option="delete")
-		"""
 		self.OVPN_CONNECTEDtime = int(time.time())
 		self.OVPN_CONNECTEDto = self.OVPN_CALL_SRV
 		self.OVPN_PING_STAT = -1
@@ -2609,14 +2592,15 @@ class Systray:
 			pingthread.start()
 		self.inThread_jump_server_running = False
 		self.call_redraw_mainwindow_vbox()
-		try:
-			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True)
-		except subprocess.CalledProcessError as e:
-			self.debug(text="def inThread_spawn_openvpn_process: openvpn crashed, output = '%s'" %(e.output))
-		except:
-			self.debug(text="def inThread_spawn_openvpn_process: failed!")
-		self.win_clear_ipv6()
 		
+		try:
+			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
+		#except subprocess.CalledProcessError as e:
+		#	self.debug(text="def inThread_spawn_openvpn_process: openvpn crashed, output = '%s'" %(e.output))
+		except:
+			self.debug(text="def inThread_spawn_openvpn_process: crashed")
+			
+		self.win_clear_ipv6()
 		try:
 			if os.path.isfile(self.ovpn_sessionlog):
 				os.remove(self.ovpn_sessionlog)
@@ -3304,16 +3288,17 @@ class Systray:
 				dialogWindow.show_all()
 				response = dialogWindow.run()
 				self.dialogWindow_form_ask_passphrase = dialogWindow
-				dialogWindow.destroy()
-				
 				ph1 = ph1Entry.get_text().rstrip()
 				saveph = checkbox.get_active()
 				self.debug(text="checkbox saveph = %s" %(saveph))
+				
 				if response == gtk.RESPONSE_CANCEL:
+					dialogWindow.destroy()
 					print "response: btn cancel %s" % (response)
 					self.PASSPHRASE = False
 					return False
 				elif response == gtk.RESPONSE_OK:
+					dialogWindow.destroy()
 					if len(ph1) > 0:
 						self.PASSPHRASE = ph1
 						if self.read_apikey_config():
@@ -3325,17 +3310,15 @@ class Systray:
 									return True
 								else:
 									self.PPP_NO_SAVE = True
-									#self.PASSPHRASE = False
 									self.write_options_file()
-									#self.PASSPHRASE = ph1
 									return True
 							else:
 								self.PASSPHRASE = False
 								return False
 					else:
+						dialogWindow.destroy()
 						self.PASSPHRASE = False
 						return False
-					
 				else:
 					self.PASSPHRASE = False
 					return False
@@ -3391,15 +3374,16 @@ class Systray:
 			
 			dialogWindow.show_all()
 			response = dialogWindow.run()
-			dialogWindow.destroy()
+
 			
 			userid = useridEntry.get_text().rstrip()
 			apikey = apikeyEntry.get_text().rstrip()
 			ph1 = ph1Entry.get_text().rstrip()
 			ph2 = ph2Entry.get_text().rstrip()
-			
+
 			if response == gtk.RESPONSE_OK:
 				if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum() and ph1 == ph2 and len(ph1) > 0:
+					dialogWindow.destroy()
 					self.USERID = userid
 					self.APIKEY = apikey
 					self.PASSPHRASE = ph1
@@ -4282,12 +4266,13 @@ class Systray:
 		dialog.add_filter(filter)
 		try:
 			response = dialog.run()
-			dialog.destroy()
 			if response == gtk.RESPONSE_OK:
+				dialogWindow.destroy()
 				self.OPENVPN_EXE = dialog.get_filename()
 				self.debug(text = "selected: %s" % (self.OPENVPN_EXE))
 				return True
 			else:
+				dialogWindow.destroy()
 				self.debug(text = "Closed, no files selected")
 				return False
 		except:
@@ -4559,10 +4544,10 @@ class Systray:
 			about_dialog.set_comments((ABOUT_TEXT))
 			about_dialog.set_authors(['oVPN.to <support@ovpn.to>'])
 			response = about_dialog.run()
-			about_dialog.destroy()
 			if not response == None:
 				self.debug(text="def show_about_dialog: response = '%s'" % (response))
 				self.WINDOW_ABOUT_OPEN = False
+			about_dialog.destroy()
 		except:
 			self.debug(text="def show_about_dialog: failed")
 
@@ -4601,16 +4586,19 @@ class Systray:
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup("Do you really want to quit?")
 				response = dialog.run()
-				dialog.destroy()
 				if response == gtk.RESPONSE_NO:
 					self.WINDOW_QUIT_OPEN = False
+					dialog.destroy()
 					return False
 				elif response == gtk.RESPONSE_YES:
 					self.WINDOW_QUIT_OPEN = False
 					if self.ask_loadorunload_fw() == False:
+						dialog.destroy()
 						return False
+					dialog.destroy()
 				else:
 					self.WINDOW_QUIT_OPEN = False
+					dialog.destroy()
 					return False
 			except:
 				pass
@@ -4667,14 +4655,15 @@ class Systray:
 					dialog.set_markup(text)
 					self.debug(text="def ask_loadorunload_fw: text = '%s'" % (text))
 					response = dialog.run()
-					dialog.destroy()
 					self.debug(text="def ask_loadorunload_fw: dialog response = '%s'" % (response))
 					if response == gtk.RESPONSE_NO:
+						dialog.destroy()
 						self.debug(text="def ask_loadorunload_fw: dialog response = NO '%s'" % (response))
 						self.win_firewall_block_on_exit()
 						self.win_netsh_restore_dns_from_backup()
 						return True
 					elif response == gtk.RESPONSE_YES:
+						dialog.destroy()
 						self.debug(text="def ask_loadorunload_fw: dialog response = YES '%s'" % (response))
 						if self.WIN_BACKUP_FIREWALL == True:
 							self.win_firewall_restore_on_exit()
@@ -4683,6 +4672,7 @@ class Systray:
 						self.win_netsh_restore_dns_from_backup()
 						return True
 					else:
+						dialog.destroy()
 						self.debug(text="def ask_loadorunload_fw: dialog response = ELSE '%s'" % (response))
 						return False
 				except:
