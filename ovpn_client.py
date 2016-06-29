@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-import gtk
+# when run it manually from cmd type before: set PYTHONIOENCODING=UTF-8
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GdkPixbuf
 
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
@@ -21,7 +25,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9q-gtk"
+CLIENTVERSION="v0.5.0a-gtk3"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -44,12 +48,12 @@ class Systray:
 	def __init__(self):
 		self.init_localization()
 		self.self_vars()
-		self.tray = gtk.StatusIcon()
-		self.tray.set_from_stock(gtk.STOCK_PROPERTIES)
+		self.tray = Gtk.StatusIcon()
+		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		if self.preboot():
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
-			self.tray.set_tooltip(('oVPN.to Client'))
+			self.tray.set_tooltip_text(('oVPN.to Client'))
 			if self.UPDATEOVPNONSTART == True and self.check_inet_connection() == True:
 				self.check_remote_update()
 			if self.TAP_BLOCKOUTBOUND == True:
@@ -819,14 +823,14 @@ class Systray:
 			self.debug(text="Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
 		else:
 			self.debug(text="self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
-			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
+			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 			text = "Multiple TAPs found!\n\nPlease select your TAP Adapter!"
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
 			dialogBox = dialogWindow.get_content_area()
-			liststore = gtk.ListStore(str)
-			combobox = gtk.ComboBox(liststore)
-			cell = gtk.CellRendererText()
+			liststore = Gtk.ListStore(str)
+			combobox = Gtk.ComboBox()
+			cell = Gtk.CellRendererText()
 			combobox.pack_start(cell, True)
 			combobox.add_attribute(cell, 'text', 0)
 			combobox.set_wrap_width(5)
@@ -855,14 +859,14 @@ class Systray:
 					self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
 					return True
 				else:
-					dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
+					dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 					text = "Choose your External Network Adapter!"
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
 					dialogBox = dialogWindow.get_content_area()
-					liststore = gtk.ListStore(str)
-					combobox = gtk.ComboBox(liststore)
-					cell = gtk.CellRendererText()
+					liststore = Gtk.ListStore(str)
+					combobox = Gtk.ComboBox()
+					cell = Gtk.CellRendererText()
 					combobox.pack_start(cell, True)
 					combobox.add_attribute(cell, 'text', 0)
 					combobox.set_wrap_width(5)
@@ -888,14 +892,14 @@ class Systray:
 
 	#######
 	def select_userid(self):
-		dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK)
+		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		text = "Please select your User-ID!"
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
 		dialogBox = dialogWindow.get_content_area()
-		liststore = gtk.ListStore(str)
-		combobox = gtk.ComboBox(liststore)
-		cell = gtk.CellRendererText()
+		liststore = Gtk.ListStore(str)
+		combobox = Gtk.ComboBox()
+		cell = Gtk.CellRendererText()
 		combobox.pack_start(cell, True)
 		combobox.add_attribute(cell, 'text', 0)
 		combobox.set_wrap_width(5)
@@ -1027,44 +1031,44 @@ class Systray:
 			self.debug(text="self.LAST_OVPN_ACC_DATA_UPDATE = '%s', self.LAST_OVPN_SRV_DATA_UPDATE = '%s'" % (self.LAST_OVPN_ACC_DATA_UPDATE,self.LAST_OVPN_SRV_DATA_UPDATE))
 			return False
 		self.debug(text="def make_context_menu_servertab: %s" % (servername))
-		context_menu_servertab = gtk.Menu()
+		context_menu_servertab = Gtk.Menu()
 		
 		if self.OVPN_CONNECTEDto == servername:
-			disconnect = gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
+			disconnect = Gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
 			context_menu_servertab.append(disconnect)
 			disconnect.connect('button-release-event', self.cb_kill_openvpn)
 		else:
-			connect = gtk.MenuItem('Connect to %s'%(servername))
+			connect = Gtk.MenuItem('Connect to %s'%(servername))
 			context_menu_servertab.append(connect)
 			connect.connect('button-release-event',self.cb_jump_openvpn,servername)
 		
-		sep = gtk.SeparatorMenuItem()
+		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
 		if self.OVPN_FAV_SERVER == servername:
-			delfavorite = gtk.MenuItem('Remove AutoConnect: %s'%(servername))
+			delfavorite = Gtk.MenuItem('Remove AutoConnect: %s'%(servername))
 			delfavorite.connect('button-release-event',self.del_ovpn_favorite_server,servername)
 			context_menu_servertab.append(delfavorite)
 		else:
-			setfavorite = gtk.MenuItem('Set AutoConnect: %s'%(servername))
+			setfavorite = Gtk.MenuItem('Set AutoConnect: %s'%(servername))
 			setfavorite.connect('button-release-event',self.cb_set_ovpn_favorite_server,servername)
 			context_menu_servertab.append(setfavorite)
 		
-		sep = gtk.SeparatorMenuItem()
+		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
 		self.context_menu_servertab = context_menu_servertab
 		self.make_context_menu_servertab_d0wns_dnsmenu(servername)
 		
 		if self.LOAD_ACCDATA == True or self.LOAD_SRVDATA == True:
-			sep = gtk.SeparatorMenuItem()
+			sep = Gtk.SeparatorMenuItem()
 			context_menu_servertab.append(sep)
-			refresh = gtk.MenuItem('Refresh Window')
+			refresh = Gtk.MenuItem('Refresh Window')
 			refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
 			context_menu_servertab.append(refresh)
 		
 		context_menu_servertab.show_all()
-		context_menu_servertab.popup(None, None, None, 3, int(time.time()), self.treeview)
+		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
 		self.debug(text="def make_context_menu_servertab: return")
 		return
 
@@ -1077,15 +1081,15 @@ class Systray:
 				self.debug(text="len(self.d0wns_DNS) == 0")
 				return False
 			
-			dnsmenu = gtk.Menu()
-			dnsm = gtk.MenuItem("Change DNS:")
+			dnsmenu = Gtk.Menu()
+			dnsm = Gtk.MenuItem("Change DNS:")
 			dnsm.set_submenu(dnsmenu)
 			self.dnsmenu = dnsmenu
 			
 			try:
 				pridns = self.MYDNS[servername]["primary"]["ip4"]
 				priname = self.MYDNS[servername]["primary"]["dnsname"]
-				pridnsm = gtk.MenuItem("Primary DNS: %s (%s)" % (priname,pridns))
+				pridnsm = Gtk.MenuItem("Primary DNS: %s (%s)" % (priname,pridns))
 				cbdata = {servername:{"primary":{"ip4":pridns,"dnsname":priname}}}
 				pridnsm.connect('button-release-event',self.cb_del_dns,cbdata)
 				self.context_menu_servertab.append(pridnsm)
@@ -1095,26 +1099,26 @@ class Systray:
 			try:
 				secdns = self.MYDNS[servername]["secondary"]["ip4"]
 				secname = self.MYDNS[servername]["secondary"]["dnsname"]
-				secdnsm = gtk.MenuItem("Secondary DNS: %s (%s)" % (secname,secdns))
+				secdnsm = Gtk.MenuItem("Secondary DNS: %s (%s)" % (secname,secdns))
 				cbdata = {servername:{"secondary":{"ip4":secdns,"dnsname":secname}}}
 				secdnsm.connect('button-release-event',self.cb_del_dns,cbdata)
 				self.context_menu_servertab.append(secdnsm)
 			except:
 				secdns = False
 				
-			sep = gtk.SeparatorMenuItem()
+			sep = Gtk.SeparatorMenuItem()
 			self.context_menu_servertab.append(sep)
 			
 			for name,value in sorted(self.d0wns_DNS.iteritems()):
 				try:
 					dnsip4 = value['ip4']
 					countrycode = self.d0wns_DNS[name]['countrycode']
-					dnssubmenu = gtk.Menu()
+					dnssubmenu = Gtk.Menu()
 					self.dnssubmenu = dnssubmenu
 					dnssubmtext = "%s (%s)" % (name,dnsip4)
-					dnssubm = gtk.ImageMenuItem(dnssubmtext)
+					dnssubm = Gtk.ImageMenuItem(dnssubmtext)
 					dnssubm.set_submenu(dnssubmenu)
-					img = gtk.Image()
+					img = Gtk.Image()
 					imgfile = self.FLAG_IMG[countrycode]
 				except:
 					imgfile = '%s\\flags\\%s.png' % (self.ico_dir,countrycode)
@@ -1132,19 +1136,19 @@ class Systray:
 					
 					cbdata = {servername:{"primary":{"ip4":dnsip4,"dnsname":name}}}
 					if pridns == dnsip4:
-						setpridns = gtk.MenuItem("Primary DNS '%s' @ %s" % (pridns,servername))
+						setpridns = Gtk.MenuItem("Primary DNS '%s' @ %s" % (pridns,servername))
 						setpridns.connect('button-release-event',self.cb_del_dns,cbdata)
 					else:
-						setpridns = gtk.MenuItem("Set Primary DNS")
+						setpridns = Gtk.MenuItem("Set Primary DNS")
 						setpridns.connect('button-release-event',self.cb_set_dns,cbdata)
 					dnssubmenu.append(setpridns)
 					
 					cbdata = {servername:{"secondary":{"ip4":dnsip4,"dnsname":name}}}
 					if secdns == dnsip4:
-						setsecdns = gtk.MenuItem("Secondary DNS '%s' @ %s" % (secdns,servername))
+						setsecdns = Gtk.MenuItem("Secondary DNS '%s' @ %s" % (secdns,servername))
 						setsecdns.connect('button-release-event',self.cb_del_dns,cbdata)
 					else:
-						setsecdns = gtk.MenuItem("Set Secondary DNS")
+						setsecdns = Gtk.MenuItem("Set Secondary DNS")
 						setsecdns.connect('button-release-event',self.cb_set_dns,cbdata)
 					dnssubmenu.append(setsecdns)
 			dnsm.show_all()
@@ -1262,7 +1266,7 @@ class Systray:
 	def make_systray_menu(self, event):
 		try:
 			self.debug(text="def make_systray_menu: bt=%s" % (event))
-			self.systray_menu = gtk.Menu()
+			self.systray_menu = Gtk.Menu()
 			
 			try:
 				self.load_ovpn_server()
@@ -1298,7 +1302,7 @@ class Systray:
 			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)
 			self.systray_menu.connect('leave-notify-event', self.systray_notify_event)
 			self.systray_menu.show_all()
-			self.systray_menu.popup(None, None, None, event, 0, self.tray)
+			self.systray_menu.popup(None, None, None, event, 0, 0)
 		except:
 			text="def make_systray_menu: failed"
 			self.debug(text=text)
@@ -1306,8 +1310,8 @@ class Systray:
 	#######
 	def make_systray_options_menu(self):
 			try:
-				optionsmenu = gtk.Menu()
-				optionsm = gtk.MenuItem('Options')
+				optionsmenu = Gtk.Menu()
+				optionsm = Gtk.MenuItem('Options')
 				optionsm.set_submenu(optionsmenu)
 				
 				self.systray_menu.append(optionsm)
@@ -1320,38 +1324,38 @@ class Systray:
 						opt = "[enabled]"
 					else:
 						opt = "[disabled]"
-					nodnschange = gtk.MenuItem('DNS Leak Protection %s'%(opt))
+					nodnschange = Gtk.MenuItem('DNS Leak Protection %s'%(opt))
 					nodnschange.connect('button-press-event', self.cb_nodnschange)
 					optionsmenu.append(nodnschange)
 					
-					resetextif = gtk.MenuItem('Select Network Adapter')
+					resetextif = Gtk.MenuItem('Select Network Adapter')
 					resetextif.connect('button-press-event', self.cb_resetextif)
 					optionsmenu.append(resetextif)
 					
-				ipv6menu = gtk.Menu()
-				ipv6m = gtk.MenuItem('IPv6 Options')
+				ipv6menu = Gtk.Menu()
+				ipv6m = Gtk.MenuItem('IPv6 Options')
 				ipv6m.set_submenu(ipv6menu)
 				optionsmenu.append(ipv6m)
 				
 				if not self.OVPN_CONFIGVERSION == "23x":
-					ipv6entry1 = gtk.MenuItem('Select: IPv4 Entry Server with Exit to IPv4 (standard)')
+					ipv6entry1 = Gtk.MenuItem('Select: IPv4 Entry Server with Exit to IPv4 (standard)')
 					ipv6entry1.connect('button-press-event', self.cb_change_ipmode1)
 					ipv6menu.append(ipv6entry1)
 				
 				if not self.OVPN_CONFIGVERSION  == "23x46":
-					ipv6entry2 = gtk.MenuItem('Select: IPv4 Entry Server with Exits to IPv4 + IPv6')
+					ipv6entry2 = Gtk.MenuItem('Select: IPv4 Entry Server with Exits to IPv4 + IPv6')
 					ipv6entry2.connect('button-press-event', self.cb_change_ipmode2)
 					ipv6menu.append(ipv6entry2)
 				
 				# *** fixme need isValueIPv6 first! ***
 				#if not self.OVPN_CONFIGVERSION == "23x64":
-				#	ipv6entry3 = gtk.MenuItem('Select: IPv6 Entry Server with Exits to IPv6 + IPv4')
+				#	ipv6entry3 = Gtk.MenuItem('Select: IPv6 Entry Server with Exits to IPv6 + IPv4')
 				#	ipv6entry3.connect('button-press-event', self.cb_change_ipmode3)
 				#	ipv6menu.append(ipv6entry3)
 					
 				####
-				fwmenu = gtk.Menu()
-				fwm = gtk.MenuItem('Firewall')
+				fwmenu = Gtk.Menu()
+				fwm = Gtk.MenuItem('Firewall')
 				fwm.set_submenu(fwmenu)
 				#optionsmenu.append(fwm)
 				self.systray_menu.append(fwm)
@@ -1362,7 +1366,7 @@ class Systray:
 						opt = "[enabled]"
 					else:
 						opt = "[disabled]"
-					fwentry = gtk.MenuItem("TAP Adapter block outbound %s" % (opt))
+					fwentry = Gtk.MenuItem("TAP Adapter block outbound %s" % (opt))
 					fwentry.connect('button-press-event', self.cb_tap_blockoutbound)
 					fwmenu.append(fwentry)
 				
@@ -1373,7 +1377,7 @@ class Systray:
 						opt = "[enabled]"
 					else:
 						opt = "[disabled]"
-					fwentry = gtk.MenuItem("Use Windows Firewall %s" % (opt))
+					fwentry = Gtk.MenuItem("Use Windows Firewall %s" % (opt))
 					fwentry.connect('button-press-event', self.cb_change_winfirewall)
 					fwmenu.append(fwentry)
 					
@@ -1384,7 +1388,7 @@ class Systray:
 							opt = "[enabled]"
 						else:
 							opt = "[disabled]"
-						fwentry = gtk.MenuItem("Clear Rules on Connect %s" % (opt))
+						fwentry = Gtk.MenuItem("Clear Rules on Connect %s" % (opt))
 						fwentry.connect('button-press-event', self.cb_change_fwresetmode)
 						fwmenu.append(fwentry)
 						
@@ -1393,7 +1397,7 @@ class Systray:
 							opt = "[enabled]"
 						else:
 							opt = "[disabled]"
-						fwentry = gtk.MenuItem("Backup on Start / Restore on Quit %s" % (opt))
+						fwentry = Gtk.MenuItem("Backup on Start / Restore on Quit %s" % (opt))
 						fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
 						fwmenu.append(fwentry)
 						
@@ -1402,7 +1406,7 @@ class Systray:
 							opt = "[enabled]"
 						else:
 							opt = "[disabled]"
-						fwentry = gtk.MenuItem("Do not ask for FW on Quit %s" % (opt))
+						fwentry = Gtk.MenuItem("Do not ask for FW on Quit %s" % (opt))
 						fwentry.connect('button-press-event', self.cb_change_fwdontaskonexit)
 						fwmenu.append(fwentry)
 						
@@ -1412,18 +1416,18 @@ class Systray:
 								opt = "[enabled]"
 							else:
 								opt = "[disabled]"
-							fwentry = gtk.MenuItem("Always Block Internet on Quit %s" % (opt))
+							fwentry = Gtk.MenuItem("Always Block Internet on Quit %s" % (opt))
 							fwentry.connect('button-press-event', self.cb_change_fwblockonexit)
 							fwmenu.append(fwentry)
 						
 						###
-						fwrm = gtk.MenuItem('Restore Firewall Backups')
-						fwrmenu = gtk.Menu()
+						fwrm = Gtk.MenuItem('Restore Firewall Backups')
+						fwrmenu = Gtk.Menu()
 						fwrm.set_submenu(fwrmenu)
 						fwmenu.append(fwrm)
 						
 						for file in self.FIREWALL_BACKUPS:
-							fwrentry = gtk.MenuItem('%s'%(file))
+							fwrentry = Gtk.MenuItem('%s'%(file))
 							fwrentry.connect('button-press-event', self.cb_restore_firewallbackup, file)
 							fwrmenu.append(fwrentry)
 				###
@@ -1431,12 +1435,12 @@ class Systray:
 					opt = "[enabled]"
 				else:
 					opt = "[disabled]"
-				switchdebug = gtk.MenuItem("DEBUG Mode %s" % (opt))
+				switchdebug = Gtk.MenuItem("DEBUG Mode %s" % (opt))
 				switchdebug.connect('button-press-event', self.cb_switch_debug)
 				
 				optionsmenu.append(switchdebug)
 				
-				sep = gtk.SeparatorMenuItem()
+				sep = Gtk.SeparatorMenuItem()
 				self.systray_menu.append(sep)
 			except:
 				self.debug(text="def make_systray_menu: optionsmenu failed")
@@ -1445,29 +1449,29 @@ class Systray:
 	def make_systray_updates_menu(self):
 		try:
 			#####
-			updatesmenu = gtk.Menu()
-			updatesm = gtk.MenuItem("Updates")
+			updatesmenu = Gtk.Menu()
+			updatesm = Gtk.MenuItem("Updates")
 			updatesm.set_submenu(updatesmenu)
 			self.systray_menu.append(updatesm)
 			
 			###
-			normalupdate = gtk.MenuItem('Normal Config Update')
+			normalupdate = Gtk.MenuItem('Normal Config Update')
 			normalupdate.connect('button-press-event', self.cb_check_normal_update)
 			updatesmenu.append(normalupdate)
 			
 			###
-			forceupdate = gtk.MenuItem('Forced Config Update')
+			forceupdate = Gtk.MenuItem('Forced Config Update')
 			forceupdate.connect('button-press-event', self.cb_force_update)
 			updatesmenu.append(forceupdate)
 			
-			sep = gtk.SeparatorMenuItem()
+			sep = Gtk.SeparatorMenuItem()
 			updatesmenu.append(sep)
 			###
 			if self.UPDATEOVPNONSTART == True:
 				opt = "[enabled]"
 			else:
 				opt = "[disabled]"
-			autoupdate = gtk.MenuItem('Update on Start %s' % (opt))
+			autoupdate = Gtk.MenuItem('Update on Start %s' % (opt))
 			autoupdate.connect('button-press-event', self.cb_switch_autoupdate)
 			updatesmenu.append(autoupdate)
 			
@@ -1476,7 +1480,7 @@ class Systray:
 				opt = "[enabled]"
 			else:
 				opt = "[disabled]"
-			switchaccinfo = gtk.MenuItem("Load Account Info %s" % (opt))
+			switchaccinfo = Gtk.MenuItem("Load Account Info %s" % (opt))
 			switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
 			updatesmenu.append(switchaccinfo)
 			
@@ -1485,25 +1489,25 @@ class Systray:
 				opt = "[enabled]"
 			else:
 				opt = "[disabled]"
-			extserverview = gtk.MenuItem('Load extended Server-View %s'%(opt))
+			extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
 			extserverview.connect('button-press-event', self.cb_extserverview)
 			updatesmenu.append(extserverview)
 			
-			sep = gtk.SeparatorMenuItem()
+			sep = Gtk.SeparatorMenuItem()
 			updatesmenu.append(sep)
 			
 			###
-			resetlogin = gtk.MenuItem('Reset API Login')
+			resetlogin = Gtk.MenuItem('Reset API Login')
 			resetlogin.connect('button-press-event', self.cb_form_reask_userid)
 			updatesmenu.append(resetlogin)
 			
 			###
 			if not self.PASSPHRASE == False:
-				clearphram = gtk.MenuItem('Clear Passphrase from RAM')
+				clearphram = Gtk.MenuItem('Clear Passphrase from RAM')
 				clearphram.connect('button-press-event', self.cb_clear_passphrase_ram)
 				updatesmenu.append(clearphram)
 				
-				clearphcfg = gtk.MenuItem('Clear Passphrase from CFG')
+				clearphcfg = Gtk.MenuItem('Clear Passphrase from CFG')
 				clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
 				updatesmenu.append(clearphcfg)
 			
@@ -1525,14 +1529,14 @@ class Systray:
 					if not countrycodefrombefore == countrycode:
 						# create countrygroup menu
 						countrycodefrombefore = countrycode
-						cgmenu = gtk.Menu()
+						cgmenu = Gtk.Menu()
 						self.cgmenu = cgmenu
 						try:
 							countryname = self.COUNTRYNAMES[countrycode.upper()]
 						except:
 							countryname = countrycode.upper()
-						cgm = gtk.ImageMenuItem(countryname)
-						img = gtk.Image()
+						cgm = Gtk.ImageMenuItem(countryname)
+						img = Gtk.Image()
 						try:
 							try:
 								imgpath = self.FLAG_IMG[countrycode]
@@ -1554,14 +1558,14 @@ class Systray:
 					
 					if self.OVPN_CONNECTEDto == servername:
 						textstring = servershort+" [ disconnect ]"
-						serveritem = gtk.ImageMenuItem(textstring)
+						serveritem = Gtk.ImageMenuItem(textstring)
 						serveritem.connect('button-release-event', self.cb_kill_openvpn)
 					else:
-						serveritem = gtk.ImageMenuItem(textstring)
+						serveritem = Gtk.ImageMenuItem(textstring)
 						serveritem.connect('button-release-event', self.cb_jump_openvpn, servername)
 						
 						
-					img = gtk.Image()
+					img = Gtk.Image()
 					imgpath = self.FLAG_IMG[countrycode]
 					if os.path.isfile(imgpath):
 						img.set_from_file(imgpath)
@@ -1577,13 +1581,13 @@ class Systray:
 	#######
 	def make_systray_openvpn_menu(self):
 		if self.STATE_OVPN == True:
-			sep = gtk.SeparatorMenuItem()
+			sep = Gtk.SeparatorMenuItem()
 			self.systray_menu.append(sep)
 			# add quit item
 			servershort = self.OVPN_CONNECTEDto[:3]
 			textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
-			disconnect = gtk.ImageMenuItem(textstring)
-			img = gtk.Image()
+			disconnect = Gtk.ImageMenuItem(textstring)
+			img = Gtk.Image()
 			img.set_from_file(self.systray_icon_disconnected)
 			disconnect.set_always_show_image(True)
 			disconnect.set_image(img)
@@ -1594,32 +1598,32 @@ class Systray:
 	#######
 	def make_systray_bottom_menu(self):
 		#show server view
-		sep = gtk.SeparatorMenuItem()
+		sep = Gtk.SeparatorMenuItem()
 		self.systray_menu.append(sep)
 		if self.MAINWINDOW_OPEN == True:
-			mainwindowentry = gtk.MenuItem('Close Servers')
+			mainwindowentry = Gtk.MenuItem('Close Servers')
 		else:
-			mainwindowentry = gtk.MenuItem('Show Servers')
+			mainwindowentry = Gtk.MenuItem('Show Servers')
 		self.systray_menu.append(mainwindowentry)
 		mainwindowentry.connect('button-release-event', self.show_mainwindow)
 		
 		if self.ACCWINDOW_OPEN == True:
-			accwindowentry = gtk.MenuItem('Close Account')
+			accwindowentry = Gtk.MenuItem('Close Account')
 		else:
-			accwindowentry = gtk.MenuItem('Show Account')
+			accwindowentry = Gtk.MenuItem('Show Account')
 		self.systray_menu.append(accwindowentry)
 		accwindowentry.connect('button-release-event', self.show_accwindow)
 
 		if self.STATE_OVPN == False:
-			sep = gtk.SeparatorMenuItem()
+			sep = Gtk.SeparatorMenuItem()
 			self.systray_menu.append(sep)
 			# show about dialog
-			about = gtk.MenuItem('About')
+			about = Gtk.MenuItem('About')
 			self.systray_menu.append(about)
 			# SIGNALS
 			about.connect('button-release-event', self.show_about_dialog)
 			# add quit item
-			quit = gtk.MenuItem('Quit')
+			quit = Gtk.MenuItem('Quit')
 			self.systray_menu.append(quit)
 			# SIGNALS
 			quit.connect('button-release-event', self.on_closing)
@@ -1662,16 +1666,16 @@ class Systray:
 	def make_progressbar(self):
 		try:
 			self.progressbarfraction = 0.1
-			self.progresswindow = gtk.Window(type=gtk.WINDOW_TOPLEVEL)
+			self.progresswindow = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
 			self.progresswindow.set_default_size(250,128)
 			#self.progresswindow.set_border_width(6)
 			self.progresswindow.set_title("oVPN Server Update")
 			self.progresswindow.set_icon_from_file(self.systray_icon_syncupdate)
-			self.progressbar = gtk.ProgressBar()
+			self.progressbar = Gtk.ProgressBar()
 			self.progressbar.set_pulse_step(0)
 			self.progresswindow.add(self.progressbar)
 			self.progresswindow.show_all()
-			self.progresswindow.set_position(gtk.WIN_POS_CENTER_ALWAYS)
+			self.progresswindow.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 		except:
 			text = "def make_progressbar: failed"
 			self.debug(text=text)
@@ -1778,14 +1782,14 @@ class Systray:
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
 			try:
-				self.mainwindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
+				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.set_title("oVPN.to Client %s"%(CLIENTVERSION))
-				self.mainwindow.set_icon_name(gtk.STOCK_HOME)
+				self.mainwindow.set_icon_name(Gtk.STOCK_HOME)
 				if self.LOAD_SRVDATA == True:
-					self.mainwindow.set_default_size(900,640)
+					self.mainwindow.set_default_size(1770,820)
 				else:
-					self.mainwindow.set_default_size(480,640)
+					self.mainwindow.set_default_size(480,820)
 				self.mainwindow_ovpn_server()
 				self.MAINWINDOW_OPEN = True
 				return True
@@ -1799,7 +1803,7 @@ class Systray:
 	#######
 	def mainwindow_ovpn_server(self):
 		#self.debug(text="def mainwindow_ovpn_server: go")
-		self.mainwindow_vbox = gtk.VBox(False,1)
+		self.mainwindow_vbox = Gtk.VBox(False,1)
 		self.mainwindow.add(self.mainwindow_vbox)
 		
 		if self.OVPN_CONFIGVERSION == "23x":
@@ -1813,184 +1817,42 @@ class Systray:
 		""" *fixme* we should do any checks before adding remote text to output ! """
 		try:
 			if len(self.OVPN_SRV_DATA) > 0:
-				serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,gtk.gdk.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
+				serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
 			else:
-				serverliststore = gtk.ListStore(gtk.gdk.Pixbuf,gtk.gdk.Pixbuf,str,str,str,str,str,str)
-			self.treeview = gtk.TreeView(serverliststore)
-			
-			if len(self.OVPN_SRV_DATA) > 0:
-				cell = gtk.CellRendererPixbuf()
-				column = gtk.TreeViewColumn(' ',cell)
-				column.add_attribute(cell,"pixbuf",0)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererPixbuf()
-				column = gtk.TreeViewColumn(' ',cell)
-				column.add_attribute(cell,"pixbuf",1)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Server ',cell)
-				column.add_attribute(cell,"text",2)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' IPv4 ',cell)
-				column.add_attribute(cell,"text",3)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' IPv6 ',cell)
-				column.add_attribute(cell,"text",4)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Port ',cell)
-				column.add_attribute(cell,"text",5)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Proto ',cell)
-				column.add_attribute(cell,"text",6)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' MTU ',cell)
-				column.add_attribute(cell,"text",7)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Cipher ',cell)
-				column.add_attribute(cell,"text",8)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Mbps ',cell)
-				column.add_attribute(cell,"text",9)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Link ',cell)
-				column.add_attribute(cell,"text",10)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' VLAN IPv4 ',cell)
-				column.add_attribute(cell,"text",11)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' VLAN IPv6 ',cell)
-				column.add_attribute(cell,"text",12)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Processor ',cell)
-				column.add_attribute(cell,"text",13)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' RAM ',cell)
-				column.add_attribute(cell,"text",14)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' HDD ',cell)
-				column.add_attribute(cell,"text",15)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Traffic ',cell)
-				column.add_attribute(cell,"text",16)
-				self.treeview.append_column(column)
+				serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str)
+			self.treeview = Gtk.TreeView(serverliststore)
 
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Load ',cell)
-				column.add_attribute(cell,"text",17)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' oVPN ',cell)
-				column.add_attribute(cell,"text",18)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' oSSH ',cell)
-				column.add_attribute(cell,"text",19)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' SOCK ',cell)
-				column.add_attribute(cell,"text",20)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' HTTP ',cell)
-				column.add_attribute(cell,"text",21)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' TINC ',cell)
-				column.add_attribute(cell,"text",22)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' PING4 ',cell)
-				column.add_attribute(cell,"text",23)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' PING6 ',cell)
-				column.add_attribute(cell,"text",24)
-				self.treeview.append_column(column)
-				
+			cell = Gtk.CellRendererPixbuf()
+			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
+			self.treeview.append_column(column)
+
+			cell = Gtk.CellRendererPixbuf()
+			column = Gtk.TreeViewColumn(' ',cell, pixbuf=1)
+			self.treeview.append_column(column)
+
+			if len(self.OVPN_SRV_DATA) > 0:
+				cellnumber = 2
+				cellname = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN ", " oSSH ", " SOCK ", " HTTP ", " TINC ", " PING4 ", " PING6 " ]
+				for x in cellname:
+					cell = Gtk.CellRendererText()
+					column = Gtk.TreeViewColumn(x, cell, text=cellnumber)
+					self.treeview.append_column(column)
+					cellnumber = cellnumber + 1
 			else:
-				cell = gtk.CellRendererPixbuf()
-				column = gtk.TreeViewColumn(' ',cell)
-				column.add_attribute(cell,"pixbuf",0)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererPixbuf()
-				column = gtk.TreeViewColumn(' ',cell)
-				column.add_attribute(cell,"pixbuf",1)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Server ',cell)
-				column.add_attribute(cell,"text",2)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' IPv4 ',cell)
-				column.add_attribute(cell,"text",3)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Port ',cell)
-				column.add_attribute(cell,"text",4)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Proto ',cell)
-				column.add_attribute(cell,"text",5)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' MTU ',cell)
-				column.add_attribute(cell,"text",6)
-				self.treeview.append_column(column)
-				
-				cell = gtk.CellRendererText()
-				column = gtk.TreeViewColumn(' Cipher ',cell)
-				column.add_attribute(cell,"text",7)
-				self.treeview.append_column(column)
-			
+				cellnumber = 2
+				cellname = [ " Server ", " IPv4 ", " Port ", " Proto ", " MTU ", " Cipher " ]
+				for x in cellname:
+					cell = Gtk.CellRendererText()
+					column = Gtk.TreeViewColumn(x, cell, text=cellnumber)
+					self.treeview.append_column(column)
+					cellnumber = cellnumber + 1
+
 			for server in self.OVPN_SERVER:
 				#print "def mainwindow_ovpn_server: %s" % (server)
 				countrycode = server[:2].lower()
 				servershort = server[:3].upper()
 				imgpath = self.FLAG_IMG[countrycode]
-				countryimg = gtk.gdk.pixbuf_new_from_file(imgpath)
+				countryimg = GdkPixbuf.Pixbuf.new_from_file(imgpath)
 				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
 				serverport = self.OVPN_SERVER_INFO[servershort][1]
 				serverproto = self.OVPN_SERVER_INFO[servershort][2]
@@ -2005,13 +1867,13 @@ class Systray:
 					statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
 				else:
 					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-				statusimg = gtk.gdk.pixbuf_new_from_file(statusimgpath)
+				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 				try:
 					servermtu = self.OVPN_SERVER_INFO[servershort][4]
 				except:
 					servermtu = 1500
 				if len(self.OVPN_SRV_DATA) == 0:
-					serverliststore.append([statusimg,countryimg,server,serverip4,serverport,serverproto,servermtu,servercipher])
+					serverliststore.append([countryimg,str(server),str(serverip4),str(serverport),str(serverproto),str(servermtu),str(servercipher),])
 				else:
 					#print "len(self.OVPN_SRV_DATA) = %s" % (len(self.OVPN_SRV_DATA))
 					try:
@@ -2069,7 +1931,7 @@ class Systray:
 								statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 						except:
 							statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-						statusimg = gtk.gdk.pixbuf_new_from_file(statusimgpath)
+						statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 					except:
 						vlanip4 = "n/a"
 						vlanip6 = "n/a"
@@ -2090,22 +1952,22 @@ class Systray:
 						serverip6 = "n/a"
 						statustext = "n/a"
 						statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-						statusimg = gtk.gdk.pixbuf_new_from_file(statusimgpath)
+						statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 						self.debug(text="extended serverliststore getdata failed on '%s'" % (server))
 					try:
-						serverliststore.append([statusimg,countryimg,server,serverip4,serverip6,serverport,serverproto,servermtu,servercipher,live,uplink,vlanip4,vlanip6,cpuinfo,raminfo,hddinfo,traffic,cpuload,cpuovpn,cpusshd,cpusock,cpuhttp,cputinc,ping4,ping6])
+						serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),str(serverport),str(serverproto),str(servermtu),str(servercipher),str(live),str(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),str(cpuovpn),str(cpusshd),str(cpusock),str(cpuhttp),str(cputinc),str(ping4),str(ping6)])
 						#serverliststore.append([statusimg,countryimg,server,serverip4,serverip6,serverport,serverproto,servermtu,servercipher,live,uplink,vlanip4,vlanip6,cpuinfo,raminfo,hddinfo,traffic,cpuload])
 					except:
 						self.debug(text="serverliststore.append: failed '%s'" % (server))
 			try:
 				self.treeview.connect("button_release_event",self.on_right_click_mainwindow)
 				
-				self.scrolledwindow = gtk.ScrolledWindow()
+				self.scrolledwindow = Gtk.ScrolledWindow()
 				if self.LOAD_SRVDATA == True:
 					self.scrolledwindow.set_size_request(900,640)
 				else:
 					self.scrolledwindow.set_size_request(480,640)
-				self.scrolledwindow.set_policy(gtk.POLICY_ALWAYS, gtk.POLICY_AUTOMATIC)
+				self.scrolledwindow.set_policy(Gtk.PolicyType.ALWAYS, Gtk.PolicyType.AUTOMATIC)
 				self.scrolledwindow.add(self.treeview)
 				self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
 			except:
@@ -2114,7 +1976,7 @@ class Systray:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
 		
 		### statusbar
-		self.statusbar_text = gtk.Label()
+		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,True,True,0)
 		self.mainwindow.show_all()
 		return
@@ -2149,10 +2011,10 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		if self.ACCWINDOW_OPEN == False:
 			try:
-				self.accwindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
+				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
 				self.accwindow.set_title("oVPN.to Acc")
-				self.accwindow.set_icon_name(gtk.STOCK_HOME)
+				self.accwindow.set_icon_name(Gtk.STOCK_HOME)
 				self.accwindow.set_default_size(320,480)
 				self.accwindow_accinfo()
 				self.ACCWINDOW_OPEN = True
@@ -2166,14 +2028,14 @@ class Systray:
 
 	#######
 	def accwindow_accinfo(self):
-		self.accwindow_accinfo_vbox = gtk.VBox(False,0)
+		self.accwindow_accinfo_vbox = Gtk.VBox(False,0)
 		self.accwindow.add(self.accwindow_accinfo_vbox)
 		if len(self.OVPN_ACC_DATA) == 0:
 			if self.check_inet_connection():
 				text = "No data found! Retry later..."
 			else:
 				text = "No Internet Connection."
-			entry = gtk.Entry()
+			entry = Gtk.Entry()
 			entry.set_max_length(32)
 			entry.set_editable(0)
 			entry.set_text(text)
@@ -2226,7 +2088,7 @@ class Systray:
 							try:
 								text = "%s: '%s'" % (coin.upper(),addr.upper())
 								#print text
-								entry = gtk.Entry()
+								entry = Gtk.Entry()
 								entry.set_max_length(128)
 								entry.set_editable(0)
 								entry.set_text(text)
@@ -2241,7 +2103,7 @@ class Systray:
 					text = "%s: %s" % (head,value1)
 					#self.debug(text="key [%s] = '%s' value = '%s'" % (key,head,value))
 					try:
-						entry = gtk.Entry()
+						entry = Gtk.Entry()
 						entry.set_max_length(128)
 						entry.set_editable(0)
 						entry.set_text(text)
@@ -3269,18 +3131,18 @@ class Systray:
 			pass
 		if self.timer_check_certdl_running == False:
 			try:
-				dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK_CANCEL)
+				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 				text = "Enter your Passphrase"
 				dialogWindow.set_title(text)
 				dialogWindow.set_markup(text)
 				dialogBox = dialogWindow.get_content_area()
-				checkbox = gtk.CheckButton("Save Passphrase in File?")
+				checkbox = Gtk.CheckButton("Save Passphrase in File?")
 				checkbox.show()
-				ph1Entry = gtk.Entry()
+				ph1Entry = Gtk.Entry()
 				ph1Entry.set_visibility(False)
 				ph1Entry.set_invisible_char("X")
 				ph1Entry.set_size_request(200,24)
-				ph1Label = gtk.Label("Passphrase:")
+				ph1Label = Gtk.Label(label="Passphrase:")
 				
 				dialogBox.pack_start(ph1Label,False,False,0)
 				dialogBox.pack_start(ph1Entry,False,False,0)
@@ -3292,12 +3154,12 @@ class Systray:
 				saveph = checkbox.get_active()
 				self.debug(text="checkbox saveph = %s" %(saveph))
 				
-				if response == gtk.RESPONSE_CANCEL:
+				if response == Gtk.ResponseType.CANCEL:
 					dialogWindow.destroy()
 					print "response: btn cancel %s" % (response)
 					self.PASSPHRASE = False
 					return False
-				elif response == gtk.RESPONSE_OK:
+				elif response == Gtk.ResponseType.OK:
 					dialogWindow.destroy()
 					if len(ph1) > 0:
 						self.PASSPHRASE = ph1
@@ -3328,36 +3190,36 @@ class Systray:
 	#######
 	def form_ask_userid(self):
 		try:
-			dialogWindow = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION,buttons=gtk.BUTTONS_OK_CANCEL)
+			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_title("oVPN.to Setup")
 			dialogWindow.set_markup("Enter your oVPN.to Details")
 			dialogBox = dialogWindow.get_content_area()
 			
-			useridEntry = gtk.Entry()
+			useridEntry = Gtk.Entry()
 			useridEntry.set_visibility(True)
 			useridEntry.set_max_length(9)
 			useridEntry.set_size_request(200,24)
-			useridLabel = gtk.Label("User-ID:")
+			useridLabel = Gtk.Label(label="User-ID:")
 			
-			apikeyEntry = gtk.Entry()
+			apikeyEntry = Gtk.Entry()
 			apikeyEntry.set_visibility(False)
 			apikeyEntry.set_max_length(128)
 			apikeyEntry.set_invisible_char("*")
 			apikeyEntry.set_size_request(200,24)
-			apikeyLabel = gtk.Label("API-Key:")
+			apikeyLabel = Gtk.Label(label="API-Key:")
 			
-			ph1Entry = gtk.Entry()
+			ph1Entry = Gtk.Entry()
 			ph1Entry.set_visibility(False)
 			ph1Entry.set_invisible_char("X")
 			ph1Entry.set_size_request(200,24)
-			ph0Label = gtk.Label("\n\nEnter a secure passphrase to encrypt your API-Login!")
-			ph1Label = gtk.Label("Passphrase:")
+			ph0Label = Gtk.Label(label="\n\nEnter a secure passphrase to encrypt your API-Login!")
+			ph1Label = Gtk.Label(label="Passphrase:")
 			
-			ph2Entry = gtk.Entry()
+			ph2Entry = Gtk.Entry()
 			ph2Entry.set_visibility(False)
 			ph2Entry.set_invisible_char("X")
 			ph2Entry.set_size_request(200,24)
-			ph2Label = gtk.Label("Repeat:")
+			ph2Label = Gtk.Label(label="Repeat:")
 			
 			dialogBox.pack_start(useridLabel,False,False,0)
 			dialogBox.pack_start(useridEntry,False,False,0)
@@ -3381,7 +3243,7 @@ class Systray:
 			ph1 = ph1Entry.get_text().rstrip()
 			ph2 = ph2Entry.get_text().rstrip()
 
-			if response == gtk.RESPONSE_OK:
+			if response == Gtk.ResponseType.OK:
 				if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum() and ph1 == ph2 and len(ph1) > 0:
 					dialogWindow.destroy()
 					self.USERID = userid
@@ -4256,17 +4118,17 @@ class Systray:
 		#except:
 		#	pass
 		self.msgwarn(text="OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!")
-		dialog = gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,gtk.FILE_CHOOSER_ACTION_OPEN,
-									   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-										gtk.STOCK_OPEN, gtk.RESPONSE_OK))
-		dialog.set_default_response(gtk.RESPONSE_OK)
-		filter = gtk.FileFilter()
+		dialog = Gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,Gtk.FileChooserAction.OPEN,
+									   (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+										Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+		dialog.set_default_response(Gtk.ResponseType.OK)
+		filter = Gtk.FileFilter()
 		filter.set_name("openvpn.exe")
 		filter.add_pattern("openvpn.exe")
 		dialog.add_filter(filter)
 		try:
 			response = dialog.run()
-			if response == gtk.RESPONSE_OK:
+			if response == Gtk.ResponseType.OK:
 				dialogWindow.destroy()
 				self.OPENVPN_EXE = dialog.get_filename()
 				self.debug(text = "selected: %s" % (self.OPENVPN_EXE))
@@ -4535,7 +4397,7 @@ class Systray:
 			return True
 		try:
 			self.WINDOW_ABOUT_OPEN = True
-			about_dialog = gtk.AboutDialog()
+			about_dialog = Gtk.AboutDialog()
 			self.about_dialog = about_dialog
 			about_dialog.set_destroy_with_parent (True)
 			about_dialog.set_name('oVPN.to')
@@ -4582,15 +4444,15 @@ class Systray:
 				pass
 
 			try:
-				dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
+				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup("Do you really want to quit?")
 				response = dialog.run()
-				if response == gtk.RESPONSE_NO:
+				if response == Gtk.ResponseType.NO:
 					self.WINDOW_QUIT_OPEN = False
 					dialog.destroy()
 					return False
-				elif response == gtk.RESPONSE_YES:
+				elif response == Gtk.ResponseType.YES:
 					self.WINDOW_QUIT_OPEN = False
 					if self.ask_loadorunload_fw() == False:
 						dialog.destroy()
@@ -4610,7 +4472,7 @@ class Systray:
 			self.debug(text="close app")
 			self.stop_systray_timer = True
 			self.remove_lock()
-			gtk.main_quit()
+			Gtk.main_quit()
 			sys.exit()
 
 	#######
@@ -4645,7 +4507,7 @@ class Systray:
 					return True
 			else:
 				try:
-					dialog = gtk.MessageDialog(type=gtk.MESSAGE_QUESTION, buttons=gtk.BUTTONS_YES_NO)
+					dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 					if self.WIN_BACKUP_FIREWALL == True:
 						text = "Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
 						dialog.set_markup()
@@ -4656,13 +4518,13 @@ class Systray:
 					self.debug(text="def ask_loadorunload_fw: text = '%s'" % (text))
 					response = dialog.run()
 					self.debug(text="def ask_loadorunload_fw: dialog response = '%s'" % (response))
-					if response == gtk.RESPONSE_NO:
+					if response == Gtk.ResponseType.NO:
 						dialog.destroy()
 						self.debug(text="def ask_loadorunload_fw: dialog response = NO '%s'" % (response))
 						self.win_firewall_block_on_exit()
 						self.win_netsh_restore_dns_from_backup()
 						return True
-					elif response == gtk.RESPONSE_YES:
+					elif response == Gtk.ResponseType.YES:
 						dialog.destroy()
 						self.debug(text="def ask_loadorunload_fw: dialog response = YES '%s'" % (response))
 						if self.WIN_BACKUP_FIREWALL == True:
@@ -4703,7 +4565,7 @@ class Systray:
 		text = "errorquit: %s" % (text)
 		self.debug(text=text)
 		try:
-			message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_markup("%s"%(text))
 			message.run()
 			message.destroy()
@@ -4767,7 +4629,7 @@ class Systray:
 			self.DEBUG = True
 		try:
 			self.debug(text=text)
-			message = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK)
+			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_markup("%s"%(text))
 			message.run()
 			message.destroy()
@@ -4779,8 +4641,8 @@ class Systray:
 def app():
 	Systray()
 	try:
-		gtk.gdk.threads_init()
-		gtk.main()
+		# Threads init break alot of things. Windows crashes and freezes
+		Gtk.main()
 	except:
 		print "undef except"
 		sys.exit()
