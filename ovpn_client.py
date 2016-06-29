@@ -21,7 +21,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.4.9q-gtk"
+CLIENTVERSION="v0.4.9r-gtk"
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -176,7 +176,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 66
+		self.LOAD_DATA_EVERY = 300
 		self.LOAD_SRVDATA = False
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
@@ -1056,12 +1056,14 @@ class Systray:
 		self.context_menu_servertab = context_menu_servertab
 		self.make_context_menu_servertab_d0wns_dnsmenu(servername)
 		
+		"""
 		if self.LOAD_ACCDATA == True or self.LOAD_SRVDATA == True:
 			sep = gtk.SeparatorMenuItem()
 			context_menu_servertab.append(sep)
 			refresh = gtk.MenuItem('Refresh Window')
 			refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
 			context_menu_servertab.append(refresh)
+		"""
 		
 		context_menu_servertab.show_all()
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), self.treeview)
@@ -3986,25 +3988,29 @@ class Systray:
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == True:
 			#self.debug(text="def l_r_d: 0x1")
 			if self.load_serverdata_from_remote() == True:
-				self.call_redraw_mainwindow_vbox()
+				pass
+				#self.call_redraw_mainwindow_vbox()
 				#self.debug(text="def l_r_d: 0x2a")
 			if self.load_accinfo_from_remote() == True:
-				self.call_redraw_accwindow()
+				pass
+				#self.call_redraw_accwindow()
 				#self.debug(text="def l_r_d: 0x2b")
 			#else:
 			#	self.debug(text="def l_r_d: 0x3")
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == False:
 			#self.debug(text="def l_r_d: 1x1")
 			if self.load_serverdata_from_remote() == True:
+				pass
 				#self.debug(text="def l_r_d: 1x2")
-				self.call_redraw_mainwindow_vbox()
+				#self.call_redraw_mainwindow_vbox()
 			#else:
 			#	self.debug(text="def l_r_d: 1x3")
 		elif self.LOAD_SRVDATA == False and self.LOAD_ACCDATA == True:
 			#self.debug(text="def l_r_d: 2x1")
 			if self.load_accinfo_from_remote() == True:
+				pass
 				#self.debug(text="def l_r_d: 2x2")
-				self.call_redraw_accwindow()
+				#self.call_redraw_accwindow()
 			#else:
 			#	self.debug(text="def l_r_d: 3x3")
 
@@ -4586,19 +4592,16 @@ class Systray:
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup("Do you really want to quit?")
 				response = dialog.run()
+				dialog.destroy()
 				if response == gtk.RESPONSE_NO:
 					self.WINDOW_QUIT_OPEN = False
-					dialog.destroy()
 					return False
 				elif response == gtk.RESPONSE_YES:
-					self.WINDOW_QUIT_OPEN = False
 					if self.ask_loadorunload_fw() == False:
-						dialog.destroy()
+						self.WINDOW_QUIT_OPEN = False
 						return False
-					dialog.destroy()
 				else:
 					self.WINDOW_QUIT_OPEN = False
-					dialog.destroy()
 					return False
 			except:
 				pass
