@@ -25,7 +25,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.5.0e-gtk3"
+CLIENTVERSION="v0.5.0f-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1036,13 +1036,6 @@ class Systray:
 
 	#######
 	def make_context_menu_servertab(self,servername):
-		self.debug(text="def make_context_menu_servertab()")
-		if self.LOAD_ACCDATA == True and self.LAST_OVPN_ACC_DATA_UPDATE == -1:
-			self.debug(text="self.LAST_OVPN_ACC_DATA_UPDATE = '%s', self.LAST_OVPN_SRV_DATA_UPDATE = '%s'" % (self.LAST_OVPN_ACC_DATA_UPDATE,self.LAST_OVPN_SRV_DATA_UPDATE))
-			return False
-		elif self.LOAD_SRVDATA == True and self.LAST_OVPN_SRV_DATA_UPDATE == -1:
-			self.debug(text="self.LAST_OVPN_ACC_DATA_UPDATE = '%s', self.LAST_OVPN_SRV_DATA_UPDATE = '%s'" % (self.LAST_OVPN_ACC_DATA_UPDATE,self.LAST_OVPN_SRV_DATA_UPDATE))
-			return False
 		self.debug(text="def make_context_menu_servertab: %s" % (servername))
 		context_menu_servertab = Gtk.Menu()
 		
@@ -1073,7 +1066,15 @@ class Systray:
 		self.context_menu_servertab = context_menu_servertab
 		self.make_context_menu_servertab_d0wns_dnsmenu(servername)
 		
-		if self.LOAD_ACCDATA == True or self.LOAD_SRVDATA == True:
+		Show_Refresh = True
+		if self.LOAD_ACCDATA == True and self.LAST_OVPN_ACC_DATA_UPDATE == -1:
+			self.debug(text="self.LAST_OVPN_ACC_DATA_UPDATE = '%s', self.LAST_OVPN_SRV_DATA_UPDATE = '%s'" % (self.LAST_OVPN_ACC_DATA_UPDATE,self.LAST_OVPN_SRV_DATA_UPDATE))
+			Show_Refresh = False
+		elif self.LOAD_SRVDATA == True and self.LAST_OVPN_SRV_DATA_UPDATE == -1:
+			self.debug(text="self.LAST_OVPN_ACC_DATA_UPDATE = '%s', self.LAST_OVPN_SRV_DATA_UPDATE = '%s'" % (self.LAST_OVPN_ACC_DATA_UPDATE,self.LAST_OVPN_SRV_DATA_UPDATE))
+			Show_Refresh = False
+		
+		if Show_Refresh == True:
 			sep = Gtk.SeparatorMenuItem()
 			context_menu_servertab.append(sep)
 			refresh = Gtk.MenuItem('Refresh Window')
