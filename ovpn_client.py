@@ -3,7 +3,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, GObject
+from gi.repository import Gtk, GdkPixbuf, GLib
 
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
@@ -25,7 +25,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.5.0d-gtk3"
+CLIENTVERSION="v0.5.0e-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -209,6 +209,11 @@ class Systray:
 			"Intern 22) nntp-50001 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50001","proto":"tcp"},
 			"Intern 23) nntp-50002 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50002","proto":"tcp"}
 		}
+
+	def thread_idle(self, target):
+		self.debug(text="def thread_idle call %s" %(target))
+		GLib.idle_add(target)
+		time.sleep(0.2)
 
 	#######
 	def preboot(self):
@@ -1781,9 +1786,8 @@ class Systray:
 	#######
 	def call_redraw_mainwindow_vbox(self):
 		self.debug(text="def call_redraw_mainwindow_vbox()")
-		# *** fixme *** freeze on redraw
 		#self.STATUSBAR_FREEZE = True
-		drawthread = threading.Thread(target=self.inThread_redraw_mainwindow)
+		drawthread = threading.Thread(target=self.thread_idle, args=(self.inThread_redraw_mainwindow,))
 		drawthread.start()
 
 	#######
@@ -1816,9 +1820,9 @@ class Systray:
 				self.mainwindow.set_title(CLIENT_STRING)
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
 				if self.LOAD_SRVDATA == True:
-					self.mainwindow.set_default_size(1770,820)
+					self.mainwindow.set_default_size(1740,830)
 				else:
-					self.mainwindow.set_default_size(480,820)
+					self.mainwindow.set_default_size(480,830)
 				self.mainwindow_ovpn_server()
 				self.MAINWINDOW_OPEN = True
 				return True
@@ -2016,14 +2020,12 @@ class Systray:
 	def call_redraw_accwindow(self):
 		self.debug(text="def call_redraw_accwindow()")
 		# *** fixme *** freeze on redraw
-		drawthread = threading.Thread(target=self.inThread_redraw_accwindow)
+		drawthread = threading.Thread(target=self.thread_idle, args=(self.inThread_redraw_accwindow,))
 		drawthread.start()
 
 	#######
 	def inThread_redraw_accwindow(self):
 		self.debug(text="def inThread_redraw_accwindow()")
-		return
-		# *** fixme *** freeze on redraw
 		if self.ACCWINDOW_OPEN == True:
 			try:
 				self.accwindow.remove(self.accwindow_accinfo_vbox)
@@ -4792,13 +4794,9 @@ class Systray:
 		except:
 			self.debug(text=text)
 
-
-
 def app():
 	Systray()
-	GObject.threads_init()
 	Gtk.main()
 
 if __name__ == "__main__":
 	app()
-#
