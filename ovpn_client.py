@@ -1066,20 +1066,11 @@ class Systray:
 		self.context_menu_servertab = context_menu_servertab
 		self.make_context_menu_servertab_d0wns_dnsmenu(servername)
 		
-		Show_Refresh = True
-		if self.LOAD_ACCDATA == True and self.LAST_OVPN_ACC_DATA_UPDATE == -1:
-			self.debug(text="self.LAST_OVPN_ACC_DATA_UPDATE = '%s', self.LAST_OVPN_SRV_DATA_UPDATE = '%s'" % (self.LAST_OVPN_ACC_DATA_UPDATE,self.LAST_OVPN_SRV_DATA_UPDATE))
-			Show_Refresh = False
-		elif self.LOAD_SRVDATA == True and self.LAST_OVPN_SRV_DATA_UPDATE == -1:
-			self.debug(text="self.LAST_OVPN_ACC_DATA_UPDATE = '%s', self.LAST_OVPN_SRV_DATA_UPDATE = '%s'" % (self.LAST_OVPN_ACC_DATA_UPDATE,self.LAST_OVPN_SRV_DATA_UPDATE))
-			Show_Refresh = False
-		
-		if Show_Refresh == True:
-			sep = Gtk.SeparatorMenuItem()
-			context_menu_servertab.append(sep)
-			refresh = Gtk.MenuItem('Refresh Window')
-			refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
-			context_menu_servertab.append(refresh)
+		sep = Gtk.SeparatorMenuItem()
+		context_menu_servertab.append(sep)
+		refresh = Gtk.MenuItem('Refresh Window')
+		refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
+		context_menu_servertab.append(refresh)
 		
 		context_menu_servertab.show_all()
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
@@ -2327,8 +2318,6 @@ class Systray:
 	def cb_redraw_mainwindow_vbox(self,widget,event):
 		self.debug(text="def cb_redraw_mainwindow_vbox()")
 		self.destroy_context_menu_servertab()
-		if self.LOAD_ACCDATA == True:
-			self.LAST_OVPN_ACC_DATA_UPDATE = -1
 		if self.LOAD_SRVDATA == True:
 			self.LAST_OVPN_SRV_DATA_UPDATE = -1
 
