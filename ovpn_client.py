@@ -25,7 +25,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.5.0g-gtk3"
+CLIENTVERSION="v0.5.0h-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -57,7 +57,7 @@ class Systray:
 		if self.preboot():
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
-			self.tray.set_tooltip_text(CLIENT_STRING)
+			self.tray.set_tooltip_markup(CLIENT_STRING)
 			if self.UPDATEOVPNONSTART == True and self.check_inet_connection() == True:
 				self.check_remote_update()
 			if self.TAP_BLOCKOUTBOUND == True:
@@ -72,6 +72,7 @@ class Systray:
 		
 		self.OS = sys.platform
 		self.MAINWINDOW_OPEN = False
+		self.STATUSWINDOW_OPEN = False
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
@@ -99,6 +100,7 @@ class Systray:
 		self.statusbartext_from_before = False
 		self.systraytext_from_before = False
 		self.systrayicon_from_before = False
+		self.statusbartext_from_before = False
 		self.stop_systray_timer = False
 		self.STATUSBAR_FREEZE = False
 		self.inThread_jump_server_running = False
@@ -1216,11 +1218,11 @@ class Systray:
 		"""
 		
 		if self.timer_check_certdl_running == True:
-			systraytext = "Checking for Updates!"
+			systraytext = " Checking for Updates! "
 			systrayicon = self.systray_icon_syncupdate
 		
 		elif self.STATE_OVPN == False:
-			systraytext = "Disconnected! Have a nice and anonymous day!"
+			systraytext = " Disconnected! Have a nice and anonymous day! "
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
 			try:
@@ -1234,17 +1236,17 @@ class Systray:
 			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 			self.OVPN_CONNECTEDseconds = connectedseconds
 			if self.OVPN_PING_STAT == -1:
-				systraytext = "Connecting to %s" % (self.OVPN_CONNECTEDto)
+				systraytext = " Connecting to %s " % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_connect
 				statusbar_text = systraytext
 				self.debug(text=systraytext)
 			elif self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
-				systraytext = "Testing connection to %s" % (self.OVPN_CONNECTEDto)
+				systraytext = " Testing connection to %s " % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_hourglass
 				statusbar_text = systraytext
 				self.debug(text=systraytext)
-			elif self.OVPN_PING_STAT > 0:
+			elif self.OVPN_PING_LAST > 0:
 				try:
 					if self.OVPN_isTESTING == True:
 						self.OVPN_PING = list()
@@ -1255,38 +1257,45 @@ class Systray:
 					d, h = divmod(h, 24)
 					if self.OVPN_CONNECTEDseconds >= 0:
 						connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-					systraytext = "Connected to %s [%s]:%s (%s) [ %s ]" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text)
-					statusbar_text = "%s  %s / %s ms " % (connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
-					#statusbar_text = systraytext
+					systraytext = " Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms) " % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+					statusbar_text = systraytext
 					systrayicon = self.systray_icon_connected
 				except:
-					self.debug(text="def systray_timer: systraytext failed")
+					self.debug(text="def systray_timer: systraytext failed #1")
 		
 		try:
 			if not self.systraytext_from_before == systraytext and not systraytext == False:
 				self.systraytext_from_before = systraytext
-				self.tray.set_tooltip(systraytext)
+				self.tray.set_tooltip_markup(systraytext)
+		except:
+			self.debug(text="def systray_timer: systraytext failed #2")
+		
+		try:
 			if not self.systrayicon_from_before == systrayicon:
 				self.systrayicon_from_before = systrayicon
 				self.tray.set_from_file(systrayicon)
-			#fixme: memoryleak
-			if self.MAINWINDOW_OPEN == True:
+		except:
+			self.debug(text="def systray_timer: systrayicon failed")
+		
+		try:
+			if self.STATUSWINDOW_OPEN == True:
 				if not self.statusbartext_from_before == statusbar_text:
 					self.set_statusbar_text(statusbar_text)
 					self.statusbartext_from_before = statusbar_text
+					#self.debug(text="def systray_timer: statusbar_text = '%s'" % (statusbar_text))
 		except:
-			pass
+			self.debug(text="def systray_timer: statusbar_text failed")
 		
 		try:
 			if self.systray_timer_running == True:
 				self.load_remote_data()
+				time.sleep(0.5)
 		except:
 			pass
-		
-		self.thread_systray_timer = threading.Thread(target=self.systray_timer)
-		time.sleep(0.5)
+
 		self.systray_timer_running = True
-		self.thread_systray_timer.start()
+		thread_systray_timer = threading.Thread(target=self.systray_timer)
+		thread_systray_timer.start()
 		#self.debug(text="def systray_timer: return")
 		return
 
@@ -1668,21 +1677,38 @@ class Systray:
 		self.debug(text="def make_systray_bottom_menu()")
 		sep = Gtk.SeparatorMenuItem()
 		self.systray_menu.append(sep)
-		if self.DISABLE_SRV_WINDOW == False:
+
+		try:
 			if self.MAINWINDOW_OPEN == True:
 				mainwindowentry = Gtk.MenuItem('Close Servers')
 			else:
 				mainwindowentry = Gtk.MenuItem('Show Servers')
 			self.systray_menu.append(mainwindowentry)
 			mainwindowentry.connect('button-release-event', self.show_mainwindow)
+		except:
+			self.debug(text="def make_systray_bottom_menu: mainwindowentry failed")
 			
-		if self.DISABLE_ACC_WINDOW == False:
+		try:
 			if self.ACCWINDOW_OPEN == True:
 				accwindowentry = Gtk.MenuItem('Close Account')
 			else:
 				accwindowentry = Gtk.MenuItem('Show Account')
 			self.systray_menu.append(accwindowentry)
 			accwindowentry.connect('button-release-event', self.show_accwindow)
+		except:
+			self.debug(text="def make_systray_bottom_menu: accwindowentry failed")
+			
+		"""
+		try:
+			if self.STATUSWINDOW_OPEN == True:
+				statuswindowentry = Gtk.MenuItem('Close Status')
+			else:
+				statuswindowentry = Gtk.MenuItem('Show Status')
+			self.systray_menu.append(statuswindowentry)
+			statuswindowentry.connect('button-release-event', self.show_statuswindow)
+		except:
+			self.debug(text="def make_systray_bottom_menu: statuswindowentry failed")
+		"""
 		
 		if self.STATE_OVPN == False:
 			sep = Gtk.SeparatorMenuItem()
@@ -1690,12 +1716,10 @@ class Systray:
 			# show about dialog
 			about = Gtk.MenuItem('About')
 			self.systray_menu.append(about)
-			# SIGNALS
 			about.connect('button-release-event', self.show_about_dialog)
 			# add quit item
 			quit = Gtk.MenuItem('Quit')
 			self.systray_menu.append(quit)
-			# SIGNALS
 			quit.connect('button-release-event', self.on_closing)
 
 	#######
@@ -1841,6 +1865,31 @@ class Systray:
 		return
 
 	#######
+	def show_statuswindow(self,widget,event):
+		self.debug(text="def show_statuswindow()")
+		self.destroy_systray_menu()
+		if self.STATUSWINDOW_OPEN == False:
+			try:
+				self.statuswindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+				self.statuswindow.connect("destroy",self.cb_destroy_statuswindow)
+				self.statuswindow.set_title("oVPN Status - %s" % (CLIENT_STRING))
+				self.statuswindow.set_icon_from_file(self.systray_icon_connected)
+				self.statuswindow.set_transient_for(self.window)
+				#self.statuswindow.set_resizable(False)
+				self.statusbar_text = Gtk.Label()
+				self.statusbar_vbox = Gtk.VBox(False,1)
+				#self.statuswindow.add(self.statusbar_text)
+				self.statuswindow.add(self.statusbar_vbox)
+				self.statusbar_vbox.pack_start(self.statusbar_text,False,False,0)
+				self.statuswindow.show_all()
+				self.STATUSWINDOW_OPEN = True
+			except:
+				self.STATUSWINDOW_OPEN = False
+				self.debug(text="def show_statuswindow: failed")
+		else:
+			self.destroy_statuswindow()
+
+	#######
 	def show_mainwindow(self,widget,event):
 		self.debug(text="def show_mainwindow()")
 		self.destroy_systray_menu()
@@ -1856,8 +1905,9 @@ class Systray:
 					self.mainwindow.set_default_size(1740,830)
 				else:
 					self.mainwindow.set_default_size(480,830)
-				self.mainwindow_ovpn_server()
-				self.MAINWINDOW_OPEN = True
+				if self.mainwindow_ovpn_server():
+					self.mainwindow.show_all()
+					self.MAINWINDOW_OPEN = True
 				return True
 			except:
 				self.MAINWINDOW_OPEN = False
@@ -1898,18 +1948,22 @@ class Systray:
 
 			if len(self.OVPN_SRV_DATA) > 0:
 				cellnumber = 2
-				cellname = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN ", " oSSH ", " SOCK ", " HTTP ", " TINC ", " PING4 ", " PING6 " ]
-				for x in cellname:
+				cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN ", " oSSH ", " SOCK ", " HTTP ", " TINC ", " PING4 ", " PING6 " ]
+				for cellname in cellnames:
 					cell = Gtk.CellRendererText()
-					column = Gtk.TreeViewColumn(x, cell, text=cellnumber)
+					column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
+					# *** fixme *** make columns sortable, but right-click menu looses index (1/2)
+					column.set_sort_column_id(cellnumber)
 					self.treeview.append_column(column)
 					cellnumber = cellnumber + 1
 			else:
 				cellnumber = 2
-				cellname = [ " Server ", " IPv4 ", " Port ", " Proto ", " MTU ", " Cipher " ]
-				for x in cellname:
+				cellnames = [ " Server ", " IPv4 ", " Port ", " Proto ", " MTU ", " Cipher " ]
+				for cellname in cellnames:
 					cell = Gtk.CellRendererText()
-					column = Gtk.TreeViewColumn(x, cell, text=cellnumber)
+					column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
+					# *** fixme *** make columns sortable, but right-click menu looses index (2/2)
+					#column.set_sort_column_id(cellnumber)
 					self.treeview.append_column(column)
 					cellnumber = cellnumber + 1
 
@@ -1931,6 +1985,9 @@ class Systray:
 				if server == self.OVPN_CONNECTEDto:
 					statustext = "CONN"
 					statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+				elif server == self.OVPN_FAV_SERVER:
+					statustext = "FAV"
+					statusimgpath = "%s\\bullet_star.png" % (self.ico_dir)
 				else:
 					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
@@ -1986,6 +2043,9 @@ class Systray:
 							if server == self.OVPN_CONNECTEDto:
 								statustext = "CONN"
 								statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+							elif server == self.OVPN_FAV_SERVER:
+								statustext = "FAV"
+								statusimgpath = "%s\\bullet_star.png" % (self.ico_dir)
 							elif serverstatus == "0":
 								statustext = "DEAD"
 								statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
@@ -2026,28 +2086,35 @@ class Systray:
 						self.debug(text="serverliststore.append: failed '%s'" % (server))
 			try:
 				self.treeview.connect("button_release_event",self.on_right_click_mainwindow)
-				
 				self.scrolledwindow = Gtk.ScrolledWindow()
 				self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 				self.scrolledwindow.add(self.treeview)
 				self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
+				return True
 			except:
 				self.debug(text="treeview.connect failed")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
-		
-		### statusbar
-		self.statusbar_text = Gtk.Label()
-		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
-		self.mainwindow.show_all()
-		return
+			return False
 
 	#######
 	def destroy_mainwindow(self):
 		self.debug(text="def destroy_mainwindow()")
 		self.mainwindow.destroy()
 		self.MAINWINDOW_OPEN = False
-		self.debug(text="def destroy_mainwindow")
+		
+	#######
+	def destroy_statuswindow(self):
+		self.debug(text="def destroy_statuswindow()")
+		self.statuswindow.destroy()
+		self.STATUSWINDOW_OPEN = False
+
+	#######
+	def destroy_accwindow(self):
+		self.debug(text="def destroy_accwindow()")
+		self.accwindow.destroy()
+		self.ACCWINDOW_OPEN = False
+		self.debug(text="def destroy_accwindow")
 
 	#######
 	def call_redraw_accwindow(self):
@@ -2081,9 +2148,9 @@ class Systray:
 				self.accwindow.set_title("oVPN.to Acc")
 				self.accwindow.set_icon_from_file(self.systray_icon_connected)
 				self.accwindow.set_default_size(370,480)
-				self.accwindow_accinfo()
-				self.ACCWINDOW_OPEN = True
-				return True
+				if self.accwindow_accinfo():
+					self.ACCWINDOW_OPEN = True
+					return True
 			except:
 				self.ACCWINDOW_OPEN = False
 				self.debug(text="def show_accwindow: accwindow failed")
@@ -2093,108 +2160,109 @@ class Systray:
 
 	#######
 	def accwindow_accinfo(self):
-		self.debug(text="def accwindow_accinfo()")
-		self.accwindow_accinfo_vbox = Gtk.VBox(False,0)
-		self.accwindow.add(self.accwindow_accinfo_vbox)
-		if len(self.OVPN_ACC_DATA) == 0:
-			if self.LOAD_ACCDATA == False:
-				text = "Updates -> 'Load Account Info' [disabled]"
-			else:
-				text = "No data loaded! Retry in few seconds..."
-			entry = Gtk.Entry()
-			entry.set_max_length(48)
-			entry.set_editable(0)
-			entry.set_text(text)
-			self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
-		elif len(self.OVPN_ACC_DATA) > 0:
-			try:
-				#self.debug(text="def accwindow_accinfo: try get values")
-				for key, value in sorted(self.OVPN_ACC_DATA.iteritems()):
-					#print key
-					value1 = False
-					if key == "001":
-						head = "User-ID"
-					elif key == "002":
-						head = "Service"
-						if int(value) == ((2**31)-1):
-							value1 = "Lifetime"
-						else:
+		try:
+			self.debug(text="def accwindow_accinfo()")
+			self.accwindow_accinfo_vbox = Gtk.VBox(False,0)
+			self.accwindow.add(self.accwindow_accinfo_vbox)
+			if len(self.OVPN_ACC_DATA) == 0:
+				if self.LOAD_ACCDATA == False:
+					text = "Updates -> 'Load Account Info' [disabled]"
+				else:
+					text = "No data loaded! Retry in few seconds..."
+				entry = Gtk.Entry()
+				entry.set_max_length(48)
+				entry.set_editable(0)
+				entry.set_text(text)
+				self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
+			elif len(self.OVPN_ACC_DATA) > 0:
+				try:
+					#self.debug(text="def accwindow_accinfo: try get values")
+					for key, value in sorted(self.OVPN_ACC_DATA.iteritems()):
+						#print key
+						value1 = False
+						if key == "001":
+							head = "User-ID"
+						elif key == "002":
+							head = "Service"
+							if int(value) == ((2**31)-1):
+								value1 = "Lifetime"
+							else:
+								value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+						elif key == "003":
+							head = "Balance EUR"
+							value1 = round(int(value),0) / 100
+						elif key == "004":
+							head = "Saved Days"
+						elif key == "005":
+							head = "Last Login"
 							value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
-					elif key == "003":
-						head = "Balance EUR"
-						value1 = round(int(value),0) / 100
-					elif key == "004":
-						head = "Saved Days"
-					elif key == "005":
-						head = "Last Login"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
-					elif key == "006":
-						head = "Login Count"
-					elif key == "007":
-						head = "Login Fail Count"
-					elif key == "008":
-						head = "Last Failed Login"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
-					elif key == "009":
-						head = "eMail verified"
-					elif key == "010":
-						head = "Last eMail sent"
-					elif key == "020":
-						head = "Last Update Request"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
-					elif key == "022":
-						head = "API Counter WIN"
-					elif key == "021":
-						head = "API Counter LIN"
-					elif key == "023":
-						head = "API Counter MAC"
-					elif key == "024":
-						head = "API Counter AND"
-					elif key == "030":
-						head = "IPv6 enabled"
-					elif key == "999":
-						for coin,addr in sorted(value.iteritems()):
-							try:
-								text = "%s: '%s'" % (coin.upper(),addr.upper())
-								#print text
-								entry = Gtk.Entry()
-								entry.set_max_length(128)
-								entry.set_editable(0)
-								entry.set_text(text)
-								self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
-							except:
-								self.debug(text="def accwindow_accinfo: coin '%s' failed" % (coin))
-						break
-					else:
-						head = key
-					if value1 == False:
-						value1 = value
-					text = "%s: %s" % (head,value1)
-					#self.debug(text="key [%s] = '%s' value = '%s'" % (key,head,value))
-					try:
-						entry = Gtk.Entry()
-						entry.set_max_length(128)
-						entry.set_editable(0)
-						entry.set_text(text)
-						self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
-					except:
-						self.debug(text="def accwindow_accinfo: accdata vbox.pack_start entry failed!")
-			except:
-				self.debug(text="def accwindow_accinfo: self.OVPN_ACC_DATA failed")
-		self.accwindow.show_all()
-		return
-
-	#######
-	def destroy_accwindow(self):
-		self.debug(text="def destroy_accwindow()")
-		self.accwindow.destroy()
-		self.ACCWINDOW_OPEN = False
-		self.debug(text="def destroy_accwindow")
+						elif key == "006":
+							head = "Login Count"
+						elif key == "007":
+							head = "Login Fail Count"
+						elif key == "008":
+							head = "Last Failed Login"
+							value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+						elif key == "009":
+							head = "eMail verified"
+						elif key == "010":
+							head = "Last eMail sent"
+						elif key == "020":
+							head = "Last Update Request"
+							value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+						elif key == "022":
+							head = "API Counter WIN"
+						elif key == "021":
+							head = "API Counter LIN"
+						elif key == "023":
+							head = "API Counter MAC"
+						elif key == "024":
+							head = "API Counter AND"
+						elif key == "030":
+							head = "IPv6 enabled"
+						elif key == "999":
+							for coin,addr in sorted(value.iteritems()):
+								try:
+									text = "%s: '%s'" % (coin.upper(),addr.upper())
+									#print text
+									entry = Gtk.Entry()
+									entry.set_max_length(128)
+									entry.set_editable(0)
+									entry.set_text(text)
+									self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
+								except:
+									self.debug(text="def accwindow_accinfo: coin '%s' failed" % (coin))
+							break
+						else:
+							head = key
+						if value1 == False:
+							value1 = value
+						text = "%s: %s" % (head,value1)
+						#self.debug(text="key [%s] = '%s' value = '%s'" % (key,head,value))
+						try:
+							entry = Gtk.Entry()
+							entry.set_max_length(128)
+							entry.set_editable(0)
+							entry.set_text(text)
+							self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
+						except:
+							self.debug(text="def accwindow_accinfo: accdata vbox.pack_start entry failed!")
+				except:
+					self.debug(text="def accwindow_accinfo: self.OVPN_ACC_DATA failed")
+			self.accwindow.show_all()
+			return True
+		except:
+			self.debug(text="def accwindow_accinfo: failed")
 
 	#######
 	def cb_destroy_mainwindow(self,event):
 		self.debug(text="def cb_destroy_mainwindow")
 		self.destroy_mainwindow()
+
+	#######
+	def cb_destroy_statuswindow(self,event):
+		self.debug(text="def cb_destroy_statuswindow")
+		self.destroy_statuswindow()
 
 	#######
 	def cb_destroy_accwindow(self,event):
@@ -2303,20 +2371,22 @@ class Systray:
 		except:
 			#self.debug(text = "def destroy_systray_menu: failed")
 			self.systray_menu = False
-
+	
 	#######
 	def set_statusbar_text(self,text):
-		self.debug(text="def set_statusbar_text() 		return")
-		return
-		if self.STATUSBAR_FREEZE == True:
-			self.debug(text="def set_statusbar_text: FREEZE")
-			return
+		self.debug(text="def set_statusbar_text()")
 		try:
-			if self.MAINWINDOW_OPEN == True:
-				self.statusbar_text.set_label(text)
+			if self.STATUSWINDOW_OPEN == True:
+				self.statusbar_vbox.remove(self.statusbar_text)
+				#self.statusbar_text = Gtk.Label()
+				self.statusbar_text.set_text(text)
+				self.statusbar_vbox.pack_start(self.statusbar_text,False,False,0)
+				#self.statuswindow.show_all()
+				#self.debug(text="def set_statusbar_text: text = '%s'" % (text))
 		except:
 			self.debug(text="def set_statusbar_text: text = '%s' failed" % (text))
-
+	
+	
 	#######
 	def check_passphrase(self):
 		self.debug(text="def check_passphrase()")
@@ -2339,6 +2409,7 @@ class Systray:
 			self.write_options_file()
 			text = "oVPN AutoConnect: %s" % (server)
 			self.set_statusbar_text(text)
+			self.call_redraw_mainwindow_vbox()
 			return True
 		except:
 			self.msgwarn(text="def cb_set_ovpn_favorite_server: failed")
@@ -2353,6 +2424,7 @@ class Systray:
 			self.write_options_file()
 			text = "oVPN AutoConnect: removed %s" % (server)
 			self.set_statusbar_text(text)
+			self.call_redraw_mainwindow_vbox()
 			return True
 		except:
 			self.msgwarn(text="def cb_del_ovpn_favorite_server: failed")
@@ -4021,35 +4093,13 @@ class Systray:
 			#self.debug(text="def load_remote_data: no api data")
 			return False
 		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
-			#self.debug(text="def load_remote_data: waiting for ovpn connection")
+			self.debug(text="def load_remote_data: waiting for ovpn connection")
 			return False
 		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
-			#self.debug(text="def load_remote_data: high ping")
+			self.debug(text="def load_remote_data: high ping")
 			return False
-		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == True:
-			#self.debug(text="def l_r_d: 0x1")
-			if self.load_serverdata_from_remote() == True:
-				self.call_redraw_mainwindow_vbox()
-				#self.debug(text="def l_r_d: 0x2a")
-			if self.load_accinfo_from_remote() == True:
-				self.call_redraw_accwindow()
-				#self.debug(text="def l_r_d: 0x2b")
-			#else:
-			#	self.debug(text="def l_r_d: 0x3")
-		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == False:
-			#self.debug(text="def l_r_d: 1x1")
-			if self.load_serverdata_from_remote() == True:
-				#self.debug(text="def l_r_d: 1x2")
-				self.call_redraw_mainwindow_vbox()
-			#else:
-			#	self.debug(text="def l_r_d: 1x3")
-		elif self.LOAD_SRVDATA == False and self.LOAD_ACCDATA == True:
-			#self.debug(text="def l_r_d: 2x1")
-			if self.load_accinfo_from_remote() == True:
-				#self.debug(text="def l_r_d: 2x2")
-				self.call_redraw_accwindow()
-			#else:
-			#	self.debug(text="def l_r_d: 3x3")
+		self.load_serverdata_from_remote()
+		self.load_accinfo_from_remote()
 
 	#######
 	def check_hash_dictdata(self,newdata,olddata):
@@ -4088,10 +4138,6 @@ class Systray:
 		elif updatein > now:
 			#self.debug(text="def load_serverdata_from_remote: time = %s update_in = %s" % (now,updatein))
 			return False
-		elif self.check_inet_connection() == False:
-			self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-			self.debug(text="def load_serverdata_from_remote: no inet connection")
-			return False
 		try:
 			API_ACTION = "loadserverdata"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
@@ -4107,6 +4153,7 @@ class Systray:
 							self.OVPN_SRV_DATA = OVPN_SRV_DATA
 							self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
 							self.debug(text="def load_serverdata_from_remote: loaded, len = %s" % (len(self.OVPN_SRV_DATA)))
+							self.call_redraw_mainwindow_vbox()
 							return True
 						else:
 							self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
@@ -4143,10 +4190,6 @@ class Systray:
 		elif updatein > now:
 			#self.debug(text="def load_accinfo_from_remote: time = %s update_in = %s" % (now,updatein))
 			return False
-		elif self.check_inet_connection() == False:
-			self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
-			self.debug(text="def load_accinfo_from_remote: no inet connection")
-			return False
 		try:
 			API_ACTION = "accinfo"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
@@ -4163,6 +4206,7 @@ class Systray:
 							self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
 							self.debug(text="def load_accinfo_from_remote: loaded, len = %s"%(len(self.OVPN_ACC_DATA)))
 							self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
+							self.call_redraw_accwindow()
 							return True
 						else:
 							self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
@@ -4629,13 +4673,19 @@ class Systray:
 				self.dialogWindow_form_ask_passphrase.destroy()
 			except:
 				pass
-
+			
 			try:
 				self.destroy_mainwindow()
 			except:
 				pass
+				
 			try:
 				self.destroy_accwindow()
+			except:
+				pass
+				
+			try:
+				self.destroy_statuswindow()
 			except:
 				pass
 
