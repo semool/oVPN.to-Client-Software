@@ -3,7 +3,8 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, GLib
+from gi.repository import Gtk, GdkPixbuf, GLib, GObject
+GObject.threads_init()
 
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
@@ -25,7 +26,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.5.0f-gtk3"
+CLIENTVERSION="v0.5.0k-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -57,7 +58,7 @@ class Systray:
 			self.window.connect("delete-event", Gtk.main_quit)
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
-			self.tray.set_tooltip_text(CLIENT_STRING)
+			self.tray.set_tooltip_markup(CLIENT_STRING)
 			if self.UPDATEOVPNONSTART == True and self.check_inet_connection() == True:
 				self.check_remote_update()
 			if self.TAP_BLOCKOUTBOUND == True:
@@ -100,6 +101,7 @@ class Systray:
 		self.systraytext_from_before = False
 		self.systrayicon_from_before = False
 		self.stop_systray_timer = False
+		self.statusbartext_from_before = False
 		self.STATUSBAR_FREEZE = False
 		self.inThread_jump_server_running = False
 		self.USERID = False
@@ -170,7 +172,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 66
+		self.LOAD_DATA_EVERY = 10
 		self.LOAD_SRVDATA = False
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
@@ -1038,6 +1040,7 @@ class Systray:
 	def make_context_menu_servertab(self,servername):
 		self.debug(text="def make_context_menu_servertab: %s" % (servername))
 		context_menu_servertab = Gtk.Menu()
+		self.context_menu_servertab = context_menu_servertab
 		
 		if self.OVPN_CONNECTEDto == servername:
 			disconnect = Gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
@@ -1063,11 +1066,35 @@ class Systray:
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
-		self.context_menu_servertab = context_menu_servertab
 		self.make_context_menu_servertab_d0wns_dnsmenu(servername)
 		
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
+		
+		###
+		if self.LOAD_ACCDATA == True:
+			opt = "[enabled]"
+		else:
+			opt = "[disabled]"
+		switchaccinfo = Gtk.MenuItem("Load Account Info %s" % (opt))
+		switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
+		context_menu_servertab.append(switchaccinfo)
+		
+		###
+		if self.DISABLE_SRV_WINDOW == False:
+			if self.LOAD_SRVDATA == True:
+				opt = "[enabled]"
+			else:
+				opt = "[disabled]"
+			extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
+			extserverview.connect('button-press-event', self.cb_extserverview)
+			context_menu_servertab.append(extserverview)
+			
+		sep = Gtk.SeparatorMenuItem()
+		context_menu_servertab.append(sep)
+		
+		###
+		
 		refresh = Gtk.MenuItem('Refresh Window')
 		refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
 		context_menu_servertab.append(refresh)
@@ -1087,7 +1114,7 @@ class Systray:
 				return False
 			
 			dnsmenu = Gtk.Menu()
-			dnsm = Gtk.MenuItem("Change DNS()")
+			dnsm = Gtk.MenuItem("Change DNS")
 			dnsm.set_submenu(dnsmenu)
 			self.dnsmenu = dnsmenu
 			
@@ -1176,11 +1203,11 @@ class Systray:
 		"""
 		
 		if self.timer_check_certdl_running == True:
-			systraytext = "Checking for Updates!"
+			systraytext = " Checking for Updates! "
 			systrayicon = self.systray_icon_syncupdate
 		
 		elif self.STATE_OVPN == False:
-			systraytext = "Disconnected! Have a nice and anonymous day!"
+			systraytext = " Disconnected! Have a nice and anonymous day! "
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
 			try:
@@ -1194,13 +1221,13 @@ class Systray:
 			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 			self.OVPN_CONNECTEDseconds = connectedseconds
 			if self.OVPN_PING_STAT == -1:
-				systraytext = "Connecting to %s" % (self.OVPN_CONNECTEDto)
+				systraytext = " Connecting to %s " % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_connect
 				statusbar_text = systraytext
 				self.debug(text=systraytext)
 			elif self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
-				systraytext = "Testing connection to %s" % (self.OVPN_CONNECTEDto)
+				systraytext = " Testing connection to %s " % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_hourglass
 				statusbar_text = systraytext
 				self.debug(text=systraytext)
@@ -1215,8 +1242,8 @@ class Systray:
 					d, h = divmod(h, 24)
 					if self.OVPN_CONNECTEDseconds >= 0:
 						connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-					systraytext = "Connected to %s [%s]:%s (%s) [ %s ]" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text)
-					statusbar_text = "%s  [ %s ]   %s / %s ms " % (systraytext,connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+					statusbar_text = " Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms) " % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+					systraytext = " Connected to %s Port: %s Proto: %s " % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
 					#statusbar_text = systraytext
 					systrayicon = self.systray_icon_connected
 				except:
@@ -1225,7 +1252,7 @@ class Systray:
 		try:
 			if not self.systraytext_from_before == systraytext and not systraytext == False:
 				self.systraytext_from_before = systraytext
-				self.tray.set_tooltip(systraytext)
+				self.tray.set_tooltip_markup(systraytext)
 			if not self.systrayicon_from_before == systrayicon:
 				self.systrayicon_from_before = systrayicon
 				self.tray.set_from_file(systrayicon)
@@ -1793,11 +1820,8 @@ class Systray:
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
 				#self.debug(text="def inThread_redraw_mainwindow: True")
-				self.STATUSBAR_FREEZE = False
 			except:
 				self.debug(text="def inThread_redraw_mainwindow: self.mainwindow_vbox recreate failed")
-		self.STATUSBAR_FREEZE = False
-		return
 
 	#######
 	def show_mainwindow(self,widget,event):
@@ -1809,7 +1833,7 @@ class Systray:
 			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
-				self.mainwindow.set_title(CLIENT_STRING)
+				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
 				if self.LOAD_SRVDATA == True:
 					self.mainwindow.set_default_size(1740,830)
@@ -1890,6 +1914,9 @@ class Systray:
 				if server == self.OVPN_CONNECTEDto:
 					statustext = "CONN"
 					statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+				elif server == self.OVPN_FAV_SERVER:
+					statustext = "FAV"
+					statusimgpath = "%s\\bullet_star.png" % (self.ico_dir)
 				else:
 					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
@@ -1945,6 +1972,9 @@ class Systray:
 							if server == self.OVPN_CONNECTEDto:
 								statustext = "CONN"
 								statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+							elif server == self.OVPN_FAV_SERVER:
+								statustext = "FAV"
+								statusimgpath = "%s\\bullet_star.png" % (self.ico_dir)
 							elif serverstatus == "0":
 								statustext = "DEAD"
 								statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
@@ -2036,7 +2066,7 @@ class Systray:
 			try:
 				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
-				self.accwindow.set_title("oVPN.to Acc")
+				self.accwindow.set_title("oVPN Account - %s" % (CLIENT_STRING))
 				self.accwindow.set_icon_from_file(self.systray_icon_connected)
 				self.accwindow.set_default_size(370,480)
 				self.accwindow_accinfo()
@@ -2660,7 +2690,7 @@ class Systray:
 					#print line
 					ipv6addr = line.split("    ")[2]
 					#print ipv6addr
-					if ipv6addr.startswith("fd48:8bea:68a5()"):
+					if ipv6addr.startswith("fd48:8bea:68a5:"):
 						string = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
 						try:
 							cmd = subprocess.check_output("%s" % (string),shell=True)
@@ -3280,27 +3310,27 @@ class Systray:
 			useridEntry.set_visibility(True)
 			useridEntry.set_max_length(9)
 			useridEntry.set_size_request(200,24)
-			useridLabel = Gtk.Label(label="User-ID()")
+			useridLabel = Gtk.Label(label="User-ID:")
 			
 			apikeyEntry = Gtk.Entry()
 			apikeyEntry.set_visibility(False)
 			apikeyEntry.set_max_length(128)
 			apikeyEntry.set_invisible_char("*")
 			apikeyEntry.set_size_request(200,24)
-			apikeyLabel = Gtk.Label(label="API-Key()")
+			apikeyLabel = Gtk.Label(label="API-Key:")
 			
 			ph1Entry = Gtk.Entry()
 			ph1Entry.set_visibility(False)
 			ph1Entry.set_invisible_char("X")
 			ph1Entry.set_size_request(200,24)
 			ph0Label = Gtk.Label(label="\n\nEnter a secure passphrase to encrypt your API-Login!")
-			ph1Label = Gtk.Label(label="Passphrase()")
+			ph1Label = Gtk.Label(label="Passphrase:")
 			
 			ph2Entry = Gtk.Entry()
 			ph2Entry.set_visibility(False)
 			ph2Entry.set_invisible_char("X")
 			ph2Entry.set_size_request(200,24)
-			ph2Label = Gtk.Label(label="Repeat()")
+			ph2Label = Gtk.Label(label="Repeat:")
 			
 			dialogBox.pack_start(useridLabel,False,False,0)
 			dialogBox.pack_start(useridEntry,False,False,0)
