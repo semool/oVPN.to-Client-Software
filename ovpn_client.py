@@ -1756,9 +1756,7 @@ class Systray:
 		self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
-			k = True
-			if k == True:
-			#try:
+			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
@@ -1770,10 +1768,10 @@ class Systray:
 				self.mainwindow_ovpn_server()
 				self.MAINWINDOW_OPEN = True
 				return True
-			#except:
-			#	self.MAINWINDOW_OPEN = False
-			#	self.debug(text="def show_mainwindow: mainwindow failed")
-			#	return False
+			except:
+				self.MAINWINDOW_OPEN = False
+				self.debug(text="def show_mainwindow: mainwindow failed")
+				return False
 		else:
 			self.destroy_mainwindow()
 
@@ -1791,9 +1789,7 @@ class Systray:
 
 		""" build serverlist """
 		""" *fixme* we should do any checks before adding remote text to output ! """
-		y = True
-		if y == True:
-		#try:
+		try:
 			if len(self.OVPN_SRV_DATA) > 0:
 				serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
 			else:
@@ -1948,8 +1944,8 @@ class Systray:
 				self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
 			except:
 				self.debug(text="treeview.connect failed")
-		#except:
-		#	self.debug(text="def mainwindow_ovpn_server: server-window failed")
+		except:
+			self.debug(text="def mainwindow_ovpn_server: server-window failed")
 
 		# statusbar
 		self.statusbar_text = Gtk.Label()
