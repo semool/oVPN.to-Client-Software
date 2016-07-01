@@ -22,10 +22,9 @@ import threading
 import socket
 import requests
 import json
-#import atexit
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0l-gtk3"
+CLIENTVERSION="v0.5.0m-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -100,7 +99,6 @@ class Systray:
 		self.systraytext_from_before = False
 		self.systrayicon_from_before = False
 		self.stop_systray_timer = False
-		self.STATUSBAR_FREEZE = False
 		self.inThread_jump_server_running = False
 		self.USERID = False
 		self.STATE_OVPN = False
@@ -1533,23 +1531,31 @@ class Systray:
 							countryname = self.COUNTRYNAMES[countrycode.upper()]
 						except:
 							countryname = countrycode.upper()
-						cgm = Gtk.ImageMenuItem(countryname)
-						img = Gtk.Image()
+
 						try:
+							cgm = Gtk.ImageMenuItem(countryname)
+							img = Gtk.Image()
 							try:
-								imgpath = self.FLAG_IMG[countrycode]
-								if os.path.isfile(imgpath):
-									#print "imgpath = %s" % (imgpath)
-									img.set_from_file(imgpath)
-									cgm.set_always_show_image(True)
-									cgm.set_image(img)
-									cgm.set_submenu(cgmenu)
-									self.systray_menu.append(cgm)
-								else:
-									self.debug(text="def make_systray_server_menu: file not found for countrycode '%s'" % (countrycode))
+								try:
+									imgpath = self.FLAG_IMG[countrycode]
+									try:
+										if os.path.isfile(imgpath):
+											img.set_from_file(imgpath)
+											cgm.set_always_show_image(True)
+											cgm.set_image(img)
+											cgm.set_submenu(cgmenu)
+											self.systray_menu.append(cgm)
+										else:
+											self.debug(text="def make_systray_server_menu: imgpath '%s' not found" % (imgpath))
+									except:
+										self.debug(text="def make_systray_server_menu: if imgpath '%s' is file append to systray failed " % (imgpath))
+										self.destroy_systray_menu()
+								except:
+									self.debug(text="def make_systray_server_menu: imgpath = self.FLAG_IMG[%s] failed" % (countrycode))
+									self.destroy_systray_menu()
 							except:
 								self.debug(text="def make_systray_server_menu: failed self.FLAG_IMG[%s]" % (countrycode))
-
+								self.destroy_systray_menu()
 						except:
 							self.destroy_systray_menu()
 							self.debug(text="def make_systray_server_menu: flagimg group1 failed")
@@ -1569,7 +1575,7 @@ class Systray:
 						serveritem.set_always_show_image(True)
 						serveritem.set_image(img)
 						cgmenu.append(serveritem)
-						serveritem.show()
+						#serveritem.show()
 
 			except:
 				self.destroy_systray_menu()
@@ -1736,24 +1742,33 @@ class Systray:
 			self.debug(text="def inThread_timer_check_certdl: failed")
 		self.timer_check_certdl_running = False
 		return False
-
-	def call_redraw_mainwindow_vbox(self):
+	
+	def call_redraw_mainwindow(self):
 		self.debug(text="def call_redraw_mainwindow_vbox()")
 		if self.MAINWINDOW_OPEN == True:
+			self.statusbartext_from_before = False
 			try:
-				self.scrolledwindow.remove(self.treeview)
-				self.mainwindow.remove(self.mainwindow_vbox)
-				self.statusbartext_from_before = False
-				GLib.idle_add(self.mainwindow_ovpn_server)
-				self.mainwindow.show_all()
-				self.debug(text="def call_redraw_mainwindow_vbox: True")
+				self.treeview.set_model(model=None)
+				try:
+					self.serverliststore.clear()
+				except:
+					self.debug(text="def call_redraw_mainwindow: self.serverliststore.clear() failed")
+					return False
 			except:
-				self.debug(text="def call_redraw_mainwindow_vbox: failed")
+				self.debug(text="def call_redraw_mainwindow: self.treeview.set_model(model=None) failed")
+				return False
+			try:
+				GLib.idle_add(self.fill_mainwindow_with_server())
+			except TypeError as e:
+				self.debug(text="def call_redraw_mainwindow: GLib.idle_add(self.fill_mainwindow_with_server()) failed e = '%s'" % (e))
+			self.debug(text="def call_redraw_mainwindow: True")
+			return True
 
 	def show_mainwindow(self,widget,event):
 		self.debug(text="def show_mainwindow()")
 		self.destroy_systray_menu()
 		self.LAST_OVPN_SRV_DATA_UPDATE = 0
+		self.statusbartext_from_before = False
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
 			try:
@@ -1761,10 +1776,7 @@ class Systray:
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
-				if self.LOAD_SRVDATA == True:
-					self.mainwindow.set_default_size(1740,830)
-				else:
-					self.mainwindow.set_default_size(510,830)
+				self.mainwindow.set_default_size(1780,830)
 				self.mainwindow_ovpn_server()
 				self.MAINWINDOW_OPEN = True
 				return True
@@ -1776,182 +1788,174 @@ class Systray:
 			self.destroy_mainwindow()
 
 	def mainwindow_ovpn_server(self):
-		self.debug(text="def mainwindow_ovpn_server()")
+		self.debug(text="def mainwindow_ovpn_server: go")
 		self.mainwindow_vbox = Gtk.VBox(False,1)
 		self.mainwindow.add(self.mainwindow_vbox)
-
+		
 		if self.OVPN_CONFIGVERSION == "23x":
 			mode = "IPv4"
 		elif self.OVPN_CONFIGVERSION == "23x46":
 			mode = "IPv4 + IPv6"
 		elif self.OVPN_CONFIGVERSION == "23x64":
 			mode = "IPv6 + IPv4"
+		self.debug(text="def mainwindow_ovpn_server: go0")
+		label = Gtk.Label("oVPN Server [ %s ]" % (mode))
 
-		""" build serverlist """
-		""" *fixme* we should do any checks before adding remote text to output ! """
+		
+		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
-			if len(self.OVPN_SRV_DATA) > 0:
-				serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
-			else:
-				serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str)
-			self.treeview = Gtk.TreeView(serverliststore)
+			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
+			self.debug(text="def mainwindow_ovpn_server: go2")
+		except:
+			self.debug(text="def mainwindow_ovpn_server: server-window failed")
+			
+		self.debug(text="def mainwindow_ovpn_server: go3")
+		self.treeview = Gtk.TreeView(self.serverliststore)
+		self.treeview.connect("button_release_event",self.on_right_click_mainwindow)
+		self.treeview.set_model(model=None)
+		self.scrolledwindow = Gtk.ScrolledWindow()
+		self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+		self.scrolledwindow.set_size_request(640,480)
+		self.debug(text="def mainwindow_ovpn_server: go4")
+		self.scrolledwindow.add(self.treeview)
+		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
 
+		try:
+			self.debug(text="def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
 			self.treeview.append_column(column)
-
+			self.debug(text="def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=1)
 			self.treeview.append_column(column)
-
-			if len(self.OVPN_SRV_DATA) > 0:
-				cellnumber = 2
-				cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN ", " oSSH ", " SOCK ", " HTTP ", " TINC ", " PING4 ", " PING6 " ]
-				for cellname in cellnames:
-					cell = Gtk.CellRendererText()
-					column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-					# *** fixme *** make columns sortable, but right-click menu looses index (1/2)
-					column.set_sort_column_id(cellnumber)
-					self.treeview.append_column(column)
-					cellnumber = cellnumber + 1
-			else:
-				cellnumber = 2
-				cellnames = [ " Server ", " IPv4 ", " Port ", " Proto ", " MTU ", " Cipher " ]
-				for cellname in cellnames:
-					cell = Gtk.CellRendererText()
-					column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-					# *** fixme *** make columns sortable, but right-click menu looses index (1/2)
-					column.set_sort_column_id(cellnumber)
-					self.treeview.append_column(column)
-					cellnumber = cellnumber + 1
-
-			for server in self.OVPN_SERVER:
-				#print "def mainwindow_ovpn_server: %s" % (server)
-				countrycode = server[:2].lower()
-				servershort = server[:3].upper()
-				imgpath = self.FLAG_IMG[countrycode]
-				countryimg = GdkPixbuf.Pixbuf.new_from_file(imgpath)
-				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
-				serverport = self.OVPN_SERVER_INFO[servershort][1]
-				serverproto = self.OVPN_SERVER_INFO[servershort][2]
-				servercipher = self.OVPN_SERVER_INFO[servershort][3]
-				if servercipher == "CAMELLIA-256-CBC":
-					servercipher = "CAM-256"
-				elif servercipher == "AES-256-CBC":
-					servercipher = "AES-256"
-				#print self.OVPN_SERVER_INFO[servershort]
-				if len(self.OVPN_SRV_DATA) == 0:
-					serverstatus = "2"
-				else:
-					#print self.OVPN_SRV_DATA[servershort]
-					serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
-				if server == self.OVPN_CONNECTEDto:
-					statustext = "CONN"
-					statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
-				elif server == self.OVPN_FAV_SERVER:
-					statustext = "FAV"
-					statusimgpath = "%s\\bullet_star.png" % (self.ico_dir)
-				elif serverstatus == "0":
-					statustext = "DEAD"
-					statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
-				elif serverstatus == "1":
-					statustext = "OK"
-					statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
-				elif serverstatus == "2":
-					statustext = "n/a"
-					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-				else:
-					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-				try:
-					servermtu = self.OVPN_SERVER_INFO[servershort][4]
-				except:
-					servermtu = 1500
-
-				if len(self.OVPN_SRV_DATA) == 0:
-					serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverport),str(serverproto),str(servermtu),str(servercipher)])
-				else:
-					#print "len(self.OVPN_SRV_DATA) = %s" % (len(self.OVPN_SRV_DATA))
-					try:
-						try:
-							vlanip4 = self.OVPN_SRV_DATA[servershort]["vlanip4"]
-							vlanip6 = self.OVPN_SRV_DATA[servershort]["vlanip6"]
-							traffic = self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"]
-							live = "%s M" % (self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
-							uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
-							cpuinfo = self.OVPN_SRV_DATA[servershort]["info"]["cpu"]
-							raminfo = self.OVPN_SRV_DATA[servershort]["info"]["ram"]
-							hddinfo = self.OVPN_SRV_DATA[servershort]["info"]["hdd"]
-							cpuload = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"]
-							cpuovpn = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
-							cpusshd = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
-							cpusock = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
-							cpuhttp = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
-							cputinc = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
-							ping4 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]
-							ping6 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]
-							serverip6 = self.OVPN_SRV_DATA[servershort]["extip6"]
-						except:
-							vlanip4 = "n/a"
-							vlanip6 = "n/a"
-							traffic = "n/a"
-							live = "n/a"
-							uplink = "n/a"
-							cpuinfo = "n/a"
-							raminfo = "n/a"
-							hddinfo = "n/a"
-							cpuload = "n/a"
-							cpuovpn = "n/a"
-							cpusshd = "n/a"
-							cpusock = "n/a"
-							cpuhttp = "n/a"
-							cputinc = "n/a"
-							ping4 = "0"
-							ping6 = "0"
-							serverip6 = "n/a"
-							self.debug(text="serverliststore failed: #1 %s" % (server))
-					except:
-						vlanip4 = "n/a"
-						vlanip6 = "n/a"
-						traffic = "n/a"
-						live = "n/a"
-						uplink = "n/a"
-						cpuload = "n/a"
-						cpuinfo = "n/a"
-						raminfo = "n/a"
-						hddinfo = "n/a"
-						cpuovpn = "n/a"
-						cpusshd = "n/a"
-						cpusock = "n/a"
-						cpuhttp = "n/a"
-						cputinc = "n/a"
-						ping4 = "0"
-						ping6 = "0"
-						serverip6 = "n/a"
-						statustext = "n/a"
-						statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-						statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-						self.debug(text="extended serverliststore getdata failed on '%s'" % (server))
-					try:
-						serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),str(serverport),str(serverproto),str(servermtu),str(servercipher),str(live),str(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),str(cpuovpn),str(cpusshd),str(cpusock),str(cpuhttp),str(cputinc),str(ping4),str(ping6)])
-					except:
-						self.debug(text="serverliststore.append: failed '%s'" % (server))
-			try:
-				self.treeview.connect("button_release_event",self.on_right_click_mainwindow)
-				self.scrolledwindow = Gtk.ScrolledWindow()
-				self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-				self.scrolledwindow.add(self.treeview)
-				self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
-			except:
-				self.debug(text="treeview.connect failed")
+			self.debug(text="def fill_mainwindow_with_server: go2.3")
 		except:
-			self.debug(text="def mainwindow_ovpn_server: server-window failed")
+			self.debug(text="cell = Gtk.CellRendererPixbuf failed")
 
+		cellnumber = 2
+		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN ", " oSSH ", " SOCK ", " HTTP ", " TINC ", " PING4 ", " PING6 " ]
+		for cellname in cellnames:
+			cell = Gtk.CellRendererText()
+			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
+			self.treeview.append_column(column)
+			cellnumber = cellnumber + 1
+			
+		self.fill_mainwindow_with_server()
+		
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
 		self.mainwindow.show_all()
+		
+		return
 
+	def fill_mainwindow_with_server(self):
+		self.debug(text="def fill_mainwindow_with_server()")
+		
+		#print "len(self.OVPN_SERVER) == %s" % (len(self.OVPN_SERVER))
+		for server in self.OVPN_SERVER:
+			#print "def mainwindow_ovpn_server: %s" % (server)
+			countrycode = server[:2].lower()
+			servershort = server[:3].upper()
+			imgpath = self.FLAG_IMG[countrycode]
+			countryimg = GdkPixbuf.Pixbuf.new_from_file(imgpath)
+			serverip4  = self.OVPN_SERVER_INFO[servershort][0]
+			serverport = self.OVPN_SERVER_INFO[servershort][1]
+			serverproto = self.OVPN_SERVER_INFO[servershort][2]
+			servercipher = self.OVPN_SERVER_INFO[servershort][3]
+			if servercipher == "CAMELLIA-256-CBC":
+				servercipher = "CAM-256"
+			elif servercipher == "AES-256-CBC":
+				servercipher = "AES-256"
+			
+			try:
+				servermtu = self.OVPN_SERVER_INFO[servershort][4]
+			except:
+				servermtu = 1500
+
+			try:
+				try:
+					vlanip4 = self.OVPN_SRV_DATA[servershort]["vlanip4"]
+					vlanip6 = self.OVPN_SRV_DATA[servershort]["vlanip6"]
+					traffic = self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"]
+					live = "%s M" % (self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
+					uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
+					cpuinfo = self.OVPN_SRV_DATA[servershort]["info"]["cpu"]
+					raminfo = self.OVPN_SRV_DATA[servershort]["info"]["ram"]
+					hddinfo = self.OVPN_SRV_DATA[servershort]["info"]["hdd"]
+					cpuload = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"]
+					cpuovpn = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
+					cpusshd = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
+					cpusock = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
+					cpuhttp = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
+					cputinc = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
+					ping4 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]
+					ping6 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]
+					serverip6 = self.OVPN_SRV_DATA[servershort]["extip6"]
+				except:
+					vlanip4 = "n/a"
+					vlanip6 = "n/a"
+					traffic = "n/a"
+					live = "n/a"
+					uplink = "n/a"
+					cpuinfo = "n/a"
+					raminfo = "n/a"
+					hddinfo = "n/a"
+					cpuload = "n/a"
+					cpuovpn = "n/a"
+					cpusshd = "n/a"
+					cpusock = "n/a"
+					cpuhttp = "n/a"
+					cputinc = "n/a"
+					ping4 = "0"
+					ping6 = "0"
+					serverip6 = "n/a"
+					#self.debug(text="self.serverliststore failed: #1 (defaults) %s" % (server))
+				
+				try:
+					serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
+					if server == self.OVPN_CONNECTEDto:
+						statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+					elif server == self.OVPN_FAV_SERVER:
+						statusimgpath = "%s\\bullet_start.png" % (self.ico_dir)
+					elif serverstatus == "0":
+						statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
+					elif serverstatus == "1":
+						statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
+					elif serverstatus == "2":
+						statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+				except:
+					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+					
+				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
+			except:
+				vlanip4 = "n/a"
+				vlanip6 = "n/a"
+				traffic = "n/a"
+				live = "n/a"
+				uplink = "n/a"
+				cpuload = "n/a"
+				cpuinfo = "n/a"
+				raminfo = "n/a"
+				hddinfo = "n/a"
+				cpuovpn = "n/a"
+				cpusshd = "n/a"
+				cpusock = "n/a"
+				cpuhttp = "n/a"
+				cputinc = "n/a"
+				ping4 = "0"
+				ping6 = "0"
+				serverip6 = "n/a"
+				statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
+				self.debug(text="extended self.serverliststore getdata failed on '%s'" % (server))
+			#try:
+			self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),str(serverport),str(serverproto),str(servermtu),str(servercipher),str(live),str(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),str(cpuovpn),str(cpusshd),str(cpusock),str(cpuhttp),str(cputinc),str(ping4),str(ping6)])
+			#except:
+			#	self.debug(text="self.serverliststore.append: failed '%s'" % (server))
+		self.treeview.set_model(model=self.serverliststore)
+		self.debug(text="def fill_mainwindow_with_server: return")
 		return
 
 	def destroy_mainwindow(self):
@@ -2197,9 +2201,6 @@ class Systray:
 
 	def set_statusbar_text(self,text):
 		self.debug(text="def set_statusbar_text()")
-		if self.STATUSBAR_FREEZE == True:
-			self.debug(text="def set_statusbar_text: FREEZE")
-			return
 		try:
 			if self.MAINWINDOW_OPEN == True:
 				self.statusbar_text.set_label(text)
@@ -2266,8 +2267,8 @@ class Systray:
 		self.debug(text="def cb_jump_openvpn()")
 		self.destroy_systray_menu()
 		self.destroy_context_menu_servertab()
-		if (not self.OVPN_CONNECTEDto == False and not self.OVPN_PING_LAST > 0) or (self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 20):
-			return
+		#if (not self.OVPN_CONNECTEDto == False and not self.OVPN_PING_LAST > 0) or (self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 20):
+		#	return
 		self.debug(text="def cb_jump_openvpn: %s" % (server))
 		jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
 		jumpthread.start()
@@ -2306,6 +2307,7 @@ class Systray:
 				self.debug(text="def kill_openvpn: exitcode = %s" % (exitcode))
 		except:
 			self.debug(text="def kill_openvpn: failed!")
+			self.reset_ovpn_values_disconnected()
 
 	def call_openvpn(self,server):
 		self.debug(text="def call_openvpn()")
@@ -2411,7 +2413,7 @@ class Systray:
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 			pingthread.start()
 		self.inThread_jump_server_running = False
-		self.call_redraw_mainwindow_vbox()
+		#self.call_redraw_mainwindow()
 		self.win_netsh_set_dns_ovpn()
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
@@ -2419,19 +2421,13 @@ class Systray:
 		#	self.debug(text="def inThread_spawn_openvpn_process: openvpn crashed, output = '%s'" %(e.output))
 		except:
 			self.debug(text="def inThread_spawn_openvpn_process: crashed")
+		self.reset_ovpn_values_disconnected()
+		#self.call_redraw_mainwindow()
+		return
 
+	def reset_ovpn_values_disconnected(self):
 		self.win_clear_ipv6()
-		try:
-			if os.path.isfile(self.ovpn_sessionlog):
-				os.remove(self.ovpn_sessionlog)
-		except:
-			pass
-
-		try:
-			self.win_firewall_modify_rule(option="delete")
-		except:
-			self.debug(text="def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
-
+		self.debug(text="def reset_ovpn_values_after()")
 		self.STATE_OVPN = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtoIP = False
@@ -2441,8 +2437,16 @@ class Systray:
 		self.OVPN_PING_STAT = 0
 		self.OVPN_PING_LAST = 0
 		self.OVPN_PING = list()
-		self.call_redraw_mainwindow_vbox()
-		return
+		try:
+			if os.path.isfile(self.ovpn_sessionlog):
+				os.remove(self.ovpn_sessionlog)
+		except:
+			pass
+		try:
+			self.win_firewall_modify_rule(option="delete")
+		except:
+			self.debug(text="def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
+		
 
 	def inThread_timer_ovpn_ping(self):
 		#self.debug(text="def inThread_timer_ovpn_ping()")
@@ -2496,7 +2500,7 @@ class Systray:
 				self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
 
 	def get_ovpn_ping(self):
-		self.debug(text="def get_ovpn_ping()")
+		#self.debug(text="def get_ovpn_ping()")
 		try:
 			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
 			for (family, socktype, proto, canon, sockaddr) in ai_list:
@@ -3399,7 +3403,7 @@ class Systray:
 			self.OVPN_SRV_DATA = {}
 			self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		self.write_options_file()
-		#self.call_redraw_mainwindow_vbox()
+		#self.call_redraw_mainwindow()
 		self.destroy_mainwindow()
 		self.show_mainwindow(widget,event)
 
@@ -3411,7 +3415,7 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		#self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
-		self.call_redraw_mainwindow_vbox()
+		self.call_redraw_mainwindow()
 
 	def cb_change_ipmode2(self,widget,event):
 		self.debug(text="def cb_change_ipmode2()")
@@ -3421,7 +3425,7 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
-		self.call_redraw_mainwindow_vbox()
+		self.call_redraw_mainwindow()
 
 	# *** fixme: need isValueIPv6 first! ***
 	def cb_change_ipmode3(self,widget,event):
@@ -3664,7 +3668,7 @@ class Systray:
 			return True
 
 	def check_myip(self):
-		self.debug(text="def check_myip()")
+		#self.debug(text="def check_myip()")
 		# *** fixme *** missing ipv6 support
 		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
@@ -3828,7 +3832,7 @@ class Systray:
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == True:
 			#self.debug(text="def l_r_d: 0x1")
 			if self.load_serverdata_from_remote() == True:
-				self.call_redraw_mainwindow_vbox()
+				self.call_redraw_mainwindow()
 				#self.debug(text="def l_r_d: 0x2a")
 			if self.load_accinfo_from_remote() == True:
 				self.call_redraw_accwindow()
@@ -3839,7 +3843,7 @@ class Systray:
 			#self.debug(text="def l_r_d: 1x1")
 			if self.load_serverdata_from_remote() == True:
 				#self.debug(text="def l_r_d: 1x2")
-				self.call_redraw_mainwindow_vbox()
+				self.call_redraw_mainwindow()
 			#else:
 			#	self.debug(text="def l_r_d: 1x3")
 		elif self.LOAD_SRVDATA == False and self.LOAD_ACCDATA == True:
