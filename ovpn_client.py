@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0m-gtk3"
+CLIENTVERSION="v0.5.0n-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -209,14 +209,13 @@ class Systray:
 		}
 
 	def thread_idle(self, target):
-		self.debug(text="def thread_idle call %s" %(target))
+		#self.debug(text="def thread_idle call %s" %(target))
 		GLib.idle_add(target)
-		time.sleep(0.2)
 
 	def preboot(self):
 		self.debug(text="def preboot()")
 		self.self_vars()
-		
+
 		if self.OS == "win32":
 				if self.win_pre1_check_app_dir():
 					if self.win_pre2_check_profiles_win():
@@ -226,7 +225,7 @@ class Systray:
 									if self.read_interfaces():
 										if self.write_options_file():
 											return True
-										
+
 		elif OS == "linux2" :
 			self.errorquit(text="Operating System not supported: %s" % (self.OS))
 		elif OS == "darwin":
@@ -1237,9 +1236,9 @@ class Systray:
 		except:
 			pass
 
-		self.thread_systray_timer = threading.Thread(target=self.systray_timer)
-		time.sleep(0.5)
+		self.thread_systray_timer = threading.Thread(target=self.thread_idle, args=(self.systray_timer,))
 		self.systray_timer_running = True
+		time.sleep(0.1)
 		self.thread_systray_timer.start()
 		#self.debug(text="def systray_timer: return")
 		return
@@ -1758,9 +1757,9 @@ class Systray:
 				self.debug(text="def call_redraw_mainwindow: self.treeview.set_model(model=None) failed")
 				return False
 			try:
-				GLib.idle_add(self.fill_mainwindow_with_server())
+				GLib.idle_add(self.fill_mainwindow_with_server)
 			except TypeError as e:
-				self.debug(text="def call_redraw_mainwindow: GLib.idle_add(self.fill_mainwindow_with_server()) failed e = '%s'" % (e))
+				self.debug(text="def call_redraw_mainwindow: GLib.idle_add(self.fill_mainwindow_with_server) failed e = '%s'" % (e))
 			self.debug(text="def call_redraw_mainwindow: True")
 			return True
 
@@ -1808,7 +1807,7 @@ class Systray:
 			self.debug(text="def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
-			
+
 		self.debug(text="def mainwindow_ovpn_server: go3")
 		self.treeview = Gtk.TreeView(self.serverliststore)
 		self.treeview.connect("button_release_event",self.on_right_click_mainwindow)
@@ -1840,9 +1839,9 @@ class Systray:
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
-			
+
 		self.fill_mainwindow_with_server()
-		
+
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
@@ -1852,7 +1851,7 @@ class Systray:
 
 	def fill_mainwindow_with_server(self):
 		self.debug(text="def fill_mainwindow_with_server()")
-		
+
 		#print "len(self.OVPN_SERVER) == %s" % (len(self.OVPN_SERVER))
 		for server in self.OVPN_SERVER:
 			#print "def mainwindow_ovpn_server: %s" % (server)
@@ -1868,7 +1867,7 @@ class Systray:
 				servercipher = "CAM-256"
 			elif servercipher == "AES-256-CBC":
 				servercipher = "AES-256"
-			
+
 			try:
 				servermtu = self.OVPN_SERVER_INFO[servershort][4]
 			except:
@@ -1912,7 +1911,7 @@ class Systray:
 					ping6 = "0"
 					serverip6 = "n/a"
 					#self.debug(text="self.serverliststore failed: #1 (defaults) %s" % (server))
-				
+
 				try:
 					serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
 					if server == self.OVPN_CONNECTEDto:
@@ -1927,7 +1926,7 @@ class Systray:
 						statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 				except:
 					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-					
+
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 			except:
 				vlanip4 = "n/a"
