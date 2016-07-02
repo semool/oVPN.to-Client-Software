@@ -1238,7 +1238,7 @@ class Systray:
 
 		self.thread_systray_timer = threading.Thread(target=self.thread_idle, args=(self.systray_timer,))
 		self.systray_timer_running = True
-		time.sleep(0.1)
+		time.sleep(0.001)
 		self.thread_systray_timer.start()
 		#self.debug(text="def systray_timer: return")
 		return
@@ -2412,7 +2412,7 @@ class Systray:
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 			pingthread.start()
 		self.inThread_jump_server_running = False
-		#self.call_redraw_mainwindow()
+		self.call_redraw_mainwindow()
 		self.win_netsh_set_dns_ovpn()
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
@@ -2421,7 +2421,7 @@ class Systray:
 		except:
 			self.debug(text="def inThread_spawn_openvpn_process: crashed")
 		self.reset_ovpn_values_disconnected()
-		#self.call_redraw_mainwindow()
+		self.call_redraw_mainwindow()
 		return
 
 	def reset_ovpn_values_disconnected(self):
