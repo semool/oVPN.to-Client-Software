@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0o-gtk3"
+CLIENTVERSION="v0.5.0p-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1929,7 +1929,8 @@ class Systray:
 				statusimgpath = "%s\\star.png" % (self.ico_dir)
 			
 			if statusimgpath == False or not os.path.isfile(statusimgpath):
-				self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found" % (statusimgpath))
+				if not statusimgpath == False:
+					self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
 				statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 			
 			try:
