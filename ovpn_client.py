@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0s-gtk3"
+CLIENTVERSION="v0.5.0t-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1001,14 +1001,17 @@ class Systray:
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(text="def on_right_click_mainwindow()")
 		self.destroy_systray_menu()
-		try:
-			path, column, __, __ = self.treeview.get_path_at_pos(int(event.x), int(event.y))
-		except:
+		# get selection, also when treeview is sorted by a row
+		pthinfo = self.treeview.get_path_at_pos(int(event.x), int(event.y))
+		if pthinfo is not None:
+			tree_selection = self.treeview.get_selection()
+			(model, pathlist) = tree_selection.get_selected_rows()
+			for path in pathlist:
+				tree_iter = model.get_iter(path)
+				servername = model.get_value(tree_iter,2)
+		else:
 			return False
-		selected_row = int(path[0])
-		servername = self.OVPN_SERVER[selected_row]
-		#print servername
-		#print 'def on_right_click_mainwindow: widget = %s' % (widget)
+		#print 'def on_right_click_mainwindow: servername = %s' % (servername)
 		if event.button == 1:
 			self.destroy_systray_menu()
 			self.debug(text="mainwindow left click (%s)" % (servername))
@@ -1842,6 +1845,7 @@ class Systray:
 		for cellname in cellnames:
 			cell = Gtk.CellRendererText()
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
+			column.set_sort_column_id(cellnumber)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
 
