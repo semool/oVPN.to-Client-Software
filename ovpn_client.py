@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0p-gtk3"
+CLIENTVERSION="v0.5.0q-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1170,11 +1170,11 @@ class Systray:
 		"""
 
 		if self.timer_check_certdl_running == True:
-			systraytext = " Checking for Updates! "
+			systraytext = "Checking for Updates!"
 			systrayicon = self.systray_icon_syncupdate
 
 		elif self.STATE_OVPN == False:
-			systraytext = " Disconnected! Have a nice and anonymous day! "
+			systraytext = "Disconnected! Have a nice and anonymous day!"
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
 			try:
@@ -1188,13 +1188,13 @@ class Systray:
 			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 			self.OVPN_CONNECTEDseconds = connectedseconds
 			if self.OVPN_PING_STAT == -1:
-				systraytext = " Connecting to %s " % (self.OVPN_CONNECTEDto)
+				systraytext = "Connecting to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_connect
 				statusbar_text = systraytext
 				self.debug(text=systraytext)
 			elif self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
-				systraytext = " Testing connection to %s " % (self.OVPN_CONNECTEDto)
+				systraytext = "Testing connection to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_hourglass
 				statusbar_text = systraytext
 				self.debug(text=systraytext)
@@ -1209,8 +1209,9 @@ class Systray:
 					d, h = divmod(h, 24)
 					if self.OVPN_CONNECTEDseconds >= 0:
 						connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-					statusbar_text = " Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms) " % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
-					systraytext = " Connected to %s Port: %s Proto: %s " % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
+					statusbar_text = "Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+					# systraytext Windows only shows the first 64 characters
+					systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST)
 					#statusbar_text = systraytext
 					systrayicon = self.systray_icon_connected
 				except:
@@ -1778,7 +1779,10 @@ class Systray:
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
-				self.mainwindow.set_default_size(1780,830)
+				if self.LOAD_SRVDATA == True:
+					self.mainwindow.set_default_size(1780,830)
+				else:
+					self.mainwindow.set_default_size(510,830)
 				self.mainwindow_ovpn_server()
 				self.MAINWINDOW_OPEN = True
 				return True
@@ -1803,7 +1807,6 @@ class Systray:
 		self.debug(text="def mainwindow_ovpn_server: go0")
 		label = Gtk.Label("oVPN Server [ %s ]" % (mode))
 
-		
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
 			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
@@ -1869,7 +1872,7 @@ class Systray:
 				servercipher = "CAM-256"
 			elif servercipher == "AES-256-CBC":
 				servercipher = "AES-256"
-			
+
 			try:
 				servermtu = self.OVPN_SERVER_INFO[servershort][4]
 			except:
@@ -1922,7 +1925,7 @@ class Systray:
 			except:
 				#self.debug(text="self.serverliststore failed: #1 (defaults) %s" % (server))
 				pass
-			
+
 			if server == self.OVPN_CONNECTEDto:
 				statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
 			elif server == self.OVPN_FAV_SERVER:
@@ -1932,7 +1935,7 @@ class Systray:
 				if not statusimgpath == False:
 					self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
 				statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-			
+
 			try:
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),str(serverport),str(serverproto),str(servermtu),str(servercipher),str(live),str(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),str(cpuovpn),str(cpusshd),str(cpusock),str(cpuhttp),str(cputinc),str(ping4),str(ping6)])
