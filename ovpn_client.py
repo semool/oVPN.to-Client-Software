@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0q-gtk3"
+CLIENTVERSION="v0.5.0r-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -4357,10 +4357,14 @@ class Systray:
 			self.WINDOW_ABOUT_OPEN = True
 			self.about_dialog = Gtk.AboutDialog()
 			self.about_dialog.set_icon_from_file(self.systray_icon_connected)
+			self.about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(self.systray_icon_connected))
+			self.about_dialog.set_program_name("oVPN.to Client")
+			self.about_dialog.set_website("https://ovpn.to")
+			self.about_dialog.set_website_label("oVPN.to")
 			self.about_dialog.set_transient_for(self.window)
 			self.about_dialog.set_destroy_with_parent (True)
 			self.about_dialog.set_name('oVPN.to')
-			self.about_dialog.set_version(CLIENT_STRING)
+			self.about_dialog.set_version(CLIENTVERSION)
 			self.about_dialog.set_copyright('(C) 2010 - 2016 oVPN.to')
 			self.about_dialog.set_comments((ABOUT_TEXT))
 			self.about_dialog.set_authors(['oVPN.to [ support@ovpn.to ]'])
