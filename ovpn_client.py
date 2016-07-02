@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0t-gtk3"
+CLIENTVERSION="v0.5.0u-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1002,6 +1002,7 @@ class Systray:
 		self.debug(text="def on_right_click_mainwindow()")
 		self.destroy_systray_menu()
 		# get selection, also when treeview is sorted by a row
+		servername = False
 		pthinfo = self.treeview.get_path_at_pos(int(event.x), int(event.y))
 		if pthinfo is not None:
 			tree_selection = self.treeview.get_selection()
@@ -1012,13 +1013,14 @@ class Systray:
 		else:
 			return False
 		#print 'def on_right_click_mainwindow: servername = %s' % (servername)
-		if event.button == 1:
-			self.destroy_systray_menu()
-			self.debug(text="mainwindow left click (%s)" % (servername))
-		elif event.button == 3:
-			self.destroy_systray_menu()
-			self.make_context_menu_servertab(servername)
-			self.debug(text="mainwindow right click (%s)" % (servername))
+		if servername:
+			if event.button == 1:
+				self.destroy_systray_menu()
+				self.debug(text="mainwindow left click (%s)" % (servername))
+			elif event.button == 3:
+				self.destroy_systray_menu()
+				self.make_context_menu_servertab(servername)
+				self.debug(text="mainwindow right click (%s)" % (servername))
 
 	def make_context_menu_servertab(self,servername):
 		self.debug(text="def make_context_menu_servertab: %s" % (servername))
@@ -1811,7 +1813,7 @@ class Systray:
 
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
-			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
+			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,int,str,int,str,str,int,str,str,str,str,str,str,str,int,int,int,int,int,str,str)
 			self.debug(text="def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
@@ -1841,11 +1843,12 @@ class Systray:
 			self.debug(text="cell = Gtk.CellRendererPixbuf failed")
 
 		cellnumber = 2
-		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN ", " oSSH ", " SOCK ", " HTTP ", " TINC ", " PING4 ", " PING6 " ]
+		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 " ]
 		for cellname in cellnames:
 			cell = Gtk.CellRendererText()
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			column.set_sort_column_id(cellnumber)
+			if cellnumber in [ 2, 5, 7, 10, 17, 18, 19, 20, 21, 22 ]:
+				column.set_sort_column_id(cellnumber)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
 
@@ -1886,16 +1889,16 @@ class Systray:
 			vlanip6 = "n/a"
 			traffic = "n/a"
 			live = "n/a"
-			uplink = "n/a"
+			uplink = False
 			cpuinfo = "n/a"
 			raminfo = "n/a"
 			hddinfo = "n/a"
 			cpuload = "n/a"
-			cpuovpn = "n/a"
-			cpusshd = "n/a"
-			cpusock = "n/a"
-			cpuhttp = "n/a"
-			cputinc = "n/a"
+			cpuovpn = False
+			cpusshd = False
+			cpusock = False
+			cpuhttp = False
+			cputinc = False
 			ping4 = "0"
 			ping6 = "0"
 			serverip6 = "n/a"
@@ -1904,17 +1907,17 @@ class Systray:
 				vlanip4 = self.OVPN_SRV_DATA[servershort]["vlanip4"]
 				vlanip6 = self.OVPN_SRV_DATA[servershort]["vlanip6"]
 				traffic = self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"]
-				live = "%s M" % (self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
+				live = self.OVPN_SRV_DATA[servershort]["traffic"]["live"]
 				uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
 				cpuinfo = self.OVPN_SRV_DATA[servershort]["info"]["cpu"]
 				raminfo = self.OVPN_SRV_DATA[servershort]["info"]["ram"]
 				hddinfo = self.OVPN_SRV_DATA[servershort]["info"]["hdd"]
 				cpuload = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"]
-				cpuovpn = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
-				cpusshd = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
-				cpusock = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
-				cpuhttp = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
-				cputinc = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
+				cpuovpn = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"]
+				cpusshd = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"]
+				cpusock = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"]
+				cpuhttp = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"]
+				cputinc = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"]
 				ping4 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]
 				ping6 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]
 				serverip6 = self.OVPN_SRV_DATA[servershort]["extip6"]
@@ -1941,7 +1944,7 @@ class Systray:
 
 			try:
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),str(serverport),str(serverproto),str(servermtu),str(servercipher),str(live),str(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),str(cpuovpn),str(cpusshd),str(cpusock),str(cpuhttp),str(cputinc),str(ping4),str(ping6)])
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),int(serverport),str(serverproto),int(servermtu),str(servercipher),str(live),int(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),int(cpuovpn),int(cpusshd),int(cpusock),int(cpuhttp),int(cputinc),str(ping4),str(ping6)])
 			except:
 				self.debug(text="self.serverliststore.append: failed '%s'" % (server))
 			
