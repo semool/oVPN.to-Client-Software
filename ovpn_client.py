@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0r-gtk3"
+CLIENTVERSION="v0.5.0s-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -319,7 +319,6 @@ class Systray:
 		self.ico_dir = "%s\\ico" % (self.bin_dir)
 		if not os.path.isdir(self.ico_dir):
 			return False
-		self.taskbar_icon = "%s\\earth.png" % (self.ico_dir)
 		self.systray_icon_connected = "%s\\292.ico" % (self.ico_dir)
 		self.systray_icon_disconnected = "%s\\263.ico" % (self.ico_dir)
 		self.systray_icon_connect = "%s\\396.ico" % (self.ico_dir)
@@ -4405,6 +4404,7 @@ class Systray:
 				pass
 			try:
 				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+				dialog.set_title("Quit oVPN.to Client")
 				dialog.set_icon_from_file(self.systray_icon_connected)
 				dialog.set_transient_for(self.window)
 				self.QUIT_DIALOG = dialog
@@ -4469,6 +4469,7 @@ class Systray:
 			else:
 				try:
 					dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+					dialog.set_title("Firewall Settings")
 					dialog.set_icon_from_file(self.systray_icon_connected)
 					dialog.set_transient_for(self.window)
 					if self.WIN_BACKUP_FIREWALL == True:
@@ -4528,6 +4529,7 @@ class Systray:
 		self.debug(text=text)
 		try:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+			message.set_title("Error")
 			message.set_icon_from_file(self.systray_icon_connected)
 			message.set_markup("%s"%(text))
 			message.run()
@@ -4590,6 +4592,7 @@ class Systray:
 		try:
 			self.debug(text=text)
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+			dialogWindow.set_title("Error")
 			dialogWindow.set_transient_for(self.window)
 			try:
 				dialogWindow.set_icon_from_file(self.systray_icon_connected)
