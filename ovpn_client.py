@@ -51,9 +51,9 @@ class Systray:
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
+		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+		self.window.connect("delete-event", Gtk.main_quit)
 		if self.preboot():
-			self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-			self.window.connect("delete-event", Gtk.main_quit)
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip_markup(CLIENT_STRING)
