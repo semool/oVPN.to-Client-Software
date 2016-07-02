@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0u-gtk3"
+CLIENTVERSION="v0.5.0v-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -51,9 +51,9 @@ class Systray:
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
+		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+		self.window.connect("delete-event", Gtk.main_quit)
 		if self.preboot():
-			self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-			self.window.connect("delete-event", Gtk.main_quit)
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip_markup(CLIENT_STRING)
@@ -1813,7 +1813,7 @@ class Systray:
 
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
-			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,int,str,int,str,str,int,str,str,str,str,str,str,str,int,int,int,int,int,str,str)
+			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,int,str,int,str,int,int,str,str,str,str,str,str,str,int,int,int,int,int,int,int)
 			self.debug(text="def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
@@ -1847,7 +1847,7 @@ class Systray:
 		for cellname in cellnames:
 			cell = Gtk.CellRendererText()
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			if cellnumber in [ 2, 5, 7, 10, 17, 18, 19, 20, 21, 22 ]:
+			if cellnumber in [ 2, 5, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
 				column.set_sort_column_id(cellnumber)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
@@ -1888,7 +1888,7 @@ class Systray:
 			vlanip4 = "n/a"
 			vlanip6 = "n/a"
 			traffic = "n/a"
-			live = "n/a"
+			live = False
 			uplink = False
 			cpuinfo = "n/a"
 			raminfo = "n/a"
@@ -1899,8 +1899,8 @@ class Systray:
 			cpusock = False
 			cpuhttp = False
 			cputinc = False
-			ping4 = "0"
-			ping6 = "0"
+			ping4 = False
+			ping6 = False
 			serverip6 = "n/a"
 			# defaults end
 			try:
@@ -1944,7 +1944,7 @@ class Systray:
 
 			try:
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),int(serverport),str(serverproto),int(servermtu),str(servercipher),str(live),int(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),int(cpuovpn),int(cpusshd),int(cpusock),int(cpuhttp),int(cputinc),str(ping4),str(ping6)])
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),int(serverport),str(serverproto),int(servermtu),str(servercipher),int(float(live)),int(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),int(cpuovpn),int(cpusshd),int(cpusock),int(cpuhttp),int(cputinc),int(float(ping4)),int(float(ping6))])
 			except:
 				self.debug(text="self.serverliststore.append: failed '%s'" % (server))
 			
