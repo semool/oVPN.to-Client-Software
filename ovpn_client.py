@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0n-gtk3"
+CLIENTVERSION="v0.5.0o-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1854,7 +1854,6 @@ class Systray:
 
 	def fill_mainwindow_with_server(self):
 		self.debug(text="def fill_mainwindow_with_server()")
-
 		#print "len(self.OVPN_SERVER) == %s" % (len(self.OVPN_SERVER))
 		for server in self.OVPN_SERVER:
 			#print "def mainwindow_ovpn_server: %s" % (server)
@@ -1870,92 +1869,75 @@ class Systray:
 				servercipher = "CAM-256"
 			elif servercipher == "AES-256-CBC":
 				servercipher = "AES-256"
-
+			
 			try:
 				servermtu = self.OVPN_SERVER_INFO[servershort][4]
 			except:
 				servermtu = 1500
-
+			# defaults values
+			statusimgpath = False
+			vlanip4 = "n/a"
+			vlanip6 = "n/a"
+			traffic = "n/a"
+			live = "n/a"
+			uplink = "n/a"
+			cpuinfo = "n/a"
+			raminfo = "n/a"
+			hddinfo = "n/a"
+			cpuload = "n/a"
+			cpuovpn = "n/a"
+			cpusshd = "n/a"
+			cpusock = "n/a"
+			cpuhttp = "n/a"
+			cputinc = "n/a"
+			ping4 = "0"
+			ping6 = "0"
+			serverip6 = "n/a"
+			# defaults end
 			try:
-				try:
-					vlanip4 = self.OVPN_SRV_DATA[servershort]["vlanip4"]
-					vlanip6 = self.OVPN_SRV_DATA[servershort]["vlanip6"]
-					traffic = self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"]
-					live = "%s M" % (self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
-					uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
-					cpuinfo = self.OVPN_SRV_DATA[servershort]["info"]["cpu"]
-					raminfo = self.OVPN_SRV_DATA[servershort]["info"]["ram"]
-					hddinfo = self.OVPN_SRV_DATA[servershort]["info"]["hdd"]
-					cpuload = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"]
-					cpuovpn = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
-					cpusshd = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
-					cpusock = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
-					cpuhttp = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
-					cputinc = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
-					ping4 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]
-					ping6 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]
-					serverip6 = self.OVPN_SRV_DATA[servershort]["extip6"]
-				except:
-					vlanip4 = "n/a"
-					vlanip6 = "n/a"
-					traffic = "n/a"
-					live = "n/a"
-					uplink = "n/a"
-					cpuinfo = "n/a"
-					raminfo = "n/a"
-					hddinfo = "n/a"
-					cpuload = "n/a"
-					cpuovpn = "n/a"
-					cpusshd = "n/a"
-					cpusock = "n/a"
-					cpuhttp = "n/a"
-					cputinc = "n/a"
-					ping4 = "0"
-					ping6 = "0"
-					serverip6 = "n/a"
-					#self.debug(text="self.serverliststore failed: #1 (defaults) %s" % (server))
-
-				try:
-					serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
-					if server == self.OVPN_CONNECTEDto:
-						statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
-					elif server == self.OVPN_FAV_SERVER:
-						statusimgpath = "%s\\bullet_start.png" % (self.ico_dir)
-					elif serverstatus == "0":
-						statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
-					elif serverstatus == "1":
-						statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
-					elif serverstatus == "2":
-						statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-				except:
+				vlanip4 = self.OVPN_SRV_DATA[servershort]["vlanip4"]
+				vlanip6 = self.OVPN_SRV_DATA[servershort]["vlanip6"]
+				traffic = self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"]
+				live = "%s M" % (self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
+				uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
+				cpuinfo = self.OVPN_SRV_DATA[servershort]["info"]["cpu"]
+				raminfo = self.OVPN_SRV_DATA[servershort]["info"]["ram"]
+				hddinfo = self.OVPN_SRV_DATA[servershort]["info"]["hdd"]
+				cpuload = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"]
+				cpuovpn = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
+				cpusshd = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
+				cpusock = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
+				cpuhttp = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
+				cputinc = "%s %%" % (self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
+				ping4 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]
+				ping6 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]
+				serverip6 = self.OVPN_SRV_DATA[servershort]["extip6"]
+				serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
+				if serverstatus == "0":
+					statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
+				elif serverstatus == "1":
+					statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
+				elif serverstatus == "2":
 					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-
-				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 			except:
-				vlanip4 = "n/a"
-				vlanip6 = "n/a"
-				traffic = "n/a"
-				live = "n/a"
-				uplink = "n/a"
-				cpuload = "n/a"
-				cpuinfo = "n/a"
-				raminfo = "n/a"
-				hddinfo = "n/a"
-				cpuovpn = "n/a"
-				cpusshd = "n/a"
-				cpusock = "n/a"
-				cpuhttp = "n/a"
-				cputinc = "n/a"
-				ping4 = "0"
-				ping6 = "0"
-				serverip6 = "n/a"
+				#self.debug(text="self.serverliststore failed: #1 (defaults) %s" % (server))
+				pass
+			
+			if server == self.OVPN_CONNECTEDto:
+				statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+			elif server == self.OVPN_FAV_SERVER:
+				statusimgpath = "%s\\star.png" % (self.ico_dir)
+			
+			if statusimgpath == False or not os.path.isfile(statusimgpath):
+				self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found" % (statusimgpath))
 				statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+			
+			try:
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-				self.debug(text="extended self.serverliststore getdata failed on '%s'" % (server))
-			#try:
-			self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),str(serverport),str(serverproto),str(servermtu),str(servercipher),str(live),str(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),str(cpuovpn),str(cpusshd),str(cpusock),str(cpuhttp),str(cputinc),str(ping4),str(ping6)])
-			#except:
-			#	self.debug(text="self.serverliststore.append: failed '%s'" % (server))
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),str(serverport),str(serverproto),str(servermtu),str(servercipher),str(live),str(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),str(cpuovpn),str(cpusshd),str(cpusock),str(cpuhttp),str(cputinc),str(ping4),str(ping6)])
+			except:
+				self.debug(text="self.serverliststore.append: failed '%s'" % (server))
+			
 		self.treeview.set_model(model=self.serverliststore)
 		self.debug(text="def fill_mainwindow_with_server: return")
 		return
@@ -2229,6 +2211,7 @@ class Systray:
 			self.write_options_file()
 			text = "oVPN AutoConnect: %s" % (server)
 			self.set_statusbar_text(text)
+			self.call_redraw_mainwindow()
 			return True
 		except:
 			self.msgwarn(text="def cb_set_ovpn_favorite_server: failed")
@@ -2242,6 +2225,7 @@ class Systray:
 			self.write_options_file()
 			text = "oVPN AutoConnect: removed %s" % (server)
 			self.set_statusbar_text(text)
+			self.call_redraw_mainwindow()
 			return True
 		except:
 			self.msgwarn(text="def cb_del_ovpn_favorite_server: failed")
