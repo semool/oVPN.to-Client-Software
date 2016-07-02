@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0v-gtk3"
+CLIENTVERSION="v0.5.0w-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1845,7 +1845,12 @@ class Systray:
 		cellnumber = 2
 		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 " ]
 		for cellname in cellnames:
-			cell = Gtk.CellRendererText()
+			align=0.5
+			if cellnumber in [ 11 ]:
+				align=1
+			if cellnumber in [ 3, 4, 11, 12, 13, 16 ]:
+				align=0
+			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
 			if cellnumber in [ 2, 5, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
 				column.set_sort_column_id(cellnumber)
