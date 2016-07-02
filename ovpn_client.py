@@ -93,6 +93,7 @@ class Systray:
 		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
 		self.OVPN_WIN_SHA512_x64 = "a59284b98e80c1cd43cfe2f0aee2ebb9d18ca44ffb7035b5a4bb4cb9c2860039943798d4bb8860e065a56be0284f5f23b74eba6a5e17f05df87303ea019c42a3"
 
+		self.timer_load_remote_data_running = False
 		self.timer_ovpn_ping_running = False
 		self.timer_check_certdl_running = False
 		self.statusbartext_from_before = False
@@ -1232,13 +1233,15 @@ class Systray:
 
 		try:
 			if self.systray_timer_running == True:
-				self.load_remote_data()
+				if self.timer_load_remote_data_running == False:
+					thread = threading.Thread(target=self.load_remote_data)
+					thread.start()
 		except:
 			pass
 
 		self.thread_systray_timer = threading.Thread(target=self.thread_idle, args=(self.systray_timer,))
 		self.systray_timer_running = True
-		time.sleep(0.1)
+		time.sleep(0.001)
 		self.thread_systray_timer.start()
 		#self.debug(text="def systray_timer: return")
 		return
@@ -2248,6 +2251,8 @@ class Systray:
 		self.destroy_context_menu_servertab()
 		if self.LOAD_SRVDATA == True:
 			self.LAST_OVPN_SRV_DATA_UPDATE = -1
+		if self.LOAD_ACCDATA == True:
+			self.LAST_OVPN_ACC_DATA_UPDATE = -1
 
 	def cb_kill_openvpn(self,widget,event):
 		self.debug(text="def cb_kill_openvpn()")
@@ -2412,7 +2417,7 @@ class Systray:
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 			pingthread.start()
 		self.inThread_jump_server_running = False
-		#self.call_redraw_mainwindow()
+		self.call_redraw_mainwindow()
 		self.win_netsh_set_dns_ovpn()
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
@@ -2421,7 +2426,7 @@ class Systray:
 		except:
 			self.debug(text="def inThread_spawn_openvpn_process: crashed")
 		self.reset_ovpn_values_disconnected()
-		#self.call_redraw_mainwindow()
+		self.call_redraw_mainwindow()
 		return
 
 	def reset_ovpn_values_disconnected(self):
@@ -2499,7 +2504,7 @@ class Systray:
 				self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
 
 	def get_ovpn_ping(self):
-		#self.debug(text="def get_ovpn_ping()")
+		self.debug(text="def get_ovpn_ping()")
 		try:
 			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
 			for (family, socktype, proto, canon, sockaddr) in ai_list:
@@ -3673,6 +3678,7 @@ class Systray:
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
 				return True
 			try:
+				self.debug(text="def check_myip: go0")
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
 				#self.debug(text="def check_myip: url = %s" % (url))
 				t1 = time.time()
@@ -3819,39 +3825,33 @@ class Systray:
 			self.debug(text="def load_flags_from_remote: %s failed"%(countrycode))
 
 	def load_remote_data(self):
+		if self.timer_load_remote_data_running == True:
+			return False
+		self.timer_load_remote_data_running = True
 		if self.APIKEY == False or self.PASSPHRASE == False:
 			#self.debug(text="def load_remote_data: no api data")
+			self.timer_load_remote_data_running = False
 			return False
 		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
 			#self.debug(text="def load_remote_data: waiting for ovpn connection")
+			self.timer_load_remote_data_running = False
 			return False
 		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
 			#self.debug(text="def load_remote_data: high ping")
+			self.timer_load_remote_data_running = False
 			return False
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == True:
-			#self.debug(text="def l_r_d: 0x1")
 			if self.load_serverdata_from_remote() == True:
 				self.call_redraw_mainwindow()
-				#self.debug(text="def l_r_d: 0x2a")
 			if self.load_accinfo_from_remote() == True:
 				self.call_redraw_accwindow()
-				#self.debug(text="def l_r_d: 0x2b")
-			#else:
-			#	self.debug(text="def l_r_d: 0x3")
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == False:
-			#self.debug(text="def l_r_d: 1x1")
 			if self.load_serverdata_from_remote() == True:
-				#self.debug(text="def l_r_d: 1x2")
 				self.call_redraw_mainwindow()
-			#else:
-			#	self.debug(text="def l_r_d: 1x3")
 		elif self.LOAD_SRVDATA == False and self.LOAD_ACCDATA == True:
-			#self.debug(text="def l_r_d: 2x1")
 			if self.load_accinfo_from_remote() == True:
-				#self.debug(text="def l_r_d: 2x2")
 				self.call_redraw_accwindow()
-			#else:
-			#	self.debug(text="def l_r_d: 3x3")
+		self.timer_load_remote_data_running = False
 
 	def check_hash_dictdata(self,newdata,olddata):
 		self.debug(text="def check_hash_dictdata()")
