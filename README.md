@@ -1,3 +1,8 @@
+# new v0.5.0-gtk3 repo: 
+# https://github.com/ovpn-to/oVPN.to-Client-Software/tree/patch-v050-gtk3
+#
+# no more updates for 0.4.9
+#
 # compiler script requirements
 + Tested on: Win7 HP SP1 + Win 8.1 Enterprise + Win 10 Home + Win 10 Pro
 + [Python 2.7.11](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
