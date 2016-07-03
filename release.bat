@@ -8,20 +8,21 @@ mkdir %DEVSDIR%
 mkdir %DEVDIST%
 mkdir %BINSDIR%
 
-
 xcopy /Y /E "%INCLUDESDIR%" "%DEVDIST%\includes\"
 del "%DEVDIST%\includes\crypt32*.dll"
-copy /Y %EXESTRING %BINSDIR%\
-copy /Y ovpn_client.py %DEVDIST%\
-copy /Y setup.py %DEVDIST%\
-copy /Y 7zSFXcfg%BITS%.txt %DEVDIST%\
-copy /Y build%BITS%.bat %DEVDIST%\
-copy /Y debug%BITS%.bat %DEVDIST%\
-copy /Y README.md %DEVDIST%\
-copy /Y release.bat %DEVDIST%\
 
+copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
+copy /Y "%SOURCEDIR%\ovpn_client.py" "%DEVDIST%\"
+copy /Y "%SOURCEDIR%\setup.py" "%DEVDIST%\"
+copy /Y "%SOURCEDIR%\7zSFXcfg%BITS%.txt" "%DEVDIST%\"
+copy /Y "%SOURCEDIR%\build.bat" "%DEVDIST%\"
+copy /Y "%SOURCEDIR%\debug.bat" %DEVDIST%\"
+copy /Y "%SOURCEDIR%\README.md" %DEVDIST%\"
+copy /Y "%SOURCEDIR%\release.bat" %DEVDIST%\"
 
-%EXE7Z% a -mx9 -t7z "%DEVSDIR%\build-dev-%VERSION%.7z" %DEVDIST%\
+set BUILDDEVFILE=%DEVSDIR%\build-dev-%VERSION%.7z
+IF EXIST %BUILDDEVFILE% (del %BUILDDEVFILE%)
+%EXE7Z% a -mx9 -t7z "%BUILDDEVFILE%" "%DEVDIST%\"
 echo released %EXESTRING%
 echo copied binary to: '%BINSDIR%\%EXESTRING%' 
 echo copied dev-imports to: '%DEVDIST%'
