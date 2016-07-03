@@ -31,7 +31,9 @@
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
 + [7-zip 16.02 x64](http://7-zip.org/a/7z1602-x64.exe)
 
-## Developer Imports
-+ not yet
-
-
+## Developer Imports: how to run or build from source
++ create a link (name: DEBUG32) to debug.bat: edit link, set target 'X:\????\ovpn-client\debug.bat 32' and run link as admin!
++ create a link (name: BUILD32) to build.bat: edit link, set target 'X:\????\ovpn-client\build.bat 32' and run link normally!
++ same for 64 bits!
++ do not run any of the *.bat files directly! you need links do 'debug.bat' and 'build.bat' with bits argument!
++ edit 'set_version.bat' and 'set_dirs.bat' to your needs!
