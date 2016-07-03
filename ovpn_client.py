@@ -3,7 +3,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, GLib, GObject
+from gi.repository import Gtk, GdkPixbuf, GLib
 
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
@@ -25,7 +25,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.5.0g-gtk3"
+CLIENTVERSION="v0.5.0f-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -52,9 +52,9 @@ class Systray:
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
-		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-		self.window.connect("delete-event", Gtk.main_quit)
 		if self.preboot():
+			self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+			self.window.connect("delete-event", Gtk.main_quit)
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip_text(CLIENT_STRING)
@@ -170,7 +170,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 15
+		self.LOAD_DATA_EVERY = 66
 		self.LOAD_SRVDATA = False
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
@@ -831,12 +831,7 @@ class Systray:
 		else:
 			self.debug(text="self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon_from_file(self.systray_icon_connected)
-			except:
-				self.debug(text="def win_read_interfaces: #1 dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
-				pass
+			dialogWindow.set_icon_from_file(self.systray_icon_connected)
 			text = "Multiple TAPs found!\n\nPlease select your TAP Adapter!"
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -873,11 +868,7 @@ class Systray:
 					return True
 				else:
 					dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-					dialogWindow.set_transient_for(self.window)
-					try:
-						dialogWindow.set_icon_from_file(self.systray_icon_connected)
-					except:
-						self.debug(text="def win_read_interfaces: #2 dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+					dialogWindow.set_icon_from_file(self.systray_icon_connected)
 					text = "Choose your External Network Adapter!"
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
@@ -912,11 +903,7 @@ class Systray:
 	def select_userid(self):
 		self.debug(text="def select_userid()")
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-		dialogWindow.set_transient_for(self.window)
-		try:
-			dialogWindow.set_icon_from_file(self.systray_icon_connected)
-		except:
-			self.debug(text="def select_userid: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+		dialogWindow.set_icon_from_file(self.systray_icon_connected)
 		text = "Please select your User-ID!"
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
@@ -1051,9 +1038,7 @@ class Systray:
 	def make_context_menu_servertab(self,servername):
 		self.debug(text="def make_context_menu_servertab: %s" % (servername))
 		context_menu_servertab = Gtk.Menu()
-		self.context_menu_servertab = context_menu_servertab
 		
-		###
 		if self.OVPN_CONNECTEDto == servername:
 			disconnect = Gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
 			context_menu_servertab.append(disconnect)
@@ -1066,7 +1051,6 @@ class Systray:
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
-		###
 		if self.OVPN_FAV_SERVER == servername:
 			delfavorite = Gtk.MenuItem('Remove AutoConnect: %s'%(servername))
 			delfavorite.connect('button-release-event',self.cb_del_ovpn_favorite_server,servername)
@@ -1079,35 +1063,11 @@ class Systray:
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
-		###
+		self.context_menu_servertab = context_menu_servertab
 		self.make_context_menu_servertab_d0wns_dnsmenu(servername)
 		
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
-		
-		###
-		if self.LOAD_ACCDATA == True:
-			opt = "[enabled]"
-		else:
-			opt = "[disabled]"
-		switchaccinfo = Gtk.MenuItem("Load Account Info %s" % (opt))
-		switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
-		context_menu_servertab.append(switchaccinfo)
-		
-		###
-		if self.DISABLE_SRV_WINDOW == False:
-			if self.LOAD_SRVDATA == True:
-				opt = "[enabled]"
-			else:
-				opt = "[disabled]"
-			extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
-			extserverview.connect('button-press-event', self.cb_extserverview)
-			context_menu_servertab.append(extserverview)
-			
-		sep = Gtk.SeparatorMenuItem()
-		context_menu_servertab.append(sep)
-		
-		###
 		refresh = Gtk.MenuItem('Refresh Window')
 		refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
 		context_menu_servertab.append(refresh)
@@ -1127,7 +1087,7 @@ class Systray:
 				return False
 			
 			dnsmenu = Gtk.Menu()
-			dnsm = Gtk.MenuItem("Change DNS")
+			dnsm = Gtk.MenuItem("Change DNS()")
 			dnsm.set_submenu(dnsmenu)
 			self.dnsmenu = dnsmenu
 			
@@ -1256,7 +1216,7 @@ class Systray:
 					if self.OVPN_CONNECTEDseconds >= 0:
 						connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
 					systraytext = "Connected to %s [%s]:%s (%s) [ %s ]" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text)
-					statusbar_text = "%s  %s / %s ms " % (connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+					statusbar_text = "%s  [ %s ]   %s / %s ms " % (systraytext,connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
 					#statusbar_text = systraytext
 					systrayicon = self.systray_icon_connected
 				except:
@@ -1356,7 +1316,7 @@ class Systray:
 
 	#######
 	def make_systray_options_menu(self):
-		self.debug(text="def make_systray_options_menu()")
+		self.debug(text="def make_systray_options_menu()")	
 		try:
 			self.systray_optionsmenu = Gtk.Menu()
 			optionsm = Gtk.MenuItem('Options')
@@ -1820,7 +1780,6 @@ class Systray:
 		self.debug(text="def call_redraw_mainwindow_vbox()")
 		#self.STATUSBAR_FREEZE = True
 		drawthread = threading.Thread(target=self.thread_idle, args=(self.inThread_redraw_mainwindow,))
-		drawthread.daemon = True
 		drawthread.start()
 
 	#######
@@ -2054,7 +2013,6 @@ class Systray:
 		self.debug(text="def call_redraw_accwindow()")
 		# *** fixme *** freeze on redraw
 		drawthread = threading.Thread(target=self.thread_idle, args=(self.inThread_redraw_accwindow,))
-		drawthread.daemon = True
 		drawthread.start()
 
 	#######
@@ -2306,8 +2264,7 @@ class Systray:
 
 	#######
 	def set_statusbar_text(self,text):
-		self.debug(text="def set_statusbar_text() 		return")
-		return
+		self.debug(text="def set_statusbar_text()")
 		if self.STATUSBAR_FREEZE == True:
 			self.debug(text="def set_statusbar_text: FREEZE")
 			return
@@ -2363,8 +2320,6 @@ class Systray:
 		self.destroy_context_menu_servertab()
 		if self.LOAD_SRVDATA == True:
 			self.LAST_OVPN_SRV_DATA_UPDATE = -1
-		if self.ACCWINDOW_OPEN == True:
-			self.LAST_OVPN_ACC_DATA_UPDATE = -1
 
 	#######
 	def cb_kill_openvpn(self,widget,event):
@@ -2705,7 +2660,7 @@ class Systray:
 					#print line
 					ipv6addr = line.split("    ")[2]
 					#print ipv6addr
-					if ipv6addr.startswith("fd48:8bea:68a5:"):
+					if ipv6addr.startswith("fd48:8bea:68a5()"):
 						string = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
 						try:
 							cmd = subprocess.check_output("%s" % (string),shell=True)
@@ -3256,11 +3211,6 @@ class Systray:
 			try:
 				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 				dialogWindow.set_icon_from_file(self.systray_icon_connected)
-				dialogWindow.set_transient_for(self.window)
-				try:
-					dialogWindow.set_icon_from_file(self.systray_icon_connected)
-				except:
-					self.debug(text="def form_ask_passphrase: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
 				text = "Enter your Passphrase"
 				dialogWindow.set_title(text)
 				dialogWindow.set_markup(text)
@@ -3321,11 +3271,7 @@ class Systray:
 		self.debug(text="def form_ask_userid()")
 		try:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
-			try:
-				dialogWindow.set_icon_from_file(self.systray_icon_connected)
-			except:
-				self.debug(text="def form_ask_userid: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
-			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_icon_from_file(self.systray_icon_connected)
 			dialogWindow.set_title("oVPN.to Setup")
 			dialogWindow.set_markup("Enter your oVPN.to Details")
 			dialogBox = dialogWindow.get_content_area()
@@ -3334,27 +3280,27 @@ class Systray:
 			useridEntry.set_visibility(True)
 			useridEntry.set_max_length(9)
 			useridEntry.set_size_request(200,24)
-			useridLabel = Gtk.Label(label="User-ID:")
+			useridLabel = Gtk.Label(label="User-ID()")
 			
 			apikeyEntry = Gtk.Entry()
 			apikeyEntry.set_visibility(False)
 			apikeyEntry.set_max_length(128)
 			apikeyEntry.set_invisible_char("*")
 			apikeyEntry.set_size_request(200,24)
-			apikeyLabel = Gtk.Label(label="API-Key:")
+			apikeyLabel = Gtk.Label(label="API-Key()")
 			
 			ph1Entry = Gtk.Entry()
 			ph1Entry.set_visibility(False)
 			ph1Entry.set_invisible_char("X")
 			ph1Entry.set_size_request(200,24)
 			ph0Label = Gtk.Label(label="\n\nEnter a secure passphrase to encrypt your API-Login!")
-			ph1Label = Gtk.Label(label="Passphrase:")
+			ph1Label = Gtk.Label(label="Passphrase()")
 			
 			ph2Entry = Gtk.Entry()
 			ph2Entry.set_visibility(False)
 			ph2Entry.set_invisible_char("X")
 			ph2Entry.set_size_request(200,24)
-			ph2Label = Gtk.Label(label="Repeat:")
+			ph2Label = Gtk.Label(label="Repeat()")
 			
 			dialogBox.pack_start(useridLabel,False,False,0)
 			dialogBox.pack_start(useridEntry,False,False,0)
@@ -4642,7 +4588,6 @@ class Systray:
 			try:
 				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 				dialog.set_icon_from_file(self.systray_icon_connected)
-				dialog.set_transient_for(self.window)
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup("Do you really want to quit?")
 				response = dialog.run()
@@ -4708,12 +4653,12 @@ class Systray:
 				try:
 					dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 					dialog.set_icon_from_file(self.systray_icon_connected)
-					dialog.set_transient_for(self.window)
 					if self.WIN_BACKUP_FIREWALL == True:
 						text = "Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
 						dialog.set_markup()
 					else:
 						text = "Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
+						
 					dialog.set_markup(text)
 					self.debug(text="def ask_loadorunload_fw: text = '%s'" % (text))
 					response = dialog.run()
@@ -4768,7 +4713,6 @@ class Systray:
 		try:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_icon_from_file(self.systray_icon_connected)
-			message.set_transient_for(self.window)
 			message.set_markup("%s"%(text))
 			message.run()
 			message.destroy()
@@ -4832,15 +4776,11 @@ class Systray:
 			self.DEBUG = True
 		try:
 			self.debug(text=text)
-			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
-			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon_from_file(self.systray_icon_connected)
-			except:
-				self.debug(text="def msgwarn: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
-			dialogWindow.set_markup("%s"%(text))
-			dialogWindow.run()
-			dialogWindow.destroy()
+			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+			message.set_icon_from_file(self.systray_icon_connected)
+			message.set_markup("%s"%(text))
+			message.run()
+			message.destroy()
 		except:
 			self.debug(text=text)
 
