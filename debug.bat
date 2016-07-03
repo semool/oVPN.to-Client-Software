@@ -12,4 +12,3 @@ call %SOURCEDIR%\includes_to_appdata.bat
 
 echo "hit to quit"
 pause
-
