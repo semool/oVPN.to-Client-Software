@@ -1,4 +1,4 @@
-echo off
+@echo off
 set SOURCEDIR=%~dp0.
 call %SOURCEDIR%\set_version.bat
 call %SOURCEDIR%\set_dirs.bat %~1
