@@ -2424,15 +2424,17 @@ class Systray:
 		self.win_netsh_set_dns_ovpn()
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
-		#except subprocess.CalledProcessError as e:
-		#	self.debug(text="def inThread_spawn_openvpn_process: openvpn crashed, output = '%s'" %(e.output))
 		except:
-			self.debug(text="def inThread_spawn_openvpn_process: crashed")
+			self.debug(text="def inThread_spawn_openvpn_process: exited")
 		self.reset_ovpn_values_disconnected()
 		self.call_redraw_mainwindow()
 		return
 
 	def reset_ovpn_values_disconnected(self):
+		try:
+			self.win_firewall_modify_rule(option="delete")
+		except:
+			self.debug(text="def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
 		self.win_clear_ipv6()
 		self.debug(text="def reset_ovpn_values_after()")
 		self.STATE_OVPN = False
@@ -2449,12 +2451,7 @@ class Systray:
 				os.remove(self.ovpn_sessionlog)
 		except:
 			pass
-		try:
-			self.win_firewall_modify_rule(option="delete")
-		except:
-			self.debug(text="def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
-		
-
+	
 	def inThread_timer_ovpn_ping(self):
 		#self.debug(text="def inThread_timer_ovpn_ping()")
 		if self.timer_ovpn_ping_running == False:
@@ -2959,17 +2956,20 @@ class Systray:
 	"""
 
 	def win_firewall_modify_rule(self,option):
-		self.debug(text="def win_firewall_modify_rule()")
-		if self.NO_WIN_FIREWALL == True:
-			return True
-		rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
-		if option == "add":
-			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
-		if option == "delete":
-			rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
-		#self.debug(text="def pfw: %s"%(rule_string))
-		self.NETSH_CMDLIST.append(rule_string)
-		return self.win_join_netsh_cmd()
+		try:
+			self.debug(text="def win_firewall_modify_rule()")
+			if self.NO_WIN_FIREWALL == True:
+				return True
+			rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
+			if option == "add":
+				rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
+			if option == "delete":
+				rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
+			#self.debug(text="def pfw: %s"%(rule_string))
+			self.NETSH_CMDLIST.append(rule_string)
+			return self.win_join_netsh_cmd()
+		except:
+			self.debug(text="def win_firewall_modify_rule: option = '%s' failed" %(option))
 
 	def win_return_netsh_cmd(self,cmd):
 		self.debug(text="def win_return_netsh_cmd()")
