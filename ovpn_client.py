@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0w-gtk3"
+CLIENTVERSION="v0.5.0x-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1285,8 +1285,9 @@ class Systray:
 
 			self.make_systray_firewall_menu()
 
-			sep = Gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
+			if len(self.OVPN_SERVER) > 0:
+				sep = Gtk.SeparatorMenuItem()
+				self.systray_menu.append(sep)
 
 			try:
 				self.make_systray_server_menu()
@@ -1607,15 +1608,18 @@ class Systray:
 
 	def make_systray_bottom_menu(self):
 		self.debug(text="def make_systray_bottom_menu()")
+		mainwindowentry = False
 		sep = Gtk.SeparatorMenuItem()
 		self.systray_menu.append(sep)
 		if self.DISABLE_SRV_WINDOW == False:
 			if self.MAINWINDOW_OPEN == True:
 				mainwindowentry = Gtk.MenuItem('Close Servers')
 			else:
-				mainwindowentry = Gtk.MenuItem('Show Servers')
-			self.systray_menu.append(mainwindowentry)
-			mainwindowentry.connect('button-release-event', self.show_mainwindow)
+				if len(self.OVPN_SERVER) > 0:
+					mainwindowentry = Gtk.MenuItem('Show Servers')
+			if mainwindowentry:
+				self.systray_menu.append(mainwindowentry)
+				mainwindowentry.connect('button-release-event', self.show_mainwindow)
 
 		if self.DISABLE_ACC_WINDOW == False:
 			if self.ACCWINDOW_OPEN == True:
