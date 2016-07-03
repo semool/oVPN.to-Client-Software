@@ -22,10 +22,15 @@ copy /Y "%INCLUDESDIR%\ico\292.ico" "%SOURCEDIR%"
 %PYEXE% setup.py py2exe
 del 292.ico
 
+copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
 xcopy /Y /E "%INCLUDESDIR%\ico" "%DISTDIR%\ico\"
 xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
+
+copy /Y "%INCLUDESDIR%\theme_win.ini" "dist\etc\gtk-3.0\settings.ini"
 xcopy /Y /E "%INCLUDESDIR%\MS-Windows" "%DISTDIR%\share\themes\MS-Windows\"
-copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
+
+::copy /Y "%INCLUDESDIR%\theme_adw.ini" "dist\etc\gtk-3.0\settings.ini"
+::xcopy /Y /E "%INCLUDESDIR%\Adwaita" "dist\share\themes\Adwaita\"
 
 copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "dist\crypt32.dll"
 
