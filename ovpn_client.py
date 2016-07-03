@@ -25,7 +25,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.5.0i-gtk3"
+CLIENTVERSION="v0.5.0h-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -172,7 +172,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 300
+		self.LOAD_DATA_EVERY = 15
 		self.LOAD_SRVDATA = False
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
@@ -1257,8 +1257,7 @@ class Systray:
 					d, h = divmod(h, 24)
 					if self.OVPN_CONNECTEDseconds >= 0:
 						connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-					statusbar_text = " Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms) " % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
-					systraytext = " Connected to %s [%s]:%s (%s)" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
+					systraytext = " Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms) " % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
 					statusbar_text = systraytext
 					systrayicon = self.systray_icon_connected
 				except:
@@ -1856,12 +1855,14 @@ class Systray:
 				self.scrolledwindow.remove(self.treeview)
 				self.mainwindow.remove(self.mainwindow_vbox)
 				self.statusbartext_from_before = False
-				time.sleep(0.2)
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
 				#self.debug(text="def inThread_redraw_mainwindow: True")
+				self.STATUSBAR_FREEZE = False
 			except:
 				self.debug(text="def inThread_redraw_mainwindow: self.mainwindow_vbox recreate failed")
+		self.STATUSBAR_FREEZE = False
+		return
 
 	#######
 	def show_statuswindow(self,widget,event):
@@ -1898,7 +1899,7 @@ class Systray:
 			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
-				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
+				self.mainwindow.set_title(CLIENT_STRING)
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
 				if self.LOAD_SRVDATA == True:
 					self.mainwindow.set_default_size(1740,830)
@@ -2144,7 +2145,7 @@ class Systray:
 			try:
 				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
-				self.accwindow.set_title("oVPN Account - %s" % (CLIENT_STRING))
+				self.accwindow.set_title("oVPN.to Acc")
 				self.accwindow.set_icon_from_file(self.systray_icon_connected)
 				self.accwindow.set_default_size(370,480)
 				if self.accwindow_accinfo():
@@ -2697,7 +2698,7 @@ class Systray:
 
 	#######
 	def get_ovpn_ping(self):
-		#self.debug(text="def get_ovpn_ping()")
+		self.debug(text="def get_ovpn_ping()")
 		try:
 			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
 			for (family, socktype, proto, canon, sockaddr) in ai_list:
@@ -3932,7 +3933,7 @@ class Systray:
 
 	#######
 	def check_myip(self):
-		#self.debug(text="def check_myip()")
+		self.debug(text="def check_myip()")
 		# *** fixme *** missing ipv6 support
 		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
@@ -4150,7 +4151,7 @@ class Systray:
 					if len(OVPN_SRV_DATA) > 1:
 						if not self.check_hash_dictdata(OVPN_SRV_DATA,self.OVPN_SRV_DATA):
 							self.OVPN_SRV_DATA = OVPN_SRV_DATA
-							self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())+((2**31)-1)
+							self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
 							self.debug(text="def load_serverdata_from_remote: loaded, len = %s" % (len(self.OVPN_SRV_DATA)))
 							self.call_redraw_mainwindow_vbox()
 							return True
