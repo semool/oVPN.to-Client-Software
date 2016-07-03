@@ -1,1 +1,1 @@
-set RELEASE=v0.5.0x-gtk3
+set RELEASE=v0.5.0y-gtk3
