@@ -25,7 +25,7 @@ import json
 from ConfigParser import SafeConfigParser
 
 
-CLIENTVERSION="v0.5.0j-gtk3"
+CLIENTVERSION="v0.5.0i-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -4344,16 +4344,16 @@ class Systray:
 	def win_select_openvpn(self):
 		self.debug(text="def win_select_openvpn()")
 		self.msgwarn(text="OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!")
-		dialogWindow = Gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,Gtk.FileChooserAction.OPEN,
+		dialog = Gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,Gtk.FileChooserAction.OPEN,
 									   (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 										Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-		dialogWindow.set_default_response(Gtk.ResponseType.OK)
+		dialog.set_default_response(Gtk.ResponseType.OK)
 		filter = Gtk.FileFilter()
 		filter.set_name("openvpn.exe")
 		filter.add_pattern("openvpn.exe")
-		dialogWindow.add_filter(filter)
+		dialog.add_filter(filter)
 		try:
-			response = dialogWindow.run()
+			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
 				dialogWindow.destroy()
 				self.OPENVPN_EXE = dialog.get_filename()
