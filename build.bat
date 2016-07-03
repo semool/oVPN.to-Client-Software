@@ -1,9 +1,9 @@
-@echo off
+echo off
 set SOURCEDIR=%~dp0.
 call %SOURCEDIR%\set_version.bat
 call %SOURCEDIR%\set_dirs.bat %~1
 
-IF NOT DEFINED %PYEXE% (EXIT)
+IF NOT DEFINED PYEXE (EXIT)
 
 set RELEASEDIR=%SOURCEDIR%\release
 set VERSION=%RELEASE%_win%BITS%
