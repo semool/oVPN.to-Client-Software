@@ -26,7 +26,7 @@
 
 
 ## Basic Requirements:
-+ [PyGObject 3.18.2 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev7-setup.exe/download) Select only: 'Base packages' + 'GDK-Pixbuf 2.34.0' + 'GDL 3.18.0' + 'GTK+ 3.18.9' and install 2 times into 32 and 64 bit!
++ [PyGObject 3.18.2 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev7-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
 + [7-zip SFX Builder](http://sourceforge.net/projects/s-zipsfxbuilder/)
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
 + [7-zip 16.02 x64](http://7-zip.org/a/7z1602-x64.exe)
