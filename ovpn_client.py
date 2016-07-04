@@ -1270,6 +1270,8 @@ class Systray:
 						self.show_mainwindow(widget, event)
 				except:
 					self.debug(text="def show_mainwindow() on_left_click failed")
+			else:
+				self.destroy_mainwindow()
 
 	def make_systray_menu(self, event):
 		self.debug(text="def make_systray_menu: bt=%s" % (event))
