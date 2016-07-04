@@ -1261,6 +1261,15 @@ class Systray:
 		self.debug(text="def on_left_click()")
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
+		else:
+			if self.MAINWINDOW_OPEN == False:
+				try:
+					self.load_ovpn_server()
+					if len(self.OVPN_SERVER) > 0:
+						event = Gtk.get_current_event_time()
+						self.show_mainwindow(widget, event)
+				except:
+					self.debug(text="def show_mainwindow() on_left_click failed")
 
 	def make_systray_menu(self, event):
 		self.debug(text="def make_systray_menu: bt=%s" % (event))
