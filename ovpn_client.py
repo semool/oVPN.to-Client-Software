@@ -1194,13 +1194,13 @@ class Systray:
 				systraytext = "Connecting to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_connect
 				statusbar_text = systraytext
-				self.debug(text=systraytext)
+				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
 			elif self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
 				systraytext = "Testing connection to %s" % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_hourglass
 				statusbar_text = systraytext
-				self.debug(text=systraytext)
+				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
 			elif self.OVPN_PING_STAT > 0:
 				try:
 					if self.OVPN_isTESTING == True:
@@ -1323,8 +1323,7 @@ class Systray:
 			self.systray_menu.popup(None, None, None, event, 0, 0)
 		except:
 			self.destroy_systray_menu()
-			text="def make_systray_menu: failed"
-			self.debug(text=text)
+			self.debug(text="def make_systray_menu: failed")
 
 	def make_systray_options_menu(self):
 		self.debug(text="def make_systray_options_menu()")	
@@ -1471,39 +1470,48 @@ class Systray:
 	def make_systray_updates_menu(self):
 		self.debug(text="def make_systray_updates_menu()")
 		try:
-			updatesmenu = Gtk.Menu()
-			updatesm = Gtk.MenuItem("Updates")
-			updatesm.set_submenu(updatesmenu)
-			self.systray_menu.append(updatesm)
+			try:
+				updatesmenu = Gtk.Menu()
+				updatesm = Gtk.MenuItem("Updates")
+				updatesm.set_submenu(updatesmenu)
+				self.systray_menu.append(updatesm)
 
-			normalupdate = Gtk.MenuItem('Normal Config Update')
-			normalupdate.connect('button-press-event', self.cb_check_normal_update)
-			updatesmenu.append(normalupdate)
+				normalupdate = Gtk.MenuItem('Normal Config Update')
+				normalupdate.connect('button-press-event', self.cb_check_normal_update)
+				updatesmenu.append(normalupdate)
 
-			forceupdate = Gtk.MenuItem('Forced Config Update')
-			forceupdate.connect('button-press-event', self.cb_force_update)
-			updatesmenu.append(forceupdate)
+				forceupdate = Gtk.MenuItem('Forced Config Update')
+				forceupdate.connect('button-press-event', self.cb_force_update)
+				updatesmenu.append(forceupdate)
 
-			sep = Gtk.SeparatorMenuItem()
-			updatesmenu.append(sep)
+				sep = Gtk.SeparatorMenuItem()
+				updatesmenu.append(sep)
+			except:
+				self.debug(text="def make_systray_updates_menu: #1 failed")
 
-			if self.UPDATEOVPNONSTART == True:
-				opt = "[enabled]"
-			else:
-				opt = "[disabled]"
-			autoupdate = Gtk.MenuItem('Update on Start %s' % (opt))
-			autoupdate.connect('button-press-event', self.cb_switch_autoupdate)
-			updatesmenu.append(autoupdate)
+			try:
+				if self.UPDATEOVPNONSTART == True:
+					opt = "[enabled]"
+				else:
+					opt = "[disabled]"
+				autoupdate = Gtk.MenuItem('Update on Start %s' % (opt))
+				autoupdate.connect('button-press-event', self.cb_switch_autoupdate)
+				updatesmenu.append(autoupdate)
+			except:
+				self.debug(text="def make_systray_updates_menu: #2 failed")
 
-			if self.LOAD_ACCDATA == True:
-				opt = "[enabled]"
-			else:
-				opt = "[disabled]"
-			switchaccinfo = Gtk.MenuItem("Load Account Info %s" % (opt))
-			switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
-			updatesmenu.append(switchaccinfo)
+			try:
+				if self.LOAD_ACCDATA == True:
+					opt = "[enabled]"
+				else:
+					opt = "[disabled]"
+				switchaccinfo = Gtk.MenuItem("Load Account Info %s" % (opt))
+				switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
+				updatesmenu.append(switchaccinfo)
+			except:
+				self.debug(text="def make_systray_updates_menu: #3 failed")
 
-			if self.DISABLE_SRV_WINDOW == False:
+			try:
 				if self.LOAD_SRVDATA == True:
 					opt = "[enabled]"
 				else:
@@ -1511,23 +1519,27 @@ class Systray:
 				extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
 				extserverview.connect('button-press-event', self.cb_extserverview)
 				updatesmenu.append(extserverview)
+			except:
+				self.debug(text="def make_systray_updates_menu: #4 failed")
 
-			sep = Gtk.SeparatorMenuItem()
-			updatesmenu.append(sep)
-			
-			resetlogin = Gtk.MenuItem('Reset API Login')
-			resetlogin.connect('button-press-event', self.cb_form_reask_userid)
-			updatesmenu.append(resetlogin)
-
-			if not self.PASSPHRASE == False:
-				clearphram = Gtk.MenuItem('Clear Passphrase from RAM')
-				clearphram.connect('button-press-event', self.cb_clear_passphrase_ram)
-				updatesmenu.append(clearphram)
+			try:
+				sep = Gtk.SeparatorMenuItem()
+				updatesmenu.append(sep)
 				
-				clearphcfg = Gtk.MenuItem('Clear Passphrase from CFG')
-				clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
-				updatesmenu.append(clearphcfg)
+				resetlogin = Gtk.MenuItem('Reset API Login')
+				resetlogin.connect('button-press-event', self.cb_form_reask_userid)
+				updatesmenu.append(resetlogin)
 
+				if not self.PASSPHRASE == False:
+					clearphram = Gtk.MenuItem('Clear Passphrase from RAM')
+					clearphram.connect('button-press-event', self.cb_clear_passphrase_ram)
+					updatesmenu.append(clearphram)
+					
+					clearphcfg = Gtk.MenuItem('Clear Passphrase from CFG')
+					clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
+					updatesmenu.append(clearphcfg)
+			except:
+				self.debug(text="def make_systray_updates_menu: #5 failed")
 		except:
 			self.debug(text="def make_systray_updates_menu: failed")
 
@@ -1605,26 +1617,30 @@ class Systray:
 	def make_systray_openvpn_menu(self):
 		self.debug(text="def make_systray_openvpn_menu()")
 		if self.STATE_OVPN == True:
-			sep = Gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
-			# add quit item
-			servershort = self.OVPN_CONNECTEDto[:3]
-			textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
-			disconnect = Gtk.ImageMenuItem(textstring)
-			img = Gtk.Image()
-			img.set_from_file(self.systray_icon_disconnected)
-			disconnect.set_always_show_image(True)
-			disconnect.set_image(img)
-			self.systray_menu.append(disconnect)
-			# SIGNALS
-			disconnect.connect('button-release-event', self.cb_kill_openvpn)
+			try:
+				sep = Gtk.SeparatorMenuItem()
+				self.systray_menu.append(sep)
+				servershort = self.OVPN_CONNECTEDto[:3]
+				textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
+				disconnect = Gtk.ImageMenuItem(textstring)
+				img = Gtk.Image()
+				img.set_from_file(self.systray_icon_disconnected)
+				disconnect.set_always_show_image(True)
+				disconnect.set_image(img)
+				self.systray_menu.append(disconnect)
+				# SIGNALS
+				disconnect.connect('button-release-event', self.cb_kill_openvpn)
+			except:
+				self.debug(text="def make_systray_openvpn_menu: failed")
 
 	def make_systray_bottom_menu(self):
 		self.debug(text="def make_systray_bottom_menu()")
-		mainwindowentry = False
-		sep = Gtk.SeparatorMenuItem()
-		self.systray_menu.append(sep)
-		if self.DISABLE_SRV_WINDOW == False:
+		
+		try:
+			sep = Gtk.SeparatorMenuItem()
+			self.systray_menu.append(sep)
+		
+			mainwindowentry = False
 			if self.MAINWINDOW_OPEN == True:
 				mainwindowentry = Gtk.MenuItem('Close Servers')
 			else:
@@ -1633,27 +1649,32 @@ class Systray:
 			if mainwindowentry:
 				self.systray_menu.append(mainwindowentry)
 				mainwindowentry.connect('button-release-event', self.show_mainwindow)
+		except:
+			self.debug(text="def make_systray_bottom_menu: mainwindowentry failed")
 
-		if self.DISABLE_ACC_WINDOW == False:
+		try:
 			if self.ACCWINDOW_OPEN == True:
 				accwindowentry = Gtk.MenuItem('Close Account')
 			else:
 				accwindowentry = Gtk.MenuItem('Show Account')
 			self.systray_menu.append(accwindowentry)
 			accwindowentry.connect('button-release-event', self.show_accwindow)
-
+		except:
+			self.debug(text="def make_systray_bottom_menu: accwindowentry failed")
+			
 		if self.STATE_OVPN == False:
-			sep = Gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
-			# show about dialog
-			about = Gtk.MenuItem('About')
-			self.systray_menu.append(about)
-			# SIGNALS
-			about.connect('button-release-event', self.show_about_dialog)
+			try:
+				sep = Gtk.SeparatorMenuItem()
+				self.systray_menu.append(sep)
+				about = Gtk.MenuItem('About')
+				self.systray_menu.append(about)
+				about.connect('button-release-event', self.show_about_dialog)
+			except:
+				self.debug(text="def make_systray_bottom_menu: about failed")
+			
 			# add quit item
 			quit = Gtk.MenuItem('Quit')
 			self.systray_menu.append(quit)
-			# SIGNALS
 			quit.connect('button-release-event', self.on_closing)
 
 	def systray_notify_event(self, widget, event, data = None):
@@ -2214,7 +2235,7 @@ class Systray:
 			self.systray_menu = False
 			self.debug(text = "def destroy_systray_menu: true")
 		except:
-			#self.debug(text = "def destroy_systray_menu: failed")
+			self.debug(text = "def destroy_systray_menu: failed")
 			self.systray_menu = False
 
 	def set_statusbar_text(self,text):
@@ -2519,7 +2540,7 @@ class Systray:
 				self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
 
 	def get_ovpn_ping(self):
-		self.debug(text="def get_ovpn_ping()")
+		#self.debug(text="def get_ovpn_ping()")
 		try:
 			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
 			for (family, socktype, proto, canon, sockaddr) in ai_list:
@@ -2532,7 +2553,7 @@ class Systray:
 					PING = (t2-t1)*1000
 					if PING > 3000:
 						PING = -2
-					#self.debug(text="def get_ovpn_ping: %s ms"%(PING))
+					#self.debug(text="def get_ovpn_ping: %s ms" % (PING))
 					return PING
 				except:
 					self.OVPN_PING_LAST = -2
@@ -3697,7 +3718,7 @@ class Systray:
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
 				return True
 			try:
-				self.debug(text="def check_myip: go0")
+				#self.debug(text="def check_myip: go0")
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
 				#self.debug(text="def check_myip: url = %s" % (url))
 				t1 = time.time()
@@ -4555,7 +4576,7 @@ class Systray:
 			print(debugstringsht1)
 			print(debugstringsht2)
 			self.DEBUGcount = 0
-		elif self.DEBUGcount >= 100 and self.DEBUGfrombefore == text:
+		elif self.DEBUGcount >= 4096 and self.DEBUGfrombefore == text:
 			debugstringsht = "(%s):(d3) %s (repeated: %s e2)" % (timefromboot, self.DEBUGfrombefore,self.DEBUGcount)
 			print(debugstringsht)
 			self.DEBUGcount = 0
