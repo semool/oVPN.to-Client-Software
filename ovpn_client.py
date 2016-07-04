@@ -1794,6 +1794,7 @@ class Systray:
 			self.load_ovpn_server()
 			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
@@ -1994,6 +1995,7 @@ class Systray:
 		if self.ACCWINDOW_OPEN == False:
 			try:
 				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+				self.accwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
 				self.accwindow.set_title("oVPN Account - %s" % (CLIENT_STRING))
 				self.accwindow.set_icon_from_file(self.systray_icon_connected)
