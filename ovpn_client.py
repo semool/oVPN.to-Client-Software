@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0x-gtk3"
+CLIENTVERSION="v0.5.0y-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -2008,7 +2008,7 @@ class Systray:
 			else:
 				text = "No data loaded! Retry in few seconds..."
 			entry = Gtk.Entry()
-			entry.set_max_length(48)
+			entry.set_max_length(64)
 			entry.set_editable(0)
 			entry.set_text(text)
 			self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
