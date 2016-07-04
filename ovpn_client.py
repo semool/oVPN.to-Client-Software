@@ -2585,7 +2585,7 @@ class Systray:
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
 			for line in netsh_output:
 				#print line
-				if "fd48:8bea:68a5:" in line:
+				if " fd48:8bea:68a5:" in line:
 					#print line
 					ipv6addr = line.split("    ")[2]
 					#print ipv6addr
@@ -2613,11 +2613,11 @@ class Systray:
 				netsh_output = self.win_return_netsh_cmd(netshcmd)
 				try:
 					for line in netsh_output:
-						if " fd48:8bea:68a5:" in line:
+						if " fd48:8bea:68a5:" in line or " fe80:" in line:
 							#print line
 							if not "%" in line:
 								ipv6addr = line.split()[1]
-								netshcmd = 'interface ipv6 delete address address="%s" interface="%s"' % (ipv6addr,self.WIN_TAP_DEVICE)
+								netshcmd = 'interface ipv6 delete address address="%s" interface="%s" store=active' % (ipv6addr,self.WIN_TAP_DEVICE)
 								self.NETSH_CMDLIST.append(netshcmd)
 					if len(self.NETSH_CMDLIST) > 0:
 						self.win_join_netsh_cmd()
@@ -2635,7 +2635,7 @@ class Systray:
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
 			#self.debug(text="def win_clear_ipv6_routes: netshcmd = '%s'" % (netshcmd))
 			for line in netsh_output:
-				if "fd48:8bea:68a5:" in line:
+				if " fd48:8bea:68a5:" or " fe80:" in line:
 					ipv6 = line.split()[3]
 					output = self.win_return_route_cmd("DELETE %s" % (ipv6))
 					self.debug(text="def win_clear_ipv6_routes: %s %s" % (ipv6,output))
