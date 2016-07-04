@@ -1274,52 +1274,55 @@ class Systray:
 				self.destroy_mainwindow()
 
 	def make_systray_menu(self, event):
-		self.debug(text="def make_systray_menu: bt=%s" % (event))
+		self.debug(text="def make_systray_menu()")
 		try:
 			self.systray_menu = Gtk.Menu()
-
+			
 			try:
 				self.load_ovpn_server()
 			except:
 				self.debug(text="def make_systray_menu: self.load_ovpn_server() failed")
-
+			
 			try:
 				self.make_systray_updates_menu()
 			except:
 				self.debug(text="def make_systray_updates_menu: self.make_systray_updates_menu() failed")
-
+			
 			try:
 				self.make_systray_options_menu()
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_options_menu() failed")
-
-			self.make_systray_firewall_menu()
-
+			
+			try:
+				self.make_systray_firewall_menu()
+			except:
+				self.debug(text="def make_systray_menu: self.make_systray_firewall_menu() failed")
+			
 			if len(self.OVPN_SERVER) > 0:
 				sep = Gtk.SeparatorMenuItem()
 				self.systray_menu.append(sep)
-
+			
 			try:
 				self.make_systray_server_menu()
-				pass
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_server_menu() failed")
-
+			
 			try:
 				self.make_systray_openvpn_menu()
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_openvpn_menu() failed")
-
+			
 			try:
 				self.make_systray_bottom_menu()
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_bottom_menu() failed")
-
+			
 			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)
 			self.systray_menu.connect('leave-notify-event', self.systray_notify_event)
 			self.systray_menu.show_all()
 			self.systray_menu.popup(None, None, None, event, 0, 0)
 		except:
+			self.destroy_systray_menu()
 			text="def make_systray_menu: failed"
 			self.debug(text=text)
 
@@ -2616,7 +2619,7 @@ class Systray:
 				try:
 					for line in netsh_output:
 						if " fd48:8bea:68a5:" in line or " fe80:" in line:
-							#print line
+							self.debug(text="def win_clear_ipv6_addr: found: line = '%s'" % (line))
 							if not "%" in line:
 								ipv6addr = line.split()[1]
 								netshcmd = 'interface ipv6 delete address address="%s" interface="%s" store=active' % (ipv6addr,self.WIN_TAP_DEVICE)
@@ -2637,7 +2640,8 @@ class Systray:
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
 			#self.debug(text="def win_clear_ipv6_routes: netshcmd = '%s'" % (netshcmd))
 			for line in netsh_output:
-				if " fd48:8bea:68a5:" or " fe80:" in line:
+				if " fd48:8bea:68a5:" in line or " fe80:" in line:
+					self.debug(text="def win_clear_ipv6_routes: found: line = '%s'" % (line))
 					ipv6 = line.split()[3]
 					output = self.win_return_route_cmd("DELETE %s" % (ipv6))
 					self.debug(text="def win_clear_ipv6_routes: %s %s" % (ipv6,output))
