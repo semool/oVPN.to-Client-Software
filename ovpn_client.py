@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0y-gtk3"
+CLIENTVERSION="v0.5.0z-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1125,9 +1125,8 @@ class Systray:
 					imgfile = '%s\\flags\\%s.png' % (self.ico_dir,countrycode)
 
 				if not os.path.isfile(imgfile):
-					if not self.load_flags_from_remote(countrycode,imgfile):
-						imgfile = '%s\\flags\\00.png' % (self.ico_dir)
-						self.FLAG_IMG[countrycode] = imgfile
+					imgfile = '%s\\flags\\00.png' % (self.ico_dir)
+					self.FLAG_IMG[countrycode] = imgfile
 
 				if os.path.isfile(imgfile):
 					img.set_from_file(imgfile)
@@ -3792,8 +3791,7 @@ class Systray:
 						except:
 							imgfile = '%s\\flags\\%s.png' % (self.ico_dir,countrycode)
 							if not os.path.isfile(imgfile):
-								if not self.load_flags_from_remote(countrycode,imgfile):
-									imgfile = '%s\\flags\\00.png' % (self.ico_dir)
+								imgfile = '%s\\flags\\00.png' % (self.ico_dir)
 							self.FLAG_IMG[countrycode] = imgfile
 						self.OVPN_SERVER.append(servername)
 						#self.debug(text="def load_ovpn_server: file = %s " % (file))
@@ -3803,29 +3801,6 @@ class Systray:
 				self.reset_last_update()
 		except:
 			self.msgwarn(text="def load_ovpn_server: failed")
-
-	def load_flags_from_remote(self,countrycode,imgfile):
-		self.debug(text="def load_flags_from_remote()")
-		try:
-			if self.check_inet_connection() == False:
-				return False
-			flagfilename = "%s.png" % (countrycode)
-			url = "https://%s/img/flags/%s" % (DOMAIN,flagfilename)
-			r = requests.get(url)
-			fp = open(imgfile, "wb")
-			fp.write(r.content)
-			fp.close()
-			hash = self.hash_sha256_file(imgfile)
-			if hash == self.FLAG_HASHS[flagfilename]:
-				self.debug(text="def load_flags_from_remote: %s hash ok" % (flagfilename))
-				return True
-			else:
-				self.msgwarn(text="def load_flags_from_remote: %s hash '%s' failed" % (flagfilename,hash))
-				if os.path.isfile(flagfilename):
-					os.remove(flagfilename)
-				return False
-		except:
-			self.debug(text="def load_flags_from_remote: %s failed"%(countrycode))
 
 	def load_remote_data(self):
 		if self.timer_load_remote_data_running == True:
