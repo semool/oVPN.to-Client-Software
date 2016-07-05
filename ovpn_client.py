@@ -1015,10 +1015,8 @@ class Systray:
 		#print 'def on_right_click_mainwindow: servername = %s' % (servername)
 		if servername:
 			if event.button == 1:
-				self.destroy_systray_menu()
 				self.debug(text="mainwindow left click (%s)" % (servername))
 			elif event.button == 3:
-				self.destroy_systray_menu()
 				self.make_context_menu_servertab(servername)
 				self.debug(text="mainwindow right click (%s)" % (servername))
 
