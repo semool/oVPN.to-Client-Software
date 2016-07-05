@@ -1868,13 +1868,13 @@ class Systray:
 								self.debug(text="def update_mwls: oldvalue on cellnumber '%s' failed" % (cellnumber))
 							try:
 								serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
-								serverport = int(self.OVPN_SERVER_INFO[servershort][1])
+								serverport = str(self.OVPN_SERVER_INFO[servershort][1])
 								serverproto = str(self.OVPN_SERVER_INFO[servershort][2])
 								servercipher = str(self.OVPN_SERVER_INFO[servershort][3])
 								try:
-									servermtu = int(self.OVPN_SERVER_INFO[servershort][4])
+									servermtu = str(self.OVPN_SERVER_INFO[servershort][4])
 								except:
-									servermtu = int(1500)
+									servermtu = str(1500)
 								
 								if cellnumber == 0:
 									#if debugupdate_mwls: self.debug(text="%s cell 0 = '%s'" % (server,oldvalue))
@@ -1940,18 +1940,18 @@ class Systray:
 									try:
 										vlanip4 = str(self.OVPN_SRV_DATA[servershort]["vlanip4"])
 										vlanip6 = str(self.OVPN_SRV_DATA[servershort]["vlanip6"])
-										live = int(float(self.OVPN_SRV_DATA[servershort]["traffic"]["live"]))
-										uplink = int(self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"])
+										live = str(self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
+										uplink = str(self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"])
 										cpuinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["cpu"])
 										raminfo = str(self.OVPN_SRV_DATA[servershort]["info"]["ram"])
 										hddinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["hdd"])
 										traffic = str(self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"])
 										cpuload = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"])
-										cpuovpn = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
-										cpusshd = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
-										cpusock = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
-										cpuhttp = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
-										cputinc = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
+										cpuovpn = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
+										cpusshd = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
+										cpusock = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
+										cpuhttp = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
+										cputinc = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
 										ping4 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"])
 										ping6 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"])
 										serverip6 = str(self.OVPN_SRV_DATA[servershort]["extip6"])
@@ -2088,6 +2088,17 @@ class Systray:
 		else:
 			self.destroy_mainwindow()
 
+	def cell_sort(self, treemodel, iter1, iter2, column):
+		self.debug(text="def cell_sort: go")
+		iter1 = treemodel.get_value(iter1, column)
+		iter2 = treemodel.get_value(iter2, column)
+		if float(iter1) < float(iter2):
+			return -1
+		elif float(iter1) > float(iter2):
+			return 1
+		else:
+			return 0
+
 	def mainwindow_ovpn_server(self):
 		self.debug(text="def mainwindow_ovpn_server: go")
 		self.mainwindow_vbox = Gtk.VBox(False,1)
@@ -2104,7 +2115,7 @@ class Systray:
 
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
-			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,int,str,int,str,int,int,str,str,str,str,str,str,str,int,int,int,int,int,str,str)
+			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
 			self.debug(text="def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
@@ -2145,8 +2156,11 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			if cellnumber in [ 2, 5, 7, 9, 10, 17, 18, 19, 20, 21, 22, ]:
+			if cellnumber in [ 2, 5, 6, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
 				column.set_sort_column_id(cellnumber)
+				# Add sort function for str cells
+				if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
+					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, cellnumber)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
 		
@@ -2177,7 +2191,7 @@ class Systray:
 					servermtu = self.OVPN_SERVER_INFO[servershort][4]
 				except:
 					servermtu = 1500
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("n/a"),int(serverport),str(serverproto),int(servermtu),str(servercipher),int(float(0)),int(0),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),int(0),int(0),int(0),int(0),int(0),str("n/a"),str("n/a")])
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("n/a"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a")])
 			except:
 				self.debug(text="def fill_mainwindow_with_server: server '%s' failed" % (server))
 
