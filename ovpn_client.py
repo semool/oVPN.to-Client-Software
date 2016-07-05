@@ -1263,12 +1263,11 @@ class Systray:
 	def on_right_click(self, widget, event, event_time):
 		self.debug(text="def on_right_click()")
 		clicktime = time.time()
-		if self.LAST_RIGHT_CLICK > clicktime-1:
+		if self.LAST_RIGHT_CLICK > clicktime-2:
 			self.debug(text="def on_left_click: return self.LAST_RIGHT_CLICK")
 			return
 		self.LAST_RIGHT_CLICK = clicktime
 		if not self.systray_menu == False:
-			self.LAST_RIGHT_CLICK = 0
 			self.destroy_systray_menu()
 		else:
 			self.make_systray_menu(event)
@@ -1276,7 +1275,7 @@ class Systray:
 	def on_left_click(self, widget):
 		self.debug(text="def on_left_click()")
 		clicktime = time.time()
-		if self.LAST_LEFT_CLICK > clicktime-1:
+		if self.LAST_LEFT_CLICK > clicktime-2:
 			self.debug(text="def on_left_click: return self.LAST_LEFT_CLICK")
 			return
 		self.LAST_LEFT_CLICK = clicktime
@@ -1288,7 +1287,6 @@ class Systray:
 			except:
 				self.debug(text="def show_mainwindow() on_left_click failed")
 		else:
-			self.LAST_LEFT_CLICK = 0
 			self.destroy_mainwindow()
 
 	def make_systray_menu(self, event):
