@@ -1245,7 +1245,7 @@ class Systray:
 
 		self.thread_systray_timer = threading.Thread(target=self.thread_idle, args=(self.systray_timer,))
 		self.systray_timer_running = True
-		time.sleep(0.001)
+		time.sleep(0.025)
 		self.thread_systray_timer.start()
 		#self.debug(text="def systray_timer: return")
 		return
@@ -1788,11 +1788,160 @@ class Systray:
 		self.timer_check_certdl_running = False
 		return False
 	
+	def update_mwls(self):
+		self.debug(text="def update_mwls()")
+		t1 = time.time()
+		try:
+			liststore = self.serverliststore
+			iter = liststore.get_iter_first()
+			startcell = 3
+			updatecells = 24
+			for server in self.OVPN_SERVER:
+				countrycode = server[:2].lower()
+				servershort = server[:3].upper()
+				while not iter == None and not liststore.get_value(iter,2) == server:
+					iter = liststore.iter_next(iter)
+				cell2 = liststore.get_value(iter,2)
+				if cell2 == server:
+					#self.debug(text="def update_mwls: server = '%s'" % (server))
+					cellnumber = 0
+					while cellnumber <= 24:
+						#print "cellnumber = %s" % (cellnumber)
+						try:
+							try:
+								oldvalue = liststore.get_value(iter,cellnumber)
+								#self.debug(text="def update_mwls: oldvalue '%s' on cellnumber '%s'" % (oldvalue,cellnumber))
+							except:
+								self.debug(text="def update_mwls: oldvalue on cellnumber '%s' failed" % (cellnumber))
+								#continue
+								
+							try:
+								serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
+								serverport = int(self.OVPN_SERVER_INFO[servershort][1])
+								serverproto = str(self.OVPN_SERVER_INFO[servershort][2])
+								servercipher = str(self.OVPN_SERVER_INFO[servershort][3])
+								try:
+									servermtu = int(self.OVPN_SERVER_INFO[servershort][4])
+								except:
+									servermtu = int(1500)
+								
+								if cellnumber == 0:
+									#self.debug(text="%s cell 0 = '%s'" % (server,oldvalue))
+									statusimgpath = False
+									if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
+										try:
+											serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
+											if serverstatus == "0":
+												statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
+											elif serverstatus == "1":
+												statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
+											elif serverstatus == "2":
+												statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+										except:
+											self.debug(text="def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
+									if server == self.OVPN_CONNECTEDto:
+										statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+									elif server == self.OVPN_FAV_SERVER:
+										statusimgpath = "%s\\star.png" % (self.ico_dir)
+									
+									if statusimgpath == False or not os.path.isfile(statusimgpath):
+										if not statusimgpath == False:
+											self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
+										statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+									
+									try:
+										statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
+										liststore.set_value(iter,cellnumber,statusimg)
+									except:
+										self.debug(text="self.serverliststore.append: failed '%s'" % (server))
+								
+								elif cellnumber == 3 and not oldvalue == serverip4:
+									liststore.set_value(iter,cellnumber,serverip4)
+									self.debug(text="def update_mwls: update server='%s' cell='%s' old='%s' new='%s'" % (server,cellnumber,oldvalue,serverip4))
+								elif cellnumber == 5 and not oldvalue == serverport:
+									liststore.set_value(iter,cellnumber,serverport)
+									
+								elif cellnumber == 6 and not oldvalue == serverproto:
+									liststore.set_value(iter,cellnumber,serverproto)
+									
+								elif cellnumber == 7 and not oldvalue == servermtu:
+									liststore.set_value(iter,cellnumber,servermtu)
+									
+								elif cellnumber == 8 and not oldvalue == servercipher:
+									liststore.set_value(iter,cellnumber,servercipher)
+									
+								elif self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
+									try:
+										vlanip4 = str(self.OVPN_SRV_DATA[servershort]["vlanip4"])
+										vlanip6 = str(self.OVPN_SRV_DATA[servershort]["vlanip6"])
+										live = int(float(self.OVPN_SRV_DATA[servershort]["traffic"]["live"]))
+										uplink = int(self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"])
+										cpuinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["cpu"])
+										raminfo = str(self.OVPN_SRV_DATA[servershort]["info"]["ram"])
+										hddinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["hdd"])
+										traffic = str(self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"])
+										cpuload = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"])
+										cpuovpn = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
+										cpusshd = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
+										cpusock = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
+										cpuhttp = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
+										cputinc = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
+										ping4 = int(float(self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]))
+										ping6 = int(float(self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]))
+										serverip6 = str(self.OVPN_SRV_DATA[servershort]["extip6"])
+										if cellnumber == 4 and not oldvalue == serverip6:
+											liststore.set_value(iter,cellnumber,serverip6)
+										elif cellnumber == 9 and not oldvalue == live:
+											liststore.set_value(iter,cellnumber,live)
+										elif cellnumber == 10 and not oldvalue == uplink:
+											uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
+											liststore.set_value(iter,cellnumber,int(uplink))
+										elif cellnumber == 11 and not oldvalue == vlanip4:
+											liststore.set_value(iter,cellnumber,vlanip4)
+										elif cellnumber == 12 and not oldvalue == vlanip6:
+											liststore.set_value(iter,cellnumber,vlanip6)
+										elif cellnumber == 13 and not oldvalue == cpuinfo:
+											liststore.set_value(iter,cellnumber,cpuinfo)
+										elif cellnumber == 14 and not oldvalue == raminfo:
+											liststore.set_value(iter,cellnumber,raminfo)
+										elif cellnumber == 15 and not oldvalue == hddinfo:
+											liststore.set_value(iter,cellnumber,hddinfo)
+										elif cellnumber == 16 and not oldvalue == traffic:
+											liststore.set_value(iter,cellnumber,traffic)
+										elif cellnumber == 17 and not oldvalue == cpuload:
+											liststore.set_value(iter,cellnumber,cpuload)
+										elif cellnumber == 18 and not oldvalue == cpuovpn:
+											liststore.set_value(iter,cellnumber,cpuovpn)
+										elif cellnumber == 19 and not oldvalue == cpusshd:
+											liststore.set_value(iter,cellnumber,cpusshd)
+										elif cellnumber == 20 and not oldvalue == cpusock:
+											liststore.set_value(iter,cellnumber,cpusock)
+										elif cellnumber == 21 and not oldvalue == cpuhttp:
+											liststore.set_value(iter,cellnumber,cpuhttp)
+										elif cellnumber == 22 and not oldvalue == cputinc:
+											liststore.set_value(iter,cellnumber,cputinc)
+										elif cellnumber == 23 and not oldvalue == ping4:
+											liststore.set_value(iter,cellnumber,ping4)
+										elif cellnumber == 24 and not oldvalue == ping6:
+											liststore.set_value(iter,cellnumber,ping6)
+									except:
+										self.debug(text="def update_mwls: updating extended values failed")
+							except:
+								self.debug(text="def update_mwls: update values server '%s' failed" % (server))
+						except:
+							self.debug(text="def update_mwls: while cellnumber i='%s' <= 24: failed" % (cellnumber))
+						cellnumber += 1
+			self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
+		except:
+			self.debug(text="def update_mwls: failed")
+		  
 	def call_redraw_mainwindow(self):
 		self.debug(text="def call_redraw_mainwindow_vbox()")
 		if self.MAINWINDOW_OPEN == True:
 			self.statusbartext_from_before = False
 			try:
+				self.update_mwls()
+				return
 				self.treeview.set_model(model=None)
 				try:
 					self.serverliststore.clear()
@@ -1823,7 +1972,7 @@ class Systray:
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
 				if self.LOAD_SRVDATA == True:
-					self.mainwindow.set_default_size(1780,830)
+					self.mainwindow.set_default_size(950,830)
 				else:
 					self.mainwindow.set_default_size(510,830)
 				self.mainwindow_ovpn_server()
@@ -1880,8 +2029,10 @@ class Systray:
 			self.debug(text="def fill_mainwindow_with_server: go2.3")
 		except:
 			self.debug(text="cell = Gtk.CellRendererPixbuf failed")
-
-		cellnumber = 2
+		
+		## cell 0 == statusicon
+		## cell 1 == flagicon
+		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24
 		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 " ]
 		for cellname in cellnames:
 			align=0.5
@@ -1918,10 +2069,6 @@ class Systray:
 			serverport = self.OVPN_SERVER_INFO[servershort][1]
 			serverproto = self.OVPN_SERVER_INFO[servershort][2]
 			servercipher = self.OVPN_SERVER_INFO[servershort][3]
-			if servercipher == "CAMELLIA-256-CBC":
-				servercipher = "CAM-256"
-			elif servercipher == "AES-256-CBC":
-				servercipher = "AES-256"
 
 			try:
 				servermtu = self.OVPN_SERVER_INFO[servershort][4]
@@ -3809,6 +3956,10 @@ class Systray:
 									#print line
 									try:
 										cipher = line.split()[1]
+										if cipher == "CAMELLIA-256-CBC":
+											cipher = "CAM-256"
+										elif cipher == "AES-256-CBC":
+											cipher = "AES-256"
 										serverinfo.append(cipher)
 									except:
 										self.errorquit(text="Could not read Servers Cipher from config: %s" % (self.ovpn_server_config_file))
