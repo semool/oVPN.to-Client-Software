@@ -176,6 +176,10 @@ class Systray:
 		self.APIKEY = False
 		self.LOAD_DATA_EVERY = 300
 		self.LOAD_SRVDATA = False
+		self.SRV_LIGHT_WIDTH = "510"
+		self.SRV_LIGHT_HEIGHT = "830"
+		self.SRV_WIDTH = "910"
+		self.SRV_HEIGHT = "830"
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
 		self.WIN_FIREWALL_ADDED_RULE_TO_VCP = False
@@ -616,6 +620,16 @@ class Systray:
 					pass
 
 				try:
+					self.SRV_LIGHT_WIDTH = parser.get('oVPN','serverviewlightwidth')
+					self.SRV_LIGHT_HEIGHT = parser.get('oVPN','serverviewlightheight')
+					self.debug(text="Load Light Server Window Size = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
+					self.SRV_WIDTH = parser.get('oVPN','serverviewextendwidth')
+					self.SRV_HEIGHT = parser.get('oVPN','serverviewextendheight')
+					self.debug(text="Load Extended Server Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
+				except:
+					pass
+
+				try:
 					self.MYDNS = json.loads(parser.get('oVPN','mydns'))
 				except:
 					self.MYDNS = {}
@@ -645,6 +659,10 @@ class Systray:
 				parser.set('oVPN','updateovpnonstart','False')
 				parser.set('oVPN','configversion','23x')
 				parser.set('oVPN','serverviewextend','False')
+				parser.set('oVPN','serverviewlightwidth','510')
+				parser.set('oVPN','serverviewlightheight','830')
+				parser.set('oVPN','serverviewextendwidth','910')
+				parser.set('oVPN','serverviewextendheight','830')
 				parser.set('oVPN','winresetfirewall','False')
 				parser.set('oVPN','winbackupfirewall','False')
 				parser.set('oVPN','nowinfirewall','False')
@@ -683,6 +701,10 @@ class Systray:
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
 			parser.set('oVPN','serverviewextend','%s'%(self.LOAD_SRVDATA))
+			parser.set('oVPN','serverviewlightwidth','%s'%(self.SRV_LIGHT_WIDTH))
+			parser.set('oVPN','serverviewlightheight','%s'%(self.SRV_LIGHT_HEIGHT))
+			parser.set('oVPN','serverviewextendwidth','%s'%(self.SRV_WIDTH))
+			parser.set('oVPN','serverviewextendheight','%s'%(self.SRV_HEIGHT))
 			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
 			parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
 			parser.set('oVPN','nowinfirewall','%s'%(self.NO_WIN_FIREWALL))
@@ -811,6 +833,7 @@ class Systray:
 		else:
 			self.debug(text="self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
 				dialogWindow.set_icon_from_file(self.systray_icon_connected)
@@ -853,6 +876,7 @@ class Systray:
 					return True
 				else:
 					dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+					dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 					dialogWindow.set_transient_for(self.window)
 					try:
 						dialogWindow.set_icon_from_file(self.systray_icon_connected)
@@ -891,6 +915,7 @@ class Systray:
 	def select_userid(self):
 		self.debug(text="def select_userid()")
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
 		try:
 			dialogWindow.set_icon_from_file(self.systray_icon_connected)
@@ -1529,6 +1554,19 @@ class Systray:
 				self.debug(text="def make_systray_updates_menu: #4 failed")
 
 			try:
+				if self.LOAD_SRVDATA == True:
+					WIDTH = self.SRV_WIDTH
+					HEIGHT = self.SRV_HEIGHT
+				else:
+					WIDTH = self.SRV_LIGHT_WIDTH
+					HEIGHT = self.SRV_LIGHT_HEIGHT
+				extserverviewsize = Gtk.MenuItem('Set Server-View Size [%sx%s]'%(int(WIDTH),int(HEIGHT)))
+				extserverviewsize.connect('button-press-event', self.cb_extserverview_size)
+				updatesmenu.append(extserverviewsize)
+			except:
+				self.debug(text="def make_systray_updates_menu: #5 failed")
+
+			try:
 				sep = Gtk.SeparatorMenuItem()
 				updatesmenu.append(sep)
 				
@@ -1545,7 +1583,7 @@ class Systray:
 					clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
 					updatesmenu.append(clearphcfg)
 			except:
-				self.debug(text="def make_systray_updates_menu: #5 failed")
+				self.debug(text="def make_systray_updates_menu: #6 failed")
 		except:
 			self.debug(text="def make_systray_updates_menu: failed")
 
@@ -2033,9 +2071,13 @@ class Systray:
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
 				if self.LOAD_SRVDATA == True:
-					self.mainwindow.set_default_size(950,830)
+					WIDTH = self.SRV_WIDTH
+					HEIGHT = self.SRV_HEIGHT
+					self.mainwindow.set_default_size(int(WIDTH),int(HEIGHT))
 				else:
-					self.mainwindow.set_default_size(510,830)
+					WIDTH = self.SRV_LIGHT_WIDTH
+					HEIGHT = self.SRV_LIGHT_HEIGHT
+					self.mainwindow.set_default_size(int(WIDTH),int(HEIGHT))
 				self.mainwindow_ovpn_server()
 				self.MAINWINDOW_OPEN = True
 				return True
@@ -3302,6 +3344,7 @@ class Systray:
 		if self.timer_check_certdl_running == False:
 			try:
 				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+				dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 				dialogWindow.set_transient_for(self.window)
 				try:
 					dialogWindow.set_icon_from_file(self.systray_icon_connected)
@@ -3366,6 +3409,7 @@ class Systray:
 		self.debug(text="def form_ask_userid()")
 		try:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			try:
 				dialogWindow.set_icon_from_file(self.systray_icon_connected)
 			except:
@@ -3609,6 +3653,68 @@ class Systray:
 		#self.call_redraw_mainwindow()
 		self.destroy_mainwindow()
 		self.show_mainwindow(widget,event)
+
+	def cb_extserverview_size(self,widget,event):
+		self.debug(text="def cb_extserverview_size()")
+		self.destroy_systray_menu()
+		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+		dialogWindow.set_transient_for(self.window)
+		try:
+			dialogWindow.set_icon_from_file(self.systray_icon_connected)
+		except:
+			self.debug(text="def cb_extserverview_size: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+		
+		text = "Server Window Size"
+		dialogWindow.set_title(text)
+		dialogWindow.set_markup(text)
+		dialogBox = dialogWindow.get_content_area()
+		
+		widthLabel = Gtk.Label(label="Width (pixel):")
+		widthEntry = Gtk.Entry()
+		widthEntry.set_visibility(True)
+		widthEntry.set_size_request(40,24)
+		heightLabel = Gtk.Label(label="Height (pixel):")
+		heightEntry = Gtk.Entry()
+		heightEntry.set_visibility(True)
+		heightEntry.set_size_request(40,24)
+		sizeLabel = Gtk.Label(label="Enter width and height\n\nLeave blank for default")
+
+		dialogBox.pack_start(sizeLabel,False,False,0)
+		dialogBox.pack_start(widthLabel,False,False,0)
+		dialogBox.pack_start(widthEntry,False,False,0)
+		dialogBox.pack_start(heightLabel,False,False,0)
+		dialogBox.pack_start(heightEntry,False,False,0)
+		dialogWindow.show_all()
+		
+		response = dialogWindow.run()
+		
+		if response == Gtk.ResponseType.CANCEL:
+			dialogWindow.destroy()
+			print "response: btn cancel %s" % (response)
+			return False
+
+		elif response == Gtk.ResponseType.OK:
+			WIDTH = widthEntry.get_text().rstrip()
+			HEIGHT = heightEntry.get_text().rstrip()
+			dialogWindow.destroy()
+			if self.LOAD_SRVDATA == True:
+				if WIDTH == "": WIDTH = "910";
+				if HEIGHT == "": HEIGHT = "830";
+				self.SRV_WIDTH = WIDTH
+				self.SRV_HEIGHT = HEIGHT
+				self.debug(text="def cb_extserverview_size(): %sx%s" % (self.SRV_WIDTH,self.SRV_HEIGHT))
+			else:
+				if WIDTH == "": WIDTH = "510";
+				if HEIGHT == "": HEIGHT = "830";
+				self.SRV_LIGHT_WIDTH = WIDTH
+				self.SRV_LIGHT_HEIGHT = HEIGHT
+				self.debug(text="def cb_extserverview_size(): %sx%s" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
+
+			self.write_options_file()
+			return True
+		else:
+			return False
 
 	def cb_change_ipmode1(self,widget,event):
 		self.debug(text="def cb_change_ipmode1()")
@@ -4275,6 +4381,7 @@ class Systray:
 		dialogWindow = Gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,Gtk.FileChooserAction.OPEN,
 										(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 										Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_default_response(Gtk.ResponseType.OK)
 		filter = Gtk.FileFilter()
 		filter.set_name("openvpn.exe")
@@ -4547,6 +4654,7 @@ class Systray:
 		try:
 			self.WINDOW_ABOUT_OPEN = True
 			self.about_dialog = Gtk.AboutDialog()
+			self.about_dialog.set_position(Gtk.WindowPosition.CENTER)
 			self.about_dialog.set_icon_from_file(self.systray_icon_connected)
 			self.about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(self.systray_icon_connected))
 			self.about_dialog.set_program_name("oVPN.to Client")
@@ -4596,6 +4704,7 @@ class Systray:
 				pass
 			try:
 				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+				dialog.set_position(Gtk.WindowPosition.CENTER)
 				dialog.set_title("Quit oVPN.to Client")
 				dialog.set_icon_from_file(self.systray_icon_connected)
 				dialog.set_transient_for(self.window)
@@ -4662,6 +4771,7 @@ class Systray:
 			else:
 				try:
 					dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+					dialog.set_position(Gtk.WindowPosition.CENTER)
 					dialog.set_title("Firewall Settings")
 					dialog.set_icon_from_file(self.systray_icon_connected)
 					dialog.set_transient_for(self.window)
@@ -4722,6 +4832,7 @@ class Systray:
 		self.debug(text=text)
 		try:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+			message.set_position(Gtk.WindowPosition.CENTER)
 			message.set_title("Error")
 			message.set_icon_from_file(self.systray_icon_connected)
 			message.set_markup("%s"%(text))
@@ -4795,6 +4906,7 @@ class Systray:
 		try:
 			self.debug(text=text)
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_title("Info")
 			dialogWindow.set_transient_for(self.window)
 			try:
