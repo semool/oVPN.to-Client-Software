@@ -3592,7 +3592,7 @@ class Systray:
 				self.debug(text="def cb_extserverview: self.PASSPHRASE = '-NOT_FALSE-'")
 		else:
 			self.LOAD_SRVDATA = False
-			self.OVPN_SRV_DATA = {}
+			#self.OVPN_SRV_DATA = {}
 			self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		self.write_options_file()
 		#self.call_redraw_mainwindow()
