@@ -188,6 +188,10 @@ class Systray:
 		self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"
 		self.DISABLE_SRV_WINDOW = False
 		self.DISABLE_ACC_WINDOW = False
+		self.LEFT_CLICK_COUNT = 0
+		self.LAST_LEFT_CLICK = 0
+		self.RIGHT_CLICK_COUNT = 0
+		self.LAST_RIGHT_CLICK = 0
 		self.WHITELIST_PUBLIC_PROFILE = {
 			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
 			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
@@ -1258,6 +1262,12 @@ class Systray:
 
 	def on_right_click(self, widget, event, event_time):
 		self.debug(text="def on_right_click()")
+		clicktime = time.time()
+		if self.LAST_RIGHT_CLICK == 0:
+			self.LAST_RIGHT_CLICK = clicktime
+		elif self.LAST_RIGHT_CLICK > clicktime-1:
+			self.debug(text="def on_left_click: return self.LAST_RIGHT_CLICK")
+			return
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
@@ -1265,19 +1275,22 @@ class Systray:
 
 	def on_left_click(self, widget):
 		self.debug(text="def on_left_click()")
-		if not self.systray_menu == False:
-			self.destroy_systray_menu()
+		self.destroy_systray_menu()
+		clicktime = time.time()
+		if self.LAST_LEFT_CLICK == 0:
+			self.LAST_LEFT_CLICK = clicktime
+		elif self.LAST_LEFT_CLICK > clicktime-4:
+			self.debug(text="def on_left_click: return self.LAST_LEFT_CLICK")
+			return
+		
+		if self.MAINWINDOW_OPEN == False:
+			try:
+				event = Gtk.get_current_event_time()
+				self.show_mainwindow(widget, event)
+			except:
+				self.debug(text="def show_mainwindow() on_left_click failed")
 		else:
-			if self.MAINWINDOW_OPEN == False:
-				try:
-					self.load_ovpn_server()
-					if len(self.OVPN_SERVER) > 0:
-						event = Gtk.get_current_event_time()
-						self.show_mainwindow(widget, event)
-				except:
-					self.debug(text="def show_mainwindow() on_left_click failed")
-			else:
-				self.destroy_mainwindow()
+			self.destroy_mainwindow()
 
 	def make_systray_menu(self, event):
 		self.debug(text="def make_systray_menu()")
@@ -2137,6 +2150,7 @@ class Systray:
 		self.debug(text="def destroy_mainwindow")
 
 	def call_redraw_accwindow(self):
+		return
 		self.debug(text="def call_redraw_accwindow()")
 		if self.ACCWINDOW_OPEN == True:
 			try:
