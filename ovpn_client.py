@@ -4,7 +4,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib, GObject
-GObject.threads_init()
+
 
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
@@ -59,9 +59,10 @@ class Systray:
 			self.tray.set_tooltip_markup(CLIENT_STRING)
 			if self.UPDATEOVPNONSTART == True and self.check_inet_connection() == True:
 				self.check_remote_update()
-			if self.TAP_BLOCKOUTBOUND == True:
-				self.win_firewall_tap_blockoutbound()
-			self.systray_timer()
+			thread = threading.Thread(target=self.systray_timer)
+			thread.daemon = True
+			thread.start()
+			#self.systray_timer()
 			#atexit.register(self.on_closing,widget="atexit")
 		else:
 			sys.exit()
@@ -75,6 +76,7 @@ class Systray:
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
 		self.DEBUGcount = 0
+		self.debug_write_thread_running = False
 		self.BOOTTIME = time.time()
 		self.debug_log = False
 		self.OVPN_LATEST = 2311
@@ -100,6 +102,9 @@ class Systray:
 		self.systraytext_from_before = False
 		self.systrayicon_from_before = False
 		self.stop_systray_timer = False
+		self.stop_systray_timer2 = False
+		self.systray_timer_running = False
+		self.systray_timer2_running = False
 		self.inThread_jump_server_running = False
 		self.USERID = False
 		self.STATE_OVPN = False
@@ -1155,21 +1160,13 @@ class Systray:
 		except:
 			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: failed!")
 
-	def systray_timer(self):
-		#self.debug(text="def systray_timer()")
-		if self.stop_systray_timer == True:
+	def systray_timer2(self):
+		#self.debug(text="def systray_timer2()")
+		if self.stop_systray_timer2 == True:
 			return False
-		if not self.systray_menu == False:
-			self.check_hide_popup()
+		self.systray_timer_running = True
+		
 		systraytext = False
-
-		""" *** fixme *** try to get output
-		try:
-			print "self.OPENVPN_PROC_output = '%s' , self.OPENVPN_PROC_error = '%s'" % (self.OPENVPN_PROC_output,self.OPENVPN_PROC_error)
-		except:
-			pass
-		"""
-
 		if self.timer_check_certdl_running == True:
 			systraytext = "Checking for Updates!"
 			systrayicon = self.systray_icon_syncupdate
@@ -1237,15 +1234,26 @@ class Systray:
 			if self.systray_timer_running == True:
 				if self.timer_load_remote_data_running == False:
 					thread = threading.Thread(target=self.load_remote_data)
+					thread.daemon = True
 					thread.start()
 		except:
 			pass
+		return
 
-		self.thread_systray_timer = threading.Thread(target=self.thread_idle, args=(self.systray_timer,))
-		self.systray_timer_running = True
-		time.sleep(0.025)
-		self.thread_systray_timer.start()
-		#self.debug(text="def systray_timer: return")
+	def systray_timer(self):
+		#self.debug(text="def systray_timer()")
+		if self.stop_systray_timer == True:
+			return False
+		if not self.systray_menu == False:
+			self.check_hide_popup()
+			
+		if not self.systray_timer2_running == True:
+			GLib.timeout_add(1000, self.systray_timer2)
+
+		time.sleep(0.5)
+		thread = threading.Thread(target=self.systray_timer)
+		thread.daemon = True
+		thread.start()
 		return
 
 	def on_right_click(self, widget, event, event_time):
@@ -1788,6 +1796,7 @@ class Systray:
 	
 	def update_mwls(self):
 		self.debug(text="def update_mwls()")
+		debugupdate_mwls = False
 		t1 = time.time()
 		try:
 			liststore = self.serverliststore
@@ -1795,7 +1804,6 @@ class Systray:
 			startcell = 3
 			updatecells = 24
 			for server in self.OVPN_SERVER:
-				countrycode = server[:2].lower()
 				servershort = server[:3].upper()
 				while not iter == None and not liststore.get_value(iter,2) == server:
 					iter = liststore.iter_next(iter)
@@ -1810,9 +1818,7 @@ class Systray:
 								oldvalue = liststore.get_value(iter,cellnumber)
 								#self.debug(text="def update_mwls: oldvalue '%s' on cellnumber '%s'" % (oldvalue,cellnumber))
 							except:
-								self.debug(text="def update_mwls: oldvalue on cellnumber '%s' failed" % (cellnumber))
-								#continue
-								
+								self.debug(text="def update_mwls: oldvalue on cellnumber '%s' failed" % (cellnumber))								
 							try:
 								serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
 								serverport = int(self.OVPN_SERVER_INFO[servershort][1])
@@ -1824,7 +1830,7 @@ class Systray:
 									servermtu = int(1500)
 								
 								if cellnumber == 0:
-									#self.debug(text="%s cell 0 = '%s'" % (server,oldvalue))
+									if debugupdate_mwls: self.debug(text="%s cell 0 = '%s'" % (server,oldvalue))
 									statusimgpath = False
 									if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 										try:
@@ -1846,28 +1852,43 @@ class Systray:
 										if not statusimgpath == False:
 											self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
 										statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-									
 									try:
 										statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-										liststore.set_value(iter,cellnumber,statusimg)
+										if not oldvalue == statusimg:
+											liststore.set_value(iter,cellnumber,statusimg)
+											# *** fixme *** is always updating statusimg
+											#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' statusimg" % (server))
 									except:
 										self.debug(text="self.serverliststore.append: failed '%s'" % (server))
 								
+								elif cellnumber == 1:
+									countrycode = server[:2].lower()
+									countryimg = GdkPixbuf.Pixbuf.new_from_file(self.FLAG_IMG[countrycode])
+									if not oldvalue == countryimg:
+										liststore.set_value(iter,cellnumber,countryimg)
+										# *** fixme *** is always updating countryimg
+										#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' countryimg" % (server))
+										
 								elif cellnumber == 3 and not oldvalue == serverip4:
 									liststore.set_value(iter,cellnumber,serverip4)
-									self.debug(text="def update_mwls: update server='%s' cell='%s' old='%s' new='%s'" % (server,cellnumber,oldvalue,serverip4))
+									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip4" % (server))
+								
 								elif cellnumber == 5 and not oldvalue == serverport:
 									liststore.set_value(iter,cellnumber,serverport)
-									
+									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverport" % (server))
+								
 								elif cellnumber == 6 and not oldvalue == serverproto:
 									liststore.set_value(iter,cellnumber,serverproto)
-									
+									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverproto" % (server))
+								
 								elif cellnumber == 7 and not oldvalue == servermtu:
 									liststore.set_value(iter,cellnumber,servermtu)
-									
+									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servermtu" % (server))
+								
 								elif cellnumber == 8 and not oldvalue == servercipher:
 									liststore.set_value(iter,cellnumber,servercipher)
-									
+									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servercipher" % (server))
+								
 								elif self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 									try:
 										vlanip4 = str(self.OVPN_SRV_DATA[servershort]["vlanip4"])
@@ -1887,41 +1908,74 @@ class Systray:
 										ping4 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"])
 										ping6 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"])
 										serverip6 = str(self.OVPN_SRV_DATA[servershort]["extip6"])
+										
 										if cellnumber == 4 and not oldvalue == serverip6:
 											liststore.set_value(iter,cellnumber,serverip6)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip6" % (server))
+										
 										elif cellnumber == 9 and not oldvalue == live:
 											liststore.set_value(iter,cellnumber,live)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' live" % (server))
+										
 										elif cellnumber == 10 and not oldvalue == uplink:
-											uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
-											liststore.set_value(iter,cellnumber,int(uplink))
+											liststore.set_value(iter,cellnumber,uplink)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' uplink" % (server))
+										
 										elif cellnumber == 11 and not oldvalue == vlanip4:
 											liststore.set_value(iter,cellnumber,vlanip4)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip4" % (server))
+										
 										elif cellnumber == 12 and not oldvalue == vlanip6:
 											liststore.set_value(iter,cellnumber,vlanip6)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip6" % (server))
+										
 										elif cellnumber == 13 and not oldvalue == cpuinfo:
 											liststore.set_value(iter,cellnumber,cpuinfo)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuinfo" % (server))
+										
 										elif cellnumber == 14 and not oldvalue == raminfo:
 											liststore.set_value(iter,cellnumber,raminfo)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' raminfo" % (server))
+										
 										elif cellnumber == 15 and not oldvalue == hddinfo:
 											liststore.set_value(iter,cellnumber,hddinfo)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' hddinfo" % (server))
+										
 										elif cellnumber == 16 and not oldvalue == traffic:
 											liststore.set_value(iter,cellnumber,traffic)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' traffic" % (server))
+										
 										elif cellnumber == 17 and not oldvalue == cpuload:
 											liststore.set_value(iter,cellnumber,cpuload)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuload" % (server))
+										
 										elif cellnumber == 18 and not oldvalue == cpuovpn:
 											liststore.set_value(iter,cellnumber,cpuovpn)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuovpn" % (server))
+										
 										elif cellnumber == 19 and not oldvalue == cpusshd:
 											liststore.set_value(iter,cellnumber,cpusshd)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusshd" % (server))
+										
 										elif cellnumber == 20 and not oldvalue == cpusock:
 											liststore.set_value(iter,cellnumber,cpusock)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusock" % (server))
+										
 										elif cellnumber == 21 and not oldvalue == cpuhttp:
 											liststore.set_value(iter,cellnumber,cpuhttp)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuhttp" % (server))
+										
 										elif cellnumber == 22 and not oldvalue == cputinc:
 											liststore.set_value(iter,cellnumber,cputinc)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cputinc" % (server))
+										
 										elif cellnumber == 23 and not oldvalue == ping4:
 											liststore.set_value(iter,cellnumber,ping4)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping4" % (server))
+										
 										elif cellnumber == 24 and not oldvalue == ping6:
 											liststore.set_value(iter,cellnumber,ping6)
+											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping6" % (server))
 									except:
 										self.debug(text="def update_mwls: updating extended values failed")
 							except:
@@ -1929,9 +1983,9 @@ class Systray:
 						except:
 							self.debug(text="def update_mwls: while cellnumber i='%s' <= 24: failed" % (cellnumber))
 						cellnumber += 1
-			self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
 		except:
 			self.debug(text="def update_mwls: failed")
+		self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
 		  
 	def call_redraw_mainwindow(self):
 		self.debug(text="def call_redraw_mainwindow_vbox()")
@@ -2044,102 +2098,37 @@ class Systray:
 				column.set_sort_column_id(cellnumber)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
-
+		
+		self.debug(text="def fill_mainwindow_with_server: go2.4")
 		self.fill_mainwindow_with_server()
-
+		self.update_mwls()
+		self.debug(text="def fill_mainwindow_with_server: go2.5")
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
 		self.mainwindow.show_all()
-		
+		self.treeview.set_model(model=self.serverliststore)
+		self.debug(text="def fill_mainwindow_with_server: go2.6")
 		return
 
 	def fill_mainwindow_with_server(self):
-		self.debug(text="def fill_mainwindow_with_server()")
-		#print "len(self.OVPN_SERVER) == %s" % (len(self.OVPN_SERVER))
 		for server in self.OVPN_SERVER:
-			#print "def mainwindow_ovpn_server: %s" % (server)
-			countrycode = server[:2].lower()
-			servershort = server[:3].upper()
-			imgpath = self.FLAG_IMG[countrycode]
-			countryimg = GdkPixbuf.Pixbuf.new_from_file(imgpath)
-			serverip4  = self.OVPN_SERVER_INFO[servershort][0]
-			serverport = self.OVPN_SERVER_INFO[servershort][1]
-			serverproto = self.OVPN_SERVER_INFO[servershort][2]
-			servercipher = self.OVPN_SERVER_INFO[servershort][3]
-
 			try:
-				servermtu = self.OVPN_SERVER_INFO[servershort][4]
+				countrycode = server[:2].lower()
+				servershort = server[:3].upper()
+				statusimg = GdkPixbuf.Pixbuf.new_from_file("%s\\bullet_white.png" % (self.ico_dir))
+				countryimg = GdkPixbuf.Pixbuf.new_from_file(self.FLAG_IMG[countrycode])
+				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
+				serverport = self.OVPN_SERVER_INFO[servershort][1]
+				serverproto = self.OVPN_SERVER_INFO[servershort][2]
+				servercipher = self.OVPN_SERVER_INFO[servershort][3]
+				try:
+					servermtu = self.OVPN_SERVER_INFO[servershort][4]
+				except:
+					servermtu = 1500
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("n/a"),int(serverport),str(serverproto),int(servermtu),str(servercipher),int(float(0)),int(0),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),int(0),int(0),int(0),int(0),int(0),str("n/a"),str("n/a")])
 			except:
-				servermtu = 1500
-			# defaults values
-			statusimgpath = False
-			vlanip4 = "n/a"
-			vlanip6 = "n/a"
-			traffic = "n/a"
-			live = False
-			uplink = False
-			cpuinfo = "n/a"
-			raminfo = "n/a"
-			hddinfo = "n/a"
-			cpuload = "n/a"
-			cpuovpn = False
-			cpusshd = False
-			cpusock = False
-			cpuhttp = False
-			cputinc = False
-			ping4 = False
-			ping6 = False
-			serverip6 = "n/a"
-			# defaults end
-			try:
-				vlanip4 = self.OVPN_SRV_DATA[servershort]["vlanip4"]
-				vlanip6 = self.OVPN_SRV_DATA[servershort]["vlanip6"]
-				traffic = self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"]
-				live = self.OVPN_SRV_DATA[servershort]["traffic"]["live"]
-				uplink = self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"]
-				cpuinfo = self.OVPN_SRV_DATA[servershort]["info"]["cpu"]
-				raminfo = self.OVPN_SRV_DATA[servershort]["info"]["ram"]
-				hddinfo = self.OVPN_SRV_DATA[servershort]["info"]["hdd"]
-				cpuload = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"]
-				cpuovpn = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"]
-				cpusshd = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"]
-				cpusock = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"]
-				cpuhttp = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"]
-				cputinc = self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"]
-				ping4 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]
-				ping6 = self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]
-				serverip6 = self.OVPN_SRV_DATA[servershort]["extip6"]
-				serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
-				if serverstatus == "0":
-					statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
-				elif serverstatus == "1":
-					statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
-				elif serverstatus == "2":
-					statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-			except:
-				#self.debug(text="self.serverliststore failed: #1 (defaults) %s" % (server))
-				pass
-
-			if server == self.OVPN_CONNECTEDto:
-				statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
-			elif server == self.OVPN_FAV_SERVER:
-				statusimgpath = "%s\\star.png" % (self.ico_dir)
-			
-			if statusimgpath == False or not os.path.isfile(statusimgpath):
-				if not statusimgpath == False:
-					self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
-				statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-
-			try:
-				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),int(serverport),str(serverproto),int(servermtu),str(servercipher),int(float(live)),int(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),int(cpuovpn),int(cpusshd),int(cpusock),int(cpuhttp),int(cputinc),str(ping4),str(ping6)])
-			except:
-				self.debug(text="self.serverliststore.append: failed '%s'" % (server))
-			
-		self.treeview.set_model(model=self.serverliststore)
-		self.debug(text="def fill_mainwindow_with_server: return")
-		return
+				self.debug(text="def fill_mainwindow_with_server: server '%s' failed" % (server))
 
 	def destroy_mainwindow(self):
 		self.debug(text="def destroy_mainwindow()")
@@ -2445,6 +2434,7 @@ class Systray:
 		self.OVPN_AUTO_CONNECT_ON_START = False
 		self.debug(text="def cb_kill_openvpn")
 		killthread = threading.Thread(target=self.inThread_kill_openvpn)
+		killthread.daemon = True
 		killthread.start()
 
 	def inThread_kill_openvpn(self):
@@ -2459,6 +2449,7 @@ class Systray:
 		#	return
 		self.debug(text="def cb_jump_openvpn: %s" % (server))
 		jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
+		jumpthread.daemon = True
 		jumpthread.start()
 
 	def inThread_jump_server(self,server):
@@ -2599,10 +2590,13 @@ class Systray:
 		if self.timer_ovpn_ping_running == False:
 			self.debug("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
+			pingthread.daemon = True
 			pingthread.start()
 		self.inThread_jump_server_running = False
-		self.call_redraw_mainwindow()
+		if self.TAP_BLOCKOUTBOUND == True:
+			self.win_firewall_tap_blockoutbound()
 		self.win_netsh_set_dns_ovpn()
+		self.call_redraw_mainwindow()
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
 		except:
@@ -2679,6 +2673,7 @@ class Systray:
 			time.sleep(0.5)
 			try:
 				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
+				pingthread.daemon = True
 				pingthread.start()
 				return True
 			except:
@@ -2715,10 +2710,11 @@ class Systray:
 				try:
 					if split[0] == "0.0.0.0" and split[1] == "0.0.0.0":
 						self.GATEWAY_LOCAL = split[2]
-						self.debug(text="self.GATEWAY_LOCAL #1: %s" % (self.GATEWAY_LOCAL))
+						self.debug(text="def read_gateway_from_routes: self.GATEWAY_LOCAL #1: %s" % (self.GATEWAY_LOCAL))
 						return True
 				except:
-					self.debug(text="def read_gateway_from_routes: #1 failed")
+					pass
+					#self.debug(text="def read_gateway_from_routes: #1 failed")
 				try:
 					if self.OVPN_CONNECTEDtoIP in line:
 						self.debug(text="def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
@@ -2726,7 +2722,11 @@ class Systray:
 						self.debug(text="self.GATEWAY_LOCAL #2: %s" % (self.GATEWAY_LOCAL))
 						return True
 				except:
-					self.debug(text="def read_gateway_from_routes: #2 failed")
+					pass
+					#self.debug(text="def read_gateway_from_routes: #2 failed")
+			if self.GATEWAY_LOCAL == False:
+				self.debug(text="def read_gateway_from_routes: failed")
+				return False
 		except:
 			self.debug(text="def read_gateway_from_routes: failed")
 
@@ -4611,6 +4611,7 @@ class Systray:
 				self.win_firewall_add_rule_to_vcp(option="delete")
 			self.debug(text="close app")
 			self.stop_systray_timer = True
+			self.stop_systray_timer2 = True
 			self.remove_lock()
 			Gtk.main_quit()
 			sys.exit()
@@ -4747,13 +4748,23 @@ class Systray:
 					except:
 						pass
 					if len(text) > 1:
-						dbg = open(self.debug_log,'a')
-						dbg.write("%s\n" % (debugstringlog))
-						dbg.close()
+						thread = threading.Thread(target=self.debug_write_thread,args=(debugstringlog,))
+						thread.daemon = True
+						thread.start()
 					return True
 				except:
 					print("Write to %s failed"%(self.debug_log))
 
+	def debug_write_thread(self,debugstringlog):
+		while self.debug_write_thread_running == True:
+			time.sleep(0.1)
+		self.debug_write_thread_running = True
+		dbg = open(self.debug_log,'a')
+		dbg.write("%s\n" % (debugstringlog))
+		dbg.close()
+		self.debug_write_thread_running = False
+		return
+	
 	def init_localization(self):
 		return
 		loc = locale.getdefaultlocale()[0][0:2]
@@ -4788,4 +4799,5 @@ def app():
 	Gtk.main()
 
 if __name__ == "__main__":
+	#GObject.threads_init()
 	app()
