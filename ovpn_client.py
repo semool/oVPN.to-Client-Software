@@ -1808,7 +1808,7 @@ class Systray:
 	
 	def update_mwls(self):
 		self.debug(text="def update_mwls()")
-		debugupdate_mwls = True
+		debugupdate_mwls = False
 		t1 = time.time()
 		y = True
 		#if y:
