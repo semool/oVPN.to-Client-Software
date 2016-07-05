@@ -1810,18 +1810,27 @@ class Systray:
 		self.debug(text="def update_mwls()")
 		debugupdate_mwls = False
 		t1 = time.time()
+		y = True
+		#if y:
 		try:
+			# *** fixme ***
+			# works only on unsorted view or drops message without try:
+			"""
+			(python.exe:6660): Gtk-CRITICAL **: gtktreeview.c:6609 (validate_visible_area): assertion `has_next' failed.
+			There is a disparity between the internal view of the GtkTreeView,
+			and the GtkTreeModel.  This generally means that the model has changed
+			without letting the view know.  Any display from now on is likely to
+			be incorrect.
+			"""
 			liststore = self.serverliststore
 			iter = liststore.get_iter_first()
-			startcell = 3
-			updatecells = 24
 			for server in self.OVPN_SERVER:
 				servershort = server[:3].upper()
 				while not iter == None and not liststore.get_value(iter,2) == server:
 					iter = liststore.iter_next(iter)
 				cell2 = liststore.get_value(iter,2)
 				if cell2 == server:
-					#self.debug(text="def update_mwls: server = '%s'" % (server))
+					self.debug(text="def update_mwls: server = '%s'" % (server))
 					cellnumber = 0
 					while cellnumber <= 24:
 						#print "cellnumber = %s" % (cellnumber)
@@ -1830,7 +1839,7 @@ class Systray:
 								oldvalue = liststore.get_value(iter,cellnumber)
 								#self.debug(text="def update_mwls: oldvalue '%s' on cellnumber '%s'" % (oldvalue,cellnumber))
 							except:
-								self.debug(text="def update_mwls: oldvalue on cellnumber '%s' failed" % (cellnumber))								
+								self.debug(text="def update_mwls: oldvalue on cellnumber '%s' failed" % (cellnumber))
 							try:
 								serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
 								serverport = int(self.OVPN_SERVER_INFO[servershort][1])
@@ -1842,7 +1851,7 @@ class Systray:
 									servermtu = int(1500)
 								
 								if cellnumber == 0:
-									if debugupdate_mwls: self.debug(text="%s cell 0 = '%s'" % (server,oldvalue))
+									#if debugupdate_mwls: self.debug(text="%s cell 0 = '%s'" % (server,oldvalue))
 									statusimgpath = False
 									if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 										try:
@@ -1866,8 +1875,8 @@ class Systray:
 										statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 									try:
 										statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-										if not oldvalue == statusimg:
-											liststore.set_value(iter,cellnumber,statusimg)
+										#if not oldvalue == statusimg:
+										liststore.set_value(iter,cellnumber,statusimg)
 											# *** fixme *** is always updating statusimg
 											#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' statusimg" % (server))
 									except:
@@ -1876,8 +1885,8 @@ class Systray:
 								elif cellnumber == 1:
 									countrycode = server[:2].lower()
 									countryimg = GdkPixbuf.Pixbuf.new_from_file(self.FLAG_IMG[countrycode])
-									if not oldvalue == countryimg:
-										liststore.set_value(iter,cellnumber,countryimg)
+									#if not oldvalue == countryimg:
+									liststore.set_value(iter,cellnumber,countryimg)
 										# *** fixme *** is always updating countryimg
 										#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' countryimg" % (server))
 										
@@ -1993,7 +2002,7 @@ class Systray:
 							except:
 								self.debug(text="def update_mwls: update values server '%s' failed" % (server))
 						except:
-							self.debug(text="def update_mwls: while cellnumber i='%s' <= 24: failed" % (cellnumber))
+							self.debug(text="def update_mwls: while failed")
 						cellnumber += 1
 		except:
 			self.debug(text="def update_mwls: failed")
