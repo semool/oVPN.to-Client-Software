@@ -1961,7 +1961,7 @@ class Systray:
 	def show_mainwindow(self,widget,event):
 		self.debug(text="def show_mainwindow()")
 		self.destroy_systray_menu()
-		self.LAST_OVPN_SRV_DATA_UPDATE = 0
+		#self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		self.statusbartext_from_before = False
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
@@ -2162,7 +2162,7 @@ class Systray:
 	def show_accwindow(self,widget,event):
 		self.debug(text="def show_accwindow()")
 		self.destroy_systray_menu()
-		self.LAST_OVPN_ACC_DATA_UPDATE = 0
+		#self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		if self.ACCWINDOW_OPEN == False:
 			try:
 				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
@@ -2436,9 +2436,9 @@ class Systray:
 		self.debug(text="def cb_redraw_mainwindow_vbox()")
 		self.destroy_context_menu_servertab()
 		if self.LOAD_SRVDATA == True:
-			self.LAST_OVPN_SRV_DATA_UPDATE = -1
+			self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		if self.LOAD_ACCDATA == True:
-			self.LAST_OVPN_ACC_DATA_UPDATE = -1
+			self.LAST_OVPN_ACC_DATA_UPDATE = 0
 
 	def cb_kill_openvpn(self,widget,event):
 		self.debug(text="def cb_kill_openvpn()")
@@ -2595,8 +2595,8 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.LAST_PING_EXEC = 0
-		self.LAST_OVPN_ACC_DATA_UPDATE = 0
-		self.LAST_OVPN_SRV_DATA_UPDATE = 0
+		#self.LAST_OVPN_ACC_DATA_UPDATE = 0
+		#self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		self.STATE_OVPN = True
 		if self.timer_ovpn_ping_running == False:
 			self.debug("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
@@ -3592,8 +3592,7 @@ class Systray:
 				self.debug(text="def cb_extserverview: self.PASSPHRASE = '-NOT_FALSE-'")
 		else:
 			self.LOAD_SRVDATA = False
-			self.OVPN_SRV_DATA = {}
-			self.LAST_OVPN_SRV_DATA_UPDATE = 0
+			#self.OVPN_SRV_DATA = {}
 		self.write_options_file()
 		#self.call_redraw_mainwindow()
 		self.destroy_mainwindow()
