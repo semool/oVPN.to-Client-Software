@@ -174,7 +174,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 60
+		self.LOAD_DATA_EVERY = 300
 		self.LOAD_SRVDATA = False
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
@@ -2013,7 +2013,7 @@ class Systray:
 	def show_mainwindow(self,widget,event):
 		self.debug(text="def show_mainwindow()")
 		self.destroy_systray_menu()
-		self.LAST_OVPN_SRV_DATA_UPDATE = 0
+		self.reset_load_remote_timer()
 		self.statusbartext_from_before = False
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
@@ -2149,7 +2149,6 @@ class Systray:
 	def show_accwindow(self,widget,event):
 		self.debug(text="def show_accwindow()")
 		self.destroy_systray_menu()
-		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		if self.ACCWINDOW_OPEN == False:
 			try:
 				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
@@ -2160,6 +2159,7 @@ class Systray:
 				self.accwindow.set_default_size(370,480)
 				self.accwindow_accinfo()
 				self.ACCWINDOW_OPEN = True
+				self.reset_load_remote_timer()
 				return True
 			except:
 				self.ACCWINDOW_OPEN = False
@@ -2418,14 +2418,20 @@ class Systray:
 			return True
 		except:
 			self.msgwarn(text="def cb_del_ovpn_favorite_server: failed")
-
+	
+	def reset_load_remote_timer(self):
+		self.debug(text="reset_load_remote_timer()")
+		if self.LOAD_SRVDATA == True and self.MAINWINDOW_OPEN == True:
+			if self.LAST_OVPN_SRV_DATA_UPDATE > 0 and self.LAST_OVPN_SRV_DATA_UPDATE < time.time()-60:
+				self.LAST_OVPN_SRV_DATA_UPDATE = 0
+		if self.LOAD_ACCDATA == True and self.ACCWINDOW_OPEN == True:
+			if self.LAST_OVPN_ACC_DATA_UPDATE > 0 and self.LAST_OVPN_ACC_DATA_UPDATE < time.time()-60:
+				self.LAST_OVPN_ACC_DATA_UPDATE = 0
+	
 	def cb_redraw_mainwindow_vbox(self,widget,event):
 		self.debug(text="def cb_redraw_mainwindow_vbox()")
 		self.destroy_context_menu_servertab()
-		if self.LOAD_SRVDATA == True:
-			self.LAST_OVPN_SRV_DATA_UPDATE = -1
-		if self.LOAD_ACCDATA == True:
-			self.LAST_OVPN_ACC_DATA_UPDATE = -1
+		self.reset_load_remote_timer()
 
 	def cb_kill_openvpn(self,widget,event):
 		self.debug(text="def cb_kill_openvpn()")
@@ -2584,8 +2590,7 @@ class Systray:
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
 		self.LAST_PING_EXEC = 0
-		self.LAST_OVPN_ACC_DATA_UPDATE = 0
-		self.LAST_OVPN_SRV_DATA_UPDATE = 0
+		self.reset_load_remote_timer()
 		self.STATE_OVPN = True
 		if self.timer_ovpn_ping_running == False:
 			self.debug("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
@@ -3591,7 +3596,6 @@ class Systray:
 		else:
 			self.LOAD_SRVDATA = False
 			#self.OVPN_SRV_DATA = {}
-			self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		self.write_options_file()
 		#self.call_redraw_mainwindow()
 		self.destroy_mainwindow()
