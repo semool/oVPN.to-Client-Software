@@ -2382,7 +2382,7 @@ class Systray:
 			self.systray_menu = False
 			self.debug(text = "def destroy_systray_menu: true")
 		except:
-			self.debug(text = "def destroy_systray_menu: failed")
+			#self.debug(text = "def destroy_systray_menu: failed")
 			self.systray_menu = False
 
 	def set_statusbar_text(self,text):
