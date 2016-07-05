@@ -1886,8 +1886,8 @@ class Systray:
 										cpusock = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
 										cpuhttp = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
 										cputinc = int(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
-										ping4 = int(float(self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"]))
-										ping6 = int(float(self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"]))
+										ping4 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"])
+										ping6 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"])
 										serverip6 = str(self.OVPN_SRV_DATA[servershort]["extip6"])
 										if cellnumber == 4 and not oldvalue == serverip6:
 											liststore.set_value(iter,cellnumber,serverip6)
@@ -2001,7 +2001,7 @@ class Systray:
 
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
-			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,int,str,int,str,int,int,str,str,str,str,str,str,str,int,int,int,int,int,int,int)
+			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,int,str,int,str,int,int,str,str,str,str,str,str,str,int,int,int,int,int,str,str)
 			self.debug(text="def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
@@ -2042,7 +2042,7 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			if cellnumber in [ 2, 5, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
+			if cellnumber in [ 2, 5, 7, 9, 10, 17, 18, 19, 20, 21, 22, ]:
 				column.set_sort_column_id(cellnumber)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
@@ -2135,7 +2135,7 @@ class Systray:
 
 			try:
 				statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),int(serverport),str(serverproto),int(servermtu),str(servercipher),int(float(live)),int(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),int(cpuovpn),int(cpusshd),int(cpusock),int(cpuhttp),int(cputinc),int(float(ping4)),int(float(ping6))])
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str(serverip6),int(serverport),str(serverproto),int(servermtu),str(servercipher),int(float(live)),int(uplink),str(vlanip4),str(vlanip6),str(cpuinfo),str(raminfo),str(hddinfo),str(traffic),str(cpuload),int(cpuovpn),int(cpusshd),int(cpusock),int(cpuhttp),int(cputinc),str(ping4),str(ping6)])
 			except:
 				self.debug(text="self.serverliststore.append: failed '%s'" % (server))
 			
