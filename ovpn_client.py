@@ -1263,11 +1263,10 @@ class Systray:
 	def on_right_click(self, widget, event, event_time):
 		self.debug(text="def on_right_click()")
 		clicktime = time.time()
-		if self.LAST_RIGHT_CLICK == 0:
-			self.LAST_RIGHT_CLICK = clicktime
-		elif self.LAST_RIGHT_CLICK > clicktime-1:
+		if self.LAST_RIGHT_CLICK > clicktime-2:
 			self.debug(text="def on_left_click: return self.LAST_RIGHT_CLICK")
 			return
+		self.LAST_RIGHT_CLICK = clicktime
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
@@ -1275,14 +1274,12 @@ class Systray:
 
 	def on_left_click(self, widget):
 		self.debug(text="def on_left_click()")
-		self.destroy_systray_menu()
 		clicktime = time.time()
-		if self.LAST_LEFT_CLICK == 0:
-			self.LAST_LEFT_CLICK = clicktime
-		elif self.LAST_LEFT_CLICK > clicktime-4:
+		if self.LAST_LEFT_CLICK > clicktime-2:
 			self.debug(text="def on_left_click: return self.LAST_LEFT_CLICK")
 			return
-		
+		self.LAST_LEFT_CLICK = clicktime
+		self.destroy_systray_menu()
 		if self.MAINWINDOW_OPEN == False:
 			try:
 				event = Gtk.get_current_event_time()
