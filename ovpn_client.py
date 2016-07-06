@@ -174,10 +174,14 @@ class Systray:
 		self.APIKEY = False
 		self.LOAD_DATA_EVERY = 300
 		self.LOAD_SRVDATA = False
-		self.SRV_LIGHT_WIDTH = "510"
+		self.SRV_LIGHT_WIDTH = "490"
 		self.SRV_LIGHT_HEIGHT = "830"
 		self.SRV_WIDTH = "910"
 		self.SRV_HEIGHT = "830"
+		self.SRV_LIGHT_WIDTH_DEFAULT = self.SRV_LIGHT_WIDTH
+		self.SRV_LIGHT_HEIGHT_DEFAULT = self.SRV_LIGHT_HEIGHT
+		self.SRV_WIDTH_DEFAULT = self.SRV_WIDTH
+		self.SRV_HEIGHT_DEFAULT = self.SRV_HEIGHT
 		self.WIN_RESET_EXT_DEVICE = False
 		self.WIN_FIREWALL_STARTED = False
 		self.WIN_FIREWALL_ADDED_RULE_TO_VCP = False
@@ -653,10 +657,10 @@ class Systray:
 				parser.set('oVPN','updateovpnonstart','False')
 				parser.set('oVPN','configversion','23x')
 				parser.set('oVPN','serverviewextend','False')
-				parser.set('oVPN','serverviewlightwidth','510')
-				parser.set('oVPN','serverviewlightheight','830')
-				parser.set('oVPN','serverviewextendwidth','910')
-				parser.set('oVPN','serverviewextendheight','830')
+				parser.set('oVPN','serverviewlightwidth','%s' % (self.SRV_LIGHT_WIDTH_DEFAULT))
+				parser.set('oVPN','serverviewlightheight','%s' % (self.SRV_LIGHT_HEIGHT_DEFAULT))
+				parser.set('oVPN','serverviewextendwidth','%s' % (self.SRV_WIDTH_DEFAULT))
+				parser.set('oVPN','serverviewextendheight','%s' % (self.SRV_HEIGHT_DEFAULT))
 				parser.set('oVPN','winresetfirewall','False')
 				parser.set('oVPN','winbackupfirewall','False')
 				parser.set('oVPN','nowinfirewall','False')
@@ -2108,6 +2112,8 @@ class Systray:
 			self.debug(text="def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
+			if self.LOAD_SRVDATA == False:
+				column.set_visible(False)
 			self.treeview.append_column(column)
 			self.debug(text="def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
@@ -2123,7 +2129,7 @@ class Systray:
 		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 " ]
 		for cellname in cellnames:
 			align=0.5
-			if cellnumber in [ 11 ]:
+			if cellnumber in [ 9, 23, 24 ]:
 				align=1
 			if cellnumber in [ 3, 4, 11, 12, 13, 16 ]:
 				align=0
@@ -2134,6 +2140,10 @@ class Systray:
 				# Add sort function for str cells
 				if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
 					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, cellnumber)
+			# Hide colums in light server view
+			if self.LOAD_SRVDATA == False:
+				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
+					column.set_visible(False)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
 		
@@ -3686,14 +3696,14 @@ class Systray:
 			HEIGHT = heightEntry.get_text().rstrip()
 			dialogWindow.destroy()
 			if self.LOAD_SRVDATA == True:
-				if WIDTH == "": WIDTH = "910";
-				if HEIGHT == "": HEIGHT = "830";
+				if WIDTH == "": WIDTH = self.SRV_WIDTH_DEFAULT;
+				if HEIGHT == "": HEIGHT = self.SRV_HEIGHT_DEFAULT;
 				self.SRV_WIDTH = WIDTH
 				self.SRV_HEIGHT = HEIGHT
 				self.debug(text="def cb_extserverview_size(): %sx%s" % (self.SRV_WIDTH,self.SRV_HEIGHT))
 			else:
-				if WIDTH == "": WIDTH = "510";
-				if HEIGHT == "": HEIGHT = "830";
+				if WIDTH == "": WIDTH = self.SRV_LIGHT_WIDTH_DEFAULT;
+				if HEIGHT == "": HEIGHT = self.SRV_LIGHT_HEIGHT_DEFAULT;
 				self.SRV_LIGHT_WIDTH = WIDTH
 				self.SRV_LIGHT_HEIGHT = HEIGHT
 				self.debug(text="def cb_extserverview_size(): %sx%s" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
