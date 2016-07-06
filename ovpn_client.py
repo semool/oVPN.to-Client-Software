@@ -174,7 +174,7 @@ class Systray:
 		self.APIKEY = False
 		self.LOAD_DATA_EVERY = 300
 		self.LOAD_SRVDATA = False
-		self.SRV_LIGHT_WIDTH = "510"
+		self.SRV_LIGHT_WIDTH = "490"
 		self.SRV_LIGHT_HEIGHT = "830"
 		self.SRV_WIDTH = "910"
 		self.SRV_HEIGHT = "830"
@@ -2112,6 +2112,8 @@ class Systray:
 			self.debug(text="def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
+			if self.LOAD_SRVDATA == False:
+				column.set_visible(False)
 			self.treeview.append_column(column)
 			self.debug(text="def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
@@ -2138,6 +2140,10 @@ class Systray:
 				# Add sort function for str cells
 				if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
 					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, cellnumber)
+			# Hide colums in light server view
+			if self.LOAD_SRVDATA == False:
+				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
+					column.set_visible(False)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
 		
