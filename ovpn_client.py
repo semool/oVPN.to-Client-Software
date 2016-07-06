@@ -2112,8 +2112,6 @@ class Systray:
 			self.debug(text="def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
-			if self.LOAD_SRVDATA == False:
-				column.set_visible(False)
 			self.treeview.append_column(column)
 			self.debug(text="def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
