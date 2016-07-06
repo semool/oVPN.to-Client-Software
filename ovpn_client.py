@@ -2099,7 +2099,7 @@ class Systray:
 		self.treeview.set_model(model=None)
 		self.scrolledwindow = Gtk.ScrolledWindow()
 		self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-		self.scrolledwindow.set_size_request(640,480)
+		self.scrolledwindow.set_size_request(64,48)
 		self.debug(text="def mainwindow_ovpn_server: go4")
 		self.scrolledwindow.add(self.treeview)
 		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
