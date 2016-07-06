@@ -62,8 +62,6 @@ class Systray:
 			thread = threading.Thread(target=self.systray_timer)
 			thread.daemon = True
 			thread.start()
-			#self.systray_timer()
-			#atexit.register(self.on_closing,widget="atexit")
 		else:
 			sys.exit()
 
@@ -217,10 +215,6 @@ class Systray:
 			"Intern 22) nntp-50001 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50001","proto":"tcp"},
 			"Intern 23) nntp-50002 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50002","proto":"tcp"}
 		}
-
-	def thread_idle(self, target):
-		#self.debug(text="def thread_idle call %s" %(target))
-		GLib.idle_add(target)
 
 	def preboot(self):
 		self.debug(text="def preboot()")
@@ -1831,231 +1825,207 @@ class Systray:
 			self.debug(text="def inThread_timer_check_certdl: failed")
 		self.timer_check_certdl_running = False
 		return False
-	
+
 	def update_mwls(self):
 		self.debug(text="def update_mwls()")
+		liststore = self.serverliststore
 		debugupdate_mwls = False
 		t1 = time.time()
-		y = True
-		#if y:
-		try:
-			# *** fixme ***
-			# works only on unsorted view or drops message without try:
-			"""
-			(python.exe:6660): Gtk-CRITICAL **: gtktreeview.c:6609 (validate_visible_area): assertion `has_next' failed.
-			There is a disparity between the internal view of the GtkTreeView,
-			and the GtkTreeModel.  This generally means that the model has changed
-			without letting the view know.  Any display from now on is likely to
-			be incorrect.
-			"""
-			liststore = self.serverliststore
-			iter = liststore.get_iter_first()
-			for server in self.OVPN_SERVER:
+		for row in liststore:
+			server = row[2]
+			if server in self.OVPN_SERVER:
+				if debugupdate_mwls: self.debug(text="def update_mwls: server '%s'" % (server))
 				servershort = server[:3].upper()
-				while not iter == None and not liststore.get_value(iter,2) == server:
-					iter = liststore.iter_next(iter)
-				cell2 = liststore.get_value(iter,2)
-				if cell2 == server:
-					self.debug(text="def update_mwls: server = '%s'" % (server))
+				if row[2] == server:
+					value = False
+					iter = liststore.get_iter_first()
+					while iter != None and liststore.get_value(iter,2) != server:
+						iter = liststore.iter_next(iter)
+					value = liststore.get_value(iter,2)
 					cellnumber = 0
 					while cellnumber <= 24:
-						#print "cellnumber = %s" % (cellnumber)
+						oldvalue = row[cellnumber]
 						try:
+							serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
+							serverport = str(self.OVPN_SERVER_INFO[servershort][1])
+							serverproto = str(self.OVPN_SERVER_INFO[servershort][2])
+							servercipher = str(self.OVPN_SERVER_INFO[servershort][3])
 							try:
-								oldvalue = liststore.get_value(iter,cellnumber)
-								#self.debug(text="def update_mwls: oldvalue '%s' on cellnumber '%s'" % (oldvalue,cellnumber))
+								servermtu = str(self.OVPN_SERVER_INFO[servershort][4])
 							except:
-								self.debug(text="def update_mwls: oldvalue on cellnumber '%s' failed" % (cellnumber))
-							try:
-								serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
-								serverport = str(self.OVPN_SERVER_INFO[servershort][1])
-								serverproto = str(self.OVPN_SERVER_INFO[servershort][2])
-								servercipher = str(self.OVPN_SERVER_INFO[servershort][3])
-								try:
-									servermtu = str(self.OVPN_SERVER_INFO[servershort][4])
-								except:
-									servermtu = str(1500)
+								servermtu = str(1500)
 								
-								if cellnumber == 0:
-									#if debugupdate_mwls: self.debug(text="%s cell 0 = '%s'" % (server,oldvalue))
-									statusimgpath = False
-									if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
-										try:
-											serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
-											if serverstatus == "0":
-												statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
-											elif serverstatus == "1":
-												statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
-											elif serverstatus == "2":
-												statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-										except:
-											self.debug(text="def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
-									if server == self.OVPN_CONNECTEDto:
-										statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
-									elif server == self.OVPN_FAV_SERVER:
-										statusimgpath = "%s\\star.png" % (self.ico_dir)
+							if cellnumber == 0:
+								statusimgpath = False
+								if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
+									try:
+										serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
+										if serverstatus == "0":
+											statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
+										elif serverstatus == "1":
+											statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
+										elif serverstatus == "2":
+											statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+									except:
+										self.debug(text="def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
 									
-									if statusimgpath == False or not os.path.isfile(statusimgpath):
-										if not statusimgpath == False:
-											self.debug("def fill_mainwindow_with_server: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
-										statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
-									try:
-										statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
-										#if not oldvalue == statusimg:
-										liststore.set_value(iter,cellnumber,statusimg)
-											# *** fixme *** is always updating statusimg
-											#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' statusimg" % (server))
-									except:
-										self.debug(text="self.serverliststore.append: failed '%s'" % (server))
+								if server == self.OVPN_CONNECTEDto:
+									statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
+								elif server == self.OVPN_FAV_SERVER:
+									statusimgpath = "%s\\star.png" % (self.ico_dir)
 								
-								elif cellnumber == 1:
-									countrycode = server[:2].lower()
-									countryimg = GdkPixbuf.Pixbuf.new_from_file(self.FLAG_IMG[countrycode])
-									#if not oldvalue == countryimg:
-									liststore.set_value(iter,cellnumber,countryimg)
-										# *** fixme *** is always updating countryimg
-										#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' countryimg" % (server))
-										
-								elif cellnumber == 3 and not oldvalue == serverip4:
-									liststore.set_value(iter,cellnumber,serverip4)
-									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip4" % (server))
+								if statusimgpath == False or not os.path.isfile(statusimgpath):
+									if not statusimgpath == False:
+										self.debug("def update_mwls: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
+									statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+								try:
+									statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
+									liststore.set_value(iter,cellnumber,statusimg)
+									# *** fixme *** is always updating statusimg
+									#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' statusimg" % (server))
+								except:
+									self.debug(text="self.serverliststore.append: failed '%s'" % (server))
 								
-								elif cellnumber == 5 and not oldvalue == serverport:
-									liststore.set_value(iter,cellnumber,serverport)
-									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverport" % (server))
+							elif cellnumber == 1:
+								pass
+								#countrycode = server[:2].lower()
+								#countryimg = GdkPixbuf.Pixbuf.new_from_file(self.FLAG_IMG[countrycode])
+								#if not oldvalue == countryimg:
+								#liststore.set_value(iter,cellnumber,countryimg)
+								#	 *** fixme *** is always updating countryimg
+								#	if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' countryimg" % (server))
+							elif cellnumber == 2:
+								pass
 								
-								elif cellnumber == 6 and not oldvalue == serverproto:
-									liststore.set_value(iter,cellnumber,serverproto)
-									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverproto" % (server))
+							elif cellnumber == 3 and not row[cellnumber] == serverip4:
+								liststore.set_value(iter,cellnumber,serverip4)
+								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip4" % (server))
+							
+							elif cellnumber == 5 and not row[cellnumber] == serverport:
+								liststore.set_value(iter,cellnumber,serverport)
+								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverport" % (server))
+							
+							elif cellnumber == 6 and not row[cellnumber] == serverproto:
+								liststore.set_value(iter,cellnumber,serverproto)
+								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverproto" % (server))
+							
+							elif cellnumber == 7 and not row[cellnumber] == servermtu:
+								liststore.set_value(iter,cellnumber,servermtu)
+								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servermtu" % (server))
+							
+							elif cellnumber == 8 and not row[cellnumber] == servercipher:
+								liststore.set_value(iter,cellnumber,servercipher)
+								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servercipher" % (server))
+							
 								
-								elif cellnumber == 7 and not oldvalue == servermtu:
-									liststore.set_value(iter,cellnumber,servermtu)
-									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servermtu" % (server))
-								
-								elif cellnumber == 8 and not oldvalue == servercipher:
-									liststore.set_value(iter,cellnumber,servercipher)
-									if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servercipher" % (server))
-								
-								elif self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
-									try:
-										vlanip4 = str(self.OVPN_SRV_DATA[servershort]["vlanip4"])
-										vlanip6 = str(self.OVPN_SRV_DATA[servershort]["vlanip6"])
-										live = str(self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
-										uplink = str(self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"])
-										cpuinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["cpu"])
-										raminfo = str(self.OVPN_SRV_DATA[servershort]["info"]["ram"])
-										hddinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["hdd"])
-										traffic = str(self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"])
-										cpuload = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"])
-										cpuovpn = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
-										cpusshd = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
-										cpusock = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
-										cpuhttp = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
-										cputinc = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
-										ping4 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"])
-										ping6 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"])
-										serverip6 = str(self.OVPN_SRV_DATA[servershort]["extip6"])
+							elif self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
+								try:
+									vlanip4 = str(self.OVPN_SRV_DATA[servershort]["vlanip4"])
+									vlanip6 = str(self.OVPN_SRV_DATA[servershort]["vlanip6"])
+									live = str(self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
+									uplink = str(self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"])
+									cpuinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["cpu"])
+									raminfo = str(self.OVPN_SRV_DATA[servershort]["info"]["ram"])
+									hddinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["hdd"])
+									traffic = str(self.OVPN_SRV_DATA[servershort]["traffic"]["eth0"])
+									cpuload = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-load"])
+									cpuovpn = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-ovpn"])
+									cpusshd = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sshd"])
+									cpusock = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-sock"])
+									cpuhttp = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-http"])
+									cputinc = str(self.OVPN_SRV_DATA[servershort]["cpu"]["cpu-tinc"])
+									ping4 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv4"])
+									ping6 = str(self.OVPN_SRV_DATA[servershort]["pings"]["ipv6"])
+									serverip6 = str(self.OVPN_SRV_DATA[servershort]["extip6"])
+									
+									if cellnumber == 4 and not row[cellnumber] == serverip6:
+										liststore.set_value(iter,cellnumber,serverip6)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip6" % (server))
 										
-										if cellnumber == 4 and not oldvalue == serverip6:
-											liststore.set_value(iter,cellnumber,serverip6)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip6" % (server))
-										
-										elif cellnumber == 9 and not oldvalue == live:
-											liststore.set_value(iter,cellnumber,live)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' live" % (server))
-										
-										elif cellnumber == 10 and not oldvalue == uplink:
-											liststore.set_value(iter,cellnumber,uplink)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' uplink" % (server))
-										
-										elif cellnumber == 11 and not oldvalue == vlanip4:
-											liststore.set_value(iter,cellnumber,vlanip4)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip4" % (server))
-										
-										elif cellnumber == 12 and not oldvalue == vlanip6:
-											liststore.set_value(iter,cellnumber,vlanip6)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip6" % (server))
-										
-										elif cellnumber == 13 and not oldvalue == cpuinfo:
-											liststore.set_value(iter,cellnumber,cpuinfo)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuinfo" % (server))
-										
-										elif cellnumber == 14 and not oldvalue == raminfo:
-											liststore.set_value(iter,cellnumber,raminfo)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' raminfo" % (server))
-										
-										elif cellnumber == 15 and not oldvalue == hddinfo:
-											liststore.set_value(iter,cellnumber,hddinfo)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' hddinfo" % (server))
-										
-										elif cellnumber == 16 and not oldvalue == traffic:
-											liststore.set_value(iter,cellnumber,traffic)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' traffic" % (server))
-										
-										elif cellnumber == 17 and not oldvalue == cpuload:
-											liststore.set_value(iter,cellnumber,cpuload)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuload" % (server))
-										
-										elif cellnumber == 18 and not oldvalue == cpuovpn:
-											liststore.set_value(iter,cellnumber,cpuovpn)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuovpn" % (server))
-										
-										elif cellnumber == 19 and not oldvalue == cpusshd:
-											liststore.set_value(iter,cellnumber,cpusshd)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusshd" % (server))
-										
-										elif cellnumber == 20 and not oldvalue == cpusock:
-											liststore.set_value(iter,cellnumber,cpusock)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusock" % (server))
-										
-										elif cellnumber == 21 and not oldvalue == cpuhttp:
-											liststore.set_value(iter,cellnumber,cpuhttp)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuhttp" % (server))
-										
-										elif cellnumber == 22 and not oldvalue == cputinc:
-											liststore.set_value(iter,cellnumber,cputinc)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cputinc" % (server))
-										
-										elif cellnumber == 23 and not oldvalue == ping4:
-											liststore.set_value(iter,cellnumber,ping4)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping4" % (server))
-										
-										elif cellnumber == 24 and not oldvalue == ping6:
-											liststore.set_value(iter,cellnumber,ping6)
-											if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping6" % (server))
-									except:
-										self.debug(text="def update_mwls: updating extended values failed")
-							except:
-								self.debug(text="def update_mwls: update values server '%s' failed" % (server))
+									elif cellnumber == 9 and not row[cellnumber] == live:
+										liststore.set_value(iter,cellnumber,live)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' live" % (server))
+
+									elif cellnumber == 10 and not row[cellnumber] == uplink:
+										liststore.set_value(iter,cellnumber,uplink)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' uplink" % (server))
+									
+									elif cellnumber == 11 and not row[cellnumber] == vlanip4:
+										liststore.set_value(iter,cellnumber,vlanip4)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip4" % (server))
+									
+									elif cellnumber == 12 and not row[cellnumber] == vlanip6:
+										liststore.set_value(iter,cellnumber,vlanip6)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip6" % (server))
+									
+									elif cellnumber == 13 and not row[cellnumber] == cpuinfo:
+										liststore.set_value(iter,cellnumber,cpuinfo)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuinfo" % (server))
+									
+									elif cellnumber == 14 and not row[cellnumber] == raminfo:
+										liststore.set_value(iter,cellnumber,raminfo)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' raminfo" % (server))
+									
+									elif cellnumber == 15 and not row[cellnumber] == hddinfo:
+										liststore.set_value(iter,cellnumber,hddinfo)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' hddinfo" % (server))
+									
+									elif cellnumber == 16 and not row[cellnumber] == traffic:
+										liststore.set_value(iter,cellnumber,traffic)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' traffic" % (server))
+									
+									elif cellnumber == 17 and not row[cellnumber] == cpuload:
+										liststore.set_value(iter,cellnumber,cpuload)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuload" % (server))
+									
+									elif cellnumber == 18 and not row[cellnumber] == cpuovpn:
+										liststore.set_value(iter,cellnumber,cpuovpn)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuovpn" % (server))
+									
+									elif cellnumber == 19 and not row[cellnumber] == cpusshd:
+										liststore.set_value(iter,cellnumber,cpusshd)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusshd" % (server))
+									
+									elif cellnumber == 20 and not row[cellnumber] == cpusock:
+										liststore.set_value(iter,cellnumber,cpusock)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusock" % (server))
+									
+									elif cellnumber == 21 and not row[cellnumber] == cpuhttp:
+										liststore.set_value(iter,cellnumber,cpuhttp)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuhttp" % (server))
+									
+									elif cellnumber == 22 and not row[cellnumber] == cputinc:
+										liststore.set_value(iter,cellnumber,cputinc)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cputinc" % (server))
+									
+									elif cellnumber == 23 and not row[cellnumber] == ping4:
+										liststore.set_value(iter,cellnumber,ping4)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping4" % (server))
+									
+									elif cellnumber == 24 and not row[cellnumber] == ping6:
+										liststore.set_value(iter,cellnumber,ping6)
+										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping6" % (server))
+
+								except:
+									self.debug(text="def update_mwls: extended values '%s' failed" % (server))
+									return False
 						except:
-							self.debug(text="def update_mwls: while failed")
+							self.debug(text="def update_mwls: #0 failed ")
+							return False
+						
 						cellnumber += 1
-		except:
-			self.debug(text="def update_mwls: failed")
+						# end while cellnumber
 		self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
-		  
+		return True
+
 	def call_redraw_mainwindow(self):
-		self.debug(text="def call_redraw_mainwindow_vbox()")
+		self.debug(text="def call_redraw_mainwindow()")
 		if self.MAINWINDOW_OPEN == True:
 			self.statusbartext_from_before = False
 			try:
-				self.update_mwls()
-				return
-				self.treeview.set_model(model=None)
-				try:
-					self.serverliststore.clear()
-				except:
-					self.debug(text="def call_redraw_mainwindow: self.serverliststore.clear() failed")
-					return False
+				return self.update_mwls()
 			except:
-				self.debug(text="def call_redraw_mainwindow: self.treeview.set_model(model=None) failed")
-				return False
-			try:
-				GLib.idle_add(self.fill_mainwindow_with_server)
-			except TypeError as e:
-				self.debug(text="def call_redraw_mainwindow: GLib.idle_add(self.fill_mainwindow_with_server) failed e = '%s'" % (e))
-			self.debug(text="def call_redraw_mainwindow: True")
-			return True
+				self.debug(text="def call_redraw_mainwindow: try #1 failed")
 
 	def show_mainwindow(self,widget,event):
 		self.debug(text="def show_mainwindow()")
@@ -2090,14 +2060,17 @@ class Systray:
 
 	def cell_sort(self, treemodel, iter1, iter2, column):
 		self.debug(text="def cell_sort: go")
-		iter1 = treemodel.get_value(iter1, column)
-		iter2 = treemodel.get_value(iter2, column)
-		if float(iter1) < float(iter2):
-			return -1
-		elif float(iter1) > float(iter2):
-			return 1
-		else:
-			return 0
+		try:
+			iter1 = treemodel.get_value(iter1, column)
+			iter2 = treemodel.get_value(iter2, column)
+			if float(iter1) < float(iter2):
+				return -1
+			elif float(iter1) > float(iter2):
+				return 1
+			else:
+				return 0
+		except:
+			self.debug(text="def cell_sort: failed")
 
 	def mainwindow_ovpn_server(self):
 		self.debug(text="def mainwindow_ovpn_server: go")
@@ -2126,7 +2099,7 @@ class Systray:
 		self.treeview.set_model(model=None)
 		self.scrolledwindow = Gtk.ScrolledWindow()
 		self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-		self.scrolledwindow.set_size_request(640,480)
+		self.scrolledwindow.set_size_request(64,48)
 		self.debug(text="def mainwindow_ovpn_server: go4")
 		self.scrolledwindow.add(self.treeview)
 		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
@@ -2191,7 +2164,7 @@ class Systray:
 					servermtu = self.OVPN_SERVER_INFO[servershort][4]
 				except:
 					servermtu = 1500
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("n/a"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a"),str("n/a")])
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("-1"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1")])
 			except:
 				self.debug(text="def fill_mainwindow_with_server: server '%s' failed" % (server))
 
@@ -4886,23 +4859,14 @@ class Systray:
 					except:
 						pass
 					if len(text) > 1:
-						thread = threading.Thread(target=self.debug_write_thread,args=(debugstringlog,))
-						thread.daemon = True
-						thread.start()
+						dbg = open(self.debug_log,'a')
+						dbg.write("%s\n" % (debugstringlog))
+						dbg.close()
 					return True
 				except:
 					print("Write to %s failed"%(self.debug_log))
 
-	def debug_write_thread(self,debugstringlog):
-		while self.debug_write_thread_running == True:
-			time.sleep(0.1)
-		self.debug_write_thread_running = True
-		dbg = open(self.debug_log,'a')
-		dbg.write("%s\n" % (debugstringlog))
-		dbg.close()
-		self.debug_write_thread_running = False
-		return
-	
+
 	def init_localization(self):
 		return
 		loc = locale.getdefaultlocale()[0][0:2]
