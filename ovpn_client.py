@@ -2011,12 +2011,11 @@ class Systray:
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping6" % (server))
 
 								except:
-									self.debug(text="def update_mwls: extended values '%s' failed" % (server))
-									return False
+									pass
+									# we may fail silently for private servers
+									#self.debug(text="def update_mwls: extended values '%s' failed" % (server))
 						except:
 							self.debug(text="def update_mwls: #0 failed ")
-							return False
-						
 						cellnumber += 1
 						# end while cellnumber
 		self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
