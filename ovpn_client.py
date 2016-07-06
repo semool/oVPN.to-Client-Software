@@ -172,7 +172,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 300
+		self.LOAD_DATA_EVERY = 66
 		self.LOAD_SRVDATA = False
 		self.SRV_LIGHT_WIDTH = "490"
 		self.SRV_LIGHT_HEIGHT = "830"
@@ -2133,11 +2133,13 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
+			"""
 			if cellnumber in [ 2, 5, 6, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
 				column.set_sort_column_id(cellnumber)
 				# Add sort function for str cells
 				if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
 					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, cellnumber)
+			"""
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
 				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
