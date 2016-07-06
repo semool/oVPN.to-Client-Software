@@ -1872,7 +1872,7 @@ class Systray:
 											statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
 									except:
 										self.debug(text="def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
-									
+										break
 								if server == self.OVPN_CONNECTEDto:
 									statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
 								elif server == self.OVPN_FAV_SERVER:
@@ -2053,6 +2053,7 @@ class Systray:
 					self.mainwindow.set_default_size(int(WIDTH),int(HEIGHT))
 				self.mainwindow_ovpn_server()
 				self.MAINWINDOW_OPEN = True
+				self.mainwindow.show_all()
 				return True
 			except:
 				self.MAINWINDOW_OPEN = False
@@ -2153,7 +2154,7 @@ class Systray:
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
-		self.mainwindow.show_all()
+		#self.mainwindow.show_all()
 		self.treeview.set_model(model=self.serverliststore)
 		self.debug(text="def fill_mainwindow_with_server: go2.6")
 		return
