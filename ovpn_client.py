@@ -2097,6 +2097,29 @@ class Systray:
 		else:
 			return 1
 
+	def cell_sort_traffic(self, treemodel, iter1, iter2, user_data):
+		self.debug(text="def cell_sort_traffic: go")
+		sort_column, _ = treemodel.get_sort_column_id()
+
+		iter1 = treemodel.get_value(iter1, sort_column).split(" ")
+		number1 = float(iter1[0])
+		byte1 = iter1[1]
+		if byte1 == "TiB":
+			number1 = number1 * 1024
+
+		iter2 = treemodel.get_value(iter2, sort_column).split(" ")
+		number2 = float(iter2[0])
+		byte2 = iter2[1]
+		if byte2 == "TiB":
+			number2 = number2 * 1024
+
+		if float(number1) < float(number2):
+			return -1
+		elif float(number1) == float(number2):
+			return 0
+		else:
+			return 1
+
 	def mainwindow_ovpn_server(self):
 		self.debug(text="def mainwindow_ovpn_server: go")
 		self.mainwindow_vbox = Gtk.VBox(False,1)
@@ -2155,12 +2178,13 @@ class Systray:
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
 			
 			if self.ENABLE_MAINWINDOW_SORTING == True:
-				if cellnumber in [ 2, 5, 6, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
+				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
 					column.set_sort_column_id(cellnumber)
 					# Add sort function for str cells
-					if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
+					if not cellnumber in [ 2, 6, 16 ]: # sortable but text str, cannot convert to float
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
-			
+					if cellnumber in [ 16 ]:
+						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
 				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
