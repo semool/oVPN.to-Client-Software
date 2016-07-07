@@ -2064,7 +2064,7 @@ class Systray:
 		else:
 			self.destroy_mainwindow()
 
-def cell_sort(self, treemodel, iter1, iter2, column):
+	def cell_sort(self, treemodel, iter1, iter2, column):
 		self.debug(text="def cell_sort: go")
 		iter1 = treemodel.get_value(iter1, column)
 		iter2 = treemodel.get_value(iter2, column)
