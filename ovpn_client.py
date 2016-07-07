@@ -969,7 +969,6 @@ class Systray:
 			self.apidata = crypt.decrypt(b64config).split(",")
 			aesiv = False
 			self.aeskey = False
-			#self.PASSPHRASE = False
 			if len(self.apidata) > 3:
 				USERID = self.apidata[0].split("=")
 				APIKEY = self.apidata[1].split("=")
@@ -984,9 +983,7 @@ class Systray:
 							self.APIKEY = APIKEY[1]
 							self.CFGSHA = CFGSHA[1]
 							return True
-			#text = _("Invalid Passphrase!")
-			#self.set_statusbar_text(text)
-			self.debug(text="def read_apikey_config passphrase :False")
+			self.debug(text="def read_apikey_config: passphrase invalid")
 			self.form_ask_passphrase()
 			return False
 
@@ -1042,7 +1039,6 @@ class Systray:
 				servername = model.get_value(tree_iter,2)
 		else:
 			return False
-		#print 'def on_right_click_mainwindow: servername = %s' % (servername)
 		if servername:
 			if event.button == 1:
 				self.debug(text="mainwindow left click (%s)" % (servername))
@@ -1181,7 +1177,6 @@ class Systray:
 					dnssubmenu.append(setsecdns)
 			dnsm.show_all()
 			self.context_menu_servertab.append(dnsm)
-			#self.cgmenu.append(dnsm)
 		except:
 			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: failed!")
 
@@ -1247,7 +1242,6 @@ class Systray:
 			if not self.systrayicon_from_before == systrayicon:
 				self.systrayicon_from_before = systrayicon
 				self.tray.set_from_file(systrayicon)
-			#fixme: memoryleak
 			if self.MAINWINDOW_OPEN == True:
 				if not self.statusbartext_from_before == statusbar_text:
 					self.set_statusbar_text(statusbar_text)
@@ -1672,7 +1666,6 @@ class Systray:
 				disconnect.set_always_show_image(True)
 				disconnect.set_image(img)
 				self.systray_menu.append(disconnect)
-				# SIGNALS
 				disconnect.connect('button-release-event', self.cb_kill_openvpn)
 			except:
 				self.debug(text="def make_systray_openvpn_menu: failed")
@@ -2057,7 +2050,6 @@ class Systray:
 			self.statusbartext_from_before = False
 			try:
 				GLib.idle_add(self.update_mwls)
-				#return self.update_mwls()
 			except:
 				self.debug(text="def call_redraw_mainwindow: try #1 failed")
 
@@ -2094,7 +2086,7 @@ class Systray:
 			self.destroy_mainwindow()
 
 	def cell_sort(self, treemodel, iter1, iter2, user_data):
-		self.debug(text="def cell_sort: go")
+		self.debug(text="def cell_sort()")
 		sort_column, _ = treemodel.get_sort_column_id()
 		iter1 = treemodel.get_value(iter1, sort_column)
 		iter2 = treemodel.get_value(iter2, sort_column)
@@ -2189,11 +2181,10 @@ class Systray:
 				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
 					column.set_sort_column_id(cellnumber)
 					# Add sort function for str cells
-					if not cellnumber in [ 2, 6, 16 ]: # 2,6: sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
+					if not cellnumber in [ 2, 6, 16 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
 					if cellnumber in [ 16 ]:
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
-			
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
 				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
@@ -2204,12 +2195,10 @@ class Systray:
 		self.debug(text="def fill_mainwindow_with_server: go2.4")
 		self.fill_mainwindow_with_server()
 		GLib.idle_add(self.update_mwls)
-		#self.update_mwls()
 		self.debug(text="def fill_mainwindow_with_server: go2.5")
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
-		#self.mainwindow.show_all()
 		self.debug(text="def fill_mainwindow_with_server: go2.6")
 		return
 
@@ -2392,8 +2381,7 @@ class Systray:
 						self.MYDNS[name]["primary"] = {}
 			except:
 				pass
-				#self.MYDNS[name]["primary"] = {}
-				#self.MYDNS[name]["secondary"] = {}
+			
 			try:
 				if value["secondary"]["ip4"] == self.MYDNS[name]["secondary"]["ip4"]:
 					self.MYDNS[name]["secondary"] = {}
@@ -2468,7 +2456,7 @@ class Systray:
 	def destroy_systray_menu(self):
 		self.debug(text="def destroy_systray_menu()")
 		try:
-			self.systray_menu.hide()
+			self.systray_menu.destroy()
 			self.systray_menu = False
 			self.debug(text = "def destroy_systray_menu: true")
 		except:
@@ -2856,7 +2844,6 @@ class Systray:
 		self.debug(text="def win_clear_ipv6_dns()")
 		try:
 			netshcmd = 'interface ipv6 show dnsservers "%s"' % (self.WIN_TAP_DEVICE)
-			#self.debug(text="def win_clear_ipv6_dns: netshcmd = '%s'" % (netshcmd))
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
 			for line in netsh_output:
 				#print line
@@ -2884,7 +2871,6 @@ class Systray:
 		try:
 			try:
 				netshcmd = 'interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
-				#self.debug(text="def win_clear_ipv6_addr: netshcmd = '%s'" % (netshcmd))
 				netsh_output = self.win_return_netsh_cmd(netshcmd)
 				try:
 					for line in netsh_output:
@@ -2908,7 +2894,6 @@ class Systray:
 		try:
 			netshcmd = 'interface ipv6 show route'
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
-			#self.debug(text="def win_clear_ipv6_routes: netshcmd = '%s'" % (netshcmd))
 			for line in netsh_output:
 				if " fd48:8bea:68a5:" in line or " fe80:" in line:
 					self.debug(text="def win_clear_ipv6_routes: found: line = '%s'" % (line))
@@ -3639,7 +3624,6 @@ class Systray:
 	def cb_check_normal_update(self,widget,event):
 		self.debug(text="def cb_check_normal_update()")
 		self.destroy_systray_menu()
-		self.debug(text="def cb_check_normal_update()")
 		if self.check_inet_connection() == False:
 			self.msgwarn(text="Internet Connection Error!")
 			return False
@@ -3698,7 +3682,6 @@ class Systray:
 			self.LOAD_SRVDATA = False
 			#self.OVPN_SRV_DATA = {}
 		self.write_options_file()
-		#self.call_redraw_mainwindow()
 		self.destroy_mainwindow()
 		self.show_mainwindow(widget,event)
 
@@ -3771,8 +3754,10 @@ class Systray:
 		self.write_options_file()
 		self.read_options_file()
 		self.load_ovpn_server()
-		#self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
-		self.call_redraw_mainwindow()
+		if len(self.OVPN_SERVER) == 0:
+			self.cb_check_normal_update(widget,event)
+		if self.MAINWINDOW_OPEN == True:
+			self.destroy_mainwindow()
 
 	def cb_change_ipmode2(self,widget,event):
 		self.debug(text="def cb_change_ipmode2()")
@@ -3781,8 +3766,11 @@ class Systray:
 		self.write_options_file()
 		self.read_options_file()
 		self.load_ovpn_server()
-		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
-		self.call_redraw_mainwindow()
+		if len(self.OVPN_SERVER) == 0:
+			self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
+			self.cb_check_normal_update(widget,event)
+		if self.MAINWINDOW_OPEN == True:
+			self.destroy_mainwindow()
 
 	# *** fixme: need isValueIPv6 first! ***
 	def cb_change_ipmode3(self,widget,event):
@@ -3793,6 +3781,10 @@ class Systray:
 		self.write_options_file()
 		self.read_options_file()
 		self.load_ovpn_server()
+		if len(self.OVPN_SERVER) == 0:
+			self.cb_check_normal_update(widget,event)
+		if self.MAINWINDOW_OPEN == True:
+			self.destroy_mainwindow()
 		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
 
 	def cb_change_fwresetmode(self,widget,event):
@@ -3872,8 +3864,7 @@ class Systray:
 		self.destroy_systray_menu()
 		if self.LOAD_ACCDATA == True:
 			self.LOAD_ACCDATA = False
-			#self.OVPN_ACC_DATA = {}
-			self.LAST_OVPN_ACC_DATA_UPDATE = 0
+			self.OVPN_ACC_DATA = {}
 		elif self.LOAD_ACCDATA == False:
 			self.LOAD_ACCDATA = True
 			if self.PASSPHRASE == False:
@@ -3888,8 +3879,7 @@ class Systray:
 		self.debug(text="def delete_dir()")
 		if self.OS == "win32":
 			string = 'rmdir /S /Q "%s"' % (path)
-			#text = "def delete_dir: %s" % (string)
-			#self.debug(text=text)
+			self.debug(text="def delete_dir: %s" % (string))
 			subprocess.check_output("%s" % (string),shell=True)
 
 	def extract_ovpn(self):
@@ -3943,14 +3933,11 @@ class Systray:
 		self.debug(text=text)
 
 		try:
-			#if self.check_inet_connection() == False:
-			#	return False
 			r = requests.post(self.APIURL,data=values)
 			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
 				self.body = r.content
 			else:
 				self.body = r.text
-			#self.debug(text="def API_REQUEST: response = '%s'" % (self.body))
 			if self.body == "wait":
 				pass
 				#self.set_progressbar(text="Waiting for oVPN Certificates...")
