@@ -70,7 +70,7 @@ class Systray:
 
 		self.OS = sys.platform
 		self.MAINWINDOW_OPEN = False
-		self.ENABLE_MAINWINDOW_SORTING = False
+		self.ENABLE_MAINWINDOW_SORTING = True
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
@@ -2021,14 +2021,15 @@ class Systray:
 						cellnumber += 1
 						# end while cellnumber
 		self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
-		return True
+		return
 
 	def call_redraw_mainwindow(self):
 		self.debug(text="def call_redraw_mainwindow()")
 		if self.MAINWINDOW_OPEN == True:
 			self.statusbartext_from_before = False
 			try:
-				return self.update_mwls()
+				GLib.idle_add(self.update_mwls)
+				#return self.update_mwls()
 			except:
 				self.debug(text="def call_redraw_mainwindow: try #1 failed")
 
@@ -2153,7 +2154,8 @@ class Systray:
 		
 		self.debug(text="def fill_mainwindow_with_server: go2.4")
 		self.fill_mainwindow_with_server()
-		self.update_mwls()
+		GLib.idle_add(self.update_mwls)
+		#self.update_mwls()
 		self.debug(text="def fill_mainwindow_with_server: go2.5")
 		# statusbar
 		self.statusbar_text = Gtk.Label()
