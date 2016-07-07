@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.0z-gtk3"
+CLIENTVERSION="v0.5.1-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -2314,7 +2314,7 @@ class Systray:
 					elif key == "999":
 						for coin,addr in sorted(value.iteritems()):
 							try:
-								text = "%s: '%s'" % (coin.upper(),addr.upper())
+								text = "%s: '%s'" % (coin.upper(),addr)
 								#print text
 								entry = Gtk.Entry()
 								entry.set_max_length(128)
