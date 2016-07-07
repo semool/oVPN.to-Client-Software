@@ -2036,7 +2036,7 @@ class Systray:
 		self.debug(text="def show_mainwindow()")
 		self.destroy_systray_menu()
 		self.reset_load_remote_timer()
-		#self.statusbartext_from_before = False
+		self.statusbartext_from_before = False
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
 			try:
@@ -2429,7 +2429,7 @@ class Systray:
 		self.debug(text="def set_statusbar_text()")
 		try:
 			if not self.statusbar_text == False:
-				self.statusbar_text.set_label(text)
+				GLib.idle_add(self.statusbar_text.set_label,text)
 		except:
 			self.debug(text="def set_statusbar_text: text = '%s' failed" % (text))
 
@@ -2451,8 +2451,6 @@ class Systray:
 			self.OVPN_FAV_SERVER = server
 			#self.OVPN_AUTO_CONNECT_ON_START = True
 			self.write_options_file()
-			text = "oVPN AutoConnect: %s" % (server)
-			self.set_statusbar_text(text)
 			self.call_redraw_mainwindow()
 			return True
 		except:
@@ -2465,8 +2463,6 @@ class Systray:
 			self.OVPN_FAV_SERVER = False
 			self.OVPN_AUTO_CONNECT_ON_START = False
 			self.write_options_file()
-			text = "oVPN AutoConnect: removed %s" % (server)
-			self.set_statusbar_text(text)
 			self.call_redraw_mainwindow()
 			return True
 		except:
@@ -3864,11 +3860,12 @@ class Systray:
 					z2file.extractall(self.vpn_cfg)
 					if self.write_last_update():
 						text = "Certificates and Configs extracted."
-						self.set_statusbar_text(text)
+						#self.set_statusbar_text(text)
+						self.debug(text=text)
 						return True
 				except:
 						text = "Error on extracting Certificates and Configs!"
-						self.set_statusbar_text(text)
+						#self.set_statusbar_text(text)
 						self.debug(text=text)
 						return False
 		except:
