@@ -2196,7 +2196,7 @@ class Systray:
 		if self.ACCWINDOW_OPEN == True:
 			try:
 				self.accwindow.remove(self.accwindow_accinfo_vbox)
-				GLib.idle_add(self.accwindow_accinfo)
+				self.accwindow_accinfo()
 				self.debug(text="def call_redraw_accwindow: True")
 			except:
 				self.debug(text="def call_redraw_accwindow: False")
@@ -4130,13 +4130,13 @@ class Systray:
 			if self.load_serverdata_from_remote() == True:
 				self.call_redraw_mainwindow()
 			if self.load_accinfo_from_remote() == True:
-				self.call_redraw_accwindow()
+				GLib.idle_add(self.call_redraw_accwindow)
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == False:
 			if self.load_serverdata_from_remote() == True:
-				self.call_redraw_mainwindow()
+				self.call_redraw_mainwindow
 		elif self.LOAD_SRVDATA == False and self.LOAD_ACCDATA == True:
 			if self.load_accinfo_from_remote() == True:
-				self.call_redraw_accwindow()
+				GLib.idle_add(self.call_redraw_accwindow)
 		self.timer_load_remote_data_running = False
 
 	def check_hash_dictdata(self,newdata,olddata):
