@@ -70,6 +70,7 @@ class Systray:
 
 		self.OS = sys.platform
 		self.MAINWINDOW_OPEN = False
+		self.ENABLE_MAINWINDOW_SORTING = False
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
@@ -97,6 +98,7 @@ class Systray:
 		self.timer_ovpn_ping_running = False
 		self.timer_check_certdl_running = False
 		self.statusbartext_from_before = False
+		self.statusbar_text = False
 		self.systraytext_from_before = False
 		self.systrayicon_from_before = False
 		self.stop_systray_timer = False
@@ -2034,7 +2036,7 @@ class Systray:
 		self.debug(text="def show_mainwindow()")
 		self.destroy_systray_menu()
 		self.reset_load_remote_timer()
-		self.statusbartext_from_before = False
+		#self.statusbartext_from_before = False
 		if self.MAINWINDOW_OPEN == False:
 			self.load_ovpn_server()
 			try:
@@ -2062,19 +2064,20 @@ class Systray:
 		else:
 			self.destroy_mainwindow()
 
-	def cell_sort(self, treemodel, iter1, iter2, column):
+def cell_sort(self, treemodel, iter1, iter2, column):
 		self.debug(text="def cell_sort: go")
-		try:
-			iter1 = treemodel.get_value(iter1, column)
-			iter2 = treemodel.get_value(iter2, column)
-			if float(iter1) < float(iter2):
-				return -1
-			elif float(iter1) > float(iter2):
-				return 1
-			else:
-				return 0
-		except:
-			self.debug(text="def cell_sort: failed")
+		iter1 = treemodel.get_value(iter1, column)
+		iter2 = treemodel.get_value(iter2, column)
+		if iter1 is None or isinstance(iter1, basestring) == False:
+			return 0
+		elif iter2 is None or isinstance(iter2, basestring) == False:
+			return 0
+		elif float(iter1) < float(iter2):
+			return -1
+		elif float(iter1) > float(iter2):
+			return 1
+		else:
+			return 0
 
 	def mainwindow_ovpn_server(self):
 		self.debug(text="def mainwindow_ovpn_server: go")
@@ -2133,13 +2136,14 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			"""
-			if cellnumber in [ 2, 5, 6, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
-				column.set_sort_column_id(cellnumber)
-				# Add sort function for str cells
-				if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
-					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, cellnumber)
-			"""
+			
+			if self.ENABLE_MAINWINDOW_SORTING == True:
+				if cellnumber in [ 2, 5, 6, 7, 9, 10, 17, 18, 19, 20, 21, 22, 23, 24 ]:
+					column.set_sort_column_id(cellnumber)
+					# Add sort function for str cells
+					if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
+						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, cellnumber)
+			
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
 				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
@@ -2182,6 +2186,7 @@ class Systray:
 		self.debug(text="def destroy_mainwindow()")
 		self.mainwindow.destroy()
 		self.MAINWINDOW_OPEN = False
+		self.statusbar_text = False
 		self.debug(text="def destroy_mainwindow")
 
 	def call_redraw_accwindow(self):
@@ -2423,7 +2428,7 @@ class Systray:
 	def set_statusbar_text(self,text):
 		self.debug(text="def set_statusbar_text()")
 		try:
-			if self.MAINWINDOW_OPEN == True:
+			if not self.statusbar_text == False:
 				self.statusbar_text.set_label(text)
 		except:
 			self.debug(text="def set_statusbar_text: text = '%s' failed" % (text))
