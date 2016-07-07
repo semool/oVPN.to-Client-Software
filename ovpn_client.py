@@ -2181,7 +2181,7 @@ class Systray:
 				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
 					column.set_sort_column_id(cellnumber)
 					# Add sort function for str cells
-					if not cellnumber in [ 2, 6, 16 ]: # sortable but text str, cannot convert to float
+					if not cellnumber in [ 2, 6, 16 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
 					if cellnumber in [ 16 ]:
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
