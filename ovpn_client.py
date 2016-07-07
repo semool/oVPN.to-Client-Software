@@ -1849,6 +1849,7 @@ class Systray:
 						iter = liststore.iter_next(iter)
 					value = liststore.get_value(iter,2)
 					cellnumber = 0
+					row_changed = 0
 					while cellnumber <= 24:
 						oldvalue = row[cellnumber]
 						try:
@@ -1887,6 +1888,7 @@ class Systray:
 								try:
 									statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 									liststore.set_value(iter,cellnumber,statusimg)
+									row_changed += 1
 									# *** fixme *** is always updating statusimg
 									#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' statusimg" % (server))
 								except:
@@ -1905,22 +1907,27 @@ class Systray:
 								
 							elif cellnumber == 3 and not row[cellnumber] == serverip4:
 								liststore.set_value(iter,cellnumber,serverip4)
+								row_changed += 1
 								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip4" % (server))
 							
 							elif cellnumber == 5 and not row[cellnumber] == serverport:
 								liststore.set_value(iter,cellnumber,serverport)
+								row_changed += 1
 								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverport" % (server))
 							
 							elif cellnumber == 6 and not row[cellnumber] == serverproto:
 								liststore.set_value(iter,cellnumber,serverproto)
+								row_changed += 1
 								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverproto" % (server))
 							
 							elif cellnumber == 7 and not row[cellnumber] == servermtu:
 								liststore.set_value(iter,cellnumber,servermtu)
+								row_changed += 1
 								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servermtu" % (server))
 							
 							elif cellnumber == 8 and not row[cellnumber] == servercipher:
 								liststore.set_value(iter,cellnumber,servercipher)
+								row_changed += 1
 								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servercipher" % (server))
 							
 								
@@ -1946,72 +1953,89 @@ class Systray:
 									
 									if cellnumber == 4 and not row[cellnumber] == serverip6:
 										liststore.set_value(iter,cellnumber,serverip6)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip6" % (server))
 										
 									elif cellnumber == 9 and not row[cellnumber] == live:
 										liststore.set_value(iter,cellnumber,live)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' live" % (server))
 
 									elif cellnumber == 10 and not row[cellnumber] == uplink:
 										liststore.set_value(iter,cellnumber,uplink)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' uplink" % (server))
 									
 									elif cellnumber == 11 and not row[cellnumber] == vlanip4:
 										liststore.set_value(iter,cellnumber,vlanip4)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip4" % (server))
 									
 									elif cellnumber == 12 and not row[cellnumber] == vlanip6:
 										liststore.set_value(iter,cellnumber,vlanip6)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip6" % (server))
 									
 									elif cellnumber == 13 and not row[cellnumber] == cpuinfo:
 										liststore.set_value(iter,cellnumber,cpuinfo)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuinfo" % (server))
 									
 									elif cellnumber == 14 and not row[cellnumber] == raminfo:
 										liststore.set_value(iter,cellnumber,raminfo)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' raminfo" % (server))
 									
 									elif cellnumber == 15 and not row[cellnumber] == hddinfo:
 										liststore.set_value(iter,cellnumber,hddinfo)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' hddinfo" % (server))
 									
 									elif cellnumber == 16 and not row[cellnumber] == traffic:
 										liststore.set_value(iter,cellnumber,traffic)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' traffic" % (server))
 									
 									elif cellnumber == 17 and not row[cellnumber] == cpuload:
 										liststore.set_value(iter,cellnumber,cpuload)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuload" % (server))
 									
 									elif cellnumber == 18 and not row[cellnumber] == cpuovpn:
 										liststore.set_value(iter,cellnumber,cpuovpn)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuovpn" % (server))
 									
 									elif cellnumber == 19 and not row[cellnumber] == cpusshd:
 										liststore.set_value(iter,cellnumber,cpusshd)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusshd" % (server))
 									
 									elif cellnumber == 20 and not row[cellnumber] == cpusock:
 										liststore.set_value(iter,cellnumber,cpusock)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusock" % (server))
 									
 									elif cellnumber == 21 and not row[cellnumber] == cpuhttp:
 										liststore.set_value(iter,cellnumber,cpuhttp)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuhttp" % (server))
 									
 									elif cellnumber == 22 and not row[cellnumber] == cputinc:
 										liststore.set_value(iter,cellnumber,cputinc)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cputinc" % (server))
 									
 									elif cellnumber == 23 and not row[cellnumber] == ping4:
 										liststore.set_value(iter,cellnumber,ping4)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping4" % (server))
 									
 									elif cellnumber == 24 and not row[cellnumber] == ping6:
 										liststore.set_value(iter,cellnumber,ping6)
+										row_changed += 1
 										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping6" % (server))
-
+								
 								except:
 									pass
 									# we may fail silently for private servers
@@ -2020,6 +2044,10 @@ class Systray:
 							self.debug(text="def update_mwls: #0 failed ")
 						cellnumber += 1
 						# end while cellnumber
+					if row_changed >= 1:
+						path = liststore.get_path(iter)
+						liststore.row_changed(path,iter)
+						#self.debug(text="def update_mwls: row_changed server '%s'" % (server))
 		self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
 		return
 
