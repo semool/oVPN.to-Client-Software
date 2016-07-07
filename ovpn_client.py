@@ -2093,20 +2093,17 @@ class Systray:
 		else:
 			self.destroy_mainwindow()
 
-	def cell_sort(self, treemodel, iter1, iter2, column):
+	def cell_sort(self, treemodel, iter1, iter2, user_data):
 		self.debug(text="def cell_sort: go")
-		iter1 = treemodel.get_value(iter1, column)
-		iter2 = treemodel.get_value(iter2, column)
-		if iter1 is None or isinstance(iter1, basestring) == False:
-			return 0
-		elif iter2 is None or isinstance(iter2, basestring) == False:
-			return 0
-		elif float(iter1) < float(iter2):
+		sort_column, _ = treemodel.get_sort_column_id()
+		iter1 = treemodel.get_value(iter1, sort_column)
+		iter2 = treemodel.get_value(iter2, sort_column)
+		if float(iter1) < float(iter2):
 			return -1
-		elif float(iter1) > float(iter2):
-			return 1
-		else:
+		elif float(iter1) == float(iter2):
 			return 0
+		else:
+			return 1
 
 	def mainwindow_ovpn_server(self):
 		self.debug(text="def mainwindow_ovpn_server: go")
@@ -2132,7 +2129,6 @@ class Systray:
 		self.debug(text="def mainwindow_ovpn_server: go3")
 		self.treeview = Gtk.TreeView(self.serverliststore)
 		self.treeview.connect("button_release_event",self.on_right_click_mainwindow)
-		self.treeview.set_model(model=None)
 		self.scrolledwindow = Gtk.ScrolledWindow()
 		self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 		self.scrolledwindow.set_size_request(64,48)
@@ -2171,7 +2167,7 @@ class Systray:
 					column.set_sort_column_id(cellnumber)
 					# Add sort function for str cells
 					if not cellnumber in [ 2, 6 ]: # sortable but text str, cannot convert to float
-						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, cellnumber)
+						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
 			
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
@@ -2189,7 +2185,6 @@ class Systray:
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
 		#self.mainwindow.show_all()
-		self.treeview.set_model(model=self.serverliststore)
 		self.debug(text="def fill_mainwindow_with_server: go2.6")
 		return
 
