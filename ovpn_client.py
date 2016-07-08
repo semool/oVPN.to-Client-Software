@@ -2126,39 +2126,51 @@ class Systray:
 			self.destroy_mainwindow()
 
 	def cell_sort(self, treemodel, iter1, iter2, user_data):
-		self.debug(text="def cell_sort()")
-		sort_column, _ = treemodel.get_sort_column_id()
-		iter1 = treemodel.get_value(iter1, sort_column)
-		iter2 = treemodel.get_value(iter2, sort_column)
-		if float(iter1) < float(iter2):
-			return -1
-		elif float(iter1) == float(iter2):
-			return 0
-		else:
-			return 1
+		try:
+			self.debug(text="def cell_sort()")
+			sort_column, _ = treemodel.get_sort_column_id()
+			iter1 = treemodel.get_value(iter1, sort_column)
+			iter2 = treemodel.get_value(iter2, sort_column)
+			if float(iter1) < float(iter2):
+				return -1
+			elif float(iter1) == float(iter2):
+				return 0
+			else:
+				return 1
+		except:
+			pass
 
 	def cell_sort_traffic(self, treemodel, iter1, iter2, user_data):
-		self.debug(text="def cell_sort_traffic()")
-		sort_column, _ = treemodel.get_sort_column_id()
+		try:
+			self.debug(text="def cell_sort_traffic()")
+			sort_column, _ = treemodel.get_sort_column_id()
+			data1 = treemodel.get_value(iter1, sort_column)
+			data2 = treemodel.get_value(iter2, sort_column)
+			if data1 == "-1":
+				data1 = "0 GB"
+			if data2 == "-1":
+				data2 = "0 GB"
 
-		iter1 = treemodel.get_value(iter1, sort_column).split(" ")
-		number1 = float(iter1[0])
-		byte1 = iter1[1]
-		if byte1 == "TiB":
-			number1 = number1 * 1024
+			iter1 = data1.split(" ")
+			number1 = float(iter1[0])
+			byte1 = iter1[1]
+			if byte1 == "TiB":
+				number1 = number1 * 1024
 
-		iter2 = treemodel.get_value(iter2, sort_column).split(" ")
-		number2 = float(iter2[0])
-		byte2 = iter2[1]
-		if byte2 == "TiB":
-			number2 = number2 * 1024
+			iter2 = data2.split(" ")
+			number2 = float(iter2[0])
+			byte2 = iter2[1]
+			if byte2 == "TiB":
+				number2 = number2 * 1024
 
-		if float(number1) < float(number2):
-			return -1
-		elif float(number1) == float(number2):
-			return 0
-		else:
-			return 1
+			if float(number1) < float(number2):
+				return -1
+			elif float(number1) == float(number2):
+				return 0
+			else:
+				return 1
+		except:
+			pass
 
 	def mainwindow_ovpn_server(self):
 		self.debug(text="def mainwindow_ovpn_server: go")
