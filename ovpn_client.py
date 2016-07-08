@@ -1025,7 +1025,7 @@ class Systray:
 		self.debug(text="def theme_switcher()")
 		self.destroy_systray_menu()
 		
-		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
 		try:
@@ -1039,23 +1039,11 @@ class Systray:
 		combobox = Gtk.ComboBoxText.new()
 		for theme in self.INSTALLED_THEMES:
 			combobox.append_text(theme)
+		combobox.connect('changed',self.cb_theme_switcher_changed)
 		dialogBox.pack_start(combobox,False,False,0)
 		dialogWindow.show_all()
-		response = dialogWindow.run()
-
-		if response == Gtk.ResponseType.CANCEL:
-			dialogWindow.destroy()
-			print "response: btn cancel %s" % (response)
-			return False
-
-		elif response == Gtk.ResponseType.OK:
-			self.APP_THEME = combobox.get_active_text()
-			dialogWindow.destroy()
-
-			get_settings = Gtk.Settings.get_default()
-			get_settings.set_property("gtk-theme-name", self.APP_THEME)
-			self.write_options_file()
-			return True
+		dialogWindow.run()
+		dialogWindow.destroy()
 
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(text="def on_right_click_mainwindow()")
@@ -3596,6 +3584,18 @@ class Systray:
 		if index > -1:
 			self.WIN_TAP_DEVICE = model[index][0]
 			self.debug(text="def cb_tap_interface_selector_changed: selected tap IF = '%s'" % (self.WIN_TAP_DEVICE))
+		return
+
+	def cb_theme_switcher_changed(self, combobox):
+		self.debug(text="def cb_theme_switcher_changed()")
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.APP_THEME = combobox.get_active_text()
+			get_settings = Gtk.Settings.get_default()
+			get_settings.set_property("gtk-theme-name", self.APP_THEME)
+			self.write_options_file()
+			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
 		return
 
 	def cb_form_reask_userid(self,widget,event):
