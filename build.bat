@@ -37,7 +37,6 @@ xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
 
 ::Install all Themes and use inApp Theme Changer. Default is ms-windows
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
-del "%DISTDIR%\etc\gtk-3\settings.ini
 
 copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "dist\crypt32.dll"
 
