@@ -7,7 +7,7 @@ IF NOT DEFINED PYEXE (EXIT)
 
 set RELEASEDIR=%SOURCEDIR%\release
 set VERSION=%RELEASE%_win%BITS%
-set EXESTRING=ovpn_client_%VERSION%_inno.exe
+set EXESTRING=ovpn_client_%VERSION%_setup.exe
 
 echo build %EXESTRING% ?
 pause
