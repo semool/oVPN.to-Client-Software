@@ -28,7 +28,6 @@ xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
 
 copy /Y "%INCLUDESDIR%\themes\ms-windows.ini" "dist\etc\gtk-3.0\settings.ini"
 xcopy /Y /E "%INCLUDESDIR%\themes\MS-Windows" "%DISTDIR%\share\themes\MS-Windows\"
-rmdir /S /Q dist\share\icons\Adwaita
 
 ::copy /Y "%INCLUDESDIR%\themes\adwaita.ini" "dist\etc\gtk-3.0\settings.ini"
 ::xcopy /Y /E "%INCLUDESDIR%\themes\Adwaita" "dist\share\themes\Adwaita\"
