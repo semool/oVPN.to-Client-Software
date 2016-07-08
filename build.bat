@@ -26,8 +26,9 @@ copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
 xcopy /Y /E "%INCLUDESDIR%\ico" "%DISTDIR%\ico\"
 xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
 
-::copy /Y "%INCLUDESDIR%\themes\ms-windows.ini" "dist\etc\gtk-3.0\settings.ini"
-::xcopy /Y /E "%INCLUDESDIR%\themes\MS-Windows" "%DISTDIR%\share\themes\MS-Windows\"
+copy /Y "%INCLUDESDIR%\themes\ms-windows.ini" "dist\etc\gtk-3.0\settings.ini"
+xcopy /Y /E "%INCLUDESDIR%\themes\MS-Windows" "%DISTDIR%\share\themes\MS-Windows\"
+rmdir /S /Q dist\share\icons\Adwaita
 
 ::copy /Y "%INCLUDESDIR%\themes\adwaita.ini" "dist\etc\gtk-3.0\settings.ini"
 ::xcopy /Y /E "%INCLUDESDIR%\themes\Adwaita" "dist\share\themes\Adwaita\"
@@ -36,7 +37,7 @@ xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
 ::xcopy /Y /E "%INCLUDESDIR%\themes\Greybird" "dist\share\themes\Greybird\"
 
 ::Install all Themes and use inApp Theme Changer. Default is ms-windows
-xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
+::xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
 
 copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "dist\crypt32.dll"
 
