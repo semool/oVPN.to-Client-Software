@@ -6,18 +6,16 @@ copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
 xcopy /Y /E "%INCLUDESDIR%\ico" "%DISTDIR%\ico\"
 xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
 
-::copy /Y "%INCLUDESDIR%\themes\ms-windows.ini" "dist\etc\gtk-3.0\settings.ini"
+::copy /Y "%INCLUDESDIR%\themes\ms-windows.ini" "%DISTDIR%\etc\gtk-3.0\settings.ini"
 ::xcopy /Y /E "%INCLUDESDIR%\themes\MS-Windows" "%DISTDIR%\share\themes\MS-Windows\"
 
-::copy /Y "%INCLUDESDIR%\themes\adwaita.ini" "dist\etc\gtk-3.0\settings.ini"
-::xcopy /Y /E "%INCLUDESDIR%\themes\Adwaita" "dist\share\themes\Adwaita\"
+::copy /Y "%INCLUDESDIR%\themes\adwaita.ini" "%DISTDIR%\etc\gtk-3.0\settings.ini"
+::xcopy /Y /E "%INCLUDESDIR%\themes\Adwaita" "%DISTDIR%\share\themes\Adwaita\"
 
-::copy /Y "%INCLUDESDIR%\themes\greybird.ini" "dist\etc\gtk-3.0\settings.ini"
-::xcopy /Y /E "%INCLUDESDIR%\themes\Greybird" "dist\share\themes\Greybird\"
+::copy /Y "%INCLUDESDIR%\themes\greybird.ini" "%DISTDIR%\etc\gtk-3.0\settings.ini"
+::xcopy /Y /E "%INCLUDESDIR%\themes\Greybird" "%DISTDIR%\share\themes\Greybird\"
 
 ::Install all Themes and use inApp Theme Changer. Default is ms-windows
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
 
-copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "dist\crypt32.dll"
-
-copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "dist\crypt32.dll"
+copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "%DISTDIR%\crypt32.dll"
