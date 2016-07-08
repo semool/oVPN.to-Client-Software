@@ -5,7 +5,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib, GObject
 
-
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
 import types
@@ -54,6 +53,7 @@ class Systray:
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 		self.window.connect("delete-event", Gtk.main_quit)
 		if self.preboot():
+			self.init_theme()
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip_markup(CLIENT_STRING)
@@ -71,6 +71,9 @@ class Systray:
 		self.OS = sys.platform
 		self.MAINWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
+		self.ENABLE_THEME_SWITCHER = True
+		self.APP_THEME = "ms-windows"
+		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
@@ -630,6 +633,12 @@ class Systray:
 					pass
 
 				try:
+					self.APP_THEME = parser.get('oVPN','theme')
+					self.debug(text="Theme is set to: '%s'" % (self.APP_THEME))
+				except:
+					pass
+
+				try:
 					self.MYDNS = json.loads(parser.get('oVPN','mydns'))
 				except:
 					self.MYDNS = {}
@@ -663,6 +672,7 @@ class Systray:
 				parser.set('oVPN','serverviewlightheight','%s' % (self.SRV_LIGHT_HEIGHT_DEFAULT))
 				parser.set('oVPN','serverviewextendwidth','%s' % (self.SRV_WIDTH_DEFAULT))
 				parser.set('oVPN','serverviewextendheight','%s' % (self.SRV_HEIGHT_DEFAULT))
+				parser.set('oVPN','theme','ms-windows')
 				parser.set('oVPN','winresetfirewall','False')
 				parser.set('oVPN','winbackupfirewall','False')
 				parser.set('oVPN','nowinfirewall','False')
@@ -705,6 +715,7 @@ class Systray:
 			parser.set('oVPN','serverviewlightheight','%s'%(self.SRV_LIGHT_HEIGHT))
 			parser.set('oVPN','serverviewextendwidth','%s'%(self.SRV_WIDTH))
 			parser.set('oVPN','serverviewextendheight','%s'%(self.SRV_HEIGHT))
+			parser.set('oVPN','theme','%s'%(self.APP_THEME))
 			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
 			parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
 			parser.set('oVPN','nowinfirewall','%s'%(self.NO_WIN_FIREWALL))
@@ -845,15 +856,11 @@ class Systray:
 			dialogWindow.set_markup(text)
 			dialogBox = dialogWindow.get_content_area()
 			liststore = Gtk.ListStore(str)
-			combobox = Gtk.ComboBox()
-			cell = Gtk.CellRendererText()
+			combobox = Gtk.ComboBoxText.new()
 			combobox.pack_start(cell, True)
-			combobox.add_attribute(cell, 'text', 0)
-			combobox.set_wrap_width(5)
 			for INTERFACE in self.WIN_TAP_DEVS:
 				self.debug(text="add tap interface '%s' to combobox" % (INTERFACE))
-				liststore.append([INTERFACE])
-			combobox.set_model(liststore)
+				combobox.append_text(INTERFACE)
 			combobox.connect('changed',self.cb_tap_interface_selector_changed)
 			dialogBox.pack_start(combobox,False,False,0)
 			dialogWindow.show_all()
@@ -886,16 +893,10 @@ class Systray:
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
 					dialogBox = dialogWindow.get_content_area()
-					liststore = Gtk.ListStore(str)
-					combobox = Gtk.ComboBox()
-					cell = Gtk.CellRendererText()
-					combobox.pack_start(cell, True)
-					combobox.add_attribute(cell, 'text', 0)
-					combobox.set_wrap_width(5)
+					combobox = Gtk.ComboBoxText.new()
 					for INTERFACE in self.INTERFACES:
 						self.debug(text="add interface %s to combobox" % (INTERFACE))
-						liststore.append([INTERFACE])
-					combobox.set_model(liststore)
+						combobox.append_text(INTERFACE)
 					combobox.connect('changed',self.cb_interface_selector_changed)
 					dialogBox.pack_start(combobox,False,False,0)
 					dialogWindow.show_all()
@@ -926,15 +927,10 @@ class Systray:
 		dialogWindow.set_markup(text)
 		dialogBox = dialogWindow.get_content_area()
 		liststore = Gtk.ListStore(str)
-		combobox = Gtk.ComboBox()
-		cell = Gtk.CellRendererText()
-		combobox.pack_start(cell, True)
-		combobox.add_attribute(cell, 'text', 0)
-		combobox.set_wrap_width(5)
+		combobox = Gtk.ComboBoxText.new()
 		for userid in self.profiles:
 			self.debug(text="add userid '%s' to combobox" % (userid))
-			liststore.append([userid])
-		combobox.set_model(liststore)
+			combobox.append_text(userid)
 		combobox.connect('changed',self.cb_select_userid)
 		dialogBox.pack_start(combobox,False,False,0)
 		dialogWindow.show_all()
@@ -1024,6 +1020,42 @@ class Systray:
 			return True
 		except:
 			return False
+
+	def theme_switcher(self,widget,event):
+		self.debug(text="def theme_switcher()")
+		self.destroy_systray_menu()
+		
+		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+		dialogWindow.set_transient_for(self.window)
+		try:
+			dialogWindow.set_icon_from_file(self.systray_icon_connected)
+		except:
+			self.debug(text="def theme_switcher: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+		text = "Choose App Theme"
+		dialogWindow.set_title(text)
+		dialogWindow.set_markup(text)
+		dialogBox = dialogWindow.get_content_area()
+		combobox = Gtk.ComboBoxText.new()
+		for theme in self.INSTALLED_THEMES:
+			combobox.append_text(theme)
+		dialogBox.pack_start(combobox,False,False,0)
+		dialogWindow.show_all()
+		response = dialogWindow.run()
+
+		if response == Gtk.ResponseType.CANCEL:
+			dialogWindow.destroy()
+			print "response: btn cancel %s" % (response)
+			return False
+
+		elif response == Gtk.ResponseType.OK:
+			self.APP_THEME = combobox.get_active_text()
+			dialogWindow.destroy()
+
+			get_settings = Gtk.Settings.get_default()
+			get_settings.set_property("gtk-theme-name", self.APP_THEME)
+			self.write_options_file()
+			return True
 
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(text="def on_right_click_mainwindow()")
@@ -1559,6 +1591,14 @@ class Systray:
 				updatesmenu.append(extserverviewsize)
 			except:
 				self.debug(text="def make_systray_updates_menu: #5 failed")
+
+			try:
+				if self.ENABLE_THEME_SWITCHER == True:
+					theme = Gtk.MenuItem('Set App Theme [%s]'%(self.APP_THEME))
+					theme.connect('button-press-event', self.theme_switcher)
+					updatesmenu.append(theme)
+			except:
+				self.debug(text="def make_systray_updates_menu: #6 failed")
 
 			try:
 				sep = Gtk.SeparatorMenuItem()
@@ -4915,6 +4955,10 @@ class Systray:
 				except:
 					print("Write to %s failed"%(self.debug_log))
 
+	def init_theme(self):
+		get_settings = Gtk.Settings.get_default()
+		get_settings.set_property("gtk-theme-name", self.APP_THEME)
+		return True
 
 	def init_localization(self):
 		return
