@@ -2098,7 +2098,7 @@ class Systray:
 			return 1
 
 	def cell_sort_traffic(self, treemodel, iter1, iter2, user_data):
-		self.debug(text="def cell_sort_traffic: go")
+		self.debug(text="def cell_sort_traffic()")
 		sort_column, _ = treemodel.get_sort_column_id()
 
 		iter1 = treemodel.get_value(iter1, sort_column).split(" ")
