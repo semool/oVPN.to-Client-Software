@@ -24,7 +24,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=E:\Persoenlich\ovpn-client
 OutputBaseFilename=ovpn_client_v0.5.2-gtk3_win32_inno
-SetupIconFile=E:\Persoenlich\ovpn-client\dist\ico\292.ico
+SetupIconFile=E:\Persoenlich\ovpn-client\includes\ico\292.ico
 Compression=lzma
 SolidCompression=yes
 
