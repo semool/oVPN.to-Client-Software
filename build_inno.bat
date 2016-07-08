@@ -18,7 +18,7 @@ if exist dist.7z del dist.7z
 if exist %EXESTRING% del %EXESTRING%
 
 
-%PYEXE% setup_inno.py py2exe
+%PYEXE% setup.py py2exe
 
 call includes_to_dist.bat %~1
 

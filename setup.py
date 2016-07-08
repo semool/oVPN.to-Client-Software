@@ -29,7 +29,7 @@ setup_dict = dict(
     options={
     'py2exe': {
         'bundle_files':3,
-        'compressed'   : False,
+        'compressed'   : True,
         'unbuffered'   : False,
         'includes'     : [ 'gi','requests','cairo','Crypto','types','os','platform','sys','hashlib','random','base64','time','zipfile','subprocess','threading','socket','random','gettext','locale' ],
         'excludes'      : [ ],
