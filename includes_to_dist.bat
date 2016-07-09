@@ -19,3 +19,6 @@ xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
 
 copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "%DISTDIR%\crypt32.dll"
+
+mkdir "%DISTDIR%\appdata"
+echo %RELEASE% > "%DISTDIR%\appdata\version

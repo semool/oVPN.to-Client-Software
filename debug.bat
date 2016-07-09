@@ -4,7 +4,7 @@ call %SOURCEDIR%\set_dirs.bat %~1
 
 echo run debug on %BITS% bits
 echo PYEXE=%PYEXE%
-pause
+REM pause
 
 call %SOURCEDIR%\includes_to_appdata.bat
 
