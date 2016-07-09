@@ -52,6 +52,11 @@ class Systray:
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 		self.window.connect("delete-event", Gtk.main_quit)
+		# *** fixme *** try to detect focus-in/out
+		#self.window.set_accept_focus(True)
+		#self.window.connect('focus-in-event', self.systray_focus_in)
+		#self.window.connect('focus-out-event', self.systray_focus_out)
+
 		if self.preboot():
 			self.init_theme()
 			self.tray.connect('popup-menu', self.on_right_click)
@@ -1289,8 +1294,10 @@ class Systray:
 		#self.debug(text="def systray_timer()")
 		if self.stop_systray_timer == True:
 			return False
+			
+		# *** fixme *** try to detect focus-in/out
 		if not self.systray_menu == False:
-			self.check_hide_popup()
+			GLib.idle_add(self.check_hide_popup)
 			
 		if not self.systray_timer2_running == True:
 			GLib.timeout_add(1000, self.systray_timer2)
@@ -1328,6 +1335,10 @@ class Systray:
 		self.debug(text="def make_systray_menu()")
 		try:
 			self.systray_menu = Gtk.Menu()
+			# *** fixme *** try to detect focus-in/out
+			#self.systray_menu.grab_focus()
+			#self.systray_menu.set_accept_focus(True)
+			#self.systray_menu.attach_to_widget(self.window,self.destroy_systray_menu)
 			
 			try:
 				self.load_ovpn_server()
@@ -1368,8 +1379,12 @@ class Systray:
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_bottom_menu() failed")
 			
-			self.systray_menu.connect('enter-notify-event', self.systray_notify_event)
-			self.systray_menu.connect('leave-notify-event', self.systray_notify_event)
+			self.systray_menu.connect('enter-notify-event', self.systray_notify_event_enter)
+			self.systray_menu.connect('leave-notify-event', self.systray_notify_event_leave)
+			# *** fixme *** try to detect focus-in/out
+			#self.systray_menu.connect('focus-in-event', self.systray_focus_in)
+			#self.systray_menu.connect('focus-out-event', self.systray_focus_out)
+
 			self.systray_menu.show_all()
 			self.systray_menu.popup(None, None, None, event, 0, 0)
 		except:
@@ -1380,6 +1395,8 @@ class Systray:
 		self.debug(text="def make_systray_options_menu()")	
 		try:
 			self.systray_optionsmenu = Gtk.Menu()
+			self.systray_optionsmenu.connect('enter-notify-event', self.systray_notify_event_enter)
+			self.systray_optionsmenu.connect('leave-notify-event', self.systray_notify_event_leave)
 			optionsm = Gtk.MenuItem('Options')
 			optionsm.set_submenu(self.systray_optionsmenu)
 
@@ -1421,6 +1438,8 @@ class Systray:
 		self.debug(text="def make_systray_options_ipv6_menu()")
 		try:
 			ipv6menu = Gtk.Menu()
+			ipv6menu.connect('enter-notify-event', self.systray_notify_event_enter)
+			ipv6menu.connect('leave-notify-event', self.systray_notify_event_leave)
 			ipv6m = Gtk.MenuItem('IPv6 Options')
 			ipv6m.set_submenu(ipv6menu)
 			self.systray_optionsmenu.append(ipv6m)
@@ -1448,6 +1467,8 @@ class Systray:
 		self.debug(text="def make_systray_firewall_menu()")
 		try:
 			fwmenu = Gtk.Menu()
+			fwmenu.connect('enter-notify-event', self.systray_notify_event_enter)
+			fwmenu.connect('leave-notify-event', self.systray_notify_event_leave)
 			fwm = Gtk.MenuItem('Firewall')
 			fwm.set_submenu(fwmenu)
 			self.systray_menu.append(fwm)
@@ -1523,6 +1544,8 @@ class Systray:
 		try:
 			try:
 				updatesmenu = Gtk.Menu()
+				updatesmenu.connect('enter-notify-event', self.systray_notify_event_enter)
+				updatesmenu.connect('leave-notify-event', self.systray_notify_event_leave)
 				updatesm = Gtk.MenuItem("Updates")
 				updatesm.set_submenu(updatesmenu)
 				self.systray_menu.append(updatesm)
@@ -1631,6 +1654,8 @@ class Systray:
 						# create countrygroup menu
 						countrycodefrombefore = countrycode
 						cgmenu = Gtk.Menu()
+						cgmenu.connect('enter-notify-event', self.systray_notify_event_enter)
+						cgmenu.connect('leave-notify-event', self.systray_notify_event_leave)
 						self.cgmenu = cgmenu
 						try:
 							countryname = self.COUNTRYNAMES[countrycode.upper()]
@@ -1748,14 +1773,40 @@ class Systray:
 			self.systray_menu.append(quit)
 			quit.connect('button-release-event', self.on_closing)
 
-	def systray_notify_event(self, widget, event, data = None):
-		#self.debug(text="def systray_notify_event()")
+	def systray_focus_in(self, widget, event, data = None):
+		# *** fixme *** try to detect focus-in/out
+		self.debug(text="def systray_focus_in()")
 		try:
-			self.mouse_in_tray_menu = time.time() + 30
+			self.mouse_in_tray_menu = time.time() + 60
+		except:
+			pass
+
+	def systray_focus_out(self, widget, event, data = None):
+		# *** fixme *** try to detect focus-in/out
+		self.debug(text="def systray_focus_out()")
+		try:
+			self.mouse_in_tray_menu = time.time() + 5
+		except:
+			pass
+
+	def systray_notify_event_enter(self, widget, event, data = None):
+		# *** fixme *** try to detect focus-in/out
+		self.debug(text="def systray_notify_event_enter()")
+		try:
+			self.mouse_in_tray_menu = time.time() + 60
+		except:
+			pass
+
+	def systray_notify_event_leave(self, widget, event, data = None):
+		# *** fixme *** try to detect focus-in/out
+		self.debug(text="def systray_notify_event_leave()")
+		try:
+			self.mouse_in_tray_menu = time.time() + 5
 		except:
 			pass
 
 	def check_hide_popup(self, data = None):
+		# *** fixme *** try to detect focus-in/out
 		#self.debug(text="def check_hide_popup()")
 		try:
 			if not self.mouse_in_tray_menu == None:
