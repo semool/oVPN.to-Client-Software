@@ -249,11 +249,17 @@ class Systray:
 	def win_pre1_check_app_dir(self):
 		self.debug(text="def win_pre1_check_app_dir()")
 		os_appdata = os.getenv('APPDATA')
-		alt_appdata = "appdata"
 		if os.path.exists("appdata"):
 			print "alternative folder found"
-			self.app_dir = "%s\\ovpn" % (alt_appdata)
-			self.bin_dir = "."
+			self.bin_dir = os.getcwd()
+			self.app_dir = "%s\\appdata\\ovpn" % (self.bin_dir)
+			oldpath = "%s\\ovpn" % (os_appdata)
+			newpath = self.app_dir
+			try:
+				if os.path.exists(oldpath) and not os.path.exists(newpath):
+					self.copy_appdata(oldpath,newpath)
+			except:
+				self.msgwarn(text="Copy old appdata to new folder failed!")
 		else:
 			self.app_dir = "%s\\ovpn" % (os_appdata)
 			self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
@@ -325,8 +331,8 @@ class Systray:
 
 		self.dns_dir =  "%s\\dns" % (self.bin_dir)
 		self.dns_d0wntxt =  "%s\\dns.txt" % (self.dns_dir)
-		self.dns_ung =  "%s\\ungefiltert" % (self.dns_dir)
-		self.dns_ung_alphaindex =  "%s\\alphaindex.txt" % (self.dns_ung)
+		#self.dns_ung =  "%s\\ungefiltert" % (self.dns_dir)
+		#self.dns_ung_alphaindex =  "%s\\alphaindex.txt" % (self.dns_ung)
 
 		self.ico_dir = "%s\\ico" % (self.bin_dir)
 		if not os.path.isdir(self.ico_dir):
@@ -420,8 +426,8 @@ class Systray:
 			if not os.path.exists(self.dns_dir):
 				os.mkdir(self.dns_dir)
 
-			if not os.path.exists(self.dns_ung):
-				os.mkdir(self.dns_ung)
+			#if not os.path.exists(self.dns_ung):
+			#	os.mkdir(self.dns_ung)
 
 			if not self.build_openvpn_dlurl():
 				return False
@@ -4109,14 +4115,25 @@ class Systray:
 			content = os.listdir(self.vpn_cfgold)
 			for file in content:
 				if file.endswith('.ovpn.to.ovpn') or file.endswith('.ovpn.to') or file.endswith('.txt') or file.endswith('.log'):
-					netshcmd = 'move /Y "%s\\%s" "%s\\"' % (self.vpn_cfgold,file,self.vpn_cfg)
-					self.debug(text="def move_configs: '%s'" % netshcmd)
-					exitcode = subprocess.call('%s' % (netshcmd),shell=True)
+					shellcmd = 'move.exe /Y "%s\\%s" "%s\\"' % (self.vpn_cfgold,file,self.vpn_cfg)
+					self.debug(text="def move_configs: '%s'" % shellcmd)
+					exitcode = subprocess.call('%s' % (shellcmd),shell=True)
 					if exitcode == 0:
 						self.debug(text="def move_configs: exitcode = %s" % (exitcode))
 					else:
 						self.debug(text="def move_configs: exitcode = %s" % (exitcode))
 
+	def copy_appdata(self,oldpath,newpath):
+		self.debug(text="def move_appdata()")
+		shellcmd = 'xcopy /Y /E "%s" "%s\\"' % (oldpath,newpath)
+		self.msgwarn(text="def move_appdata: '%s'" % shellcmd)
+		exitcode = subprocess.call('%s' % (shellcmd),shell=True)
+		self.debug(text="def move_appdata: exitcode = %s" % (exitcode))
+		if os.path.exists("%s\\bin"%(self.app_dir)):
+			shellcmd = 'rmdir.exe /S /Q "%s\\bin"' % (self.app_dir)
+			exitcode = subprocess.call('%s' % (shellcmd),shell=True)
+			self.debug(text="def move_appdata: exitcode '%s' = %s" % (shellcmd,exitcode))
+		
 	def load_ovpn_server(self):
 		self.debug(text="def load_ovpn_server()")
 		try:
