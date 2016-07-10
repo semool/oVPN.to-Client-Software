@@ -2264,7 +2264,7 @@ class Systray:
 			self.debug(text="def fill_mainwindow_with_server: go2.3")
 		except:
 			self.debug(text="cell = Gtk.CellRendererPixbuf failed")
-		
+
 		## cell 0 == statusicon
 		## cell 1 == flagicon
 		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24
@@ -2292,14 +2292,14 @@ class Systray:
 					column.set_visible(False)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
-		
+
 		cell = Gtk.CellRendererPixbuf()
 		column = Gtk.TreeViewColumn(' ',cell, pixbuf=26)
 		column.set_fixed_width(30)
-		self.treeview.append_column(column)
 		if self.LOAD_SRVDATA == False:
 			column.set_visible(False)
-		
+		self.treeview.append_column(column)
+
 		self.debug(text="def fill_mainwindow_with_server: go2.4")
 		self.fill_mainwindow_with_server()
 		GLib.idle_add(self.update_mwls)
