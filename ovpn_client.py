@@ -2007,8 +2007,11 @@ class Systray:
 								liststore.set_value(iter,cellnumber,servercipher)
 								row_changed += 1
 								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servercipher" % (server))
-							
-								
+							elif cellnumber == 25:
+								pass
+							elif cellnumber == 26:
+								pass
+
 							elif self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 								try:
 									vlanip4 = str(self.OVPN_SRV_DATA[servershort]["vlanip4"])
@@ -2233,7 +2236,7 @@ class Systray:
 
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
-			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str)
+			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,GdkPixbuf.Pixbuf)
 			self.debug(text="def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
@@ -2256,6 +2259,7 @@ class Systray:
 			self.debug(text="def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=1)
+			column.set_fixed_width(30)
 			self.treeview.append_column(column)
 			self.debug(text="def fill_mainwindow_with_server: go2.3")
 		except:
@@ -2264,7 +2268,7 @@ class Systray:
 		## cell 0 == statusicon
 		## cell 1 == flagicon
 		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24
-		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 " ]
+		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 ", " Short " ]
 		for cellname in cellnames:
 			align=0.5
 			if cellnumber in [ 9, 23, 24 ]:
@@ -2273,21 +2277,28 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			
+
 			if self.ENABLE_MAINWINDOW_SORTING == True:
-				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
+				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 					column.set_sort_column_id(cellnumber)
 					# Add sort function for str cells
-					if not cellnumber in [ 2, 6, 16 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
+					if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
 					if cellnumber in [ 16 ]:
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
-				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ]:
+				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 					column.set_visible(False)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
+		
+		cell = Gtk.CellRendererPixbuf()
+		column = Gtk.TreeViewColumn(' ',cell, pixbuf=26)
+		column.set_fixed_width(30)
+		self.treeview.append_column(column)
+		if self.LOAD_SRVDATA == False:
+			column.set_visible(False)
 		
 		self.debug(text="def fill_mainwindow_with_server: go2.4")
 		self.fill_mainwindow_with_server()
@@ -2314,7 +2325,7 @@ class Systray:
 					servermtu = self.OVPN_SERVER_INFO[servershort][4]
 				except:
 					servermtu = 1500
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("-1"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1")])
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("-1"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str(servershort),countryimg])
 			except:
 				self.debug(text="def fill_mainwindow_with_server: server '%s' failed" % (server))
 
