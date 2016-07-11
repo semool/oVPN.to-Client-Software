@@ -2163,8 +2163,8 @@ class Systray:
 					HEIGHT = self.SRV_LIGHT_HEIGHT
 					self.mainwindow.set_default_size(int(WIDTH),int(HEIGHT))
 				self.mainwindow_ovpn_server()
-				self.MAINWINDOW_OPEN = True
 				self.mainwindow.show_all()
+				self.MAINWINDOW_OPEN = True
 				return True
 			except:
 				self.MAINWINDOW_OPEN = False
@@ -2307,6 +2307,7 @@ class Systray:
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
+		self.mainwindow_vbox.show_all()
 		self.debug(text="def fill_mainwindow_with_server: go2.6")
 		return
 
@@ -2470,11 +2471,11 @@ class Systray:
 
 	def cb_destroy_mainwindow(self,event):
 		self.debug(text="def cb_destroy_mainwindow")
-		self.destroy_mainwindow()
+		self.MAINWINDOW_OPEN = False
 
 	def cb_destroy_accwindow(self,event):
 		self.debug(text="def cb_destroy_accwindow")
-		self.destroy_accwindow()
+		self.ACCWINDOW_OPEN = False
 
 	def cb_del_dns(self,widget,event,data):
 		self.debug(text="def cb_del_dns()")
@@ -3796,17 +3797,20 @@ class Systray:
 	def cb_extserverview(self,widget,event):
 		self.debug(text="def cb_extserverview()")
 		self.destroy_systray_menu()
+		reopen = False
+		if self.MAINWINDOW_OPEN == True:
+			reopen = True
+			GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
 		if self.LOAD_SRVDATA == False:
 			if self.check_passphrase() == True:
 				self.LOAD_SRVDATA = True
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
-				self.debug(text="def cb_extserverview: self.PASSPHRASE = '-NOT_FALSE-'")
+				self.OVPN_SRV_DATA = {}
 		else:
 			self.LOAD_SRVDATA = False
-			#self.OVPN_SRV_DATA = {}
 		self.write_options_file()
-		self.destroy_mainwindow()
-		self.show_mainwindow(widget,event)
+		if reopen == True:
+			GLib.idle_add(self.mainwindow_ovpn_server)
 
 	def cb_extserverview_size(self,widget,event):
 		self.debug(text="def cb_extserverview_size()")
