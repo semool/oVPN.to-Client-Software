@@ -1392,7 +1392,7 @@ class Systray:
 			self.debug(text="def make_systray_menu: failed")
 
 	def make_systray_options_menu(self):
-		self.debug(text="def make_systray_options_menu()")	
+		self.debug(text="def make_systray_options_menu()")
 		try:
 			self.systray_optionsmenu = Gtk.Menu()
 			self.systray_optionsmenu.connect('enter-notify-event', self.systray_notify_event_enter)
@@ -1939,7 +1939,6 @@ class Systray:
 								servermtu = str(self.OVPN_SERVER_INFO[servershort][4])
 							except:
 								servermtu = str(1500)
-								
 							if cellnumber == 0:
 								statusimgpath = False
 								if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
@@ -2154,6 +2153,7 @@ class Systray:
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
+				"""
 				if self.LOAD_SRVDATA == True:
 					WIDTH = self.SRV_WIDTH
 					HEIGHT = self.SRV_HEIGHT
@@ -2162,6 +2162,7 @@ class Systray:
 					WIDTH = self.SRV_LIGHT_WIDTH
 					HEIGHT = self.SRV_LIGHT_HEIGHT
 					self.mainwindow.set_default_size(int(WIDTH),int(HEIGHT))
+				"""
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
@@ -2233,14 +2234,14 @@ class Systray:
 			mode = "IPv6 + IPv4"
 		self.debug(text="def mainwindow_ovpn_server: go0")
 		label = Gtk.Label("oVPN Server [ %s ]" % (mode))
-
+		
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
 			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,GdkPixbuf.Pixbuf)
 			self.debug(text="def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(text="def mainwindow_ovpn_server: server-window failed")
-
+		
 		self.debug(text="def mainwindow_ovpn_server: go3")
 		self.treeview = Gtk.TreeView(self.serverliststore)
 		self.treeview.connect("button_release_event",self.on_right_click_mainwindow)
@@ -2250,7 +2251,7 @@ class Systray:
 		self.debug(text="def mainwindow_ovpn_server: go4")
 		self.scrolledwindow.add(self.treeview)
 		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
-
+		
 		try:
 			self.debug(text="def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
@@ -2264,10 +2265,10 @@ class Systray:
 			self.debug(text="def fill_mainwindow_with_server: go2.3")
 		except:
 			self.debug(text="cell = Gtk.CellRendererPixbuf failed")
-
+		
 		## cell 0 == statusicon
 		## cell 1 == flagicon
-		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24
+		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24			25
 		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 ", " Short " ]
 		for cellname in cellnames:
 			align=0.5
@@ -2277,7 +2278,7 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-
+			
 			if self.ENABLE_MAINWINDOW_SORTING == True:
 				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 					column.set_sort_column_id(cellnumber)
@@ -2292,23 +2293,33 @@ class Systray:
 					column.set_visible(False)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
-
+		
 		cell = Gtk.CellRendererPixbuf()
 		column = Gtk.TreeViewColumn(' ',cell, pixbuf=26)
 		column.set_fixed_width(30)
 		if self.LOAD_SRVDATA == False:
 			column.set_visible(False)
 		self.treeview.append_column(column)
-
+		
 		self.debug(text="def fill_mainwindow_with_server: go2.4")
 		GLib.idle_add(self.fill_mainwindow_with_server)
 		GLib.idle_add(self.update_mwls)
 		self.debug(text="def fill_mainwindow_with_server: go2.5")
+		
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
 		self.mainwindow_vbox.show_all()
 		self.debug(text="def fill_mainwindow_with_server: go2.6")
+		
+		if self.LOAD_SRVDATA == True:
+			WIDTH = self.SRV_WIDTH
+			HEIGHT = self.SRV_HEIGHT
+			self.mainwindow.resize(int(WIDTH),int(HEIGHT))
+		else:
+			WIDTH = self.SRV_LIGHT_WIDTH
+			HEIGHT = self.SRV_LIGHT_HEIGHT
+			self.mainwindow.resize(int(WIDTH),int(HEIGHT))
 		return
 
 	def fill_mainwindow_with_server(self):
