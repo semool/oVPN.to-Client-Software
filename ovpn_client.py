@@ -262,7 +262,7 @@ class Systray:
 				if os.path.exists(oldpath) and not os.path.exists(newpath):
 					self.copy_appdata(oldpath,newpath)
 			except:
-				self.msgwarn(text="Copy old appdata to new folder failed!")
+				self.msgwarn("Copy old appdata to new folder failed!","Error: def win_pre1_check_app_dir()")
 		else:
 			self.app_dir = "%s\\ovpn" % (os_appdata)
 			self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
@@ -642,7 +642,7 @@ class Systray:
 				return True
 			
 			except:
-				self.msgwarn(text="def read_options_file: failed!")
+				self.msgwarn("def read_options_file: failed!","Error!")
 				try:
 					os.remove(self.opt_file)
 				except:
@@ -1746,21 +1746,17 @@ class Systray:
 			quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
 
 	def systray_notify_event_leave(self, widget, event, data = None):
-		self.MOUSE_IN_TRAY = time.time() + 1
 		#self.debug(text="def systray_notify_event_leave() data = '%s'" % (data))
+		self.MOUSE_IN_TRAY = time.time() + 1
 
 	def systray_notify_event_enter(self, widget, event, data = None):
-		self.MOUSE_IN_TRAY = time.time() + 30
 		#self.debug(text="def systray_notify_event_enter() data = '%s'" % (data))
+		self.MOUSE_IN_TRAY = time.time() + 30
 
 	def check_hide_popup(self):
-		# *** fixme *** try to detect focus-in/out
 		#self.debug(text="def check_hide_popup()")
-		try:
-			if self.MOUSE_IN_TRAY < time.time():
-				self.destroy_systray_menu()
-		except:
-			pass
+		if self.MOUSE_IN_TRAY < time.time():
+			self.destroy_systray_menu()
 
 	def check_remote_update(self):
 		self.debug(text="def check_remote_update()")
@@ -1832,26 +1828,26 @@ class Systray:
 							# final step to download certs
 							if self.API_REQUEST(API_ACTION = "getcerts"):
 								if self.extract_ovpn():
-									self.debug(text="def inThread_timer_check_certdl: extraction complete")
 									self.timer_check_certdl_running = False
+									self.msgwarn("Certificates and Configs updated!","oVPN Update OK!")
 									return True
 								else:
-									self.debug(text="def inThread_timer_check_certdl: extraction failed")
+									self.msgwarn("def inThread_timer_check_certdl: extraction failed","Error: oVPN Update failed!")
 							else:
-								self.debug(text="def inThread_timer_check_certdl: downloading certs failed")
+								self.msgwarn("def inThread_timer_check_certdl: downloading certs failed","Error: oVPN Update failed!")
 							# finish downloading certs
 						else:
-							self.debug(text="def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = requestcerts): failed")
+							self.msgwarn("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = requestcerts): failed","Error: oVPN Update failed!")
 					else:
-						self.debug(text="def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = getconfigs): failed")
+						self.msgwarn("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = getconfigs): failed","Error: oVPN Update failed!")
 				else:
-					self.debug(text="def inThread_timer_check_certdl: True")
 					self.timer_check_certdl_running = False
+					self.msgwarn("No update needed!","oVPN Update OK!")
 					return True
 			else:
-				self.debug(text="def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = lastupdate): failed")
+				self.msgwarn("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = lastupdate): failed","Error: oVPN Update failed!")
 		except:
-			self.debug(text="def inThread_timer_check_certdl: failed")
+			self.msgwarn("def inThread_timer_check_certdl: failed","Error: oVPN Update failed!")
 		self.timer_check_certdl_running = False
 		return False
 
@@ -2548,7 +2544,7 @@ class Systray:
 			self.call_redraw_mainwindow()
 			return True
 		except:
-			self.msgwarn(text="def cb_set_ovpn_favorite_server: failed")
+			self.debug(text="def cb_set_ovpn_favorite_server: failed")
 
 	def cb_del_ovpn_favorite_server(self,widget,event,server):
 		self.debug(text="def cb_del_ovpn_favorite_server()")
@@ -2560,7 +2556,7 @@ class Systray:
 			self.call_redraw_mainwindow()
 			return True
 		except:
-			self.msgwarn(text="def cb_del_ovpn_favorite_server: failed")
+			self.debug(text="def cb_del_ovpn_favorite_server: failed")
 
 	def reset_load_remote_timer(self):
 		self.debug(text="reset_load_remote_timer()")
@@ -2696,7 +2692,7 @@ class Systray:
 				not os.path.isfile(self.ovpn_tls_key) or \
 				not os.path.isfile(self.ovpn_cli_crt) or \
 				not os.path.isfile(self.ovpn_cli_key):
-					self.msgwarn(text="Error: Files missing: '%s' % (self.ovpn_server_dir)")
+					self.msgwarn("Files missing: '%s' % (self.ovpn_server_dir)","Error: Certs not found!")
 					return False
 			try:
 				ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
@@ -2719,11 +2715,11 @@ class Systray:
 		exitcode = False
 		self.win_enable_tap_interface()
 		if not self.openvpn_check_files():
-			self.OVPN_CONNECTEDto = False
+			self.reset_ovpn_values_disconnected()
 			return False
 		if not self.win_firewall_start():
-			self.debug(text="def inThread_spawn_openvpn_process: Could not start Windows Firewall!")
-			self.OVPN_CONNECTEDto = False
+			self.msgwarn("def inThread_spawn_openvpn_process: Could not start Windows Firewall!","Error!")
+			self.reset_ovpn_values_disconnected()
 			return False
 		self.win_firewall_modify_rule(option="add")
 		self.win_clear_ipv6()
@@ -2760,6 +2756,7 @@ class Systray:
 		self.win_clear_ipv6()
 		self.debug(text="def reset_ovpn_values_after()")
 		self.STATE_OVPN = False
+		self.inThread_jump_server_running = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtoIP = False
 		self.OVPN_CONNECTEDtime = 0
@@ -3025,10 +3022,10 @@ class Systray:
 								self.debug(text="Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
 								return True
 							else:
-								self.msgwarn(text="Error: Restore Secondary DNS to %s failed." % (self.GATEWAY_DNS2))
+								self.msgwarn("Error: Restore Secondary DNS to %s failed." % (self.GATEWAY_DNS2),"Error: DNS restore 2nd")
 								return False
 					else:
-						self.msgwarn(text="Error: Restore Primary DNS to %s failed." % (self.GATEWAY_DNS1))
+						self.msgwarn("Error: Restore Primary DNS to %s failed." % (self.GATEWAY_DNS1),"Error: DNS restore 1st")
 						return False
 				else:
 					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
@@ -3124,13 +3121,13 @@ class Systray:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
 					return True
 				except:
-					self.msgwarn(text="Error:\nSSL Root Certificate for %s not loaded %s" % (DOMAIN,self.CA_FILE))
+					self.msgwarn("Error:\nSSL Root Certificate for %s not loaded %s" % (DOMAIN,self.CA_FILE),"Error: SSL CA Cert #1")
 					return False
 			else:
-				self.msgwarn(text = "Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH))
+				self.msgwarn("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),"Error: SSL CA Cert #2")
 				return False
 		else:
-			self.msgwarn(text="Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE))
+			self.msgwarn("Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE),"Error: SSL CA Cert #3")
 			return False
 
 	def win_firewall_start(self):
@@ -3641,7 +3638,7 @@ class Systray:
 		if self.DEBUG == False:
 			self.DEBUG = True
 			self.write_options_file()
-			self.msgwarn(text="DEBUG Mode enabled.\nLogfile:\n'%s'" % (self.debug_log))
+			self.msgwarn("Logfile:\n'%s'" % (self.debug_log),"Debug Mode Enabled")
 		else:
 			self.DEBUG = False
 			self.write_options_file()
@@ -3690,7 +3687,7 @@ class Systray:
 		self.debug(text="def cb_check_normal_update()")
 		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
-			self.msgwarn(text="Internet Connection Error!")
+			self.msgwarn("Could not connect to %s" % (DOMAIN),"Error: Update failed")
 			return False
 		if self.check_remote_update():
 			self.debug(text="def cb_check_normal_update: self.check_remote_update() == True")
@@ -3700,7 +3697,7 @@ class Systray:
 		self.debug(text="def cb_force_update()")
 		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
-			self.msgwarn(text="Internet Connection Error!")
+			self.msgwarn("Could not connect to %s" % (DOMAIN),"Error: Update failed")
 			return False
 		if self.reset_last_update():
 			self.debug(text="def cb_force_update: self.reset_last_update")
@@ -3831,7 +3828,7 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
+			self.msgwarn("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN),"Switched to IPv4+6")
 			self.cb_check_normal_update(widget,event)
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
@@ -3849,7 +3846,7 @@ class Systray:
 			self.cb_check_normal_update(widget,event)
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
-		self.msgwarn(text="Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN))
+		self.msgwarn("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN),"Switched to IPv6+4")
 
 	def cb_change_fwresetmode(self,widget,event):
 		self.debug(text="def cb_change_fwresetmode()")
@@ -3859,7 +3856,7 @@ class Systray:
 		elif self.WIN_RESET_FIREWALL == False:
 			self.WIN_RESET_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn(text="Could not export Windows Firewall Backup!")
+				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
 		self.write_options_file()
 
 	def cb_change_fwbackupmode(self,widget,event):
@@ -3870,7 +3867,7 @@ class Systray:
 		elif self.WIN_BACKUP_FIREWALL == False:
 			self.WIN_BACKUP_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn(text="Could not export Windows Firewall Backup!")
+				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
 		self.write_options_file()
 
 	def cb_change_fwblockonexit(self,widget,event):
@@ -4015,7 +4012,7 @@ class Systray:
 			self.debug(text=text)
 			return False
 		except:
-			self.msgwarn(text="def API_REQUEST: requests error on: %s failed!" % (API_ACTION))
+			self.msgwarn("def API_REQUEST: requests error on: %s failed!" % (API_ACTION),"Error: API-Request")
 			return False
 		
 		if not self.body == False:
@@ -4132,7 +4129,7 @@ class Systray:
 	def copy_appdata(self,oldpath,newpath):
 		self.debug(text="def move_appdata()")
 		shellcmd = 'xcopy /Y /E "%s" "%s\\"' % (oldpath,newpath)
-		self.msgwarn(text="def move_appdata: '%s'" % shellcmd)
+		self.msgwarn("def move_appdata: '%s'" % (shellcmd),"Move Userdata to new folder!")
 		exitcode = subprocess.call('%s' % (shellcmd),shell=True)
 		self.debug(text="def move_appdata: exitcode = %s" % (exitcode))
 		if os.path.exists("%s\\bin"%(self.app_dir)):
@@ -4215,7 +4212,7 @@ class Systray:
 			else:
 				self.reset_last_update()
 		except:
-			self.msgwarn(text="def load_ovpn_server: failed")
+			self.msgwarn("def load_ovpn_server: failed","Error!")
 
 	def load_remote_data(self):
 		if self.timer_load_remote_data_running == True:
@@ -4384,7 +4381,7 @@ class Systray:
 			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x86
 		else:
 			self.OPENVPN_DL_URL = False
-			self.msgwarn(text="Platform '%s' not supported" % (self.PLATFORM))
+			self.msgwarn("Platform '%s' not supported" % (self.PLATFORM),"Error!")
 			return False
 		self.OPENVPN_DL_URL = "%s/%s" % (self.OPENVPN_REM_URL,self.OPENVPN_FILENAME)
 		self.OPENVPN_DL_URL_ALT = "%s/%s" % (self.OPENVPN_ALT_URL,self.OPENVPN_FILENAME)
@@ -4409,7 +4406,7 @@ class Systray:
 		if not self.OPENVPN_DL_URL == False:
 			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 				return self.verify_openvpnbin_dl()
-			self.msgwarn(text="Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
+			self.msgwarn("Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO),"Setup: openVPN")
 			try:
 				ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
 				r1 = requests.get(self.OPENVPN_DL_URL)
@@ -4435,14 +4432,13 @@ class Systray:
 				self.debug(text="def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
 				return True
 			else:
-				self.msgwarn(text="Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'" % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH))
+				self.msgwarn("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'" % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),"Error!")
 				try:
 					os.remove(self.OPENVPN_SAVE_BIN_TO)
 				except:
-					self.msgwarn(text="Failed remove file: %s" % (self.OPENVPN_SAVE_BIN_TO))
+					self.msgwarn("Failed remove file: %s" % (self.OPENVPN_SAVE_BIN_TO),"Error!")
 				return False
 		else:
-			#self.msgwarn(text="def verify_openvpnbin_dl: file not found '%s'" % (self.OPENVPN_SAVE_BIN_TO))
 			return False
 
 	def win_install_openvpn(self):
@@ -4476,7 +4472,7 @@ class Systray:
 
 	def win_select_openvpn(self):
 		self.debug(text="def win_select_openvpn()")
-		self.msgwarn(text="OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!")
+		self.msgwarn("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!","Setup: openVPN")
 		dialogWindow = Gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_default_response(Gtk.ResponseType.OK)
@@ -4524,7 +4520,7 @@ class Systray:
 				if self.upgrade_openvpn():
 					self.win_detect_openvpn()
 		if not self.openvpn_check_files():
-			self.msgwarn(text="WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']" % (self.OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE))
+			self.msgwarn("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']" % (self.OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE),"Error!")
 		self.debug(text = "def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
 		try:
 			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
@@ -4577,10 +4573,10 @@ class Systray:
 						if hasha == hashb:
 							self.debug(text="def openvpn_check_files: hash '%s' OK!" % (file))
 						else:
-							self.debug(text="Invalid Hash: '%s'! is '%s' != '%s'" % (filepath,hasha,hashb))
+							self.msgwarn("Invalid Hash: '%s'! is '%s' != '%s'" % (filepath,hasha,hashb),"Error!")
 							return False
 					else:
-						self.debug(text="Invalid content '%s' in '%s'" % (file,self.OPENVPN_DIR))
+						self.msgwarn("Invalid content '%s' in '%s'" % (file,self.OPENVPN_DIR),"Error!")
 						return False
 				return True
 			else:
@@ -4894,10 +4890,10 @@ class Systray:
 						self.debug(text="def ask_loadorunload_fw: dialog response = ELSE '%s'" % (response))
 						return False
 				except:
-					self.msgwarn(text="def ask_loadorunload_fw: dialog failed")
+					self.debug(text="def ask_loadorunload_fw: dialog failed")
 					return False
 		except:
-			self.msgwarn(text="def ask_loadorunload_fw: failed")
+			self.debug(text="def ask_loadorunload_fw: failed")
 			return False
 
 	def remove_lock(self):
@@ -4984,14 +4980,17 @@ class Systray:
 			#print "Language file for %s not found" % loc
 		translation.install()
 
-	def msgwarn(self,text):
+	def msgwarn(self,text,title):
+		GLib.idle_add(self.msgwarn_glib,text,title)
+
+	def msgwarn_glib(self,text,title):
 		if self.DEBUG == False:
 			self.DEBUG = True
 		try:
-			self.debug(text=text)
+			self.debug(text="def msgwarn: %s"% (text))
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-			dialogWindow.set_title("Info")
+			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
 			try:
 				dialogWindow.set_icon_from_file(self.systray_icon_connected)
