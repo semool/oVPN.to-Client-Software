@@ -3469,7 +3469,7 @@ class Systray:
 				ph1Entry.set_visibility(False)
 				ph1Entry.set_invisible_char("X")
 				ph1Entry.set_size_request(200,24)
-				ph1Label = Gtk.Label(label="Passphrase()")
+				ph1Label = Gtk.Label(label="Passphrase:")
 				dialogBox.pack_start(ph1Label,False,False,0)
 				dialogBox.pack_start(ph1Entry,False,False,0)
 				dialogBox.pack_start(checkbox_title,False,False,0)
