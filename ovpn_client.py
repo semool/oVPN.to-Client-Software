@@ -1378,12 +1378,7 @@ class Systray:
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_bottom_menu() failed")
 			
-			self.systray_menu.connect('motion-notify-event', self.systray_notify_event_motion,"systray_menu")
-			#try:
-			#	from gi.repository import Gdk
-			#	self.systray_menu.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
-			#except:
-			#	self.debug(text="def make_systray_menu: failed ADD_EVENTS")
+			self.systray_menu.connect('enter-notify-event', self.systray_notify_event_enter,"systray_menu")
 			self.systray_menu.show_all()
 			self.systray_menu.popup(None, None, None, event, 0, 0)
 		except:
@@ -1394,7 +1389,7 @@ class Systray:
 		self.debug(text="def make_systray_options_menu()")
 		try:
 			self.systray_optionsmenu = Gtk.Menu()
-			self.systray_optionsmenu.connect('motion-notify-event', self.systray_notify_event_motion,"sub_optionsmenu")
+			self.systray_optionsmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_optionsmenu")
 			self.systray_optionsmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_optionsmenu")
 			optionsm = Gtk.MenuItem('Options')
 			optionsm.set_submenu(self.systray_optionsmenu)
@@ -1437,7 +1432,7 @@ class Systray:
 		self.debug(text="def make_systray_options_ipv6_menu()")
 		try:
 			ipv6menu = Gtk.Menu()
-			ipv6menu.connect('motion-notify-event', self.systray_notify_event_motion,"sub_ipv6menu")
+			ipv6menu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_ipv6menu")
 			ipv6menu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_ipv6menu")
 			ipv6m = Gtk.MenuItem('IPv6 Options')
 			ipv6m.set_submenu(ipv6menu)
@@ -1464,7 +1459,7 @@ class Systray:
 		self.debug(text="def make_systray_firewall_menu()")
 		try:
 			fwmenu = Gtk.Menu()
-			fwmenu.connect('motion-notify-event', self.systray_notify_event_motion,"sub_fwmenu")
+			fwmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_fwmenu")
 			fwmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_fwmenu")
 			fwm = Gtk.MenuItem('Firewall')
 			fwm.set_submenu(fwmenu)
@@ -1541,7 +1536,7 @@ class Systray:
 		try:
 			try:
 				updatesmenu = Gtk.Menu()
-				updatesmenu.connect('motion-notify-event', self.systray_notify_event_motion,"sub_updatesmenu")
+				updatesmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_updatesmenu")
 				updatesmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_updatesmenu")
 				updatesm = Gtk.MenuItem("Updates")
 				updatesm.set_submenu(updatesmenu)
@@ -1630,7 +1625,7 @@ class Systray:
 						# create countrygroup menu
 						countrycodefrombefore = countrycode
 						cgmenu = Gtk.Menu()
-						cgmenu.connect('motion-notify-event', self.systray_notify_event_motion,"sub_cgmenu")
+						cgmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_cgmenu")
 						cgmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_cgmenu")
 						self.cgmenu = cgmenu
 						try:
@@ -1752,13 +1747,11 @@ class Systray:
 
 	def systray_notify_event_leave(self, widget, event, data = None):
 		self.MOUSE_IN_TRAY = time.time() + 1
-		self.debug(text="def systray_notify_event_leave() data = '%s'" % (data))
+		#self.debug(text="def systray_notify_event_leave() data = '%s'" % (data))
 
-	def systray_notify_event_motion(self, widget, event, data = None):
-		#x = event.x
-		#y = event.y
-		#self.debug(text="def systray_notify_event_motion() x=%s y=%s data = '%s'" % (x,y,data))
+	def systray_notify_event_enter(self, widget, event, data = None):
 		self.MOUSE_IN_TRAY = time.time() + 30
+		#self.debug(text="def systray_notify_event_enter() data = '%s'" % (data))
 
 	def check_hide_popup(self):
 		# *** fixme *** try to detect focus-in/out
