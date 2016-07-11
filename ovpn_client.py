@@ -1755,9 +1755,9 @@ class Systray:
 		self.debug(text="def systray_notify_event_leave() data = '%s'" % (data))
 
 	def systray_notify_event_motion(self, widget, event, data = None):
-		x = event.x
-		y = event.y
-		self.debug(text="def systray_notify_event_motion() x=%s y=%s data = '%s'" % (x,y,data))
+		#x = event.x
+		#y = event.y
+		#self.debug(text="def systray_notify_event_motion() x=%s y=%s data = '%s'" % (x,y,data))
 		self.MOUSE_IN_TRAY = time.time() + 30
 
 	def check_hide_popup(self):
