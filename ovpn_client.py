@@ -2301,7 +2301,7 @@ class Systray:
 		self.treeview.append_column(column)
 
 		self.debug(text="def fill_mainwindow_with_server: go2.4")
-		self.fill_mainwindow_with_server()
+		GLib.idle_add(self.fill_mainwindow_with_server)
 		GLib.idle_add(self.update_mwls)
 		self.debug(text="def fill_mainwindow_with_server: go2.5")
 		# statusbar
@@ -2331,7 +2331,8 @@ class Systray:
 
 	def destroy_mainwindow(self):
 		self.debug(text="def destroy_mainwindow()")
-		self.mainwindow.destroy()
+		GLib.idle_add(self.mainwindow.destroy)
+		#self.mainwindow.destroy()
 		self.MAINWINDOW_OPEN = False
 		self.statusbar_text = False
 		self.debug(text="def destroy_mainwindow")
@@ -2462,7 +2463,8 @@ class Systray:
 
 	def destroy_accwindow(self):
 		self.debug(text="def destroy_accwindow()")
-		self.accwindow.destroy()
+		GLib.idle_add(self.accwindow.destroy)
+		#self.accwindow.destroy()
 		self.ACCWINDOW_OPEN = False
 		self.debug(text="def destroy_accwindow")
 
@@ -2564,7 +2566,8 @@ class Systray:
 	def destroy_systray_menu(self):
 		self.debug(text="def destroy_systray_menu()")
 		try:
-			self.systray_menu.destroy()
+			GLib.idle_add(self.systray_menu.destroy)
+			#self.systray_menu.destroy()
 			self.systray_menu = False
 			self.debug(text = "def destroy_systray_menu: true")
 		except:
