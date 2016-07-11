@@ -61,8 +61,11 @@ class Systray:
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
 			self.tray.set_tooltip_markup(CLIENT_STRING)
-			if self.UPDATEOVPNONSTART == True and self.check_inet_connection() == True:
-				self.check_remote_update()
+			if self.UPDATEOVPNONSTART == True:
+				if self.check_inet_connection() == True:
+					self.check_remote_update()
+				else:
+					self.msgwarn("Could not connect to %s" % (DOMAIN),"Update failed!")
 			thread = threading.Thread(target=self.systray_timer)
 			thread.daemon = True
 			thread.start()
@@ -2735,11 +2738,11 @@ class Systray:
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 			pingthread.daemon = True
 			pingthread.start()
-		self.inThread_jump_server_running = False
 		if self.TAP_BLOCKOUTBOUND == True:
 			self.win_firewall_tap_blockoutbound()
 		self.win_netsh_set_dns_ovpn()
 		self.call_redraw_mainwindow()
+		self.inThread_jump_server_running = False
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
 		except:
