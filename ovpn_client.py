@@ -122,6 +122,7 @@ class Systray:
 		self.LAST_CHECK_MYIP = 0
 		self.LAST_PING_EXEC = 0
 		self.LAST_CHECK_INET = 0
+		self.LAST_MSGWARN_WINDOW = 0
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
 		self.GATEWAY_DNS2 = False
@@ -1220,6 +1221,13 @@ class Systray:
 		if self.stop_systray_timer2 == True:
 			return False
 		self.systray_timer_running = True
+		
+		try:
+			if self.LAST_MSGWARN_WINDOW > 0 and (int(time.time())-self.LAST_MSGWARN_WINDOW) > 9:
+				GLib.idle_add(self.msgwarn_window.destroy)
+				self.LAST_MSGWARN_WINDOW = 0
+		except:
+			pass
 		
 		systraytext = False
 		if self.timer_check_certdl_running == True:
@@ -4987,11 +4995,18 @@ class Systray:
 		GLib.idle_add(self.msgwarn_glib,text,title)
 
 	def msgwarn_glib(self,text,title):
+		try:
+			self.msgwarn_window.destroy()
+		except:
+			pass
 		if self.DEBUG == False:
 			self.DEBUG = True
+		self.debug(text="def msgwarn: %s"% (text))
 		try:
+			self.LAST_MSGWARN_WINDOW = int(time.time())
 			self.debug(text="def msgwarn: %s"% (text))
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+			self.msgwarn_window = dialogWindow
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
@@ -5003,7 +5018,7 @@ class Systray:
 			dialogWindow.run()
 			dialogWindow.destroy()
 		except:
-			self.debug(text=text)
+			self.debug(text="def msgwarn_glib: failed")
 
 def app():
 	Systray()
