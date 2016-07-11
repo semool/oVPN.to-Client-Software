@@ -613,12 +613,17 @@ class Systray:
 					pass
 				
 				try:
-					self.SRV_LIGHT_WIDTH = parser.get('oVPN','serverviewlightwidth')
-					self.SRV_LIGHT_HEIGHT = parser.get('oVPN','serverviewlightheight')
-					self.debug(text="Load Light Server Window Size = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
-					self.SRV_WIDTH = parser.get('oVPN','serverviewextendwidth')
-					self.SRV_HEIGHT = parser.get('oVPN','serverviewextendheight')
-					self.debug(text="Load Extended Server Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
+					SRV_LIGHT_WIDTH = parser.getint('oVPN','serverviewlightwidth')
+					SRV_LIGHT_HEIGHT = parser.getint('oVPN','serverviewlightheight')
+					SRV_WIDTH = parser.getint('oVPN','serverviewextendwidth')
+					SRV_HEIGHT = parser.getint('oVPN','serverviewextendheight')
+					if SRV_LIGHT_WIDTH >= 1 and SRV_LIGHT_HEIGHT >= 1 and SRV_WIDTH >= 1 and SRV_HEIGHT >= 1:
+						self.SRV_LIGHT_WIDTH = SRV_LIGHT_WIDTH
+						self.SRV_LIGHT_HEIGHT = SRV_LIGHT_HEIGHT
+						self.SRV_WIDTH = SRV_WIDTH
+						self.SRV_HEIGHT = SRV_HEIGHT
+						self.debug(text="Load Light Server Window Size = '%sx%s'" % (SRV_LIGHT_WIDTH,SRV_LIGHT_HEIGHT))
+						self.debug(text="Load Extended Server Window Size = '%sx%s'" % (SRV_WIDTH,SRV_HEIGHT))
 				except:
 					pass
 				
@@ -1083,14 +1088,38 @@ class Systray:
 		context_menu_servertab.append(sep)
 		
 		if self.DISABLE_SRV_WINDOW == False:
-			if self.LOAD_SRVDATA == True:
-				opt = "[enabled]"
-			else:
-				opt = "[disabled]"
-			extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
-			extserverview.connect('button-press-event', self.cb_extserverview)
-			context_menu_servertab.append(extserverview)
+			try:
+				if self.LOAD_SRVDATA == True:
+					opt = "[enabled]"
+				else:
+					opt = "[disabled]"
+				extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
+				extserverview.connect('button-press-event', self.cb_extserverview)
+				context_menu_servertab.append(extserverview)
+			except:
+				self.debug(text="def make_context_menu_servertab: extserverview failed")
+			
+			try:
+				if self.LOAD_SRVDATA == True:
+					WIDTH = self.SRV_WIDTH
+					HEIGHT = self.SRV_HEIGHT
+				else:
+					WIDTH = self.SRV_LIGHT_WIDTH
+					HEIGHT = self.SRV_LIGHT_HEIGHT
+				extserverviewsize = Gtk.MenuItem('Set Server-View Size [%sx%s]'%(int(WIDTH),int(HEIGHT)))
+				extserverviewsize.connect('button-press-event', self.cb_extserverview_size)
+				context_menu_servertab.append(extserverviewsize)
+			except:
+				self.debug(text="def make_context_menu_servertab: extserverviewsize failed")
 		
+		try:
+			if self.ENABLE_THEME_SWITCHER == True:
+				theme = Gtk.MenuItem('Set App Theme [%s]'%(self.APP_THEME))
+				theme.connect('button-press-event', self.theme_switcher)
+				context_menu_servertab.append(theme)
+		except:
+			self.debug(text="def make_context_menu_servertab: theme failed")
+			
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
@@ -1562,27 +1591,6 @@ class Systray:
 				self.debug(text="def make_systray_updates_menu: #4 failed")
 			
 			try:
-				if self.LOAD_SRVDATA == True:
-					WIDTH = self.SRV_WIDTH
-					HEIGHT = self.SRV_HEIGHT
-				else:
-					WIDTH = self.SRV_LIGHT_WIDTH
-					HEIGHT = self.SRV_LIGHT_HEIGHT
-				extserverviewsize = Gtk.MenuItem('Set Server-View Size [%sx%s]'%(int(WIDTH),int(HEIGHT)))
-				extserverviewsize.connect('button-press-event', self.cb_extserverview_size)
-				updatesmenu.append(extserverviewsize)
-			except:
-				self.debug(text="def make_systray_updates_menu: #5 failed")
-			
-			try:
-				if self.ENABLE_THEME_SWITCHER == True:
-					theme = Gtk.MenuItem('Set App Theme [%s]'%(self.APP_THEME))
-					theme.connect('button-press-event', self.theme_switcher)
-					updatesmenu.append(theme)
-			except:
-				self.debug(text="def make_systray_updates_menu: #6 failed")
-			
-			try:
 				sep = Gtk.SeparatorMenuItem()
 				updatesmenu.append(sep)
 				
@@ -1752,7 +1760,7 @@ class Systray:
 
 	def systray_notify_event_enter(self, widget, event, data = None):
 		# *** fixme *** try to detect focus-in/out
-		self.debug(text="def systray_notify_event_enter()")
+		#self.debug(text="def systray_notify_event_enter()")
 		try:
 			self.mouse_in_tray_menu = time.time() + 60
 		except:
@@ -1760,7 +1768,7 @@ class Systray:
 
 	def systray_notify_event_leave(self, widget, event, data = None):
 		# *** fixme *** try to detect focus-in/out
-		self.debug(text="def systray_notify_event_leave()")
+		#self.debug(text="def systray_notify_event_leave()")
 		try:
 			self.mouse_in_tray_menu = time.time() + 5
 		except:
@@ -3818,6 +3826,9 @@ class Systray:
 				self.SRV_LIGHT_HEIGHT = HEIGHT
 				self.debug(text="def cb_extserverview_size(): %sx%s" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
 			self.write_options_file()
+			WIDTH = int(WIDTH)
+			HEIGHT = int(HEIGHT)
+			GLib.idle_add(self.mainwindow.resize,int(WIDTH),int(HEIGHT))
 			return True
 		else:
 			return False
