@@ -4103,13 +4103,14 @@ class Systray:
 				#self.debug(text="def check_myip: go0")
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
 				#self.debug(text="def check_myip: url = %s" % (url))
-				t1 = time.time()
+				#t1 = time.time()
 				r = requests.get(url,timeout=2)
-				t2 = time.time()
-				latency = (t2-t1)*1000
+				#t2 = time.time()
+				#latency = (t2-t1)*1000
 				rip = r.content.strip().split()[0]
 				if rip == self.OVPN_CONNECTEDtoIP:
-					self.debug(text="def check_myip: rip = '%s' (latency = %s ms)" % (rip,latency))
+					#self.debug(text="def check_myip: rip = '%s' (latency = %s ms)" % (rip,latency))
+					self.debug(text="def check_myip: rip = '%s'" % (rip))
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
 			except:
