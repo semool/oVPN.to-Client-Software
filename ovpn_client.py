@@ -52,10 +52,6 @@ class Systray:
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 		self.window.connect("delete-event", Gtk.main_quit)
-		# *** fixme *** try to detect focus-in/out
-		#self.window.set_accept_focus(True)
-		#self.window.connect('focus-in-event', self.systray_focus_in)
-		#self.window.connect('focus-out-event', self.systray_focus_out)
 		if self.preboot():
 			self.init_theme()
 			self.tray.connect('popup-menu', self.on_right_click)
@@ -1211,9 +1207,13 @@ class Systray:
 
 	def systray_timer2(self):
 		#self.debug(text="def systray_timer2()")
+		self.systray_timer2_running = True
 		if self.stop_systray_timer2 == True:
+			self.systray_timer2_running = False
 			return False
-		self.systray_timer_running = True
+		
+		if not self.systray_menu == False:
+			self.check_hide_popup()
 		
 		try:
 			if self.LAST_MSGWARN_WINDOW > 0 and (int(time.time())-self.LAST_MSGWARN_WINDOW) > 9:
@@ -1285,26 +1285,24 @@ class Systray:
 			pass
 
 		try:
-			if self.systray_timer_running == True:
-				if self.timer_load_remote_data_running == False:
-					thread = threading.Thread(target=self.load_remote_data)
-					thread.daemon = True
-					thread.start()
+			if self.timer_load_remote_data_running == False:
+				thread = threading.Thread(target=self.load_remote_data)
+				thread.daemon = True
+				thread.start()
 		except:
-			pass
+			self.debug(text="def systray_timer2: thread target=self.load_remote_data failed")
+		#self.debug(text="def systray_timer2() return")
+		self.systray_timer2_running = False
 		return
 
 	def systray_timer(self):
 		#self.debug(text="def systray_timer()")
 		if self.stop_systray_timer == True:
 			return False
-		# *** fixme *** try to detect focus-in/out
-		if not self.systray_menu == False:
-			GLib.idle_add(self.check_hide_popup)
-			
-		if not self.systray_timer2_running == True:
-			GLib.timeout_add(1000, self.systray_timer2)
-		time.sleep(0.5)
+		if self.systray_timer2_running == False:
+			#self.debug(text="def systray_timer: GLib.idle_add(self.systray_timer2)")
+			GLib.idle_add(self.systray_timer2)
+		time.sleep(1)
 		thread = threading.Thread(target=self.systray_timer)
 		thread.daemon = True
 		thread.start()
