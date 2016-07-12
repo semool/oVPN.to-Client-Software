@@ -77,6 +77,7 @@ class Systray:
 		
 		self.OS = sys.platform
 		self.MAINWINDOW_OPEN = False
+		self.MAINWINDOW_HIDE = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.ENABLE_THEME_SWITCHER = True
 		self.APP_THEME = "ms-windows"
@@ -1116,15 +1117,7 @@ class Systray:
 				context_menu_servertab.append(extserverviewsize)
 			except:
 				self.debug(text="def make_context_menu_servertab: extserverviewsize failed")
-		
-		try:
-			if self.ENABLE_THEME_SWITCHER == True:
-				theme = Gtk.MenuItem('Set App Theme [%s]'%(self.APP_THEME))
-				theme.connect('button-press-event', self.theme_switcher)
-				context_menu_servertab.append(theme)
-		except:
-			self.debug(text="def make_context_menu_servertab: theme failed")
-			
+
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
@@ -1338,7 +1331,15 @@ class Systray:
 				except:
 					self.debug(text="def show_mainwindow() on_left_click failed")
 			else:
-				self.destroy_mainwindow()
+				if self.mainwindow.get_property("visible") == False:
+					self.debug(text="def on_left_click: unhide Mainwindow")
+					self.MAINWINDOW_HIDE = False
+					self.mainwindow.show()
+				else:
+					self.debug(text="def on_left_click: hide Mainwindow")
+					self.mainwindow.hide()
+					self.MAINWINDOW_HIDE = True
+					return True
 
 	def make_systray_menu(self, event):
 		self.debug(text="def make_systray_menu()")
@@ -1420,6 +1421,14 @@ class Systray:
 			self.systray_optionsmenu.append(switchdebug)
 		except:
 			self.debug(text="def make_systray_options_menu failed")
+
+		try:
+			if self.ENABLE_THEME_SWITCHER == True:
+				theme = Gtk.MenuItem('Set App Theme [%s]'%(self.APP_THEME))
+				theme.connect('button-press-event', self.theme_switcher)
+				self.systray_optionsmenu.append(theme)
+		except:
+			self.debug(text="def make_systray_options_menu failed: theme failed")
 
 	def make_systray_options_dnsleak(self):
 		self.debug(text="def make_systray_options_dnsleak()")
@@ -2084,7 +2093,7 @@ class Systray:
 
 	def call_redraw_mainwindow(self):
 		self.debug(text="def call_redraw_mainwindow()")
-		if self.MAINWINDOW_OPEN == True:
+		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
 			self.statusbartext_from_before = False
 			try:
 				GLib.idle_add(self.update_mwls)
@@ -2287,6 +2296,7 @@ class Systray:
 		GLib.idle_add(self.mainwindow.destroy)
 		#self.mainwindow.destroy()
 		self.MAINWINDOW_OPEN = False
+		self.MAINWINDOW_HIDE = False
 		self.statusbar_text = False
 		self.debug(text="def destroy_mainwindow")
 
@@ -2423,6 +2433,7 @@ class Systray:
 	def cb_destroy_mainwindow(self,event):
 		self.debug(text="def cb_destroy_mainwindow")
 		self.MAINWINDOW_OPEN = False
+		self.MAINWINDOW_HIDE = False
 
 	def cb_destroy_accwindow(self,event):
 		self.debug(text="def cb_destroy_accwindow")
@@ -4281,6 +4292,9 @@ class Systray:
 			return False
 		elif self.MAINWINDOW_OPEN == False:
 			#self.debug(text="def load_remote_data: mainwindow not open")
+			return False
+		elif self.MAINWINDOW_HIDE == True:
+			self.debug(text="def load_remote_data: mainwindow is hide")
 			return False
 		elif updatein > now:
 			#self.debug(text="def load_serverdata_from_remote: time = %s update_in = %s" % (now,updatein))
