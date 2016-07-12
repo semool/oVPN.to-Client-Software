@@ -4100,16 +4100,10 @@ class Systray:
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
 				return True
 			try:
-				#self.debug(text="def check_myip: go0")
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
-				#self.debug(text="def check_myip: url = %s" % (url))
-				#t1 = time.time()
 				r = requests.get(url,timeout=2)
-				#t2 = time.time()
-				#latency = (t2-t1)*1000
 				rip = r.content.strip().split()[0]
 				if rip == self.OVPN_CONNECTEDtoIP:
-					#self.debug(text="def check_myip: rip = '%s' (latency = %s ms)" % (rip,latency))
 					self.debug(text="def check_myip: rip = '%s'" % (rip))
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
