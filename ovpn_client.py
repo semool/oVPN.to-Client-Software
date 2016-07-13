@@ -1228,9 +1228,14 @@ class Systray:
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
 			if self.NO_WIN_FIREWALL == True:
-				self.switch_win_fwonoff.set_active(False)
+				self.switch_fw.set_active(False)
 			else:
-				self.switch_win_fwonoff.set_active(True)
+				self.switch_fw.set_active(True)
+				
+			if self.NO_DNS_CHANGE == True:
+				self.switch_nodns.set_active(False)
+			else:
+				self.switch_nodns.set_active(True)
 			self.UPDATE_SWITCH = False
 		else:
 			self.UPDATE_SWITCH = False
@@ -2464,19 +2469,20 @@ class Systray:
 				self.settingsnotebook = Gtk.Notebook()
 				self.settingswindow.add(self.settingsnotebook)
 				
-				nbpage1 = Gtk.Box()
-				switch = Gtk.Switch()
-				self.switch_win_fwonoff = switch
-				checkbox_title = Gtk.Label(label=" Use Windows Firewall? ")
-				if self.NO_WIN_FIREWALL == True:
-					switch.set_active(False)
-				else:
-					switch.set_active(True)
-				switch.connect("notify::state", self.cb_switch_winfirewall)
-				nbpage1.pack_start(checkbox_title,False,False,0)
-				nbpage1.pack_start(switch,False,False,0)
+				try:
+					nbpage1 = Gtk.Box()
+					self.settings_firewall_switch_nofw(nbpage1)
+					self.settingsnotebook.append_page(nbpage1, Gtk.Label('Firewall'))
+				except:
+					self.debug(text="def show_settingswindow: nbpage1 failed")
 				
-				self.settingsnotebook.append_page(nbpage1, Gtk.Label('Firewall'))
+				try:
+					nbpage2 = Gtk.Box()
+					self.settings_network_switch_nodns(nbpage2)
+					self.settingsnotebook.append_page(nbpage2, Gtk.Label('Network'))
+				except:
+					self.debug(text="def show_settingswindow: nbpage2 failed")
+				
 				self.settingswindow.show_all()
 				self.SETTINGSWINDOW_OPEN = True
 				return True
@@ -2487,6 +2493,36 @@ class Systray:
 		else:
 			self.destroy_settingswindow()
 
+	def settings_firewall_switch_nofw(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_fw = switch
+			checkbox_title = Gtk.Label(label=" Use Windows Firewall? ")
+			if self.NO_WIN_FIREWALL == True:
+				switch.set_active(False)
+			else:
+				switch.set_active(True)
+			switch.connect("notify::state", self.cb_switch_winfirewall)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+		except:
+			self.debug(text="def settings_firewall_switch_nofw: failed")
+
+	def settings_network_switch_nodns(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_nodns = switch
+			checkbox_title = Gtk.Label(label=" DNS Leak Protection ")
+			if self.NO_DNS_CHANGE == True:
+				switch.set_active(False)
+			else:
+				switch.set_active(True)
+			switch.connect("notify::state", self.cb_switch_nodnsleakprot)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+		except:
+			self.debug(text="def settings_network_switch_nodns: failed")
+		
 	def destroy_settingswindow(self):
 		self.debug(text="def destroy_settingswindow()")
 		GLib.idle_add(self.settingswindow.destroy)
@@ -3830,6 +3866,18 @@ class Systray:
 			self.NO_DNS_CHANGE = False
 		self.write_options_file()
 
+	def cb_switch_nodnsleakprot(self,switch,gparam):
+		self.debug(text="def cb_switch_nodnsleakprot()")
+		if self.STATE_OVPN == True:
+			self.UPDATE_SWITCH = True
+			return
+		if switch.get_active():
+			self.NO_DNS_CHANGE = False
+		else:
+			self.NO_DNS_CHANGE = True
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
 	def cb_extserverview(self,widget,event):
 		self.debug(text="def cb_extserverview()")
 		self.destroy_systray_menu()
@@ -4013,10 +4061,10 @@ class Systray:
 		self.UPDATE_SWITCH = True
 
 	def cb_switch_winfirewall(self,switch,gparam):
+		self.debug(text="def cb_switch_winfirewall()")
 		if self.STATE_OVPN == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_winfirewall()")
 		if switch.get_active():
 			self.NO_WIN_FIREWALL = False
 		else:
