@@ -2503,6 +2503,7 @@ class Systray:
 				
 				try:
 					nbpage1 = Gtk.VBox(False,spacing=2)
+					nbpage1.set_border_width(8)
 					nbpage1.pack_start(Gtk.Label(label="Windows Firewall Settings\r\n"),False,False,0)
 					self.settings_firewall_switch_nofw(nbpage1)
 					self.settings_firewall_switch_tapblockoutbound(nbpage1)
@@ -2514,6 +2515,7 @@ class Systray:
 				
 				try:
 					nbpage2 = Gtk.VBox(False,spacing=2)
+					nbpage2.set_border_width(8)
 					nbpage2.pack_start(Gtk.Label(label="Network Adapter Settings\r\n"),False,False,0)
 					self.settings_network_switch_nodns(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(' Network '))
