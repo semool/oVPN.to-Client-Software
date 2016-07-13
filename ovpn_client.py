@@ -2486,7 +2486,8 @@ class Systray:
 				self.settingswindow.add(self.settingsnotebook)
 				
 				try:
-					nbpage1 = Gtk.Box()
+					nbpage1 = Gtk.VBox(False,spacing=2)
+					nbpage1.pack_start(Gtk.Label(label="Windows Firewall Settings\r\n"),False,False,0)
 					self.settings_firewall_switch_nofw(nbpage1)
 					self.settings_firewall_switch_blockfwonexit(nbpage1)
 					self.settingsnotebook.append_page(nbpage1, Gtk.Label(' Firewall '))
@@ -2494,7 +2495,8 @@ class Systray:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
 				
 				try:
-					nbpage2 = Gtk.Box()
+					nbpage2 = Gtk.VBox(False,spacing=2)
+					nbpage2.pack_start(Gtk.Label(label="Network Adapter Settings\r\n"),False,False,0)
 					self.settings_network_switch_nodns(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(' Network '))
 				except:
@@ -2522,6 +2524,7 @@ class Systray:
 			switch.connect("notify::state", self.cb_switch_winfirewall)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_nofw: failed")
 
@@ -2537,6 +2540,7 @@ class Systray:
 			switch.connect("notify::state", self.cb_switch_fwblockonexit)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_blockfwonexit: failed")
 
@@ -2552,6 +2556,7 @@ class Systray:
 			switch.connect("notify::state", self.cb_switch_nodnsleakprot)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_network_switch_nodns: failed")
 
