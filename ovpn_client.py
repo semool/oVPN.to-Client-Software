@@ -1236,33 +1236,52 @@ class Systray:
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
 			# firewall page
+			
+			# def settings_firewall_switch_nofw()
 			if self.NO_WIN_FIREWALL == True:
 				self.switch_fw.set_active(False)
 			else:
 				self.switch_fw.set_active(True)
-				
+			
+			# def settings_firewall_switch_tapblockoutbound()
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.switch_tapblockoutbound.set_active(True)
 			else:
 				self.switch_tapblockoutbound.set_active(False)
 			
+			# def settings_firewall_switch_fwblockonexit()
 			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
-				self.switch_blockfwonexit.set_active(True)
+				self.switch_fwblockonexit.set_active(True)
 			else:
-				self.switch_blockfwonexit.set_active(False)
+				self.switch_fwblockonexit.set_active(False)
 			
+			# def settings_firewall_switch_fwdontaskonexit()
 			if self.WIN_DONT_ASK_FW_EXIT == True:
 				self.switch_fwdontaskonexit.set_active(True)
 			else:
 				self.switch_fwdontaskonexit.set_active(False)
+			
+			# def settings_firewall_switch_fwresetonconnect()
+			if self.WIN_RESET_FIREWALL == True:
+				self.switch_fwresetonconnect.set_active(True)
+			else:
+				self.switch_fwresetonconnect.set_active(False)
 				
+			# def settings_firewall_switch_fwbackupmode()
+			if self.WIN_BACKUP_FIREWALL == True:
+				self.switch_fwbackupmode.set_active(True)
+			else:
+				self.switch_fwbackupmode.set_active(False)
+			
 			# network page
+			
+			# def settings_network_switch_nodns()
 			if self.NO_DNS_CHANGE == True:
 				self.switch_nodns.set_active(False)
 			else:
 				self.switch_nodns.set_active(True)
-				
 			
+			# end switches update
 			self.UPDATE_SWITCH = False
 		else:
 			self.UPDATE_SWITCH = False
@@ -1410,7 +1429,9 @@ class Systray:
 				self.debug(text="def make_systray_menu: self.make_systray_options_menu() failed")
 			
 			try:
-				self.make_systray_firewall_menu()
+				self.load_firewall_backups()
+				if len(self.FIREWALL_BACKUPS) > 0:
+					self.make_systray_firewall_menu()
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_firewall_menu() failed")
 			
@@ -1523,79 +1544,24 @@ class Systray:
 		try:
 			fwmenu = Gtk.Menu()
 			fwmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_fwmenu")
-			fwmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_fwmenu")
 			fwm = Gtk.MenuItem('Firewall')
 			fwm.set_submenu(fwmenu)
 			self.systray_menu.append(fwm)
 			
-			""" *fixme* delete me later
-			if self.NO_WIN_FIREWALL == False:
-				
-				if self.TAP_BLOCKOUTBOUND == True:
-					opt = "[enabled]"
-				else:
-					opt = "[disabled]"
-				fwentry = Gtk.MenuItem("TAP Adapter block outbound %s" % (opt))
-				fwentry.connect('button-press-event', self.cb_tap_blockoutbound)
-				fwmenu.append(fwentry)
-			"""
 			if self.STATE_OVPN == False:
-				""" *fixme* delete me later
 				if self.NO_WIN_FIREWALL == False:
-					opt = "[enabled]"
-				else:
-					opt = "[disabled]"
-				fwentry = Gtk.MenuItem("Use Windows Firewall %s" % (opt))
-				fwentry.connect('button-press-event', self.cb_change_winfirewall)
-				fwmenu.append(fwentry)
-				"""
-				if self.NO_WIN_FIREWALL == False:
-					if self.WIN_RESET_FIREWALL == True:
-						opt = "[enabled]"
-					else:
-						opt = "[disabled]"
-					fwentry = Gtk.MenuItem("Clear Rules on Connect %s" % (opt))
-					fwentry.connect('button-press-event', self.cb_change_fwresetmode)
-					fwmenu.append(fwentry)
+					fwrm = Gtk.MenuItem('Restore Firewall Backups')
+					fwrm.connect('enter-notify-event', self.systray_notify_event_enter,"fwrm")
+					fwrmenu = Gtk.Menu()
+					fwrm.set_submenu(fwrmenu)
+					fwmenu.append(fwrm)
 					
-					if self.WIN_BACKUP_FIREWALL == True:
-						opt = "[enabled]"
-					else:
-						opt = "[disabled]"
-					fwentry = Gtk.MenuItem("Backup on Start / Restore on Quit %s" % (opt))
-					fwentry.connect('button-press-event', self.cb_change_fwbackupmode)
-					fwmenu.append(fwentry)
-					
-					""" *fixme* delete me later
-					if self.WIN_DONT_ASK_FW_EXIT == True:
-						opt = "[enabled]"
-					else:
-						opt = "[disabled]"
-					fwentry = Gtk.MenuItem("Do not ask for FW on Quit %s" % (opt))
-					fwentry.connect('button-press-event', self.cb_change_fwdontaskonexit)
-					fwmenu.append(fwentry)
-					
-					if self.WIN_DONT_ASK_FW_EXIT == True:
-						if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
-							opt = "[enabled]"
-						else:
-							opt = "[disabled]"
-						fwentry = Gtk.MenuItem("Always Block Internet on Quit %s" % (opt))
-						fwentry.connect('button-press-event', self.cb_change_fwblockonexit)
-						fwmenu.append(fwentry)
-					"""
-					
-					self.load_firewall_backups()
-					if len(self.FIREWALL_BACKUPS) > 0:
-						fwrm = Gtk.MenuItem('Restore Firewall Backups')
-						fwrmenu = Gtk.Menu()
-						fwrm.set_submenu(fwrmenu)
-						fwmenu.append(fwrm)
-						
-						for file in self.FIREWALL_BACKUPS:
-							fwrentry = Gtk.MenuItem('%s'%(file))
-							fwrentry.connect('button-press-event', self.cb_restore_firewallbackup, file)
-							fwrmenu.append(fwrentry)
+					for file in self.FIREWALL_BACKUPS:
+						fwrentry = Gtk.MenuItem('%s'%(file))
+						fwrentry.connect('button-release-event', self.cb_restore_firewallbackup, file)
+						fwrentry.connect('enter-notify-event', self.systray_notify_event_enter,"fwrentry")
+						fwrentry.connect('leave-notify-event', self.systray_notify_event_leave,"fwrentry")
+						fwrmenu.append(fwrentry)
 		except:
 			self.debug(text="make_systray_firewall_menu: failed")
 
@@ -2506,9 +2472,11 @@ class Systray:
 					nbpage1.set_border_width(8)
 					nbpage1.pack_start(Gtk.Label(label="Windows Firewall Settings\r\n"),False,False,0)
 					self.settings_firewall_switch_nofw(nbpage1)
-					self.settings_firewall_switch_tapblockoutbound(nbpage1)
-					self.settings_firewall_switch_blockfwonexit(nbpage1)
+					self.settings_firewall_switch_fwblockonexit(nbpage1)
 					self.settings_firewall_switch_fwdontaskonexit(nbpage1)
+					self.settings_firewall_switch_tapblockoutbound(nbpage1)
+					self.settings_firewall_switch_fwresetonconnect(nbpage1)
+					self.settings_firewall_switch_fwbackupmode(nbpage1)
 					self.settingsnotebook.append_page(nbpage1, Gtk.Label(' Firewall '))
 				except:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
@@ -2549,7 +2517,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_nofw: failed")
 
 	def cb_switch_winfirewall(self,switch,gparam):
-		if self.STATE_OVPN == True:
+		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_winfirewall()")
@@ -2566,7 +2534,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_tapblockoutbound = switch
-			checkbox_title = Gtk.Label(label="TAP-Adapter block outbound: (default: OFF)")
+			checkbox_title = Gtk.Label(label="TAP-Adapter block outbound (default: OFF)")
 			if self.TAP_BLOCKOUTBOUND == True:
 				switch.set_active(True)
 			else:
@@ -2579,7 +2547,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_tapblockoutbound: failed")
 
 	def cb_switch_tapblockoutbound(self,switch,gparam):
-		if self.NO_WIN_FIREWALL == True:
+		if self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_tapblockoutbound()")
@@ -2591,27 +2559,27 @@ class Systray:
 			self.write_options_file()
 		self.UPDATE_SWITCH = True
 
-	def settings_firewall_switch_blockfwonexit(self,page):
+	def settings_firewall_switch_fwblockonexit(self,page):
 		try:
 			switch = Gtk.Switch()
-			self.switch_blockfwonexit = switch
-			checkbox_title = Gtk.Label(label="Block Internet on Quit/Disconnect: (default: ON)")
+			self.switch_fwblockonexit = switch
+			checkbox_title = Gtk.Label(label="Block Internet on Quit/Disconnect (default: ON)")
 			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_blockfwonexit)
+			switch.connect("notify::state", self.cb_switch_fwblockonexit)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_blockfwonexit: failed")
+			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
 
-	def cb_switch_blockfwonexit(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True:
+	def cb_switch_fwblockonexit(self,switch,gparam):
+		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_blockfwonexit()")
+		self.debug(text="def cb_switch_fwblockonexit()")
 		if switch.get_active():
 			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
 		else:
@@ -2623,7 +2591,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwdontaskonexit = switch
-			checkbox_title = Gtk.Label(label="Disable question on Quit: (default: ON)")
+			checkbox_title = Gtk.Label(label="Disable FW question on Quit (default: ON)")
 			if self.WIN_DONT_ASK_FW_EXIT == True:
 				switch.set_active(True)
 			else:
@@ -2633,10 +2601,10 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_blockfwonexit: failed")
+			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
 
 	def cb_switch_fwdontaskonexit(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True:
+		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_fwdontaskonexit()")
@@ -2644,6 +2612,66 @@ class Systray:
 			self.WIN_DONT_ASK_FW_EXIT = True
 		else:
 			self.WIN_DONT_ASK_FW_EXIT = False
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
+	def settings_firewall_switch_fwresetonconnect(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_fwresetonconnect = switch
+			checkbox_title = Gtk.Label(label="Clear Rules on Connect (default: OFF)")
+			if self.WIN_RESET_FIREWALL == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_fwresetonconnect)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_firewall_switch_fwresetonconnect: failed")
+
+	def cb_switch_fwresetonconnect(self,switch,gparam):
+		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+			self.UPDATE_SWITCH = True
+			return
+		self.debug(text="def cb_switch_fwresetonconnect()")
+		if switch.get_active():
+			self.WIN_RESET_FIREWALL = True
+			if not self.win_firewall_export_on_start():
+				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
+		else:
+			self.WIN_RESET_FIREWALL = False
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
+	def settings_firewall_switch_fwbackupmode(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_fwbackupmode = switch
+			checkbox_title = Gtk.Label(label="Backup on Start / Restore on Quit (default: OFF)")
+			if self.WIN_BACKUP_FIREWALL == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_fwbackupmode)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_firewall_switch_fwbackupmode: failed")
+
+	def cb_switch_fwbackupmode(self,switch,gparam):
+		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+			self.UPDATE_SWITCH = True
+			return
+		self.debug(text="def cb_switch_fwbackupmode()")
+		if switch.get_active():
+			self.WIN_BACKUP_FIREWALL = True
+			if not self.win_firewall_export_on_start():
+				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
+		else:
+			self.WIN_BACKUP_FIREWALL = False
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
@@ -4009,19 +4037,6 @@ class Systray:
 		self.read_interfaces()
 		self.write_options_file()
 
-	# *fixme* delete me later
-	"""
-	def cb_nodnschange(self,widget,event):
-		self.debug(text="def cb_nodnschange()")
-		self.destroy_systray_menu()
-		if self.NO_DNS_CHANGE == False:
-			self.win_netsh_restore_dns_from_backup()
-			self.NO_DNS_CHANGE = True
-		elif self.NO_DNS_CHANGE == True:
-			self.NO_DNS_CHANGE = False
-		self.write_options_file()
-	"""
-	
 	def cb_extserverview(self,widget,event):
 		self.debug(text="def cb_extserverview()")
 		self.destroy_systray_menu()
@@ -4137,84 +4152,6 @@ class Systray:
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
 		self.msgwarn("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN),"Switched to IPv6+4")
-
-	def cb_change_fwresetmode(self,widget,event):
-		self.debug(text="def cb_change_fwresetmode()")
-		self.destroy_systray_menu()
-		if self.WIN_RESET_FIREWALL == True:
-			self.WIN_RESET_FIREWALL = False
-		elif self.WIN_RESET_FIREWALL == False:
-			self.WIN_RESET_FIREWALL = True
-			if not self.win_firewall_export_on_start():
-				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
-		self.write_options_file()
-
-	def cb_change_fwbackupmode(self,widget,event):
-		self.debug(text="def cb_change_fwbackupmode()")
-		self.destroy_systray_menu()
-		if self.WIN_BACKUP_FIREWALL == True:
-			self.WIN_BACKUP_FIREWALL = False
-		elif self.WIN_BACKUP_FIREWALL == False:
-			self.WIN_BACKUP_FIREWALL = True
-			if not self.win_firewall_export_on_start():
-				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
-		self.write_options_file()
-
-	# *fixme* delete me later
-	"""
-	def cb_change_fwblockonexit(self,widget,event):
-		self.debug(text="def cb_change_fwblockonexit()")
-		self.destroy_systray_menu()
-		if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
-			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = False
-		elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
-			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
-		self.write_options_file()
-	"""
-	# *fixme* delete me later
-	"""
-	def cb_change_fwdontaskonexit(self,widget,event):
-		self.debug(text="def cb_change_fwdontaskonexit()")
-		self.destroy_systray_menu()
-		if self.WIN_DONT_ASK_FW_EXIT == True:
-			self.WIN_DONT_ASK_FW_EXIT = False
-		elif self.WIN_DONT_ASK_FW_EXIT == False:
-			self.WIN_DONT_ASK_FW_EXIT = True
-		self.write_options_file()
-	"""
-	
-	# *fixme* delete me later
-	"""
-	def cb_tap_blockoutbound(self,widget,event):
-		self.debug(text="def cb_tap_blockoutbound()")
-		self.destroy_systray_menu()	
-		if self.TAP_BLOCKOUTBOUND == True:
-			self.TAP_BLOCKOUTBOUND = False
-				
-		elif self.TAP_BLOCKOUTBOUND == False:
-			self.TAP_BLOCKOUTBOUND = True
-			
-		if self.win_firewall_tap_blockoutbound():
-			self.write_options_file()
-	"""
-	
-	# *fixme* delete me later
-	"""
-	def cb_change_winfirewall(self,widget,event):
-		self.debug(text="def cb_change_winfirewall()")
-		self.destroy_systray_menu()
-		if self.STATE_OVPN == True:
-			self.UPDATE_SWITCH = True
-			return
-		if self.NO_WIN_FIREWALL == True:
-			self.NO_WIN_FIREWALL = False
-		elif self.NO_WIN_FIREWALL == False:
-			self.NO_WIN_FIREWALL = True
-		self.write_options_file()
-		self.ask_loadorunload_fw()
-		self.UPDATE_SWITCH = True
-	"""
-	
 
 	def cb_restore_firewallbackup(self,widget,event,file):
 		self.debug(text="def cb_restore_firewallbackup()")
