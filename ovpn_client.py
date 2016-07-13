@@ -65,6 +65,7 @@ class Systray:
 			thread = threading.Thread(target=self.systray_timer)
 			thread.daemon = True
 			thread.start()
+			self.win_firewall_analyze()
 		else:
 			sys.exit()
 
@@ -74,6 +75,7 @@ class Systray:
 		self.OS = sys.platform
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
+		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.ENABLE_THEME_SWITCHER = True
 		self.APP_THEME = "ms-windows"
@@ -205,6 +207,7 @@ class Systray:
 		self.DISABLE_SRV_WINDOW = False
 		self.DISABLE_ACC_WINDOW = False
 		self.MOUSE_IN_TRAY = 0
+		self.UPDATE_SWITCH = False
 		self.WHITELIST_PUBLIC_PROFILE = {
 			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
 			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
@@ -1222,6 +1225,16 @@ class Systray:
 		except:
 			pass
 		
+		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
+			self.debug(text="def systray_timer2: UPDATE_SWITCH")
+			if self.NO_WIN_FIREWALL == True:
+				self.switch_win_fwonoff.set_active(False)
+			else:
+				self.switch_win_fwonoff.set_active(True)
+			self.UPDATE_SWITCH = False
+		else:
+			self.UPDATE_SWITCH = False
+		
 		systraytext = False
 		if self.timer_check_certdl_running == True:
 			systraytext = "Checking for Updates!"
@@ -1726,7 +1739,7 @@ class Systray:
 				mainwindowentry = Gtk.MenuItem('Close Servers')
 			else:
 				if len(self.OVPN_SERVER) > 0:
-					mainwindowentry = Gtk.MenuItem('Show Servers')
+					mainwindowentry = Gtk.MenuItem('Servers')
 			if mainwindowentry:
 				self.systray_menu.append(mainwindowentry)
 				mainwindowentry.connect('button-release-event', self.show_mainwindow)
@@ -1738,13 +1751,24 @@ class Systray:
 			if self.ACCWINDOW_OPEN == True:
 				accwindowentry = Gtk.MenuItem('Close Account')
 			else:
-				accwindowentry = Gtk.MenuItem('Show Account')
+				accwindowentry = Gtk.MenuItem('Account')
 			self.systray_menu.append(accwindowentry)
 			accwindowentry.connect('button-release-event', self.show_accwindow)
 			accwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"accwindowentry")
-
 		except:
 			self.debug(text="def make_systray_bottom_menu: accwindowentry failed")
+		
+		
+		try:
+			if self.SETTINGSWINDOW_OPEN == True:
+				settwindowentry = Gtk.MenuItem('Close Settings')
+			else:
+				settwindowentry = Gtk.MenuItem('Settings')
+			self.systray_menu.append(settwindowentry)
+			settwindowentry.connect('button-release-event', self.show_settingswindow)
+			settwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"settwindowentry")
+		except:
+			self.debug(text="def make_systray_bottom_menu: settwindowentry failed")
 		
 		if self.STATE_OVPN == False:
 			try:
@@ -2428,6 +2452,51 @@ class Systray:
 		self.ACCWINDOW_OPEN = False
 		self.debug(text="def destroy_accwindow")
 
+	def show_settingswindow(self,widget,event):
+		self.destroy_systray_menu()
+		if self.SETTINGSWINDOW_OPEN == False:
+			try:
+				self.settingswindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+				self.settingswindow.set_position(Gtk.WindowPosition.CENTER)
+				self.settingswindow.connect("destroy",self.cb_destroy_settingswindow)
+				self.settingswindow.set_title("oVPN Settings - %s" % (CLIENT_STRING))
+				self.settingswindow.set_icon_from_file(self.systray_icon_connected)
+				self.settingsnotebook = Gtk.Notebook()
+				self.settingswindow.add(self.settingsnotebook)
+				
+				nbpage1 = Gtk.Box()
+				switch = Gtk.Switch()
+				self.switch_win_fwonoff = switch
+				checkbox_title = Gtk.Label(label=" Use Windows Firewall? ")
+				if self.NO_WIN_FIREWALL == True:
+					switch.set_active(False)
+				else:
+					switch.set_active(True)
+				switch.connect("notify::state", self.cb_switch_winfirewall)
+				nbpage1.pack_start(checkbox_title,False,False,0)
+				nbpage1.pack_start(switch,False,False,0)
+				
+				self.settingsnotebook.append_page(nbpage1, Gtk.Label('Firewall'))
+				self.settingswindow.show_all()
+				self.SETTINGSWINDOW_OPEN = True
+				return True
+			except:
+				self.SETTINGSWINDOW_OPEN = False
+				self.debug(text="def show_settingswindow: settingswindow failed")
+				return False
+		else:
+			self.destroy_settingswindow()
+
+	def destroy_settingswindow(self):
+		self.debug(text="def destroy_settingswindow()")
+		GLib.idle_add(self.settingswindow.destroy)
+		self.SETTINGSWINDOW_OPEN = False
+		self.debug(text="def destroy_settingswindow")
+
+	def cb_destroy_settingswindow(self,event):
+		self.debug(text="def cb_destroy_settingswindow")
+		self.SETTINGSWINDOW_OPEN = False
+
 	def cb_destroy_mainwindow(self,event):
 		self.debug(text="def cb_destroy_mainwindow")
 		self.MAINWINDOW_OPEN = False
@@ -2760,10 +2829,12 @@ class Systray:
 		self.win_netsh_set_dns_ovpn()
 		self.call_redraw_mainwindow()
 		self.inThread_jump_server_running = False
+		self.win_enable_ext_interface()
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
 		except:
 			self.debug(text="def inThread_spawn_openvpn_process: exited")
+		self.win_disable_ext_interface()
 		self.reset_ovpn_values_disconnected()
 		self.call_redraw_mainwindow()
 		return
@@ -3285,18 +3356,25 @@ class Systray:
 		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_TAP_DEVICE))
 		return self.win_join_netsh_cmd()
 
-	"""
-	*fixme* (unused)
-	def win_disable_interface(self):
-		self.debug(text="def win_disable_interface()")
+	def win_disable_ext_interface(self):
+		self.debug(text="def win_disable_ext_interface()")
 		self.NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
-		return self.win_join_netsh_cmd()		
-		
-	def win_ensable_interface(self):
-		self.debug(text="def win_ensable_interface()")
+		return self.win_join_netsh_cmd()
+
+	def win_enable_ext_interface(self):
+		self.debug(text="def win_enable_ext_interface()")
 		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
 		return self.win_join_netsh_cmd()
-	"""
+
+	def win_firewall_analyze(self):
+		return
+		netshcmd = "advfirewall firewall show rule name=all"
+		netsh_output = self.win_return_netsh_cmd(netshcmd)
+		for line in netsh_output:
+			line1 = line.split(":")[-1].lstrip()
+			for entry in [ "pidgin","firefox","chrome","icq","skype","commander","github" ]:
+				if entry in line1.lower():
+					self.debug(text="def win_firewall_dumprules: '%s'" % (line1))
 
 	def win_firewall_modify_rule(self,option):
 		try:
@@ -3321,7 +3399,7 @@ class Systray:
 			try: 
 				read = subprocess.check_output('%s' % (netshcmd),shell=True)
 				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
-				#self.debug(text="def win_return_netsh_cmd: output = '%s'" % (output))
+				self.debug(text="def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
 			except:
 				self.debug(text="def win_return_netsh_cmd: '%s' failed" % (netshcmd))
@@ -3923,12 +4001,29 @@ class Systray:
 	def cb_change_winfirewall(self,widget,event):
 		self.debug(text="def cb_change_winfirewall()")
 		self.destroy_systray_menu()
+		if self.STATE_OVPN == True:
+			self.UPDATE_SWITCH = True
+			return
 		if self.NO_WIN_FIREWALL == True:
 			self.NO_WIN_FIREWALL = False
 		elif self.NO_WIN_FIREWALL == False:
 			self.NO_WIN_FIREWALL = True
 		self.write_options_file()
 		self.ask_loadorunload_fw()
+		self.UPDATE_SWITCH = True
+
+	def cb_switch_winfirewall(self,switch,gparam):
+		if self.STATE_OVPN == True:
+			self.UPDATE_SWITCH = True
+			return
+		self.debug(text="def cb_switch_winfirewall()")
+		if switch.get_active():
+			self.NO_WIN_FIREWALL = False
+		else:
+			self.NO_WIN_FIREWALL = True
+		self.write_options_file()
+		self.ask_loadorunload_fw()
+		self.UPDATE_SWITCH = True
 
 	def cb_restore_firewallbackup(self,widget,event,file):
 		self.debug(text="def cb_restore_firewallbackup()")
@@ -4868,6 +4963,7 @@ class Systray:
 					self.debug(text="Firewall: block outbound!")
 					return True
 				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
+					self.win_enable_ext_interface()
 					self.win_firewall_allowout()
 					self.win_netsh_restore_dns_from_backup()
 					self.debug(text="Firewall: allow outbound!")
@@ -4956,14 +5052,14 @@ class Systray:
 			self.DEBUGcount = 0
 		elif self.DEBUGcount >= 4096 and self.DEBUGfrombefore == text:
 			debugstringsht = "(%s):(d3) %s (repeated: %s e2)" % (timefromboot, self.DEBUGfrombefore,self.DEBUGcount)
-			print(debugstringsht)
+			print("%s" % (debugstringsht))
 			self.DEBUGcount = 0
 		elif self.DEBUGfrombefore == text:
 			self.DEBUGcount += 1
 			return
 		elif not self.DEBUGfrombefore == text:
 			debugstringsht = "(%s):(d4) %s"%(timefromboot,text)
-			print(debugstringsht)
+			print("%s" % (debugstringsht))
 		self.DEBUGfrombefore = text
 		if self.DEBUG == True:
 			if not self.debug_log == False:
