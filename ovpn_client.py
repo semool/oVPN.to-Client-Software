@@ -23,7 +23,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.2-gtk3"
+CLIENTVERSION="v0.5.3-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -344,6 +344,7 @@ class Systray:
 		self.ico_dir = "%s\\ico" % (self.bin_dir)
 		if not os.path.isdir(self.ico_dir):
 			return False
+		self.app_icon = "%s\\shield_exe.ico" % (self.ico_dir)
 		self.systray_icon_connected = "%s\\292.ico" % (self.ico_dir)
 		self.systray_icon_disconnected = "%s\\263.ico" % (self.ico_dir)
 		self.systray_icon_connect = "%s\\396.ico" % (self.ico_dir)
@@ -847,9 +848,9 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_file(self.systray_icon_connected)
+				dialogWindow.set_icon_from_file(self.app_icon)
 			except:
-				self.debug(text="def win_read_interfaces: #1 dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+				self.debug(text="def win_read_interfaces: #1 dialogWindow.set_icon_from_file(self.app_icon) failed")
 				pass
 			text = "Multiple TAPs found!\n\nPlease select your TAP Adapter!"
 			dialogWindow.set_title(text)
@@ -885,9 +886,9 @@ class Systray:
 					dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 					dialogWindow.set_transient_for(self.window)
 					try:
-						dialogWindow.set_icon_from_file(self.systray_icon_connected)
+						dialogWindow.set_icon_from_file(self.app_icon)
 					except:
-						self.debug(text="def win_read_interfaces: #2 dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+						self.debug(text="def win_read_interfaces: #2 dialogWindow.set_icon_from_file(self.app_icon) failed")
 					text = "Choose your External Network Adapter!"
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
@@ -918,9 +919,9 @@ class Systray:
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
 		try:
-			dialogWindow.set_icon_from_file(self.systray_icon_connected)
+			dialogWindow.set_icon_from_file(self.app_icon)
 		except:
-			self.debug(text="def select_userid: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+			self.debug(text="def select_userid: dialogWindow.set_icon_from_file(self.app_icon) failed")
 		text = "Please select your User-ID!"
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
@@ -1028,9 +1029,9 @@ class Systray:
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
 		try:
-			dialogWindow.set_icon_from_file(self.systray_icon_connected)
+			dialogWindow.set_icon_from_file(self.app_icon)
 		except:
-			self.debug(text="def theme_switcher: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+			self.debug(text="def theme_switcher: dialogWindow.set_icon_from_file(self.app_icon) failed")
 		text = "Choose App Theme"
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
@@ -2155,7 +2156,7 @@ class Systray:
 				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
-				self.mainwindow.set_icon_from_file(self.systray_icon_connected)
+				self.mainwindow.set_icon_from_file(self.app_icon)
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
@@ -2362,7 +2363,7 @@ class Systray:
 				self.accwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
 				self.accwindow.set_title("oVPN Account - %s" % (CLIENT_STRING))
-				self.accwindow.set_icon_from_file(self.systray_icon_connected)
+				self.accwindow.set_icon_from_file(self.app_icon)
 				self.accwindow.set_default_size(370,480)
 				self.accwindow_accinfo()
 				self.ACCWINDOW_OPEN = True
@@ -3601,9 +3602,9 @@ class Systray:
 				dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 				dialogWindow.set_transient_for(self.window)
 				try:
-					dialogWindow.set_icon_from_file(self.systray_icon_connected)
+					dialogWindow.set_icon_from_file(self.app_icon)
 				except:
-					self.debug(text="def form_ask_passphrase: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+					self.debug(text="def form_ask_passphrase: dialogWindow.set_icon_from_file(self.app_icon) failed")
 				text = "Enter your Passphrase"
 				dialogWindow.set_title(text)
 				dialogWindow.set_markup(text)
@@ -3665,9 +3666,9 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			try:
-				dialogWindow.set_icon_from_file(self.systray_icon_connected)
+				dialogWindow.set_icon_from_file(self.app_icon)
 			except:
-				self.debug(text="def form_ask_userid: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+				self.debug(text="def form_ask_userid: dialogWindow.set_icon_from_file(self.app_icon) failed")
 			dialogWindow.set_transient_for(self.window)
 			dialogWindow.set_title("oVPN.to Setup")
 			dialogWindow.set_markup("Enter your oVPN.to Details")
@@ -3942,9 +3943,9 @@ class Systray:
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
 		try:
-			dialogWindow.set_icon_from_file(self.systray_icon_connected)
+			dialogWindow.set_icon_from_file(self.app_icon)
 		except:
-			self.debug(text="def cb_extserverview_size: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+			self.debug(text="def cb_extserverview_size: dialogWindow.set_icon_from_file(self.app_icon) failed")
 		text = "Server Window Size"
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
@@ -4958,8 +4959,8 @@ class Systray:
 			self.WINDOW_ABOUT_OPEN = True
 			self.about_dialog = Gtk.AboutDialog()
 			self.about_dialog.set_position(Gtk.WindowPosition.CENTER)
-			self.about_dialog.set_icon_from_file(self.systray_icon_connected)
-			self.about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(self.systray_icon_connected))
+			self.about_dialog.set_icon_from_file(self.app_icon)
+			self.about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(self.app_icon))
 			self.about_dialog.set_program_name("oVPN.to Client")
 			self.about_dialog.set_website("https://ovpn.to")
 			self.about_dialog.set_website_label("oVPN.to")
@@ -5009,7 +5010,7 @@ class Systray:
 				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 				dialog.set_position(Gtk.WindowPosition.CENTER)
 				dialog.set_title("Quit oVPN.to Client")
-				dialog.set_icon_from_file(self.systray_icon_connected)
+				dialog.set_icon_from_file(self.app_icon)
 				dialog.set_transient_for(self.window)
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup("Do you really want to quit?")
@@ -5079,7 +5080,7 @@ class Systray:
 					self.dialog_ask_loadorunload_fw = dialog
 					dialog.set_position(Gtk.WindowPosition.CENTER)
 					dialog.set_title("Firewall Settings")
-					dialog.set_icon_from_file(self.systray_icon_connected)
+					dialog.set_icon_from_file(self.app_icon)
 					dialog.set_transient_for(self.window)
 					if self.WIN_BACKUP_FIREWALL == True:
 						text = "Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
@@ -5139,7 +5140,7 @@ class Systray:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_position(Gtk.WindowPosition.CENTER)
 			message.set_title("Error")
-			message.set_icon_from_file(self.systray_icon_connected)
+			message.set_icon_from_file(self.app_icon)
 			message.set_markup("%s"%(text))
 			message.run()
 			message.destroy()
@@ -5220,9 +5221,9 @@ class Systray:
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_file(self.systray_icon_connected)
+				dialogWindow.set_icon_from_file(self.app_icon)
 			except:
-				self.debug(text="def msgwarn: dialogWindow.set_icon_from_file(self.systray_icon_connected) failed")
+				self.debug(text="def msgwarn: dialogWindow.set_icon_from_file(self.app_icon) failed")
 			dialogWindow.set_markup("%s"%(text))
 			dialogWindow.run()
 			dialogWindow.destroy()
