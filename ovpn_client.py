@@ -128,6 +128,7 @@ class Systray:
 		self.WIN_TAP_DEVICE = False
 		self.WIN_TAP_DEVS = list()
 		self.TAP_BLOCKOUTBOUND = False
+		self.win_firewall_tap_blockoutbound_running = False
 		self.WIN_EXT_DEVICE = False
 		self.WIN_EXT_DHCP = False
 		self.NO_WIN_FIREWALL = False
@@ -2547,7 +2548,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_tapblockoutbound: failed")
 
 	def cb_switch_tapblockoutbound(self,switch,gparam):
-		if self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True or self.win_firewall_tap_blockoutbound_running == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_tapblockoutbound()")
@@ -2555,8 +2556,10 @@ class Systray:
 			self.TAP_BLOCKOUTBOUND = True
 		else:
 			self.TAP_BLOCKOUTBOUND = False
-		if self.win_firewall_tap_blockoutbound():
-			self.write_options_file()
+		thread = threading.Thread(target=self.win_firewall_tap_blockoutbound)
+		thread.daemon = True
+		thread.start()
+		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
 	def settings_firewall_switch_fwblockonexit(self,page):
@@ -3462,10 +3465,12 @@ class Systray:
 			return True
 
 	def win_firewall_tap_blockoutbound(self):
+		self.win_firewall_tap_blockoutbound_running = True
 		self.debug(text="def win_firewall_tap_blockoutbound()")
 		try:
 			if self.NO_WIN_FIREWALL == True:
-				return True
+				self.win_firewall_tap_blockoutbound_running = False
+				return
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
 				self.win_firewall_whitelist_ovpn_on_tap(option="add")
@@ -3475,9 +3480,9 @@ class Systray:
 				self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")		
 			self.win_join_netsh_cmd()
 			self.debug(text="Block outbound on TAP!\n\nAllow Whitelist to Internal oVPN Services\n\n'%s'\n\nSee all Rules:\n Windows Firewall with Advanced Security\n --> Outgoing Rules" % (self.WHITELIST_PUBLIC_PROFILE))
-			return True
 		except:
 			self.debug(text="def win_firewall_tap_blockoutbound: failed!")
+		self.win_firewall_tap_blockoutbound_running = False
 
 	def win_firewall_allowout(self):
 		self.debug(text="def win_firewall_allowout()")
