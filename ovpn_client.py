@@ -1234,15 +1234,24 @@ class Systray:
 		
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
+			# firewall page
 			if self.NO_WIN_FIREWALL == True:
 				self.switch_fw.set_active(False)
 			else:
 				self.switch_fw.set_active(True)
+			
+			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
+				self.switch_blockfwonexit.set_active(True)
+			else:
+				self.switch_blockfwonexit.set_active(False)
 				
+			# network page
 			if self.NO_DNS_CHANGE == True:
 				self.switch_nodns.set_active(False)
 			else:
 				self.switch_nodns.set_active(True)
+				
+			
 			self.UPDATE_SWITCH = False
 		else:
 			self.UPDATE_SWITCH = False
@@ -2479,6 +2488,7 @@ class Systray:
 				try:
 					nbpage1 = Gtk.Box()
 					self.settings_firewall_switch_nofw(nbpage1)
+					self.settings_firewall_switch_blockfwonexit(nbpage1)
 					self.settingsnotebook.append_page(nbpage1, Gtk.Label(' Firewall '))
 				except:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
@@ -2504,7 +2514,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fw = switch
-			checkbox_title = Gtk.Label(label=" Use Windows Firewall? ")
+			checkbox_title = Gtk.Label(label=" Use Windows Firewall: ")
 			if self.NO_WIN_FIREWALL == True:
 				switch.set_active(False)
 			else:
@@ -2514,6 +2524,21 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_nofw: failed")
+
+	def settings_firewall_switch_blockfwonexit(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_blockfwonexit = switch
+			checkbox_title = Gtk.Label(label=" Block Internet on Quit/Disconnect: ")
+			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_fwblockonexit)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+		except:
+			self.debug(text="def settings_firewall_switch_blockfwonexit: failed")
 
 	def settings_network_switch_nodns(self,page):
 		try:
@@ -2529,7 +2554,7 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 		except:
 			self.debug(text="def settings_network_switch_nodns: failed")
-		
+
 	def destroy_settingswindow(self):
 		self.debug(text="def destroy_settingswindow()")
 		GLib.idle_add(self.settingswindow.destroy)
@@ -3863,6 +3888,7 @@ class Systray:
 		self.read_interfaces()
 		self.write_options_file()
 
+	# *fixme* delete me later
 	def cb_nodnschange(self,widget,event):
 		self.debug(text="def cb_nodnschange()")
 		self.destroy_systray_menu()
@@ -4033,6 +4059,18 @@ class Systray:
 			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
 		self.write_options_file()
 
+	def cb_switch_fwblockonexit(self,switch,gparam):
+		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True:
+			self.UPDATE_SWITCH = True
+			return
+		self.debug(text="def cb_switch_fwblockonexit()")
+		if switch.get_active():
+			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
+		else:
+			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = False
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
 	def cb_change_fwdontaskonexit(self,widget,event):
 		self.debug(text="def cb_change_fwdontaskonexit()")
 		self.destroy_systray_menu()
@@ -4054,6 +4092,7 @@ class Systray:
 		if self.win_firewall_tap_blockoutbound():
 			self.write_options_file()
 
+	# *fixme* delete me later
 	def cb_change_winfirewall(self,widget,event):
 		self.debug(text="def cb_change_winfirewall()")
 		self.destroy_systray_menu()
