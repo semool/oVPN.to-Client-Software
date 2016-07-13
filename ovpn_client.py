@@ -4436,10 +4436,10 @@ class Systray:
 			#self.debug(text="def load_serverdata_from_remote: disabled")
 			return False
 		elif self.MAINWINDOW_OPEN == False:
-			self.debug(text="def load_remote_data: mainwindow not open")
+			#self.debug(text="def load_remote_data: mainwindow not open")
 			return False
 		elif self.MAINWINDOW_HIDE == True:
-			self.debug(text="def load_remote_data: mainwindow is hide")
+			#self.debug(text="def load_remote_data: mainwindow is hide")
 			return False
 		elif updatein > now:
 			#self.debug(text="def load_serverdata_from_remote: time = %s update_in = %s" % (now,updatein))
