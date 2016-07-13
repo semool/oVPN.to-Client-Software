@@ -207,7 +207,7 @@ class Systray:
 		self.DISABLE_SRV_WINDOW = False
 		self.DISABLE_ACC_WINDOW = False
 		self.MOUSE_IN_TRAY = 0
-		#self.UPDATE_SWITCH = False
+		self.UPDATE_SWITCH = False
 		self.isWRITING_OPTFILE = False
 		self.WHITELIST_PUBLIC_PROFILE = {
 			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
@@ -1231,7 +1231,7 @@ class Systray:
 				self.LAST_MSGWARN_WINDOW = 0
 		except:
 			pass
-		"""
+		
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
 			if self.NO_WIN_FIREWALL == True:
@@ -1246,7 +1246,7 @@ class Systray:
 			self.UPDATE_SWITCH = False
 		else:
 			self.UPDATE_SWITCH = False
-		"""
+		
 		systraytext = False
 		if self.timer_check_certdl_running == True:
 			systraytext = "Checking for Updates!"
@@ -3875,7 +3875,7 @@ class Systray:
 
 	def cb_switch_nodnsleakprot(self,switch,gparam):
 		if self.STATE_OVPN == True:
-			#self.UPDATE_SWITCH = True
+			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_nodnsleakprot()")
 		if switch.get_active():
@@ -3884,7 +3884,7 @@ class Systray:
 			self.NO_DNS_CHANGE = True
 			self.win_netsh_restore_dns_from_backup()
 		self.write_options_file()
-		#self.UPDATE_SWITCH = True
+		self.UPDATE_SWITCH = True
 
 	def cb_extserverview(self,widget,event):
 		self.debug(text="def cb_extserverview()")
@@ -4058,7 +4058,7 @@ class Systray:
 		self.debug(text="def cb_change_winfirewall()")
 		self.destroy_systray_menu()
 		if self.STATE_OVPN == True:
-			#self.UPDATE_SWITCH = True
+			self.UPDATE_SWITCH = True
 			return
 		if self.NO_WIN_FIREWALL == True:
 			self.NO_WIN_FIREWALL = False
@@ -4066,21 +4066,21 @@ class Systray:
 			self.NO_WIN_FIREWALL = True
 		self.write_options_file()
 		self.ask_loadorunload_fw()
-		#self.UPDATE_SWITCH = True
+		self.UPDATE_SWITCH = True
 
 	def cb_switch_winfirewall(self,switch,gparam):
 		if self.STATE_OVPN == True:
-			#self.UPDATE_SWITCH = True
+			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_winfirewall()")
 		if switch.get_active():
 			self.NO_WIN_FIREWALL = False
+			self.WIN_DONT_ASK_FW_EXIT = True
 		else:
 			self.NO_WIN_FIREWALL = True
 		self.write_options_file()
-		# *** fixme *** app crashs sometimes if self.WIN_DONT_ASK_FW_EXIT == True and dialog spawns...
 		self.ask_loadorunload_fw()
-		#self.UPDATE_SWITCH = True
+		self.UPDATE_SWITCH = True
 
 	def cb_restore_firewallbackup(self,widget,event,file):
 		self.debug(text="def cb_restore_firewallbackup()")
