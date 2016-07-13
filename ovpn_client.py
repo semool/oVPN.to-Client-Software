@@ -2482,7 +2482,7 @@ class Systray:
 				self.settingswindow.set_position(Gtk.WindowPosition.CENTER)
 				self.settingswindow.connect("destroy",self.cb_destroy_settingswindow)
 				self.settingswindow.set_title("oVPN Settings - %s" % (CLIENT_STRING))
-				self.settingswindow.set_icon_from_file(self.systray_icon_connected)
+				self.settingswindow.set_icon_from_file(self.app_icon)
 				self.settingsnotebook = Gtk.Notebook()
 				self.settingswindow.add(self.settingsnotebook)
 				
