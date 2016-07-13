@@ -2534,7 +2534,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fw = switch
-			checkbox_title = Gtk.Label(label=" Use Windows Firewall: ")
+			checkbox_title = Gtk.Label(label="Use Windows Firewall (default: ON) ")
 			if self.NO_WIN_FIREWALL == True:
 				switch.set_active(False)
 			else:
@@ -2564,7 +2564,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_tapblockoutbound = switch
-			checkbox_title = Gtk.Label(label=" TAP-Adapter block outbound: ")
+			checkbox_title = Gtk.Label(label="TAP-Adapter block outbound: (default: OFF)")
 			if self.TAP_BLOCKOUTBOUND == True:
 				switch.set_active(True)
 			else:
@@ -2593,23 +2593,23 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_blockfwonexit = switch
-			checkbox_title = Gtk.Label(label=" Block Internet on Quit/Disconnect: ")
+			checkbox_title = Gtk.Label(label="Block Internet on Quit/Disconnect: (default: ON)")
 			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_fwblockonexit)
+			switch.connect("notify::state", self.cb_switch_blockfwonexit)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_blockfwonexit: failed")
 
-	def cb_switch_fwblockonexit(self,switch,gparam):
+	def cb_switch_blockfwonexit(self,switch,gparam):
 		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_fwblockonexit()")
+		self.debug(text="def cb_switch_blockfwonexit()")
 		if switch.get_active():
 			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
 		else:
@@ -2621,7 +2621,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwdontaskonexit = switch
-			checkbox_title = Gtk.Label(label=" Disable question on Quit: ")
+			checkbox_title = Gtk.Label(label="Disable question on Quit: (default: ON)")
 			if self.WIN_DONT_ASK_FW_EXIT == True:
 				switch.set_active(True)
 			else:
@@ -2649,7 +2649,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_nodns = switch
-			checkbox_title = Gtk.Label(label=" DNS Leak Protection ")
+			checkbox_title = Gtk.Label(label="DNS Leak Protection (default: ON)")
 			if self.NO_DNS_CHANGE == True:
 				switch.set_active(False)
 			else:
