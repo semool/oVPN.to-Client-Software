@@ -207,7 +207,8 @@ class Systray:
 		self.DISABLE_SRV_WINDOW = False
 		self.DISABLE_ACC_WINDOW = False
 		self.MOUSE_IN_TRAY = 0
-		self.UPDATE_SWITCH = False
+		#self.UPDATE_SWITCH = False
+		self.isWRITING_OPTFILE = False
 		self.WHITELIST_PUBLIC_PROFILE = {
 			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
 			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
@@ -689,13 +690,17 @@ class Systray:
 				self.debug(text="def read_options_file: create failed")
 
 	def write_options_file(self):
+		if self.isWRITING_OPTFILE == True:
+			self.debug(text="self.isWRITING_OPTFILE == True")
+			return False
+		self.isWRITING_OPTFILE = True
 		self.debug(text="def write_options_file()")
 		try:
 			if self.PPP_NO_SAVE == True:
 				plaintext_passphrase = False
 			else:
 				plaintext_passphrase = self.PASSPHRASE
-			cfg = open(self.opt_file,'w')
+			cfg = open(self.opt_file,'wb')
 			parser = SafeConfigParser()
 			parser.add_section('oVPN')
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
@@ -725,9 +730,11 @@ class Systray:
 			parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
 			parser.write(cfg)
 			cfg.close()
+			self.isWRITING_OPTFILE = False
 			return True
 		except:
 			self.debug(text="def write_options_file: failed")
+		self.isWRITING_OPTFILE = False
 
 	def read_interfaces(self):
 		self.debug(text="def read_interfaces()")
@@ -1224,7 +1231,7 @@ class Systray:
 				self.LAST_MSGWARN_WINDOW = 0
 		except:
 			pass
-		
+		"""
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
 			if self.NO_WIN_FIREWALL == True:
@@ -1239,7 +1246,7 @@ class Systray:
 			self.UPDATE_SWITCH = False
 		else:
 			self.UPDATE_SWITCH = False
-		
+		"""
 		systraytext = False
 		if self.timer_check_certdl_running == True:
 			systraytext = "Checking for Updates!"
@@ -1320,7 +1327,7 @@ class Systray:
 		if self.systray_timer2_running == False:
 			#self.debug(text="def systray_timer: GLib.idle_add(self.systray_timer2)")
 			GLib.idle_add(self.systray_timer2)
-		time.sleep(1)
+		time.sleep(0.2)
 		thread = threading.Thread(target=self.systray_timer)
 		thread.daemon = True
 		thread.start()
@@ -2472,14 +2479,14 @@ class Systray:
 				try:
 					nbpage1 = Gtk.Box()
 					self.settings_firewall_switch_nofw(nbpage1)
-					self.settingsnotebook.append_page(nbpage1, Gtk.Label('Firewall'))
+					self.settingsnotebook.append_page(nbpage1, Gtk.Label(' Firewall '))
 				except:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
 				
 				try:
 					nbpage2 = Gtk.Box()
 					self.settings_network_switch_nodns(nbpage2)
-					self.settingsnotebook.append_page(nbpage2, Gtk.Label('Network'))
+					self.settingsnotebook.append_page(nbpage2, Gtk.Label(' Network '))
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
 				
@@ -3867,16 +3874,17 @@ class Systray:
 		self.write_options_file()
 
 	def cb_switch_nodnsleakprot(self,switch,gparam):
-		self.debug(text="def cb_switch_nodnsleakprot()")
 		if self.STATE_OVPN == True:
-			self.UPDATE_SWITCH = True
+			#self.UPDATE_SWITCH = True
 			return
+		self.debug(text="def cb_switch_nodnsleakprot()")
 		if switch.get_active():
 			self.NO_DNS_CHANGE = False
 		else:
 			self.NO_DNS_CHANGE = True
+			self.win_netsh_restore_dns_from_backup()
 		self.write_options_file()
-		self.UPDATE_SWITCH = True
+		#self.UPDATE_SWITCH = True
 
 	def cb_extserverview(self,widget,event):
 		self.debug(text="def cb_extserverview()")
@@ -4050,7 +4058,7 @@ class Systray:
 		self.debug(text="def cb_change_winfirewall()")
 		self.destroy_systray_menu()
 		if self.STATE_OVPN == True:
-			self.UPDATE_SWITCH = True
+			#self.UPDATE_SWITCH = True
 			return
 		if self.NO_WIN_FIREWALL == True:
 			self.NO_WIN_FIREWALL = False
@@ -4058,20 +4066,21 @@ class Systray:
 			self.NO_WIN_FIREWALL = True
 		self.write_options_file()
 		self.ask_loadorunload_fw()
-		self.UPDATE_SWITCH = True
+		#self.UPDATE_SWITCH = True
 
 	def cb_switch_winfirewall(self,switch,gparam):
-		self.debug(text="def cb_switch_winfirewall()")
 		if self.STATE_OVPN == True:
-			self.UPDATE_SWITCH = True
+			#self.UPDATE_SWITCH = True
 			return
+		self.debug(text="def cb_switch_winfirewall()")
 		if switch.get_active():
 			self.NO_WIN_FIREWALL = False
 		else:
 			self.NO_WIN_FIREWALL = True
 		self.write_options_file()
+		# *** fixme *** app crashs sometimes if self.WIN_DONT_ASK_FW_EXIT == True and dialog spawns...
 		self.ask_loadorunload_fw()
-		self.UPDATE_SWITCH = True
+		#self.UPDATE_SWITCH = True
 
 	def cb_restore_firewallbackup(self,widget,event,file):
 		self.debug(text="def cb_restore_firewallbackup()")
@@ -4427,7 +4436,7 @@ class Systray:
 			#self.debug(text="def load_serverdata_from_remote: disabled")
 			return False
 		elif self.MAINWINDOW_OPEN == False:
-			#self.debug(text="def load_remote_data: mainwindow not open")
+			self.debug(text="def load_remote_data: mainwindow not open")
 			return False
 		elif self.MAINWINDOW_HIDE == True:
 			self.debug(text="def load_remote_data: mainwindow is hide")
@@ -5018,7 +5027,12 @@ class Systray:
 					return True
 			else:
 				try:
+					self.dialog_ask_loadorunload_fw.destroy()
+				except:
+					pass
+				try:
 					dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
+					self.dialog_ask_loadorunload_fw = dialog
 					dialog.set_position(Gtk.WindowPosition.CENTER)
 					dialog.set_title("Firewall Settings")
 					dialog.set_icon_from_file(self.systray_icon_connected)
