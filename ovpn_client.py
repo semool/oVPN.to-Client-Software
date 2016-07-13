@@ -1246,6 +1246,11 @@ class Systray:
 			else:
 				self.switch_blockfwonexit.set_active(False)
 				
+			if self.WIN_DONT_ASK_FW_EXIT == True:
+				self.switch_fwdontaskonexit.set_active(True)
+			else:
+				self.switch_fwdontaskonexit.set_active(False)
+				
 			# network page
 			if self.NO_DNS_CHANGE == True:
 				self.switch_nodns.set_active(False)
@@ -2491,6 +2496,7 @@ class Systray:
 					nbpage1.pack_start(Gtk.Label(label="Windows Firewall Settings\r\n"),False,False,0)
 					self.settings_firewall_switch_nofw(nbpage1)
 					self.settings_firewall_switch_blockfwonexit(nbpage1)
+					self.settings_firewall_switch_fwdontaskonexit(nbpage1)
 					self.settingsnotebook.append_page(nbpage1, Gtk.Label(' Firewall '))
 				except:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
@@ -2539,6 +2545,22 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwblockonexit)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_firewall_switch_blockfwonexit: failed")
+
+	def settings_firewall_switch_fwdontaskonexit(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_fwdontaskonexit = switch
+			checkbox_title = Gtk.Label(label=" Disable question on Quit: ")
+			if self.WIN_DONT_ASK_FW_EXIT == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_fwdontaskonexit)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -4077,6 +4099,7 @@ class Systray:
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
+	# *fixme* delete me later
 	def cb_change_fwdontaskonexit(self,widget,event):
 		self.debug(text="def cb_change_fwdontaskonexit()")
 		self.destroy_systray_menu()
@@ -4085,6 +4108,18 @@ class Systray:
 		elif self.WIN_DONT_ASK_FW_EXIT == False:
 			self.WIN_DONT_ASK_FW_EXIT = True
 		self.write_options_file()
+
+	def cb_switch_fwdontaskonexit(self,switch,gparam):
+		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True:
+			self.UPDATE_SWITCH = True
+			return
+		self.debug(text="def cb_switch_fwdontaskonexit()")
+		if switch.get_active():
+			self.WIN_DONT_ASK_FW_EXIT = True
+		else:
+			self.WIN_DONT_ASK_FW_EXIT = False
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
 
 	def cb_tap_blockoutbound(self,widget,event):
 		self.debug(text="def cb_tap_blockoutbound()")
