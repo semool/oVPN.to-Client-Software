@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2016-07-14 18:36+0200\n"
-"PO-Revision-Date: 2016-07-14 19:28+0200\n"
+"POT-Creation-Date: 2016-07-14 19:33+0200\n"
+"PO-Revision-Date: 2016-07-14 19:34+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -112,8 +112,8 @@ msgid ""
 "Error-ID:\n"
 "ADAPTERS[1]=(%s)\n"
 msgstr ""
-"Konnte die Interfaces mit netsh.exe nicht auslesen. Kontaktiere "
-"support@ovpn.to mit Error-ID:\n"
+"Konnte die Interfaces mit netsh.exe nicht auslesen. Kontaktiere support@ovpn."
+"to mit Error-ID:\n"
 "ADAPTERS[1]=(%s)\n"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:823
@@ -154,6 +154,10 @@ msgstr ""
 msgid "Invalid characters in self.WIN_TAP_DEVICE = '%s'"
 msgstr "Ungültige Zeichen in self.WIN_TAP_DEVICE = '%s'"
 
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:905
+msgid "Choose your External Network Adapter!"
+msgstr "Netzwerk Adapter auswählen!"
+
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:923
 msgid "No Network Adapter found!"
 msgstr "Keine Netzwerk Adapter gefunden!"
@@ -183,11 +187,13 @@ msgid "Set AutoConnect: %s"
 msgstr "Setze automatisch verbinden: %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1119
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1511
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1608
 msgid "[enabled]"
 msgstr "[Ein]"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1121
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1513
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1610
 msgid "[disabled]"
 msgstr "[Aus]"

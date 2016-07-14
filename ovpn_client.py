@@ -902,7 +902,7 @@ class Systray:
 						dialogWindow.set_icon_from_file(self.app_icon)
 					except:
 						self.debug(text="def win_read_interfaces: #2 dialogWindow.set_icon_from_file(self.app_icon) failed")
-					text = "Choose your External Network Adapter!"
+					text = _("Choose your External Network Adapter!")
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
 					dialogBox = dialogWindow.get_content_area()
@@ -1508,9 +1508,9 @@ class Systray:
 			self.make_systray_options_ipv6_menu()
 			
 			if self.DEBUG == True:
-				opt = "[enabled]"
+				opt = _("[enabled]")
 			else:
-				opt = "[disabled]"
+				opt = _("[disabled]")
 			switchdebug = Gtk.MenuItem(_("DEBUG Mode %s") % (opt))
 			switchdebug.connect('button-press-event', self.cb_switch_debug)
 			

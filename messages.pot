@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-07-14 18:33+Mitteleuropäische Sommerzeit\n"
+"POT-Creation-Date: 2016-07-14 19:33+Mitteleuropäische Sommerzeit\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -129,6 +129,10 @@ msgstr ""
 msgid "Invalid characters in self.WIN_TAP_DEVICE = '%s'"
 msgstr ""
 
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:905
+msgid "Choose your External Network Adapter!"
+msgstr ""
+
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:923
 msgid "No Network Adapter found!"
 msgstr ""
@@ -158,11 +162,13 @@ msgid "Set AutoConnect: %s"
 msgstr ""
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1119
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1511
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1608
 msgid "[enabled]"
 msgstr ""
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1121
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1513
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1610
 msgid "[disabled]"
 msgstr ""
