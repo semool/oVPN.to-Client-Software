@@ -5,6 +5,7 @@ IF NOT DEFINED DISTDIR (EXIT)
 copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
 xcopy /Y /E "%INCLUDESDIR%\ico" "%DISTDIR%\ico\"
 xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
+xcopy /Y /E "%LOCALEDIR%" "%DISTDIR%\locale\"
 
 ::copy /Y "%INCLUDESDIR%\themes\ms-windows.ini" "%DISTDIR%\etc\gtk-3.0\settings.ini"
 ::xcopy /Y /E "%INCLUDESDIR%\themes\MS-Windows" "%DISTDIR%\share\themes\MS-Windows\"

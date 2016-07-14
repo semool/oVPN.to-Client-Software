@@ -9,9 +9,11 @@ mkdir %DEVDIST%
 mkdir %BINSDIR%
 
 xcopy /Y /E "%INCLUDESDIR%" "%DEVDIST%\includes\"
+xcopy /Y /E "%LOCALEDIR%" "%DEVDIST%\locale\"
 del "%DEVDIST%\includes\crypt32*.dll"
 
 copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
+del "%SOURCEDIR%\%EXESTRING%"
 copy /Y "%SOURCEDIR%\ovpn_client.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\setup.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\7zSFXcfg%BITS%.txt" "%DEVDIST%\"

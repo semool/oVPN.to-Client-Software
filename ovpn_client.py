@@ -7,6 +7,7 @@ from gi.repository import Gtk, GdkPixbuf, GLib, GObject
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
 import gettext
+import locale
 import types
 import os
 import platform
@@ -78,7 +79,7 @@ class Systray:
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.ENABLE_THEME_SWITCHER = True
-		self.APP_LANGUAGE = "english"
+		self.APP_LANGUAGE = "en"
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ACCWINDOW_OPEN = False
@@ -658,7 +659,7 @@ class Systray:
 				return True
 			
 			except:
-				self.msgwarn(_("def read_options_file: failed!"),_("Error!"))
+				self.msgwarn(_("def read_options_file: failed!"),_("Error"))
 				try:
 					os.remove(self.opt_file)
 				except:
@@ -5266,9 +5267,15 @@ class Systray:
 		return True
 
 	def init_localization(self):
-		lang = str(self.APP_LANGUAGE)
-		trans = gettext.translation('ovpn_client', 'locale', [lang], fallback=True)
-		trans.install()
+		loc = locale.getdefaultlocale()[0][0:2]
+		filename = "locale/%s/ovpn_client.mo" % loc
+		self.debug(text="def init_localization: %s"% (loc))
+		try:
+			translation = gettext.GNUTranslations(open(filename, "rb"))
+		except IOError:
+			translation = gettext.NullTranslations()
+			self.debug(text="def init_localization: %s not found, fallback to en"% (loc))
+		translation.install()
 
 	def msgwarn(self,text,title):
 		GLib.idle_add(self.msgwarn_glib,text,title)
