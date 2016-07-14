@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# when run it manually from cmd type before: set PYTHONIOENCODING=UTF-8
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -7,6 +6,7 @@ from gi.repository import Gtk, GdkPixbuf, GLib, GObject
 
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
+import gettext
 import types
 import os
 import platform
@@ -46,13 +46,13 @@ API="xxxapi.php"
 
 class Systray:
 	def __init__(self):
-		self.init_localization()
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 		self.window.connect("delete-event", Gtk.main_quit)
 		if self.preboot():
+			self.init_localization()
 			self.init_theme()
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
@@ -78,6 +78,7 @@ class Systray:
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.ENABLE_THEME_SWITCHER = True
+		self.APP_LANGUAGE = "english"
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ACCWINDOW_OPEN = False
@@ -269,7 +270,7 @@ class Systray:
 				if os.path.exists(oldpath) and not os.path.exists(newpath):
 					self.copy_appdata(oldpath,newpath)
 			except:
-				self.msgwarn("Copy old appdata to new folder failed!","Error: def win_pre1_check_app_dir()")
+				self.msgwarn(_("Copy old appdata to new folder failed!"),_("Error: def win_pre1_check_app_dir()"))
 		else:
 			self.app_dir = "%s\\ovpn" % (os_appdata)
 			self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
@@ -657,7 +658,7 @@ class Systray:
 				return True
 			
 			except:
-				self.msgwarn("def read_options_file: failed!","Error!")
+				self.msgwarn(_("def read_options_file: failed!"),_("Error!"))
 				try:
 					os.remove(self.opt_file)
 				except:
@@ -1083,7 +1084,7 @@ class Systray:
 		self.context_menu_servertab = context_menu_servertab
 		
 		if self.OVPN_CONNECTEDto == servername:
-			disconnect = Gtk.MenuItem("Disconnect %s"%(self.OVPN_CONNECTEDto))
+			disconnect = Gtk.MenuItem(_("Disconnect %s")%(self.OVPN_CONNECTEDto))
 			context_menu_servertab.append(disconnect)
 			disconnect.connect('button-release-event', self.cb_kill_openvpn)
 		else:
@@ -1117,7 +1118,7 @@ class Systray:
 					opt = "[enabled]"
 				else:
 					opt = "[disabled]"
-				extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
+				extserverview = Gtk.MenuItem(_("Load extended Server-View %s") %(opt))
 				extserverview.connect('button-press-event', self.cb_extserverview)
 				context_menu_servertab.append(extserverview)
 			except:
@@ -1130,7 +1131,7 @@ class Systray:
 				else:
 					WIDTH = self.SRV_LIGHT_WIDTH
 					HEIGHT = self.SRV_LIGHT_HEIGHT
-				extserverviewsize = Gtk.MenuItem('Set Server-View Size [%sx%s]'%(int(WIDTH),int(HEIGHT)))
+				extserverviewsize = Gtk.MenuItem(_("Set Server-View Size [%sx%s]") %(int(WIDTH),int(HEIGHT)))
 				extserverviewsize.connect('button-press-event', self.cb_extserverview_size)
 				context_menu_servertab.append(extserverviewsize)
 			except:
@@ -1139,7 +1140,7 @@ class Systray:
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
-		refresh = Gtk.MenuItem('Refresh Window')
+		refresh = Gtk.MenuItem(_("Refresh Window"))
 		refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
 		context_menu_servertab.append(refresh)
 		
@@ -1164,7 +1165,7 @@ class Systray:
 			try:
 				pridns = self.MYDNS[servername]["primary"]["ip4"]
 				priname = self.MYDNS[servername]["primary"]["dnsname"]
-				pridnsm = Gtk.MenuItem("Primary DNS: %s (%s)" % (priname,pridns))
+				pridnsm = Gtk.MenuItem(_("Primary DNS: %s (%s)") % (priname,pridns))
 				cbdata = {servername:{"primary":{"ip4":pridns,"dnsname":priname}}}
 				pridnsm.connect('button-release-event',self.cb_del_dns,cbdata)
 				self.context_menu_servertab.append(pridnsm)
@@ -1174,7 +1175,7 @@ class Systray:
 			try:
 				secdns = self.MYDNS[servername]["secondary"]["ip4"]
 				secname = self.MYDNS[servername]["secondary"]["dnsname"]
-				secdnsm = Gtk.MenuItem("Secondary DNS: %s (%s)" % (secname,secdns))
+				secdnsm = Gtk.MenuItem(_("Secondary DNS: %s (%s)") % (secname,secdns))
 				cbdata = {servername:{"secondary":{"ip4":secdns,"dnsname":secname}}}
 				secdnsm.connect('button-release-event',self.cb_del_dns,cbdata)
 				self.context_menu_servertab.append(secdnsm)
@@ -1207,19 +1208,19 @@ class Systray:
 					
 					cbdata = {servername:{"primary":{"ip4":dnsip4,"dnsname":name}}}
 					if pridns == dnsip4:
-						setpridns = Gtk.MenuItem("Primary DNS '%s' @ %s" % (pridns,servername))
+						setpridns = Gtk.MenuItem(_("Primary DNS '%s' @ %s") % (pridns,servername))
 						setpridns.connect('button-release-event',self.cb_del_dns,cbdata)
 					else:
-						setpridns = Gtk.MenuItem("Set Primary DNS")
+						setpridns = Gtk.MenuItem(_("Set Primary DNS"))
 						setpridns.connect('button-release-event',self.cb_set_dns,cbdata)
 					dnssubmenu.append(setpridns)
 					
 					cbdata = {servername:{"secondary":{"ip4":dnsip4,"dnsname":name}}}
 					if secdns == dnsip4:
-						setsecdns = Gtk.MenuItem("Secondary DNS '%s' @ %s" % (secdns,servername))
+						setsecdns = Gtk.MenuItem(_("Secondary DNS '%s' @ %s") % (secdns,servername))
 						setsecdns.connect('button-release-event',self.cb_del_dns,cbdata)
 					else:
-						setsecdns = Gtk.MenuItem("Set Secondary DNS")
+						setsecdns = Gtk.MenuItem(_("Set Secondary DNS"))
 						setsecdns.connect('button-release-event',self.cb_set_dns,cbdata)
 					dnssubmenu.append(setsecdns)
 			dnsm.show_all()
@@ -1490,14 +1491,14 @@ class Systray:
 			self.systray_optionsmenu = Gtk.Menu()
 			self.systray_optionsmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_optionsmenu")
 			self.systray_optionsmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_optionsmenu")
-			optionsm = Gtk.MenuItem('Options')
+			optionsm = Gtk.MenuItem(_("Options"))
 			optionsm.set_submenu(self.systray_optionsmenu)
 			
 			self.systray_menu.append(optionsm)
 			
 			try:
 				if self.STATE_OVPN == False:
-					resetextif = Gtk.MenuItem('Select Network Adapter')
+					resetextif = Gtk.MenuItem(_("Select Network Adapter"))
 					resetextif.connect('button-press-event', self.cb_resetextif)
 					self.systray_optionsmenu.append(resetextif)
 			except:
@@ -1509,7 +1510,7 @@ class Systray:
 				opt = "[enabled]"
 			else:
 				opt = "[disabled]"
-			switchdebug = Gtk.MenuItem("DEBUG Mode %s" % (opt))
+			switchdebug = Gtk.MenuItem(_("DEBUG Mode %s") % (opt))
 			switchdebug.connect('button-press-event', self.cb_switch_debug)
 			
 			self.systray_optionsmenu.append(switchdebug)
@@ -1518,7 +1519,7 @@ class Systray:
 
 		try:
 			if self.ENABLE_THEME_SWITCHER == True:
-				theme = Gtk.MenuItem('Set App Theme [%s]'%(self.APP_THEME))
+				theme = Gtk.MenuItem(_("Set App Theme [%s]") %(self.APP_THEME))
 				theme.connect('button-press-event', self.theme_switcher)
 				self.systray_optionsmenu.append(theme)
 		except:
@@ -1530,21 +1531,21 @@ class Systray:
 			ipv6menu = Gtk.Menu()
 			ipv6menu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_ipv6menu")
 			ipv6menu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_ipv6menu")
-			ipv6m = Gtk.MenuItem('IPv6 Options')
+			ipv6m = Gtk.MenuItem(_("IPv6 Options"))
 			ipv6m.set_submenu(ipv6menu)
 			self.systray_optionsmenu.append(ipv6m)
 			if not self.OVPN_CONFIGVERSION == "23x":
-				ipv6entry1 = Gtk.MenuItem('Select: IPv4 Entry Server with Exit to IPv4 (standard)')
+				ipv6entry1 = Gtk.MenuItem(_("Select: IPv4 Entry Server with Exit to IPv4 (standard)"))
 				ipv6entry1.connect('button-press-event', self.cb_change_ipmode1)
 				ipv6menu.append(ipv6entry1)
 			if not self.OVPN_CONFIGVERSION  == "23x46":
-				ipv6entry2 = Gtk.MenuItem('Select: IPv4 Entry Server with Exits to IPv4 + IPv6')
+				ipv6entry2 = Gtk.MenuItem(_("Select: IPv4 Entry Server with Exits to IPv4 + IPv6"))
 				ipv6entry2.connect('button-press-event', self.cb_change_ipmode2)
 				ipv6menu.append(ipv6entry2)
 			"""
 			 *** fixme need isValueIPv6 first! ***
 			if not self.OVPN_CONFIGVERSION == "23x64":
-				ipv6entry3 = Gtk.MenuItem('Select: IPv6 Entry Server with Exits to IPv6 + IPv4')
+				ipv6entry3 = Gtk.MenuItem(_("Select: IPv6 Entry Server with Exits to IPv6 + IPv4"))
 				ipv6entry3.connect('button-press-event', self.cb_change_ipmode3)
 				ipv6menu.append(ipv6entry3)
 			"""
@@ -1556,13 +1557,13 @@ class Systray:
 		try:
 			fwmenu = Gtk.Menu()
 			fwmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_fwmenu")
-			fwm = Gtk.MenuItem('Firewall')
+			fwm = Gtk.MenuItem(_("Firewall"))
 			fwm.set_submenu(fwmenu)
 			self.systray_menu.append(fwm)
 			
 			if self.STATE_OVPN == False:
 				if self.NO_WIN_FIREWALL == False:
-					fwrm = Gtk.MenuItem('Restore Firewall Backups')
+					fwrm = Gtk.MenuItem(_("Restore Firewall Backups"))
 					fwrm.connect('enter-notify-event', self.systray_notify_event_enter,"fwrm")
 					fwrmenu = Gtk.Menu()
 					fwrm.set_submenu(fwrmenu)
@@ -1584,15 +1585,15 @@ class Systray:
 				updatesmenu = Gtk.Menu()
 				updatesmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_updatesmenu")
 				updatesmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_updatesmenu")
-				updatesm = Gtk.MenuItem("Updates")
+				updatesm = Gtk.MenuItem(_("Updates"))
 				updatesm.set_submenu(updatesmenu)
 				self.systray_menu.append(updatesm)
 				
-				normalupdate = Gtk.MenuItem('Normal Config Update')
+				normalupdate = Gtk.MenuItem(_("Normal Config Update"))
 				normalupdate.connect('button-press-event', self.cb_check_normal_update)
 				updatesmenu.append(normalupdate)
 				
-				forceupdate = Gtk.MenuItem('Forced Config Update')
+				forceupdate = Gtk.MenuItem(_("Forced Config Update"))
 				forceupdate.connect('button-press-event', self.cb_force_update)
 				updatesmenu.append(forceupdate)
 				
@@ -1616,16 +1617,16 @@ class Systray:
 				sep = Gtk.SeparatorMenuItem()
 				updatesmenu.append(sep)
 				
-				resetlogin = Gtk.MenuItem('Reset API Login')
+				resetlogin = Gtk.MenuItem(_("Reset API Login"))
 				resetlogin.connect('button-press-event', self.cb_form_reask_userid)
 				updatesmenu.append(resetlogin)
 				
 				if not self.PASSPHRASE == False:
-					clearphram = Gtk.MenuItem('Clear Passphrase from RAM')
+					clearphram = Gtk.MenuItem(_("Clear Passphrase from RAM"))
 					clearphram.connect('button-press-event', self.cb_clear_passphrase_ram)
 					updatesmenu.append(clearphram)
 					
-					clearphcfg = Gtk.MenuItem('Clear Passphrase from CFG')
+					clearphcfg = Gtk.MenuItem(_("Clear Passphrase from CFG"))
 					clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
 					updatesmenu.append(clearphcfg)
 			except:
@@ -1729,10 +1730,10 @@ class Systray:
 			self.systray_menu.append(sep)
 			mainwindowentry = False
 			if self.MAINWINDOW_OPEN == True:
-				mainwindowentry = Gtk.MenuItem('Close Servers')
+				mainwindowentry = Gtk.MenuItem(_("Close Servers"))
 			else:
 				if len(self.OVPN_SERVER) > 0:
-					mainwindowentry = Gtk.MenuItem('Servers')
+					mainwindowentry = Gtk.MenuItem(_("Servers"))
 			if mainwindowentry:
 				self.systray_menu.append(mainwindowentry)
 				mainwindowentry.connect('button-release-event', self.show_mainwindow)
@@ -1742,9 +1743,9 @@ class Systray:
 		
 		try:
 			if self.ACCWINDOW_OPEN == True:
-				accwindowentry = Gtk.MenuItem('Close Account')
+				accwindowentry = Gtk.MenuItem(_("Close Account"))
 			else:
-				accwindowentry = Gtk.MenuItem('Account')
+				accwindowentry = Gtk.MenuItem(_("Account"))
 			self.systray_menu.append(accwindowentry)
 			accwindowentry.connect('button-release-event', self.show_accwindow)
 			accwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"accwindowentry")
@@ -1754,9 +1755,9 @@ class Systray:
 		
 		try:
 			if self.SETTINGSWINDOW_OPEN == True:
-				settwindowentry = Gtk.MenuItem('Close Settings')
+				settwindowentry = Gtk.MenuItem(_("Close Settings"))
 			else:
-				settwindowentry = Gtk.MenuItem('Settings')
+				settwindowentry = Gtk.MenuItem(_("Settings"))
 			self.systray_menu.append(settwindowentry)
 			settwindowentry.connect('button-release-event', self.show_settingswindow)
 			settwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"settwindowentry")
@@ -1767,7 +1768,7 @@ class Systray:
 			try:
 				sep = Gtk.SeparatorMenuItem()
 				self.systray_menu.append(sep)
-				about = Gtk.MenuItem('About')
+				about = Gtk.MenuItem(_("About"))
 				self.systray_menu.append(about)
 				about.connect('button-release-event', self.show_about_dialog)
 				about.connect('leave-notify-event', self.systray_notify_event_leave,"about")
@@ -1775,7 +1776,7 @@ class Systray:
 				self.debug(text="def make_systray_bottom_menu: about failed")
 			
 			# add quit item
-			quit = Gtk.MenuItem('Quit')
+			quit = Gtk.MenuItem(_("Quit"))
 			self.systray_menu.append(quit)
 			quit.connect('button-release-event', self.on_closing)
 			quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
@@ -1817,7 +1818,7 @@ class Systray:
 			self.progresswindow = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
 			self.progresswindow.set_default_size(250,128)
 			#self.progresswindow.set_border_width(6)
-			self.progresswindow.set_title("oVPN Server Update")
+			self.progresswindow.set_title(_("oVPN Server Update"))
 			self.progresswindow.set_icon_from_file(self.systray_icon_syncupdate)
 			self.progressbar = Gtk.ProgressBar()
 			self.progressbar.set_pulse_step(0)
@@ -1864,25 +1865,25 @@ class Systray:
 							if self.API_REQUEST(API_ACTION = "getcerts"):
 								if self.extract_ovpn():
 									self.timer_check_certdl_running = False
-									self.msgwarn("Certificates and Configs updated!","oVPN Update OK!")
+									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 									return True
 								else:
-									self.msgwarn("def inThread_timer_check_certdl: extraction failed","Error: oVPN Update failed!")
+									self.msgwarn(_("def inThread_timer_check_certdl: extraction failed"),_("Error: oVPN Update failed!"))
 							else:
-								self.msgwarn("def inThread_timer_check_certdl: downloading certs failed","Error: oVPN Update failed!")
+								self.msgwarn(_("def inThread_timer_check_certdl: downloading certs failed"),_("Error: oVPN Update failed!"))
 							# finish downloading certs
 						else:
-							self.msgwarn("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = requestcerts): failed","Error: oVPN Update failed!")
+							self.msgwarn(_("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = requestcerts): failed"),_("Error: oVPN Update failed!"))
 					else:
-						self.msgwarn("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = getconfigs): failed","Error: oVPN Update failed!")
+						self.msgwarn(_("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = getconfigs): failed"),_("Error: oVPN Update failed!"))
 				else:
 					self.timer_check_certdl_running = False
-					self.msgwarn("No update needed!","oVPN Update OK!")
+					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
 					return True
 			else:
-				self.msgwarn("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = lastupdate): failed","Error: oVPN Update failed!")
+				self.msgwarn(_("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = lastupdate): failed"),_("Error: oVPN Update failed!"))
 		except:
-			self.msgwarn("def inThread_timer_check_certdl: failed","Error: oVPN Update failed!")
+			self.msgwarn(_("def inThread_timer_check_certdl: failed"),_("Error: oVPN Update failed!"))
 		self.timer_check_certdl_running = False
 		return False
 
@@ -2126,7 +2127,7 @@ class Systray:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
-				self.mainwindow.set_title("oVPN Server - %s" % (CLIENT_STRING))
+				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.app_icon)
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
@@ -2198,7 +2199,7 @@ class Systray:
 		elif self.OVPN_CONFIGVERSION == "23x64":
 			mode = "IPv6 + IPv4"
 		self.debug(text="def mainwindow_ovpn_server: go0")
-		label = Gtk.Label("oVPN Server [ %s ]" % (mode))
+		label = Gtk.Label(_("oVPN Server [ %s ]") % (mode))
 		
 		self.debug(text="def mainwindow_ovpn_server: go1")
 		try:
@@ -2333,7 +2334,7 @@ class Systray:
 				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.accwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
-				self.accwindow.set_title("oVPN Account - %s" % (CLIENT_STRING))
+				self.accwindow.set_title(_("oVPN Account - %s") % (CLIENT_STRING))
 				self.accwindow.set_icon_from_file(self.app_icon)
 				self.accwindow.set_default_size(370,480)
 				self.accwindow_accinfo()
@@ -2452,7 +2453,7 @@ class Systray:
 				self.settingswindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.settingswindow.set_position(Gtk.WindowPosition.CENTER)
 				self.settingswindow.connect("destroy",self.cb_destroy_settingswindow)
-				self.settingswindow.set_title("oVPN Settings - %s" % (CLIENT_STRING))
+				self.settingswindow.set_title(_("oVPN Settings - %s") % (CLIENT_STRING))
 				self.settingswindow.set_icon_from_file(self.app_icon)
 				self.settingsnotebook = Gtk.Notebook()
 				self.settingswindow.add(self.settingsnotebook)
@@ -2467,7 +2468,7 @@ class Systray:
 					self.settings_firewall_switch_tapblockoutbound(nbpage1)
 					self.settings_firewall_switch_fwresetonconnect(nbpage1)
 					self.settings_firewall_switch_fwbackupmode(nbpage1)
-					self.settingsnotebook.append_page(nbpage1, Gtk.Label(' Firewall '))
+					self.settingsnotebook.append_page(nbpage1, Gtk.Label(_(" Firewall ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
 				
@@ -2477,7 +2478,7 @@ class Systray:
 					nbpage2.pack_start(Gtk.Label(label="Network Adapter Settings\n"),False,False,0)
 					self.settings_network_switch_nodns(nbpage2)
 					self.settings_network_switch_disableextifondisco(nbpage2)
-					self.settingsnotebook.append_page(nbpage2, Gtk.Label(' Network '))
+					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Network ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
 					
@@ -2486,7 +2487,7 @@ class Systray:
 					nbpage3.set_border_width(8)
 					nbpage3.pack_start(Gtk.Label(label="Update Settings\n"),False,False,0)
 					self.settings_updates_switch_updateovpnonstart(nbpage3)
-					self.settingsnotebook.append_page(nbpage3, Gtk.Label(' Updates '))
+					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage3 failed")
 				
@@ -2641,7 +2642,7 @@ class Systray:
 		if switch.get_active():
 			self.WIN_RESET_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
+				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed"))
 		else:
 			self.WIN_RESET_FIREWALL = False
 		self.write_options_file()
@@ -2671,7 +2672,7 @@ class Systray:
 		if switch.get_active():
 			self.WIN_BACKUP_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn("Could not export Windows Firewall Backup!","Error: Windows Firewall Backup failed")
+				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed"))
 		else:
 			self.WIN_BACKUP_FIREWALL = False
 		self.write_options_file()
@@ -3053,7 +3054,7 @@ class Systray:
 				not os.path.isfile(self.ovpn_tls_key) or \
 				not os.path.isfile(self.ovpn_cli_crt) or \
 				not os.path.isfile(self.ovpn_cli_key):
-					self.msgwarn("Files missing: '%s' % (self.ovpn_server_dir)","Error: Certs not found!")
+					self.msgwarn(_("Files missing: '%s' % (self.ovpn_server_dir)"),_("Error: Certs not found!"))
 					return False
 			try:
 				ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
@@ -3079,7 +3080,7 @@ class Systray:
 			self.reset_ovpn_values_disconnected()
 			return False
 		if not self.win_firewall_start():
-			self.msgwarn("def inThread_spawn_openvpn_process: Could not start Windows Firewall!","Error!")
+			self.msgwarn(_("def inThread_spawn_openvpn_process: Could not start Windows Firewall!"),_("Error!"))
 			self.reset_ovpn_values_disconnected()
 			return False
 		self.win_firewall_modify_rule(option="add")
@@ -3092,7 +3093,7 @@ class Systray:
 		self.reset_load_remote_timer()
 		self.STATE_OVPN = True
 		if self.timer_ovpn_ping_running == False:
-			self.debug("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
+			self.debug(_("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping"))
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 			pingthread.daemon = True
 			pingthread.start()
@@ -3385,10 +3386,10 @@ class Systray:
 								self.debug(text="Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
 								return True
 							else:
-								self.msgwarn("Error: Restore Secondary DNS to %s failed." % (self.GATEWAY_DNS2),"Error: DNS restore 2nd")
+								self.msgwarn(_("Error: Restore Secondary DNS to %s failed.") % (self.GATEWAY_DNS2),_("Error: DNS restore 2nd"))
 								return False
 					else:
-						self.msgwarn("Error: Restore Primary DNS to %s failed." % (self.GATEWAY_DNS1),"Error: DNS restore 1st")
+						self.msgwarn(_("Error: Restore Primary DNS to %s failed.") % (self.GATEWAY_DNS1),_("Error: DNS restore 1st"))
 						return False
 				else:
 					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
@@ -3484,13 +3485,13 @@ class Systray:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
 					return True
 				except:
-					self.msgwarn("Error:\nSSL Root Certificate for %s not loaded %s" % (DOMAIN,self.CA_FILE),"Error: SSL CA Cert #1")
+					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #1"))
 					return False
 			else:
-				self.msgwarn("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),"Error: SSL CA Cert #2")
+				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
 				return False
 		else:
-			self.msgwarn("Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (DOMAIN,self.CA_FILE),"Error: SSL CA Cert #3")
+			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #3"))
 			return False
 
 	def win_firewall_start(self):
@@ -3871,35 +3872,35 @@ class Systray:
 			except:
 				self.debug(text="def form_ask_userid: dialogWindow.set_icon_from_file(self.app_icon) failed")
 			dialogWindow.set_transient_for(self.window)
-			dialogWindow.set_title("oVPN.to Setup")
-			dialogWindow.set_markup("Enter your oVPN.to Details")
+			dialogWindow.set_title(_("oVPN.to Setup"))
+			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
 			dialogBox = dialogWindow.get_content_area()
 			
 			useridEntry = Gtk.Entry()
 			useridEntry.set_visibility(True)
 			useridEntry.set_max_length(9)
 			useridEntry.set_size_request(200,24)
-			useridLabel = Gtk.Label(label="User-ID:")
+			useridLabel = Gtk.Label(label=_("User-ID:"))
 			
 			apikeyEntry = Gtk.Entry()
 			apikeyEntry.set_visibility(False)
 			apikeyEntry.set_max_length(128)
 			apikeyEntry.set_invisible_char("*")
 			apikeyEntry.set_size_request(200,24)
-			apikeyLabel = Gtk.Label(label="API-Key:")
+			apikeyLabel = Gtk.Label(label=_("API-Key:"))
 			
 			ph1Entry = Gtk.Entry()
 			ph1Entry.set_visibility(False)
 			ph1Entry.set_invisible_char("X")
 			ph1Entry.set_size_request(200,24)
-			ph0Label = Gtk.Label(label="\n\nEnter a secure passphrase to encrypt your API-Login!")
-			ph1Label = Gtk.Label(label="Passphrase:")
+			ph0Label = Gtk.Label(label=_("\n\nEnter a secure passphrase to encrypt your API-Login!"))
+			ph1Label = Gtk.Label(label=_("Passphrase:"))
 			
 			ph2Entry = Gtk.Entry()
 			ph2Entry.set_visibility(False)
 			ph2Entry.set_invisible_char("X")
 			ph2Entry.set_size_request(200,24)
-			ph2Label = Gtk.Label(label="Repeat:")
+			ph2Label = Gtk.Label(label=_("Repeat:"))
 			
 			dialogBox.pack_start(useridLabel,False,False,0)
 			dialogBox.pack_start(useridEntry,False,False,0)
@@ -4011,7 +4012,7 @@ class Systray:
 		if self.DEBUG == False:
 			self.DEBUG = True
 			self.write_options_file()
-			self.msgwarn("Logfile:\n'%s'" % (self.debug_log),"Debug Mode Enabled")
+			self.msgwarn(_("Logfile:\n'%s'") % (self.debug_log),_("Debug Mode Enabled"))
 		else:
 			self.DEBUG = False
 			self.write_options_file()
@@ -4060,7 +4061,7 @@ class Systray:
 		self.debug(text="def cb_check_normal_update()")
 		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
-			self.msgwarn("Could not connect to %s" % (DOMAIN),"Error: Update failed")
+			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
 			return False
 		if self.check_remote_update():
 			self.debug(text="def cb_check_normal_update: self.check_remote_update() == True")
@@ -4070,7 +4071,7 @@ class Systray:
 		self.debug(text="def cb_force_update()")
 		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
-			self.msgwarn("Could not connect to %s" % (DOMAIN),"Error: Update failed")
+			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
 			return False
 		if self.reset_last_update():
 			self.debug(text="def cb_force_update: self.reset_last_update")
@@ -4181,7 +4182,7 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN),"Switched to IPv4+6")
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv4+6"))
 			self.cb_check_normal_update(widget,event)
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
@@ -4199,7 +4200,7 @@ class Systray:
 			self.cb_check_normal_update(widget,event)
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
-		self.msgwarn("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!" % (DOMAIN),"Switched to IPv6+4")
+		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
 
 	def cb_restore_firewallbackup(self,widget,event,file):
 		self.debug(text="def cb_restore_firewallbackup()")
@@ -4303,7 +4304,7 @@ class Systray:
 			self.debug(text=text)
 			return False
 		except:
-			self.msgwarn("def API_REQUEST: requests error on: %s failed!" % (API_ACTION),"Error: API-Request")
+			self.msgwarn(_("def API_REQUEST: requests error on: %s failed!") % (API_ACTION),_("Error: API-Request"))
 			return False
 		
 		if not self.body == False:
@@ -4415,7 +4416,7 @@ class Systray:
 	def copy_appdata(self,oldpath,newpath):
 		self.debug(text="def move_appdata()")
 		shellcmd = 'xcopy /Y /E "%s" "%s\\"' % (oldpath,newpath)
-		self.msgwarn("def move_appdata: '%s'" % (shellcmd),"Move Userdata to new folder!")
+		self.msgwarn(_("def move_appdata: '%s'") % (shellcmd),_("Move Userdata to new folder!"))
 		exitcode = subprocess.call('%s' % (shellcmd),shell=True)
 		self.debug(text="def move_appdata: exitcode = %s" % (exitcode))
 		if os.path.exists("%s\\bin"%(self.app_dir)):
@@ -4498,7 +4499,7 @@ class Systray:
 			else:
 				self.reset_last_update()
 		except:
-			self.msgwarn("def load_ovpn_server: failed","Error!")
+			self.msgwarn(_("def load_ovpn_server: failed"),_("Error!"))
 
 	def load_remote_data(self):
 		if self.timer_load_remote_data_running == True:
@@ -4670,7 +4671,7 @@ class Systray:
 			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x86
 		else:
 			self.OPENVPN_DL_URL = False
-			self.msgwarn("Platform '%s' not supported" % (self.PLATFORM),"Error!")
+			self.msgwarn(_("Platform '%s' not supported") % (self.PLATFORM),_("Error!"))
 			return False
 		self.OPENVPN_DL_URL = "%s/%s" % (self.OPENVPN_REM_URL,self.OPENVPN_FILENAME)
 		self.OPENVPN_DL_URL_ALT = "%s/%s" % (self.OPENVPN_ALT_URL,self.OPENVPN_FILENAME)
@@ -4686,16 +4687,16 @@ class Systray:
 				self.debug(text="def upgrade_openvpn: self.win_install_openvpn() = True")
 				return True
 		if self.verify_openvpnbin_dl():
-			self.errorquit(text="openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'" % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
+			self.errorquit(text=_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
 		else:
-			self.errorquit(text="openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s" % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
+			self.errorquit(text=_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
 
 	def load_openvpnbin_from_remote(self):
 		self.debug(text="def load_openvpnbin_from_remote()")
 		if not self.OPENVPN_DL_URL == False:
 			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 				return self.verify_openvpnbin_dl()
-			self.msgwarn("Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO),"Setup: openVPN")
+			self.msgwarn(_("Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait...") % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO),_("Setup: openVPN"))
 			try:
 				ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
 				r1 = requests.get(self.OPENVPN_DL_URL)
@@ -4721,11 +4722,11 @@ class Systray:
 				self.debug(text="def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
 				return True
 			else:
-				self.msgwarn("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'" % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),"Error!")
+				self.msgwarn(_("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'") % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),_("Error!"))
 				try:
 					os.remove(self.OPENVPN_SAVE_BIN_TO)
 				except:
-					self.msgwarn("Failed remove file: %s" % (self.OPENVPN_SAVE_BIN_TO),"Error!")
+					self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error!"))
 				return False
 		else:
 			return False
@@ -4761,8 +4762,8 @@ class Systray:
 
 	def win_select_openvpn(self):
 		self.debug(text="def win_select_openvpn()")
-		self.msgwarn("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!","Setup: openVPN")
-		dialogWindow = Gtk.FileChooserDialog("Select openvpn.exe or Cancel to install openVPN",None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+		self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
+		dialogWindow = Gtk.FileChooserDialog(_("Select openvpn.exe or Cancel to install openVPN"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_default_response(Gtk.ResponseType.OK)
 		filter = Gtk.FileFilter()
@@ -4809,7 +4810,7 @@ class Systray:
 				if self.upgrade_openvpn():
 					self.win_detect_openvpn()
 		if not self.openvpn_check_files():
-			self.msgwarn("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']" % (self.OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE),"Error!")
+			self.msgwarn(_("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']") % (self.OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE),_("Error!"))
 		self.debug(text = "def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
 		try:
 			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
@@ -4862,10 +4863,10 @@ class Systray:
 						if hasha == hashb:
 							self.debug(text="def openvpn_check_files: hash '%s' OK!" % (file))
 						else:
-							self.msgwarn("Invalid Hash: '%s'! is '%s' != '%s'" % (filepath,hasha,hashb),"Error!")
+							self.msgwarn(_("Invalid Hash: '%s'! is '%s' != '%s'") % (filepath,hasha,hashb),_("Error!"))
 							return False
 					else:
-						self.msgwarn("Invalid content '%s' in '%s'" % (file,self.OPENVPN_DIR),"Error!")
+						self.msgwarn(_("Invalid content '%s' in '%s'") % (file,self.OPENVPN_DIR),_("Error!"))
 						return False
 				return True
 			else:
@@ -4882,7 +4883,7 @@ class Systray:
 		elif self.PLATFORM == "x86":
 			arch = "i686"
 		else:
-			self.errorquit("arch '%s' not supported!" % (self.PLATFORM))
+			self.errorquit(_("arch '%s' not supported!") % (self.PLATFORM))
 		self.debug("def openvpn_filename_exe: arch = '%s'" % (arch))
 		return "openvpn-install-%s-%s-%s.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,arch)
 
@@ -5083,11 +5084,11 @@ class Systray:
 			try:
 				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 				dialog.set_position(Gtk.WindowPosition.CENTER)
-				dialog.set_title("Quit oVPN.to Client")
+				dialog.set_title(_("Quit oVPN.to Client"))
 				dialog.set_icon_from_file(self.app_icon)
 				dialog.set_transient_for(self.window)
 				self.QUIT_DIALOG = dialog
-				dialog.set_markup("Do you really want to quit?")
+				dialog.set_markup(_("Do you really want to quit?"))
 				response = dialog.run()
 				dialog.destroy()
 				if response == Gtk.ResponseType.NO:
@@ -5153,7 +5154,7 @@ class Systray:
 					dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 					self.dialog_ask_loadorunload_fw = dialog
 					dialog.set_position(Gtk.WindowPosition.CENTER)
-					dialog.set_title("Firewall Settings")
+					dialog.set_title(_("Firewall Settings"))
 					dialog.set_icon_from_file(self.app_icon)
 					dialog.set_transient_for(self.window)
 					if self.WIN_BACKUP_FIREWALL == True:
@@ -5213,7 +5214,7 @@ class Systray:
 		try:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_position(Gtk.WindowPosition.CENTER)
-			message.set_title("Error")
+			message.set_title(_("Error"))
 			message.set_icon_from_file(self.app_icon)
 			message.set_markup("%s"%(text))
 			message.run()
@@ -5265,15 +5266,9 @@ class Systray:
 		return True
 
 	def init_localization(self):
-		return
-		loc = locale.getdefaultlocale()[0][0:2]
-		filename = "locale/messages_%s.mo" % loc
-		try:
-			translation = gettext.GNUTranslations(open(filename, "rb"))
-		except IOError:
-			translation = gettext.NullTranslations()
-			#print "Language file for %s not found" % loc
-		translation.install()
+		lang = str(self.APP_LANGUAGE)
+		trans = gettext.translation('ovpn_client', 'locale', [lang], fallback=True)
+		trans.install()
 
 	def msgwarn(self,text,title):
 		GLib.idle_add(self.msgwarn_glib,text,title)
