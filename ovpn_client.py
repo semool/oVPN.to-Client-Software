@@ -282,7 +282,7 @@ class Systray:
 			self.debug(text="win_pre1_check_app_dir self.app_dir=%s :True" % (self.app_dir))
 			return True
 		else:
-			self.errorquit(text = _("def check_winapp_dir could not create app_dir: %s") % (self.app_dir))
+			self.errorquit(text = _("Could not create app_dir: %s") % (self.app_dir))
 
 	def win_pre2_check_profiles_win(self):
 		self.debug(text="def win_pre2_check_profiles_win()")
@@ -367,19 +367,19 @@ class Systray:
 			self.WIN_IPCONFIG_EXE = "%s\\system32\\ipconfig.exe" % (self.WINDIR)
 			self.WIN_TASKKILL_EXE = "%s\\system32\\taskkill.exe" % (self.WINDIR)
 		else:
-			self.errorquit(text=_("Error: WINDIR '%s' not found!") % (self.WINDIR))
+			self.errorquit(text=_("Error: '%s' not found!") % (self.WINDIR))
 		
 		if not os.path.isfile(self.WIN_NETSH_EXE):
-			self.errorquit(text=_("Error: self.WIN_NETSH_EXE '%s' not found!") % (self.WIN_NETSH_EXE))
+			self.errorquit(text=_("Error: '%s' not found!") % (self.WIN_NETSH_EXE))
 		
 		if not os.path.isfile(self.WIN_ROUTE_EXE):
-			self.errorquit(text=_("Error: self.WIN_ROUTE_EXE '%s' not found!") % (self.WIN_ROUTE_EXE))
+			self.errorquit(text=_("Error: '%s' not found!") % (self.WIN_ROUTE_EXE))
 		
 		if not os.path.isfile(self.WIN_IPCONFIG_EXE):
-			self.errorquit(text=_("Error: self.WIN_IPCONFIG_EXE '%s' not found!") % (self.WIN_IPCONFIG_EXE))
+			self.errorquit(text=_("Error: '%s' not found!") % (self.WIN_IPCONFIG_EXE))
 		
 		if not os.path.isfile(self.WIN_TASKKILL_EXE):
-			self.errorquit(text=_("Error: self.WIN_TASKKILL_EXE '%s' not found!") % (self.WIN_TASKKILL_EXE))
+			self.errorquit(text=_("Error: '%s' not found!") % (self.WIN_TASKKILL_EXE))
 		
 		self.debug(text="win_pre3_load_profile_dir_vars loaded")
 		return True
@@ -449,7 +449,7 @@ class Systray:
 			else:
 				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
-			self.errorquit(text=_("def check_config_folders: failed"))
+			self.errorquit(text=_("Creating config Folders failed"))
 
 	def read_options_file(self):
 		self.debug(text="def read_options_file()")
@@ -659,7 +659,7 @@ class Systray:
 				return True
 			
 			except:
-				self.msgwarn(_("def read_options_file: failed!"),_("Error"))
+				self.msgwarn(_("Read config file failed!"),_("Error: def read_options_file"))
 				try:
 					os.remove(self.opt_file)
 				except:
@@ -886,7 +886,7 @@ class Systray:
 			badchars = ["%","&","$"]
 			for char in badchars:
 				if char in self.WIN_TAP_DEVICE:
-					self.errorquit(text=_("Invalid characters in self.WIN_TAP_DEVICE = '%s'") % char)
+					self.errorquit(text=_("Invalid characters in '%s'") % char)
 			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 			self.win_enable_tap_interface()
 			self.debug(text="remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
@@ -1869,22 +1869,22 @@ class Systray:
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 									return True
 								else:
-									self.msgwarn(_("def inThread_timer_check_certdl: extraction failed"),_("Error: oVPN Update failed!"))
+									self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
 							else:
-								self.msgwarn(_("def inThread_timer_check_certdl: downloading certs failed"),_("Error: oVPN Update failed!"))
+								self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
 							# finish downloading certs
 						else:
-							self.msgwarn(_("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = requestcerts): failed"),_("Error: oVPN Update failed!"))
+							self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
 					else:
-						self.msgwarn(_("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = getconfigs): failed"),_("Error: oVPN Update failed!"))
+						self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
 				else:
 					self.timer_check_certdl_running = False
 					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
 					return True
 			else:
-				self.msgwarn(_("def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = lastupdate): failed"),_("Error: oVPN Update failed!"))
+				self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
 		except:
-			self.msgwarn(_("def inThread_timer_check_certdl: failed"),_("Error: oVPN Update failed!"))
+			self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
 		self.timer_check_certdl_running = False
 		return False
 
@@ -3055,7 +3055,7 @@ class Systray:
 				not os.path.isfile(self.ovpn_tls_key) or \
 				not os.path.isfile(self.ovpn_cli_crt) or \
 				not os.path.isfile(self.ovpn_cli_key):
-					self.msgwarn(_("Files missing: '%s' % (self.ovpn_server_dir)"),_("Error: Certs not found!"))
+					self.msgwarn(_("Files missing: '%s'") % (self.ovpn_server_dir),_("Error: Certs not found!"))
 					return False
 			try:
 				ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
@@ -3081,7 +3081,7 @@ class Systray:
 			self.reset_ovpn_values_disconnected()
 			return False
 		if not self.win_firewall_start():
-			self.msgwarn(_("def inThread_spawn_openvpn_process: Could not start Windows Firewall!"),_("Error!"))
+			self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
 			self.reset_ovpn_values_disconnected()
 			return False
 		self.win_firewall_modify_rule(option="add")
@@ -3094,7 +3094,7 @@ class Systray:
 		self.reset_load_remote_timer()
 		self.STATE_OVPN = True
 		if self.timer_ovpn_ping_running == False:
-			self.debug(_("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping"))
+			self.debug("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 			pingthread.daemon = True
 			pingthread.start()
@@ -3760,7 +3760,7 @@ class Systray:
 			except:
 				self.debug(text="def win_join_ipconfig_cmd: '%s' failed" % (cmdstring))
 		else:
-			self.errorquit(text=_("def win_ipconfig_flushdns: ipconfig.exe not found!"))
+			self.errorquit(text=_("ipconfig.exe not found!"))
 
 	def win_ipconfig_displaydns(self):
 		self.debug(text="def win_ipconfig_displaydns()")
@@ -3772,7 +3772,7 @@ class Systray:
 			except:
 				self.debug(text="def win_ipconfig_displaydns: failed" % (cmdstring))
 		else:
-			self.errorquit(text=_("def win_ipconfig_displaydns: ipconfig.exe not found!"))
+			self.errorquit(text=_("ipconfig.exe not found!"))
 
 	def isValueIPv4(self,value):
 		#self.debug(text="def isValueIPv4()")
@@ -4305,7 +4305,7 @@ class Systray:
 			self.debug(text=text)
 			return False
 		except:
-			self.msgwarn(_("def API_REQUEST: requests error on: %s failed!") % (API_ACTION),_("Error: API-Request"))
+			self.msgwarn(_("API requests on: %s failed!") % (API_ACTION),_("Error: def API_REQUEST"))
 			return False
 		
 		if not self.body == False:
@@ -4314,7 +4314,7 @@ class Systray:
 				self.curldata = self.body.split(":")
 				if self.curldata[0] == "AUTHOK":
 					self.curldata = self.curldata[1]
-					self.debug(text=_("def API_REQUEST: self.curldata = '%s'") % (self.curldata))
+					self.debug(text="def API_REQUEST: self.curldata = '%s'" % (self.curldata))
 					return True
 			else:
 				text = _("Invalid User-ID / API-Key or Account expired.")
@@ -4417,7 +4417,7 @@ class Systray:
 	def copy_appdata(self,oldpath,newpath):
 		self.debug(text="def move_appdata()")
 		shellcmd = 'xcopy /Y /E "%s" "%s\\"' % (oldpath,newpath)
-		self.msgwarn(_("def move_appdata: '%s'") % (shellcmd),_("Move Userdata to new folder!"))
+		self.msgwarn(_("Move Userdata to new folder: '%s'") % (shellcmd),_("Error: def move_appdata"))
 		exitcode = subprocess.call('%s' % (shellcmd),shell=True)
 		self.debug(text="def move_appdata: exitcode = %s" % (exitcode))
 		if os.path.exists("%s\\bin"%(self.app_dir)):
@@ -4500,7 +4500,7 @@ class Systray:
 			else:
 				self.reset_last_update()
 		except:
-			self.msgwarn(_("def load_ovpn_server: failed"),_("Error!"))
+			self.msgwarn(_("Load openVPN Server failed"),_("Error: def load_ovpn_server"))
 
 	def load_remote_data(self):
 		if self.timer_load_remote_data_running == True:
@@ -4840,7 +4840,7 @@ class Systray:
 						return True
 			self.upgrade_openvpn()
 		except:
-			self.errorquit(text=_("def win_detect_openvpn: failed"))
+			self.errorquit(text=_("Could not find openVPN"))
 
 	def openvpn_check_files(self):
 		self.debug(text="def openvpn_check_files()")

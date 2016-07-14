@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2016-07-14 19:33+0200\n"
-"PO-Revision-Date: 2016-07-14 19:34+0200\n"
+"POT-Creation-Date: 2016-07-14 21:28+0200\n"
+"PO-Revision-Date: 2016-07-14 21:33+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -42,32 +42,20 @@ msgid "Error: def win_pre1_check_app_dir()"
 msgstr "Fehler: def win_pre1_check_app_dir()"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:285
-msgid "def check_winapp_dir could not create app_dir: %s"
-msgstr "def check_winapp_dir konnte App Verzeichnis nicht anlegen: %s"
+msgid "Could not create app_dir: %s"
+msgstr "Konnte App Verzeichnis nicht anlegen: %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:307
 msgid "Select User-ID failed!"
 msgstr "User-ID Auswahl fehlgeschlagen!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:370
-msgid "Error: WINDIR '%s' not found!"
-msgstr "Fehler: WINDIR '%s' nicht gefunden!"
-
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:373
-msgid "Error: self.WIN_NETSH_EXE '%s' not found!"
-msgstr "Fehler: self.WIN_NETSH_EXE '%s' nicht gefunden!"
-
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:376
-msgid "Error: self.WIN_ROUTE_EXE '%s' not found!"
-msgstr "Fehler: self.WIN_ROUTE_EXE '%s' nicht gefunden!"
-
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:379
-msgid "Error: self.WIN_IPCONFIG_EXE '%s' not found!"
-msgstr "Fehler: self.WIN_IPCONFIG_EXE '%s' nicht gefunden!"
-
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:382
-msgid "Error: self.WIN_TASKKILL_EXE '%s' not found!"
-msgstr "Fehler: self.WIN_TASKKILL_EXE '%s' nicht gefunden!"
+msgid "Error: '%s' not found!"
+msgstr "Fehler: '%s' nicht gefunden!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:399
 msgid ""
@@ -94,17 +82,16 @@ msgstr ""
 "%s fehlgeschlagen!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:452
-msgid "def check_config_folders: failed"
-msgstr "def check_config_folders: fehlgeschlagen"
+msgid "Creating config Folders failed"
+msgstr "Erzeugen der Konfigurationsverzeichnisse fehlgeschlage"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:662
-msgid "def read_options_file: failed!"
-msgstr "def read_options_file: Fehlgeschlagen!"
+msgid "Error: def read_options_file"
+msgstr "Fehler: def read_options_file"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:662
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5218
-msgid "Error"
-msgstr "Fehler"
+msgid "Read config file failed!"
+msgstr "Lesen der Konfigurationsdatei fehlgeschlagen!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:788
 msgid ""
@@ -151,8 +138,8 @@ msgstr ""
 "URL2: %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:889
-msgid "Invalid characters in self.WIN_TAP_DEVICE = '%s'"
-msgstr "Ungültige Zeichen in self.WIN_TAP_DEVICE = '%s'"
+msgid "Invalid characters in '%s'"
+msgstr "Ungültige Zeichen in '%s'"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:905
 msgid "Choose your External Network Adapter!"
@@ -244,7 +231,7 @@ msgstr "Nach Updates suchen!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1319
 msgid "Disconnected! Have a nice and anonymous day!"
-msgstr "Nicht verbunden! Haben Sie einen schönen und anonymen Tag!"
+msgstr "Nicht verbunden! Hab einen schönen und anonymen Tag!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1333
 msgid "Connecting to %s"
@@ -372,8 +359,13 @@ msgid "oVPN Update OK!"
 msgstr "oVPN Update OK!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1872
-msgid "def inThread_timer_check_certdl: extraction failed"
-msgstr "def inThread_timer_check_certdl: Extraktion fehlgeschlagen"
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1874
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1877
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1879
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1885
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1887
+msgid "Error: def inThread_timer_check_certdl"
+msgstr "Fehler: def inThread_timer_check_certdl"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1872
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1874
@@ -381,44 +373,12 @@ msgstr "def inThread_timer_check_certdl: Extraktion fehlgeschlagen"
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1879
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1885
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1887
-msgid "Error: oVPN Update failed!"
-msgstr "Fehler: oVPN Update fehlgeschlagen!"
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1874
-msgid "def inThread_timer_check_certdl: downloading certs failed"
-msgstr "def inThread_timer_check_certdl: Zertifikat download fehlgeschlagen"
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1877
-msgid ""
-"def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
-"requestcerts): failed"
-msgstr ""
-"def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
-"requestcerts): fehlgeschlagen"
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1879
-msgid ""
-"def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = getconfigs): "
-"failed"
-msgstr ""
-"def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = getconfigs): "
-"fehlgeschlagen"
+msgid "oVPN Update failed"
+msgstr "oVPN Update fehlgeschlagen"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1882
 msgid "No update needed!"
 msgstr "Kein Update nötig!"
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1885
-msgid ""
-"def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = lastupdate): "
-"failed"
-msgstr ""
-"def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = lastupdate): "
-"fehlgeschlagen"
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1887
-msgid "def inThread_timer_check_certdl: failed"
-msgstr "def inThread_timer_check_certdl: fehlgeschlagen"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2131
 msgid "oVPN Server - %s"
@@ -504,7 +464,7 @@ msgstr "Sicherung/Wiederherstellung bei Start und Beenden (standard: AUS)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2686
 msgid "DNS Leak Protection (default: ON)"
-msgstr "DNS Leck Schutz (standard: AN)"
+msgstr "DNS Leck Schutz (standard: EIN)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2715
 msgid "Disable '%s' on Disconnect (default: OFF)"
@@ -519,29 +479,16 @@ msgid "Error: Certs not found!"
 msgstr "Fehler: Zertifikate nicht gefunden!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3058
-msgid "Files missing: '%s' % (self.ovpn_server_dir)"
-msgstr "Fehlende Datei: '%s' % (self.ovpn_server_dir)"
+msgid "Files missing: '%s'"
+msgstr "Fehlende Dateien: '%s'"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3084
-msgid "def inThread_spawn_openvpn_process: Could not start Windows Firewall!"
-msgstr ""
-"def inThread_spawn_openvpn_process: Windows Firewall konnte nicht gestartet "
-"werden!"
+msgid "Could not start Windows Firewall!"
+msgstr "Konnte die Windows Firewall nicht starten!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3084
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4503
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4675
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4726
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4730
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4814
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4867
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4870
-msgid "Error!"
-msgstr "Fehler!"
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3097
-msgid "def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping"
-msgstr "def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping"
+msgid "Error: def inThread_spawn_openvpn_process"
+msgstr "Fehler: def inThread_spawn_openvpn_process"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3390
 msgid "Error: DNS restore 2nd"
@@ -620,12 +567,9 @@ msgid "Error: route.exe not found!"
 msgstr "Fehler: route.exe nicht gefunden!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3763
-msgid "def win_ipconfig_flushdns: ipconfig.exe not found!"
-msgstr "def win_ipconfig_flushdns: ipconfig.exe not found!"
-
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3775
-msgid "def win_ipconfig_displaydns: ipconfig.exe not found!"
-msgstr "def win_ipconfig_displaydns: ipconfig.exe not found!"
+msgid "ipconfig.exe not found!"
+msgstr "ipconfig.exe nicht gefunden!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3811
 msgid "Enter your Passphrase"
@@ -733,28 +677,24 @@ msgid "Switched to IPv6+4"
 msgstr "Umgeschaltet zu IPv6+4"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4308
-msgid "Error: API-Request"
-msgstr "Fehler: API-Request"
+msgid "API requests on: %s failed!"
+msgstr "API Anfrage an: %s fehlgeschlagen!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4308
-msgid "def API_REQUEST: requests error on: %s failed!"
-msgstr "def API_REQUEST: requests error on: %s fehlgeschlagen!"
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4317
-msgid "def API_REQUEST: self.curldata = '%s'"
-msgstr "def API_REQUEST: self.curldata = '%s'"
+msgid "Error: def API_REQUEST"
+msgstr "Fehler: def API_REQUEST"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4320
 msgid "Invalid User-ID / API-Key or Account expired."
 msgstr "Ungültige(r) User-ID / API-Key oder Account abgelaufen."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4420
-msgid "Move Userdata to new folder!"
-msgstr "Verschiebe Nutzer Daten in neues Verzeichnis!"
+msgid "Error: def move_appdata"
+msgstr "Fehler: def move_appdata"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4420
-msgid "def move_appdata: '%s'"
-msgstr "def move_appdata: '%s'"
+msgid "Move Userdata to new folder: '%s'"
+msgstr "Verschiebe Benutzerdaten in neues Verzeichnis: '%s'"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4456
 msgid "Could not read Servers Remote-IP:Port from config: %s"
@@ -769,12 +709,25 @@ msgid "Could not read Servers Cipher from config: %s"
 msgstr "Konnte Servers Cipher nicht aus der Konfig auslesen: %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4503
-msgid "def load_ovpn_server: failed"
-msgstr "def load_ovpn_server: fehlgeschlagen"
+msgid "Error: def load_ovpn_server"
+msgstr "Fehler: def load_ovpn_server"
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4503
+msgid "Load openVPN Server failed"
+msgstr "openVPN Server Start fehlgeschlage"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4675
 msgid "Platform '%s' not supported"
 msgstr "Platform '%s' nicht unterstützt"
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4675
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4726
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4730
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4814
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4867
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4870
+msgid "Error!"
+msgstr "Fehler!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4691
 msgid ""
@@ -887,8 +840,8 @@ msgid "Could not detect openVPN Version!"
 msgstr "Konnte openVPN Version nicht ermitteln!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4843
-msgid "def win_detect_openvpn: failed"
-msgstr "def win_detect_openvpn: fehlgeschlagen"
+msgid "Could not find openVPN"
+msgstr "Konnte openVPN nicht finden"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4867
 msgid "Invalid Hash: '%s'! is '%s' != '%s'"
@@ -937,3 +890,106 @@ msgstr ""
 "\n"
 "JA, setze 'blockinbound,allowoutbound'!\n"
 "NEIN, setze 'blockinbound,blockoutbound'!"
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5218
+msgid "Error"
+msgstr "Fehler"
+
+#~ msgid "def check_config_folders: failed"
+#~ msgstr "def check_config_folders: fehlgeschlagen"
+
+#~ msgid "def read_options_file: failed!"
+#~ msgstr "def read_options_file: Fehlgeschlagen!"
+
+#~ msgid "Invalid characters in self.WIN_TAP_DEVICE = '%s'"
+#~ msgstr "Ungültige Zeichen in self.WIN_TAP_DEVICE = '%s'"
+
+#~ msgid "def inThread_timer_check_certdl: extraction failed"
+#~ msgstr "def inThread_timer_check_certdl: Extraktion fehlgeschlagen"
+
+#~ msgid "Error: oVPN Update failed!"
+#~ msgstr "Fehler: oVPN Update fehlgeschlagen!"
+
+#~ msgid "def inThread_timer_check_certdl: downloading certs failed"
+#~ msgstr "def inThread_timer_check_certdl: Zertifikat download fehlgeschlagen"
+
+#~ msgid ""
+#~ "def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
+#~ "requestcerts): failed"
+#~ msgstr ""
+#~ "def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
+#~ "requestcerts): fehlgeschlagen"
+
+#~ msgid ""
+#~ "def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
+#~ "getconfigs): failed"
+#~ msgstr ""
+#~ "def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
+#~ "getconfigs): fehlgeschlagen"
+
+#~ msgid ""
+#~ "def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
+#~ "lastupdate): failed"
+#~ msgstr ""
+#~ "def inThread_timer_check_certdl: self.API_REQUEST(API_ACTION = "
+#~ "lastupdate): fehlgeschlagen"
+
+#~ msgid "def inThread_timer_check_certdl: failed"
+#~ msgstr "def inThread_timer_check_certdl: fehlgeschlagen"
+
+#~ msgid "Files missing: '%s' % (self.ovpn_server_dir)"
+#~ msgstr "Fehlende Datei: '%s' % (self.ovpn_server_dir)"
+
+#~ msgid ""
+#~ "def inThread_spawn_openvpn_process: Could not start Windows Firewall!"
+#~ msgstr ""
+#~ "def inThread_spawn_openvpn_process: Windows Firewall konnte nicht "
+#~ "gestartet werden!"
+
+#~ msgid "def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping"
+#~ msgstr "def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping"
+
+#~ msgid "def win_ipconfig_flushdns: ipconfig.exe not found!"
+#~ msgstr "def win_ipconfig_flushdns: ipconfig.exe not found!"
+
+#~ msgid "def win_ipconfig_displaydns: ipconfig.exe not found!"
+#~ msgstr "def win_ipconfig_displaydns: ipconfig.exe not found!"
+
+#~ msgid "Error: API-Request"
+#~ msgstr "Fehler: API-Request"
+
+#~ msgid "def API_REQUEST: requests error on: %s failed!"
+#~ msgstr "def API_REQUEST: requests error on: %s fehlgeschlagen!"
+
+#~ msgid "def API_REQUEST: self.curldata = '%s'"
+#~ msgstr "def API_REQUEST: self.curldata = '%s'"
+
+#~ msgid "Move Userdata to new folder!"
+#~ msgstr "Verschiebe Nutzer Daten in neues Verzeichnis!"
+
+#~ msgid "def move_appdata: '%s'"
+#~ msgstr "def move_appdata: '%s'"
+
+#~ msgid "def load_ovpn_server: failed"
+#~ msgstr "def load_ovpn_server: fehlgeschlagen"
+
+#~ msgid "def win_detect_openvpn: failed"
+#~ msgstr "def win_detect_openvpn: fehlgeschlagen"
+
+#~ msgid "Error: WINDIR '%s' not found!"
+#~ msgstr "Fehler: WINDIR '%s' nicht gefunden!"
+
+#~ msgid "Error: self.WIN_NETSH_EXE '%s' not found!"
+#~ msgstr "Fehler: self.WIN_NETSH_EXE '%s' nicht gefunden!"
+
+#~ msgid "Error: self.WIN_ROUTE_EXE '%s' not found!"
+#~ msgstr "Fehler: self.WIN_ROUTE_EXE '%s' nicht gefunden!"
+
+#~ msgid "Error: self.WIN_IPCONFIG_EXE '%s' not found!"
+#~ msgstr "Fehler: self.WIN_IPCONFIG_EXE '%s' nicht gefunden!"
+
+#~ msgid "Error: self.WIN_TASKKILL_EXE '%s' not found!"
+#~ msgstr "Fehler: self.WIN_TASKKILL_EXE '%s' nicht gefunden!"
+
+#~ msgid "def check_winapp_dir could not create app_dir: %s"
+#~ msgstr "def check_winapp_dir konnte App Verzeichnis nicht anlegen: %s"
