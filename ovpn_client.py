@@ -202,6 +202,7 @@ class Systray:
 		self.WIN_RESET_FIREWALL = False
 		self.WIN_DONT_ASK_FW_EXIT = False
 		self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
+		self.WIN_DISABLE_EXT_IF_ON_DISCO = False
 		self.WIN_DNS_CHANGED = False
 		self.LAST_FAILED_CHECKFILE = False
 		self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"
@@ -576,6 +577,13 @@ class Systray:
 					self.debug(text="self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = '%s'" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
 				except:
 					pass
+
+				try:
+					self.WIN_DISABLE_EXT_IF_ON_DISCO = parser.getboolean('oVPN','windisableextifondisco')
+					self.debug(text="self.WIN_DISABLE_EXT_IF_ON_DISCO = '%s'" % (self.WIN_DISABLE_EXT_IF_ON_DISCO))
+				except:
+					pass
+				
 				
 				try:
 					self.TAP_BLOCKOUTBOUND = parser.getboolean('oVPN','wintapblockoutbound')
@@ -682,6 +690,7 @@ class Systray:
 				parser.set('oVPN','nodnschange','False')
 				parser.set('oVPN','winnoaskfwonexit','True')
 				parser.set('oVPN','winfwblockonexit','True')
+				parser.set('oVPN','windisableextifondisco','False')
 				parser.set('oVPN','wintapblockoutbound','False')
 				parser.set('oVPN','loadaccinfo','False')
 				parser.set('oVPN','mydns','False')
@@ -727,6 +736,7 @@ class Systray:
 			parser.set('oVPN','nodnschange','%s'%(self.NO_DNS_CHANGE))
 			parser.set('oVPN','winnoaskfwonexit','%s'%(self.WIN_DONT_ASK_FW_EXIT))
 			parser.set('oVPN','winfwblockonexit','%s'%(self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
+			parser.set('oVPN','windisableextifondisco','%s'%(self.WIN_DISABLE_EXT_IF_ON_DISCO))
 			parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 			parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
 			parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
@@ -1282,6 +1292,18 @@ class Systray:
 			else:
 				self.switch_nodns.set_active(True)
 			
+			# settings_network_switch_disableextifondisco
+			if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
+				self.switch_disableextifondisco.set_active(True)
+			else:
+				self.switch_disableextifondisco.set_active(False)
+			
+			# settings_updates_switch_updateovpnonstart
+			if self.UPDATEOVPNONSTART == True:
+				self.switch_updateovpnonstart.set_active(True)
+			else:
+				self.switch_updateovpnonstart.set_active(False)
+
 			# end switches update
 			self.UPDATE_SWITCH = False
 		else:
@@ -1473,7 +1495,14 @@ class Systray:
 			
 			self.systray_menu.append(optionsm)
 			
-			self.make_systray_options_dnsleak()
+			try:
+				if self.STATE_OVPN == False:
+					resetextif = Gtk.MenuItem('Select Network Adapter')
+					resetextif.connect('button-press-event', self.cb_resetextif)
+					self.systray_optionsmenu.append(resetextif)
+			except:
+					self.debug(text="def make_systray_options_dnsleak: failed")
+
 			self.make_systray_options_ipv6_menu()
 			
 			if self.DEBUG == True:
@@ -1494,24 +1523,6 @@ class Systray:
 				self.systray_optionsmenu.append(theme)
 		except:
 			self.debug(text="def make_systray_options_menu failed: theme failed")
-
-	def make_systray_options_dnsleak(self):
-		self.debug(text="def make_systray_options_dnsleak()")
-		try:
-			if self.STATE_OVPN == False:
-				resetextif = Gtk.MenuItem('Select Network Adapter')
-				resetextif.connect('button-press-event', self.cb_resetextif)
-				self.systray_optionsmenu.append(resetextif)
-				
-				if self.NO_DNS_CHANGE == False:
-					opt = "[enabled]"
-				else:
-					opt = "[disabled]"
-				nodnschange = Gtk.MenuItem('DNS Leak Protection %s'%(opt))
-				nodnschange.connect('button-press-event', self.cb_nodnschange)
-				self.systray_optionsmenu.append(nodnschange)
-		except:
-				self.debug(text="def make_systray_options_dnsleak: failed")
 
 	def make_systray_options_ipv6_menu(self):
 		self.debug(text="def make_systray_options_ipv6_menu()")
@@ -1591,17 +1602,6 @@ class Systray:
 				self.debug(text="def make_systray_updates_menu: #1 failed")
 			
 			try:
-				if self.UPDATEOVPNONSTART == True:
-					opt = "[enabled]"
-				else:
-					opt = "[disabled]"
-				autoupdate = Gtk.MenuItem('Update on Start %s' % (opt))
-				autoupdate.connect('button-press-event', self.cb_switch_autoupdate)
-				updatesmenu.append(autoupdate)
-			except:
-				self.debug(text="def make_systray_updates_menu: #2 failed")
-			
-			try:
 				if self.LOAD_ACCDATA == True:
 					opt = "[enabled]"
 				else:
@@ -1611,17 +1611,6 @@ class Systray:
 				updatesmenu.append(switchaccinfo)
 			except:
 				self.debug(text="def make_systray_updates_menu: #3 failed")
-			
-			try:
-				if self.LOAD_SRVDATA == True:
-					opt = "[enabled]"
-				else:
-					opt = "[disabled]"
-				extserverview = Gtk.MenuItem('Load extended Server-View %s'%(opt))
-				extserverview.connect('button-press-event', self.cb_extserverview)
-				updatesmenu.append(extserverview)
-			except:
-				self.debug(text="def make_systray_updates_menu: #4 failed")
 			
 			try:
 				sep = Gtk.SeparatorMenuItem()
@@ -2471,7 +2460,7 @@ class Systray:
 				try:
 					nbpage1 = Gtk.VBox(False,spacing=2)
 					nbpage1.set_border_width(8)
-					nbpage1.pack_start(Gtk.Label(label="Windows Firewall Settings\r\n"),False,False,0)
+					nbpage1.pack_start(Gtk.Label(label="Windows Firewall Settings\n"),False,False,0)
 					self.settings_firewall_switch_nofw(nbpage1)
 					self.settings_firewall_switch_fwblockonexit(nbpage1)
 					self.settings_firewall_switch_fwdontaskonexit(nbpage1)
@@ -2485,11 +2474,21 @@ class Systray:
 				try:
 					nbpage2 = Gtk.VBox(False,spacing=2)
 					nbpage2.set_border_width(8)
-					nbpage2.pack_start(Gtk.Label(label="Network Adapter Settings\r\n"),False,False,0)
+					nbpage2.pack_start(Gtk.Label(label="Network Adapter Settings\n"),False,False,0)
 					self.settings_network_switch_nodns(nbpage2)
+					self.settings_network_switch_disableextifondisco(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(' Network '))
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
+					
+				try:
+					nbpage3 = Gtk.VBox(False,spacing=2)
+					nbpage3.set_border_width(8)
+					nbpage3.pack_start(Gtk.Label(label="Update Settings\n"),False,False,0)
+					self.settings_updates_switch_updateovpnonstart(nbpage3)
+					self.settingsnotebook.append_page(nbpage3, Gtk.Label(' Updates '))
+				except:
+					self.debug(text="def show_settingswindow: nbpage3 failed")
 				
 				self.settingswindow.show_all()
 				self.SETTINGSWINDOW_OPEN = True
@@ -2566,7 +2565,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwblockonexit = switch
-			checkbox_title = Gtk.Label(label="Block Internet on Quit/Disconnect (default: ON)")
+			checkbox_title = Gtk.Label(label="Block Internet on Disconnect or Quit (default: ON)")
 			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 				switch.set_active(True)
 			else:
@@ -2704,6 +2703,59 @@ class Systray:
 		else:
 			self.NO_DNS_CHANGE = True
 			self.win_netsh_restore_dns_from_backup()
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
+	def settings_network_switch_disableextifondisco(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_disableextifondisco = switch
+			checkbox_title = Gtk.Label(label="Disable '%s' on Disconnect (default: OFF)"%(self.WIN_EXT_DEVICE))
+			if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_disableextifondisco)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_network_switch_disableextifondisco: failed")
+
+	def cb_switch_disableextifondisco(self,switch,gparam):
+		self.debug(text="def cb_switch_disableextifondisco()")
+		if switch.get_active():
+			self.WIN_DISABLE_EXT_IF_ON_DISCO = True
+			if self.STATE_OVPN == False:
+				self.win_disable_ext_interface()
+		else:
+			self.WIN_DISABLE_EXT_IF_ON_DISCO = False
+			self.win_enable_ext_interface()
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+		
+	def settings_updates_switch_updateovpnonstart(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_updateovpnonstart = switch
+			checkbox_title = Gtk.Label(label="Update Configs on Start (default: OFF)")
+			if self.UPDATEOVPNONSTART == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_updateovpnonstart)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_updates_switch_updateovpnonstart: failed")
+
+	def cb_switch_updateovpnonstart(self,switch,gparam):
+		self.debug(text="def cb_switch_updateovpnonstart()")
+		if switch.get_active():
+			self.UPDATEOVPNONSTART = True
+		else:
+			self.UPDATEOVPNONSTART = False
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
@@ -3580,13 +3632,14 @@ class Systray:
 
 	def win_disable_ext_interface(self):
 		self.debug(text="def win_disable_ext_interface()")
-		self.NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
-		return self.win_join_netsh_cmd()
+		if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
+			self.NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
+			return self.win_join_netsh_cmd()
 
 	def win_enable_ext_interface(self):
 		self.debug(text="def win_enable_ext_interface()")
 		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
-		return self.win_join_netsh_cmd()
+		self.win_join_netsh_cmd()
 
 	def win_firewall_analyze(self):
 		return
@@ -4022,16 +4075,6 @@ class Systray:
 		if self.reset_last_update():
 			self.debug(text="def cb_force_update: self.reset_last_update")
 			self.cb_check_normal_update(widget,event)
-
-	def cb_switch_autoupdate(self,widget,event):
-		self.debug(text="def cb_switch_autoupdate()")
-		self.destroy_systray_menu()
-		if self.UPDATEOVPNONSTART == False:
-			self.UPDATEOVPNONSTART = True
-		else:
-			self.UPDATEOVPNONSTART = False
-			self.PASSPHRASE = False
-		self.write_options_file()
 
 	def cb_resetextif(self,widget,event):
 		self.debug(text="def cb_resetextif()")
