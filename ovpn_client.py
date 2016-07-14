@@ -1602,22 +1602,8 @@ class Systray:
 				updatesmenu.append(sep)
 			except:
 				self.debug(text="def make_systray_updates_menu: #1 failed")
-			
+
 			try:
-				if self.LOAD_ACCDATA == True:
-					opt = _("[enabled]")
-				else:
-					opt = _("[disabled]")
-				switchaccinfo = Gtk.MenuItem(_("Load Account Info %s") % (opt))
-				switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
-				updatesmenu.append(switchaccinfo)
-			except:
-				self.debug(text="def make_systray_updates_menu: #3 failed")
-			
-			try:
-				sep = Gtk.SeparatorMenuItem()
-				updatesmenu.append(sep)
-				
 				resetlogin = Gtk.MenuItem(_("Reset API Login"))
 				resetlogin.connect('button-press-event', self.cb_form_reask_userid)
 				updatesmenu.append(resetlogin)
@@ -2488,6 +2474,7 @@ class Systray:
 					nbpage3.set_border_width(8)
 					nbpage3.pack_start(Gtk.Label(label=_("Update Settings\n")),False,False,0)
 					self.settings_updates_switch_updateovpnonstart(nbpage3)
+					self.settings_updates_switch_accinfo(nbpage3)
 					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage3 failed")
@@ -2758,6 +2745,31 @@ class Systray:
 			self.UPDATEOVPNONSTART = True
 		else:
 			self.UPDATEOVPNONSTART = False
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
+	def settings_updates_switch_accinfo(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_accinfo = switch
+			checkbox_title = Gtk.Label(label=_("Load Account Info (default: OFF)"))
+			if self.LOAD_ACCDATA == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_accinfo)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_updates_switch_accinfo: failed")
+
+	def cb_switch_accinfo(self,switch,gparam):
+		self.debug(text="def cb_switch_accinfo()")
+		if switch.get_active():
+			self.LOAD_ACCDATA = True
+		else:
+			self.LOAD_ACCDATA = False
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
