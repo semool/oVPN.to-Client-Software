@@ -62,7 +62,7 @@ class Systray:
 				if self.check_inet_connection() == True:
 					self.check_remote_update()
 				else:
-					self.msgwarn("Could not connect to %s" % (DOMAIN),"Update failed!")
+					self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Update failed!"))
 			thread = threading.Thread(target=self.systray_timer)
 			thread.daemon = True
 			thread.start()
@@ -252,11 +252,11 @@ class Systray:
 										if self.write_options_file():
 											return True
 		elif OS == "linux2" :
-			self.errorquit(text="Operating System not supported: %s" % (self.OS))
+			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
 		elif OS == "darwin":
-			self.errorquit(text="Operating System not supported: %s" % (self.OS))
+			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
 		else: 
-			self.errorquit(text="Operating System not supported: %s" % (self.OS))
+			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
 
 	def win_pre1_check_app_dir(self):
 		self.debug(text="def win_pre1_check_app_dir()")
@@ -282,7 +282,7 @@ class Systray:
 			self.debug(text="win_pre1_check_app_dir self.app_dir=%s :True" % (self.app_dir))
 			return True
 		else:
-			self.errorquit(text = "def check_winapp_dir could not create app_dir: %s" % (self.app_dir))
+			self.errorquit(text = _("def check_winapp_dir could not create app_dir: %s") % (self.app_dir))
 
 	def win_pre2_check_profiles_win(self):
 		self.debug(text="def win_pre2_check_profiles_win()")
@@ -304,7 +304,7 @@ class Systray:
 			return True
 		elif self.profiles_count > 1:
 			if not self.select_userid() == True:
-				self.errorquit(text="Select User-ID failed!")
+				self.errorquit(text=_("Select User-ID failed!"))
 			return True
 
 	def win_pre3_load_profile_dir_vars(self):
@@ -367,19 +367,19 @@ class Systray:
 			self.WIN_IPCONFIG_EXE = "%s\\system32\\ipconfig.exe" % (self.WINDIR)
 			self.WIN_TASKKILL_EXE = "%s\\system32\\taskkill.exe" % (self.WINDIR)
 		else:
-			self.errorquit(text="Error: WINDIR '%s' not found!" % (self.WINDIR))
+			self.errorquit(text=_("Error: WINDIR '%s' not found!") % (self.WINDIR))
 		
 		if not os.path.isfile(self.WIN_NETSH_EXE):
-			self.errorquit(text="Error: self.WIN_NETSH_EXE '%s' not found!" % (self.WIN_NETSH_EXE))
+			self.errorquit(text=_("Error: self.WIN_NETSH_EXE '%s' not found!") % (self.WIN_NETSH_EXE))
 		
 		if not os.path.isfile(self.WIN_ROUTE_EXE):
-			self.errorquit(text="Error: self.WIN_ROUTE_EXE '%s' not found!" % (self.WIN_ROUTE_EXE))
+			self.errorquit(text=_("Error: self.WIN_ROUTE_EXE '%s' not found!") % (self.WIN_ROUTE_EXE))
 		
 		if not os.path.isfile(self.WIN_IPCONFIG_EXE):
-			self.errorquit(text="Error: self.WIN_IPCONFIG_EXE '%s' not found!" % (self.WIN_IPCONFIG_EXE))
+			self.errorquit(text=_("Error: self.WIN_IPCONFIG_EXE '%s' not found!") % (self.WIN_IPCONFIG_EXE))
 		
 		if not os.path.isfile(self.WIN_TASKKILL_EXE):
-			self.errorquit(text="Error: self.WIN_TASKKILL_EXE '%s' not found!" % (self.WIN_TASKKILL_EXE))
+			self.errorquit(text=_("Error: self.WIN_TASKKILL_EXE '%s' not found!") % (self.WIN_TASKKILL_EXE))
 		
 		self.debug(text="win_pre3_load_profile_dir_vars loaded")
 		return True
@@ -396,7 +396,7 @@ class Systray:
 				try:
 					os.remove(self.lock_file)
 				except:
-					self.errorquit(text="Could not remove lock file.\nFile itself locked because another oVPN Client instance running?")
+					self.errorquit(text=_("Could not remove lock file.\nFile itself locked because another oVPN Client instance running?"))
 			if not os.path.isfile(self.lock_file):
 				self.LOCK = open(self.lock_file,'wb')
 				self.LOCK.write("%s" % (int(time.time())))
@@ -447,9 +447,9 @@ class Systray:
 								if self.check_passphrase():
 									return True
 			else:
-				self.errorquit(text="Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!" % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
+				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
-			self.errorquit(text="def check_config_folders: failed")
+			self.errorquit(text=_("def check_config_folders: failed"))
 
 	def read_options_file(self):
 		self.debug(text="def read_options_file()")
@@ -785,7 +785,7 @@ class Systray:
 		elif ADAPTERS[1].endswith("Interface Name"):
 			LANG = "EN"
 		else:
-			self.errorquit(text="Error reading your Interfaces from netsh.exe. Contact support@ovpn.to with Error-ID:\nADAPTERS[1]=(%s)\n" % (ADAPTERS[1]))
+			self.errorquit(text=_("Error reading your Interfaces from netsh.exe. Contact support@ovpn.to with Error-ID:\nADAPTERS[1]=(%s)\n") % (ADAPTERS[1]))
 
 		text = "def win_read_interfaces: LANG = %s" % (LANG)
 		self.debug(text=text)
@@ -820,7 +820,7 @@ class Systray:
 		self.INTERFACES.pop(0)
 		self.debug(text="INTERFACES: %s"%(self.INTERFACES))
 		if len(self.INTERFACES)	< 2:
-			self.errorquit(text="Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed.")
+			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
 		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
 		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		TAPADAPTERS = TAPADAPTERS.split('\r\n')
@@ -851,7 +851,7 @@ class Systray:
 		if self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:
 			self.debug(text="Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
 		if len(self.WIN_TAP_DEVS) == 0:
-			self.errorquit(text="No OpenVPN TAP-Windows Adapter found!")
+			self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 			self.debug(text="Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
@@ -865,7 +865,7 @@ class Systray:
 			except:
 				self.debug(text="def win_read_interfaces: #1 dialogWindow.set_icon_from_file(self.app_icon) failed")
 				pass
-			text = "Multiple TAPs found!\n\nPlease select your TAP Adapter!"
+			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
 			dialogBox = dialogWindow.get_content_area()
@@ -881,12 +881,12 @@ class Systray:
 			dialogWindow.run()
 			dialogWindow.destroy()
 		if self.WIN_TAP_DEVICE == False:
-			self.errorquit(text="No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s" % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
+			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
 		else:
 			badchars = ["%","&","$"]
 			for char in badchars:
 				if char in self.WIN_TAP_DEVICE:
-					self.errorquit(text="Invalid characters in self.WIN_TAP_DEVICE = '%s'" % char)
+					self.errorquit(text=_("Invalid characters in self.WIN_TAP_DEVICE = '%s'") % char)
 			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 			self.win_enable_tap_interface()
 			self.debug(text="remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
@@ -920,7 +920,7 @@ class Systray:
 					if not self.WIN_EXT_DEVICE == False:
 						return True
 			elif len(self.INTERFACES) < 1:
-				self.errorquit(text="No Network Adapter found!")
+				self.errorquit(text=_("No Network Adapter found!"))
 			else:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
 				self.debug(text="External Interface = %s"%(self.WIN_EXT_DEVICE))
@@ -935,7 +935,7 @@ class Systray:
 			dialogWindow.set_icon_from_file(self.app_icon)
 		except:
 			self.debug(text="def select_userid: dialogWindow.set_icon_from_file(self.app_icon) failed")
-		text = "Please select your User-ID!"
+		text = _("Please select your User-ID!")
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
 		dialogBox = dialogWindow.get_content_area()
@@ -1045,7 +1045,7 @@ class Systray:
 			dialogWindow.set_icon_from_file(self.app_icon)
 		except:
 			self.debug(text="def theme_switcher: dialogWindow.set_icon_from_file(self.app_icon) failed")
-		text = "Choose App Theme"
+		text = _("Choose App Theme")
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
 		dialogBox = dialogWindow.get_content_area()
@@ -1089,7 +1089,7 @@ class Systray:
 			context_menu_servertab.append(disconnect)
 			disconnect.connect('button-release-event', self.cb_kill_openvpn)
 		else:
-			connect = Gtk.MenuItem('Connect to %s'%(servername))
+			connect = Gtk.MenuItem(_("Connect to %s")%(servername))
 			context_menu_servertab.append(connect)
 			connect.connect('button-release-event',self.cb_jump_openvpn,servername)
 		
@@ -1097,11 +1097,11 @@ class Systray:
 		context_menu_servertab.append(sep)
 		
 		if self.OVPN_FAV_SERVER == servername:
-			delfavorite = Gtk.MenuItem('Remove AutoConnect: %s'%(servername))
+			delfavorite = Gtk.MenuItem(_("Remove AutoConnect: %s")%(servername))
 			delfavorite.connect('button-release-event',self.cb_del_ovpn_favorite_server,servername)
 			context_menu_servertab.append(delfavorite)
 		else:
-			setfavorite = Gtk.MenuItem('Set AutoConnect: %s'%(servername))
+			setfavorite = Gtk.MenuItem(_("Set AutoConnect: %s")%(servername))
 			setfavorite.connect('button-release-event',self.cb_set_ovpn_favorite_server,servername)
 			context_menu_servertab.append(setfavorite)
 		
@@ -1116,9 +1116,9 @@ class Systray:
 		if self.DISABLE_SRV_WINDOW == False:
 			try:
 				if self.LOAD_SRVDATA == True:
-					opt = "[enabled]"
+					opt = _("[enabled]")
 				else:
-					opt = "[disabled]"
+					opt = _("[disabled]")
 				extserverview = Gtk.MenuItem(_("Load extended Server-View %s") %(opt))
 				extserverview.connect('button-press-event', self.cb_extserverview)
 				context_menu_servertab.append(extserverview)
@@ -1159,7 +1159,7 @@ class Systray:
 				return False
 			
 			dnsmenu = Gtk.Menu()
-			dnsm = Gtk.MenuItem("Change DNS")
+			dnsm = Gtk.MenuItem(_("Change DNS"))
 			dnsm.set_submenu(dnsmenu)
 			self.dnsmenu = dnsmenu
 			
@@ -1313,10 +1313,10 @@ class Systray:
 		
 		systraytext = False
 		if self.timer_check_certdl_running == True:
-			systraytext = "Checking for Updates!"
+			systraytext = _("Checking for Updates!")
 			systrayicon = self.systray_icon_syncupdate
 		elif self.STATE_OVPN == False:
-			systraytext = "Disconnected! Have a nice and anonymous day!"
+			systraytext = _("Disconnected! Have a nice and anonymous day!")
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
 			try:
@@ -1330,13 +1330,13 @@ class Systray:
 			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 			self.OVPN_CONNECTEDseconds = connectedseconds
 			if self.OVPN_PING_STAT == -1:
-				systraytext = "Connecting to %s" % (self.OVPN_CONNECTEDto)
+				systraytext = _("Connecting to %s") % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_connect
 				statusbar_text = systraytext
 				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
 			elif self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
-				systraytext = "Testing connection to %s" % (self.OVPN_CONNECTEDto)
+				systraytext = _("Testing connection to %s") % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_hourglass
 				statusbar_text = systraytext
 				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
@@ -1351,7 +1351,7 @@ class Systray:
 					d, h = divmod(h, 24)
 					if self.OVPN_CONNECTEDseconds >= 0:
 						connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-					statusbar_text = "Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+					statusbar_text = _("Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)") % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
 					# systraytext Windows only shows the first 64 characters
 					systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST)
 					#statusbar_text = systraytext
@@ -1605,10 +1605,10 @@ class Systray:
 			
 			try:
 				if self.LOAD_ACCDATA == True:
-					opt = "[enabled]"
+					opt = _("[enabled]")
 				else:
-					opt = "[disabled]"
-				switchaccinfo = Gtk.MenuItem("Load Account Info %s" % (opt))
+					opt = _("[disabled]")
+				switchaccinfo = Gtk.MenuItem(_("Load Account Info %s") % (opt))
 				switchaccinfo.connect('button-press-event', self.cb_switch_accinfo)
 				updatesmenu.append(switchaccinfo)
 			except:
@@ -1688,7 +1688,7 @@ class Systray:
 							self.debug(text="def make_systray_server_menu: flagimg group1 failed")
 					
 					if self.OVPN_CONNECTEDto == servername:
-						textstring = servershort+" [ disconnect ]"
+						textstring = servershort+_(" [ disconnect ]")
 						serveritem = Gtk.ImageMenuItem(textstring)
 						serveritem.connect('button-release-event', self.cb_kill_openvpn)
 					else:
@@ -2355,9 +2355,9 @@ class Systray:
 		self.accwindow.add(self.accwindow_accinfo_vbox)
 		if len(self.OVPN_ACC_DATA) == 0:
 			if self.LOAD_ACCDATA == False:
-				text = "Systray Menu -> Updates -> 'Load Account Info' [disabled]"
+				text = _("Systray Menu -> Updates -> 'Load Account Info' [disabled]")
 			else:
-				text = "No data loaded! Retry in few seconds..."
+				text = _("No data loaded! Retry in few seconds...")
 			entry = Gtk.Entry()
 			entry.set_max_length(64)
 			entry.set_editable(0)
@@ -2462,7 +2462,7 @@ class Systray:
 				try:
 					nbpage1 = Gtk.VBox(False,spacing=2)
 					nbpage1.set_border_width(8)
-					nbpage1.pack_start(Gtk.Label(label="Windows Firewall Settings\n"),False,False,0)
+					nbpage1.pack_start(Gtk.Label(label=_("Windows Firewall Settings\n")),False,False,0)
 					self.settings_firewall_switch_nofw(nbpage1)
 					self.settings_firewall_switch_fwblockonexit(nbpage1)
 					self.settings_firewall_switch_fwdontaskonexit(nbpage1)
@@ -2476,7 +2476,7 @@ class Systray:
 				try:
 					nbpage2 = Gtk.VBox(False,spacing=2)
 					nbpage2.set_border_width(8)
-					nbpage2.pack_start(Gtk.Label(label="Network Adapter Settings\n"),False,False,0)
+					nbpage2.pack_start(Gtk.Label(label=_("Network Adapter Settings\n")),False,False,0)
 					self.settings_network_switch_nodns(nbpage2)
 					self.settings_network_switch_disableextifondisco(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Network ")))
@@ -2486,7 +2486,7 @@ class Systray:
 				try:
 					nbpage3 = Gtk.VBox(False,spacing=2)
 					nbpage3.set_border_width(8)
-					nbpage3.pack_start(Gtk.Label(label="Update Settings\n"),False,False,0)
+					nbpage3.pack_start(Gtk.Label(label=_("Update Settings\n")),False,False,0)
 					self.settings_updates_switch_updateovpnonstart(nbpage3)
 					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
 				except:
@@ -2506,7 +2506,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fw = switch
-			checkbox_title = Gtk.Label(label="Use Windows Firewall (default: ON) ")
+			checkbox_title = Gtk.Label(label=_("Use Windows Firewall (default: ON) "))
 			if self.NO_WIN_FIREWALL == True:
 				switch.set_active(False)
 			else:
@@ -2536,7 +2536,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_tapblockoutbound = switch
-			checkbox_title = Gtk.Label(label="TAP-Adapter block outbound (default: OFF)")
+			checkbox_title = Gtk.Label(label=_("TAP-Adapter block outbound (default: OFF)"))
 			if self.TAP_BLOCKOUTBOUND == True:
 				switch.set_active(True)
 			else:
@@ -2567,7 +2567,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwblockonexit = switch
-			checkbox_title = Gtk.Label(label="Block Internet on Disconnect or Quit (default: ON)")
+			checkbox_title = Gtk.Label(label=_("Block Internet on Disconnect or Quit (default: ON)"))
 			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 				switch.set_active(True)
 			else:
@@ -2595,7 +2595,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwdontaskonexit = switch
-			checkbox_title = Gtk.Label(label="Disable FW question on Quit (default: ON)")
+			checkbox_title = Gtk.Label(label=_("Disable FW question on Quit (default: ON)"))
 			if self.WIN_DONT_ASK_FW_EXIT == True:
 				switch.set_active(True)
 			else:
@@ -2623,7 +2623,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwresetonconnect = switch
-			checkbox_title = Gtk.Label(label="Clear Rules on Connect (default: OFF)")
+			checkbox_title = Gtk.Label(label=_("Clear Rules on Connect (default: OFF)"))
 			if self.WIN_RESET_FIREWALL == True:
 				switch.set_active(True)
 			else:
@@ -2653,7 +2653,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwbackupmode = switch
-			checkbox_title = Gtk.Label(label="Backup on Start / Restore on Quit (default: OFF)")
+			checkbox_title = Gtk.Label(label=_("Backup on Start / Restore on Quit (default: OFF)"))
 			if self.WIN_BACKUP_FIREWALL == True:
 				switch.set_active(True)
 			else:
@@ -2683,7 +2683,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_nodns = switch
-			checkbox_title = Gtk.Label(label="DNS Leak Protection (default: ON)")
+			checkbox_title = Gtk.Label(label=_("DNS Leak Protection (default: ON)"))
 			if self.NO_DNS_CHANGE == True:
 				switch.set_active(False)
 			else:
@@ -2712,7 +2712,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_disableextifondisco = switch
-			checkbox_title = Gtk.Label(label="Disable '%s' on Disconnect (default: OFF)"%(self.WIN_EXT_DEVICE))
+			checkbox_title = Gtk.Label(label=_("Disable '%s' on Disconnect (default: OFF)")%(self.WIN_EXT_DEVICE))
 			if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
 				switch.set_active(True)
 			else:
@@ -2740,7 +2740,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_updateovpnonstart = switch
-			checkbox_title = Gtk.Label(label="Update Configs on Start (default: OFF)")
+			checkbox_title = Gtk.Label(label=_("Update Configs on Start (default: OFF)"))
 			if self.UPDATEOVPNONSTART == True:
 				switch.set_active(True)
 			else:
@@ -3453,7 +3453,7 @@ class Systray:
 				self.WIN_EXT_DHCP = True
 				return True
 		except:
-			self.errorquit(text="def win_netsh_read_dns_to_backup: failed!")
+			self.errorquit(text=_("def win_netsh_read_dns_to_backup: failed!"))
 
 	def hash_sha512_file(self,file):
 		self.debug(text="def hash_sha512_file()")
@@ -3681,7 +3681,7 @@ class Systray:
 			except:
 				self.debug(text="def win_return_netsh_cmd: '%s' failed" % (netshcmd))
 		else:
-			self.errorquit(text="Error: netsh.exe not found!")
+			self.errorquit(text=_("Error: netsh.exe not found!"))
 
 	def win_join_netsh_cmd(self):
 		self.debug(text="def win_join_netsh_cmd()")
@@ -3705,7 +3705,7 @@ class Systray:
 				self.NETSH_CMDLIST = list()
 				return False
 		else:
-			self.errorquit(text="Error: netsh.exe not found!")
+			self.errorquit(text=_("Error: netsh.exe not found!"))
 
 	def win_return_route_cmd(self,cmd):
 		self.debug(text="def win_return_route_cmd()")
@@ -3720,7 +3720,7 @@ class Systray:
 				self.debug(text="def win_return_route_cmd: '%s' failed" % (routecmd))
 				return False
 		else:
-			self.errorquit(text="Error: route.exe not found!")
+			self.errorquit(text=_("Error: route.exe not found!"))
 
 	def win_join_route_cmd(self):
 		self.debug(text="def win_join_route_cmd()")
@@ -3744,7 +3744,7 @@ class Systray:
 				self.ROUTE_CMDLIST = list()
 				return False
 		else:
-			self.errorquit(text="Error: route.exe not found!")
+			self.errorquit(text=_("Error: route.exe not found!"))
 
 	def win_ipconfig_flushdns(self):
 		self.debug(text="def win_ipconfig_flushdns()")
@@ -3760,7 +3760,7 @@ class Systray:
 			except:
 				self.debug(text="def win_join_ipconfig_cmd: '%s' failed" % (cmdstring))
 		else:
-			self.errorquit(text="def win_ipconfig_flushdns: ipconfig.exe not found!")
+			self.errorquit(text=_("def win_ipconfig_flushdns: ipconfig.exe not found!"))
 
 	def win_ipconfig_displaydns(self):
 		self.debug(text="def win_ipconfig_displaydns()")
@@ -3772,7 +3772,7 @@ class Systray:
 			except:
 				self.debug(text="def win_ipconfig_displaydns: failed" % (cmdstring))
 		else:
-			self.errorquit(text="def win_ipconfig_displaydns: ipconfig.exe not found!")
+			self.errorquit(text=_("def win_ipconfig_displaydns: ipconfig.exe not found!"))
 
 	def isValueIPv4(self,value):
 		#self.debug(text="def isValueIPv4()")
@@ -3808,18 +3808,18 @@ class Systray:
 					dialogWindow.set_icon_from_file(self.app_icon)
 				except:
 					self.debug(text="def form_ask_passphrase: dialogWindow.set_icon_from_file(self.app_icon) failed")
-				text = "Enter your Passphrase"
+				text = _("Enter your Passphrase")
 				dialogWindow.set_title(text)
 				dialogWindow.set_markup(text)
 				dialogBox = dialogWindow.get_content_area()
 				checkbox = Gtk.Switch()
-				checkbox_title = Gtk.Label(label="Save Passphrase in File?")
+				checkbox_title = Gtk.Label(label=_("Save Passphrase in File?"))
 				checkbox.set_active(False)
 				ph1Entry = Gtk.Entry()
 				ph1Entry.set_visibility(False)
 				ph1Entry.set_invisible_char("X")
 				ph1Entry.set_size_request(200,24)
-				ph1Label = Gtk.Label(label="Passphrase:")
+				ph1Label = Gtk.Label(label=_("Passphrase:"))
 				dialogBox.pack_start(ph1Label,False,False,0)
 				dialogBox.pack_start(ph1Entry,False,False,0)
 				dialogBox.pack_start(checkbox_title,False,False,0)
@@ -4115,19 +4115,19 @@ class Systray:
 			dialogWindow.set_icon_from_file(self.app_icon)
 		except:
 			self.debug(text="def cb_extserverview_size: dialogWindow.set_icon_from_file(self.app_icon) failed")
-		text = "Server Window Size"
+		text = _("Server Window Size")
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
 		dialogBox = dialogWindow.get_content_area()
-		widthLabel = Gtk.Label(label="Width (pixel):")
+		widthLabel = Gtk.Label(label=_("Width (pixel):"))
 		widthEntry = Gtk.Entry()
 		widthEntry.set_visibility(True)
 		widthEntry.set_size_request(40,24)
-		heightLabel = Gtk.Label(label="Height (pixel):")
+		heightLabel = Gtk.Label(label=_("Height (pixel):"))
 		heightEntry = Gtk.Entry()
 		heightEntry.set_visibility(True)
 		heightEntry.set_size_request(40,24)
-		sizeLabel = Gtk.Label(label="Enter width and height\n\nLeave blank for default")
+		sizeLabel = Gtk.Label(label=_("Enter width and height\n\nLeave blank for default"))
 		dialogBox.pack_start(sizeLabel,False,False,0)
 		dialogBox.pack_start(widthLabel,False,False,0)
 		dialogBox.pack_start(widthEntry,False,False,0)
@@ -4314,10 +4314,10 @@ class Systray:
 				self.curldata = self.body.split(":")
 				if self.curldata[0] == "AUTHOK":
 					self.curldata = self.curldata[1]
-					self.debug(text="def API_REQUEST: self.curldata = '%s'" % (self.curldata))
+					self.debug(text=_("def API_REQUEST: self.curldata = '%s'") % (self.curldata))
 					return True
 			else:
-				text = "Invalid User-ID / API-Key or Account expired."
+				text = _("Invalid User-ID / API-Key or Account expired.")
 				self.body = False
 				#self.set_progressbar(text)
 				self.timer_check_certdl_running = False
@@ -4453,7 +4453,7 @@ class Systray:
 											serverinfo.append(ip)
 											serverinfo.append(port)
 									except:
-										self.errorquit(text="Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
+										self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file))
 								elif "proto " in line:
 									#print line
 									try:
@@ -4462,7 +4462,7 @@ class Systray:
 											proto = proto.upper()
 											serverinfo.append(proto)
 									except:
-										self.errorquit(text="Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
+										self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (self.ovpn_server_config_file))
 								elif line.startswith("cipher "):
 									#elif "cipher " in line:
 									#print line
@@ -4474,7 +4474,7 @@ class Systray:
 											cipher = "AES-256"
 										serverinfo.append(cipher)
 									except:
-										self.errorquit(text="Could not read Servers Cipher from config: %s" % (self.ovpn_server_config_file))
+										self.errorquit(text=_("Could not read Servers Cipher from config: %s") % (self.ovpn_server_config_file))
 								if "fragment " in line or "link-mtu " in line:
 									#print line
 									try:
@@ -4816,7 +4816,7 @@ class Systray:
 		try:
 			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
 		except:
-			self.errorquit(text="Could not detect openVPN Version!")
+			self.errorquit(text=_("Could not detect openVPN Version!"))
 		try:
 			self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
 			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
@@ -4840,7 +4840,7 @@ class Systray:
 						return True
 			self.upgrade_openvpn()
 		except:
-			self.errorquit(text="def win_detect_openvpn: failed")
+			self.errorquit(text=_("def win_detect_openvpn: failed"))
 
 	def openvpn_check_files(self):
 		self.debug(text="def openvpn_check_files()")
@@ -5159,10 +5159,10 @@ class Systray:
 					dialog.set_icon_from_file(self.app_icon)
 					dialog.set_transient_for(self.window)
 					if self.WIN_BACKUP_FIREWALL == True:
-						text = "Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
+						text = _("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
 						dialog.set_markup()
 					else:
-						text = "Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!"
+						text = _("Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
 					dialog.set_markup(text)
 					self.debug(text="def ask_loadorunload_fw: text = '%s'" % (text))
 					response = dialog.run()
