@@ -2341,7 +2341,7 @@ class Systray:
 		self.accwindow.add(self.accwindow_accinfo_vbox)
 		if len(self.OVPN_ACC_DATA) == 0:
 			if self.LOAD_ACCDATA == False:
-				text = _("Systray Menu -> Updates -> 'Load Account Info' [disabled]")
+				text = _("Settings -> Updates: 'Load Account Info' [disabled]")
 			else:
 				text = _("No data loaded! Retry in few seconds...")
 			entry = Gtk.Entry()

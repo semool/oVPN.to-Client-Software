@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2016-07-14 21:56+0200\n"
-"PO-Revision-Date: 2016-07-14 21:56+0200\n"
+"POT-Creation-Date: 2016-07-14 22:05+0200\n"
+"PO-Revision-Date: 2016-07-14 22:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -387,8 +387,8 @@ msgid "oVPN Account - %s"
 msgstr "oVPN Konto - %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2344
-msgid "Systray Menu -> Updates -> 'Load Account Info' [disabled]"
-msgstr "Tray Menü -> Updates -> 'Lade Konto Informationen' [Aus]"
+msgid "Settings -> Updates: 'Load Account Info' [disabled]"
+msgstr "Einstellungen -> Updates: Lade Konto Informationen [AUS]"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2346
 msgid "No data loaded! Retry in few seconds..."
@@ -892,6 +892,9 @@ msgstr ""
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5230
 msgid "Error"
 msgstr "Fehler"
+
+#~ msgid "Systray Menu -> Updates -> 'Load Account Info' [disabled]"
+#~ msgstr "Tray Menü -> Updates -> 'Lade Konto Informationen' [Aus]"
 
 #~ msgid "Load Account Info %s"
 #~ msgstr "Lade Konto Informationen %s"
