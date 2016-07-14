@@ -3,6 +3,7 @@ IF NOT DEFINED INCLUDESDIR (echo "DO NOT RUN THIS FILE DIRECTLY" && PAUSE && EXI
 IF NOT DEFINED APPDIR (EXIT)
 xcopy /Y /E "%INCLUDESDIR%\ico" "%APPDIR%\ico\"
 xcopy /Y /E "%INCLUDESDIR%\dns" "%APPDIR%\dns\"
+xcopy /Y /E "%LOCALEDIR%" "%APPDIR%\locale\"
 copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%APPDIR%\"
 
 echo copied includes to appdata '%APPDIR%'
