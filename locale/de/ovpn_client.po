@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2016-07-15 15:19+0200\n"
-"PO-Revision-Date: 2016-07-15 15:20+0200\n"
+"POT-Creation-Date: 2016-07-15 15:35+0200\n"
+"PO-Revision-Date: 2016-07-15 15:36+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -178,8 +178,8 @@ msgid "[disabled]"
 msgstr "[Aus]"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1107
-msgid "Load extended Server-View %s"
-msgstr "Lade erweitertes Server Fenster %s"
+msgid "Load Server Information %s"
+msgstr "Lade Server Informationen %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1120
 msgid "Set Server-View Size [%sx%s]"
@@ -890,6 +890,9 @@ msgstr ""
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5379
 msgid "Error"
 msgstr "Fehler"
+
+#~ msgid "Load extended Server-View %s"
+#~ msgstr "Lade Server Informationen %s"
 
 #~ msgid "Change Theme"
 #~ msgstr "App Thema wechseln"

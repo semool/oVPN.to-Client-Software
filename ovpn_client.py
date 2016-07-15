@@ -1104,7 +1104,7 @@ class Systray:
 					opt = _("[enabled]")
 				else:
 					opt = _("[disabled]")
-				extserverview = Gtk.MenuItem(_("Load extended Server-View %s") %(opt))
+				extserverview = Gtk.MenuItem(_("Load Server Information %s") %(opt))
 				extserverview.connect('button-release-event', self.cb_extserverview)
 				context_menu_servertab.append(extserverview)
 			except:
