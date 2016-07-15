@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-07-14 22:05+Mitteleuropäische Sommerzeit\n"
+"POT-Creation-Date: 2016-07-15 10:48+Mitteleuropäische Sommerzeit\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,8 +20,8 @@ msgid "Update failed!"
 msgstr ""
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:65
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4077
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4087
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4173
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4184
 msgid "Could not connect to %s"
 msgstr ""
 
@@ -75,36 +75,36 @@ msgstr ""
 msgid "Creating config Folders failed"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:662
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:670
 msgid "Error: def read_options_file"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:662
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:670
 msgid "Read config file failed!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:788
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:798
 msgid ""
 "Error reading your Interfaces from netsh.exe. Contact support@ovpn.to with Error-ID:\n"
 "ADAPTERS[1]=(%s)\n"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:823
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:833
 msgid "Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:854
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:864
 msgid "No OpenVPN TAP-Windows Adapter found!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:868
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:878
 msgid ""
 "Multiple TAPs found!\n"
 "\n"
 "Please select your TAP Adapter!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:884
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:894
 msgid ""
 "No OpenVPN TAP-Adapter found!\n"
 "Please install openVPN!\n"
@@ -112,391 +112,395 @@ msgid ""
 "URL2: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:889
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:899
 msgid "Invalid characters in '%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:905
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:915
 msgid "Choose your External Network Adapter!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:923
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:933
 msgid "No Network Adapter found!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:938
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:948
 msgid "Please select your User-ID!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1048
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1058
 msgid "Choose App Theme"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1088
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1098
 msgid "Disconnect %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1092
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1102
 msgid "Connect to %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1100
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1110
 msgid "Remove AutoConnect: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1104
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1114
 msgid "Set AutoConnect: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1119
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1511
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1129
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1533
 msgid "[enabled]"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1121
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1513
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1131
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1535
 msgid "[disabled]"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1122
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1132
 msgid "Load extended Server-View %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1135
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1145
 msgid "Set Server-View Size [%sx%s]"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1144
-msgid "Refresh Window"
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1152
+msgid "Update every: %s seconds"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1162
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1172
 msgid "Change DNS"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1169
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1179
 msgid "Primary DNS: %s (%s)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1179
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1189
 msgid "Secondary DNS: %s (%s)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1212
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1222
 msgid "Primary DNS '%s' @ %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1215
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1225
 msgid "Set Primary DNS"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1221
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1231
 msgid "Secondary DNS '%s' @ %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1224
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1234
 msgid "Set Secondary DNS"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1316
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1338
 msgid "Checking for Updates!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1319
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1341
 msgid "Disconnected! Have a nice and anonymous day!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1333
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1355
 msgid "Connecting to %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1339
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1361
 msgid "Testing connection to %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1354
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1376
 msgid "Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1495
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1517
 msgid "Options"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1502
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1524
 msgid "Select Network Adapter"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1514
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1536
 msgid "DEBUG Mode %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1523
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1545
 msgid "Set App Theme [%s]"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1535
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1557
 msgid "IPv6 Options"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1539
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1561
 msgid "Select: IPv4 Entry Server with Exit to IPv4 (standard)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1543
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1565
 msgid "Select: IPv4 Entry Server with Exits to IPv4 + IPv6"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1561
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1583
 msgid "Firewall"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1567
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1589
 msgid "Restore Firewall Backups"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1589
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1611
 msgid "Updates"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1593
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1615
 msgid "Normal Config Update"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1597
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1619
 msgid "Forced Config Update"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1607
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1629
 msgid "Reset API Login"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1612
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1634
 msgid "Clear Passphrase from RAM"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1616
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1638
 msgid "Clear Passphrase from CFG"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1677
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1699
 msgid " [ disconnect ]"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1720
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1742
 msgid "Close Servers"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1723
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1745
 msgid "Servers"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1733
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1755
 msgid "Close Account"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1735
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1757
 msgid "Account"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1745
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1767
 msgid "Close Settings"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1747
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1769
 msgid "Settings"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1758
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1780
 msgid "About"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1766
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1788
 msgid "Quit"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1808
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1830
 msgid "oVPN Server Update"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1855
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1877
 msgid "Certificates and Configs updated!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1855
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1868
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1877
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1890
 msgid "oVPN Update OK!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1858
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1860
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1863
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1865
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1871
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1873
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1880
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1882
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1885
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1887
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1893
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1895
 msgid "Error: def inThread_timer_check_certdl"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1858
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1860
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1863
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1865
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1871
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1873
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1880
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1882
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1885
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1887
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1893
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1895
 msgid "oVPN Update failed"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1868
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1890
 msgid "No update needed!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2117
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2140
 msgid "oVPN Server - %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2189
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2212
 msgid "oVPN Server [ %s ]"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2324
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2348
 msgid "oVPN Account - %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2344
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2368
 msgid "Settings -> Updates: 'Load Account Info' [disabled]"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2346
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2370
 msgid "No data loaded! Retry in few seconds..."
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2443
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2467
 msgid "oVPN Settings - %s"
-msgstr ""
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2451
-msgid ""
-"Windows Firewall Settings\n"
-msgstr ""
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2458
-msgid " Firewall "
-msgstr ""
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2465
-msgid ""
-"Network Adapter Settings\n"
-msgstr ""
-
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2468
-msgid " Network "
 msgstr ""
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2475
 msgid ""
+"Windows Firewall Settings\n"
+msgstr ""
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2482
+msgid " Firewall "
+msgstr ""
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2489
+msgid ""
+"Network Adapter Settings\n"
+msgstr ""
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2492
+msgid " Network "
+msgstr ""
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2499
+msgid ""
 "Update Settings\n"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2478
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2503
 msgid " Updates "
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2496
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2521
 msgid "Use Windows Firewall (default: ON) "
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2526
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2551
 msgid "TAP-Adapter block outbound (default: OFF)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2557
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2582
 msgid "Block Internet on Disconnect or Quit (default: ON)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2585
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2610
 msgid "Disable FW question on Quit (default: ON)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2613
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2638
 msgid "Clear Rules on Connect (default: OFF)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2633
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2663
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2658
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2688
 msgid "Could not export Windows Firewall Backup!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2633
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2663
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2658
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2688
 msgid "Error: Windows Firewall Backup failed"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2643
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2668
 msgid "Backup on Start / Restore on Quit (default: OFF)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2673
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2698
 msgid "DNS Leak Protection (default: ON)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2702
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2727
 msgid "Disable '%s' on Disconnect (default: OFF)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2730
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2755
 msgid "Update Configs on Start (default: OFF)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2755
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2780
 msgid "Load Account Info (default: OFF)"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3070
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2815
+msgid "Load Server Info (default: OFF)"
+msgstr ""
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3161
 msgid "Error: Certs not found!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3070
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3161
 msgid "Files missing: '%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3096
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3187
 msgid "Could not start Windows Firewall!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3096
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3187
 msgid "Error: def inThread_spawn_openvpn_process"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3402
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3493
 msgid "Error: DNS restore 2nd"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3402
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3493
 msgid "Error: Restore Secondary DNS to %s failed."
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3405
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3496
 msgid "Error: DNS restore 1st"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3405
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3496
 msgid "Error: Restore Primary DNS to %s failed."
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3468
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3559
 msgid "def win_netsh_read_dns_to_backup: failed!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3501
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3592
 msgid ""
 "Error:\n"
 "SSL Root Certificate for %s not loaded %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3501
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3592
 msgid "Error: SSL CA Cert #1"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3504
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3595
 msgid ""
 "Error:\n"
 "Invalid SSL Root Certificate for %s in:\n"
@@ -506,116 +510,124 @@ msgid ""
 "but should be '%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3504
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3595
 msgid "Error: SSL CA Cert #2"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3507
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3598
 msgid ""
 "Error:\n"
 "SSL Root Certificate for %s not found in:\n"
 "'%s'!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3507
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3598
 msgid "Error: SSL CA Cert #3"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3696
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3720
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3787
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3811
 msgid "Error: netsh.exe not found!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3735
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3759
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3826
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3850
 msgid "Error: route.exe not found!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3775
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3787
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3866
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3878
 msgid "ipconfig.exe not found!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3823
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3918
 msgid "Enter your Passphrase"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3828
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3923
 msgid "Save Passphrase in File?"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3834
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3910
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3929
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3999
 msgid "Passphrase:"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3888
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3977
 msgid "oVPN.to Setup"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3889
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3978
 msgid "Enter your oVPN.to Details"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3896
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3985
 msgid "User-ID:"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3903
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3992
 msgid "API-Key:"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3909
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3998
 msgid ""
 "\n"
 "\n"
 "Enter a secure passphrase to encrypt your API-Login!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3916
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4005
 msgid "Repeat:"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4028
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4123
 msgid "Debug Mode Enabled"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4028
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4123
 msgid ""
 "Logfile:\n"
 "'%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4077
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4087
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4173
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4184
 msgid "Error: Update failed"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4130
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4230
 msgid "Server Window Size"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4134
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4234
 msgid "Width (pixel):"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4138
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4238
 msgid "Height (pixel):"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4142
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4242
 msgid ""
 "Enter width and height\n"
 "\n"
 "Leave blank for default"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4198
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4289
+msgid "Load Data every X seconds"
+msgstr ""
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4293
+msgid "seconds:"
+msgstr ""
+
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4342
 msgid "Switched to IPv4+6"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4198
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4216
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4342
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4361
 msgid ""
 "Changed Option:\n"
 "\n"
@@ -624,64 +636,64 @@ msgid ""
 "You have to join 'IPv6 Beta' on https://%s to use any IPv6 options!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4216
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4361
 msgid "Switched to IPv6+4"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4320
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4467
 msgid "API requests on: %s failed!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4320
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4467
 msgid "Error: def API_REQUEST"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4332
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4479
 msgid "Invalid User-ID / API-Key or Account expired."
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4432
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4582
 msgid "Error: def move_appdata"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4432
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4582
 msgid "Move Userdata to new folder: '%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4468
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4618
 msgid "Could not read Servers Remote-IP:Port from config: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4477
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4627
 msgid "Could not read Servers Protocol from config: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4489
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4639
 msgid "Could not read Servers Cipher from config: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4515
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4665
 msgid "Error: def load_ovpn_server"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4515
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4665
 msgid "Load openVPN Server failed"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4687
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4839
 msgid "Platform '%s' not supported"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4687
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4738
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4742
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4826
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4879
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4882
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4839
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4890
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4894
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4978
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5031
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5034
 msgid "Error!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4703
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4855
 msgid ""
 "openVPN Setup downloaded and hash verified OK!\n"
 "\n"
@@ -692,7 +704,7 @@ msgid ""
 "'%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4705
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4857
 msgid ""
 "openVPN Setup downloaded but hash verify failed!\n"
 "Please install openVPN!\n"
@@ -700,7 +712,7 @@ msgid ""
 "URL2: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4712
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4864
 msgid ""
 "Install OpenVPN %s (%s) (%s)\n"
 "\n"
@@ -712,23 +724,23 @@ msgid ""
 "Please wait..."
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4712
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4778
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4864
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4930
 msgid "Setup: openVPN"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4738
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4890
 msgid ""
 "Invalid File hash: %s !\n"
 "localhash = '%s'\n"
 "but should be = '%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4742
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4894
 msgid "Failed remove file: %s"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4778
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4930
 msgid ""
 "OpenVPN not found!\n"
 "\n"
@@ -737,11 +749,11 @@ msgid ""
 "If you did not install openVPN yet: click cancel on next window!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4779
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4931
 msgid "Select openvpn.exe or Cancel to install openVPN"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4826
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4978
 msgid ""
 "WARNING! Failed to verify files in\n"
 "'%s'\n"
@@ -752,39 +764,39 @@ msgid ""
 "%s[debug self.LAST_FAILED_CHECKFILE = '%s']"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4831
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4983
 msgid "Could not detect openVPN Version!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4855
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5007
 msgid "Could not find openVPN"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4879
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5031
 msgid "Invalid Hash: '%s'! is '%s' != '%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4882
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5034
 msgid "Invalid content '%s' in '%s'"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4899
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5051
 msgid "arch '%s' not supported!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5100
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5252
 msgid "Quit oVPN.to Client"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5104
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5256
 msgid "Do you really want to quit?"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5170
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5322
 msgid "Firewall Settings"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5174
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5326
 msgid ""
 "Restore previous firewall settings?\n"
 "\n"
@@ -792,7 +804,7 @@ msgid ""
 "Press 'NO' to set profiles to 'blockinbound,blockoutbound'!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5177
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5329
 msgid ""
 "Allow outgoing connection to internet?\n"
 "\n"
@@ -800,7 +812,7 @@ msgid ""
 "Press 'NO' to set profiles to 'blockinbound,blockoutbound'!"
 msgstr ""
 
-#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5230
+#: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5382
 msgid "Error"
 msgstr ""
 
