@@ -52,8 +52,8 @@ class Systray:
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 		self.window.connect("delete-event", Gtk.main_quit)
+		self.init_localization()
 		if self.preboot():
-			self.init_localization()
 			self.init_theme()
 			self.tray.connect('popup-menu', self.on_right_click)
 			self.tray.connect('activate', self.on_left_click)
@@ -5432,7 +5432,7 @@ class Systray:
 
 	def init_localization(self):
 		loc = locale.getdefaultlocale()[0][0:2]
-		filename = "%s\\locale\\%s\\ovpn_client.mo" % (self.bin_dir,loc)
+		filename = ".\\locale\\%s\\ovpn_client.mo"
 		self.debug(text="def init_localization: %s"% (loc))
 		try:
 			translation = gettext.GNUTranslations(open(filename, "rb"))
