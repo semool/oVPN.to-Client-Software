@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-07-15 15:19+Mitteleuropäische Sommerzeit\n"
+"POT-Creation-Date: 2016-07-15 15:35+Mitteleuropäische Sommerzeit\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -153,7 +153,7 @@ msgid "[disabled]"
 msgstr ""
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1107
-msgid "Load extended Server-View %s"
+msgid "Load Server Information %s"
 msgstr ""
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1120
