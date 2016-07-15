@@ -1490,17 +1490,6 @@ class Systray:
 				updatesm = Gtk.MenuItem(_("Updates"))
 				updatesm.set_submenu(updatesmenu)
 				self.systray_menu.append(updatesm)
-				
-				normalupdate = Gtk.MenuItem(_("Normal Config Update"))
-				normalupdate.connect('button-press-event', self.cb_check_normal_update)
-				updatesmenu.append(normalupdate)
-				
-				forceupdate = Gtk.MenuItem(_("Forced Config Update"))
-				forceupdate.connect('button-press-event', self.cb_force_update)
-				updatesmenu.append(forceupdate)
-				
-				sep = Gtk.SeparatorMenuItem()
-				updatesmenu.append(sep)
 			except:
 				self.debug(text="def make_systray_updates_menu: #1 failed")
 
@@ -2376,16 +2365,15 @@ class Systray:
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
 				
-				#try:
-				#	nbpage3 = Gtk.VBox(False,spacing=2)
-				#	nbpage3.set_border_width(8)
-				#	nbpage3.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
-					#self.settings_options_switch_updateovpnonstart(nbpage3)
-					#self.settings_options_switch_accinfo(nbpage3)
-					#self.settings_options_switch_srvinfo(nbpage3)
-				#	self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
-				#except:
-				#	self.debug(text="def show_settingswindow: nbpage3 failed")
+				try:
+					nbpage3 = Gtk.VBox(False,spacing=2)
+					nbpage3.set_border_width(8)
+					nbpage3.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
+					self.settings_updates_normal_conf(nbpage3)
+					self.settings_updates_force_conf(nbpage3)
+					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
+				except:
+					self.debug(text="def show_settingswindow: nbpage3 failed")
 				
 				self.settingswindow.show_all()
 				self.SETTINGSWINDOW_OPEN = True
@@ -2766,6 +2754,25 @@ class Systray:
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_options_switch_theme: failed")
+
+	def settings_updates_normal_conf(self,page):
+		button = Gtk.Button(label=_("Normal Config Update"))
+		button.connect('clicked', self.cb_settings_updates_normal_conf)
+		page.pack_start(button,False,False,0)
+		page.pack_start(Gtk.Label(label=""),False,False,0)
+
+	def cb_settings_updates_normal_conf(self,page):
+		GLib.idle_add(self.cb_check_normal_update, page)
+
+	def settings_updates_force_conf(self,page):
+		button = Gtk.Button(label=_("Forced Config Update"))
+		button.connect('clicked', self.cb_settings_updates_force_conf)
+		page.pack_start(button,False,False,0)
+		page.pack_start(Gtk.Label(label=""),False,False,0)
+
+	def cb_settings_updates_force_conf(self,page):
+		GLib.idle_add(self.cb_force_update, page)
+
 
 	def destroy_settingswindow(self):
 		self.debug(text="def destroy_settingswindow()")
@@ -3962,27 +3969,25 @@ class Systray:
 		if self.write_options_file():
 			return True
 
-	def cb_check_normal_update(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_check_normal_update()")
-			self.destroy_systray_menu()
-			if self.check_inet_connection() == False:
-				self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
-				return False
-			if self.check_remote_update():
-				self.debug(text="def cb_check_normal_update: self.check_remote_update() == True")
-				return True
+	def cb_check_normal_update(self,event):
+		self.debug(text="def cb_check_normal_update()")
+		self.destroy_systray_menu()
+		if self.check_inet_connection() == False:
+			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
+			return False
+		if self.check_remote_update():
+			self.debug(text="def cb_check_normal_update: self.check_remote_update() == True")
+			return True
 
-	def cb_force_update(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_force_update()")
-			self.destroy_systray_menu()
-			if self.check_inet_connection() == False:
-				self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
-				return False
-			if self.reset_last_update() == True:
-				self.debug(text="def cb_force_update: self.reset_last_update")
-				self.cb_check_normal_update(widget,event)
+	def cb_force_update(self,event):
+		self.debug(text="def cb_force_update()")
+		self.destroy_systray_menu()
+		if self.check_inet_connection() == False:
+			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
+			return False
+		if self.reset_last_update() == True:
+			self.debug(text="def cb_force_update: self.reset_last_update")
+			self.cb_check_normal_update(event)
 
 	def cb_resetextif(self,widget,event):
 		if event.button == 1:
@@ -4122,7 +4127,7 @@ class Systray:
 			self.read_options_file()
 			self.load_ovpn_server()
 			if len(self.OVPN_SERVER) == 0:
-				self.cb_check_normal_update(widget,event)
+				self.cb_check_normal_update(event)
 			if self.MAINWINDOW_OPEN == True:
 				self.destroy_mainwindow()
 
@@ -4136,7 +4141,7 @@ class Systray:
 			self.load_ovpn_server()
 			if len(self.OVPN_SERVER) == 0:
 				self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv4+6"))
-				self.cb_check_normal_update(widget,event)
+				self.cb_check_normal_update(event)
 			if self.MAINWINDOW_OPEN == True:
 				self.destroy_mainwindow()
 
@@ -4151,7 +4156,7 @@ class Systray:
 			self.read_options_file()
 			self.load_ovpn_server()
 			if len(self.OVPN_SERVER) == 0:
-				self.cb_check_normal_update(widget,event)
+				self.cb_check_normal_update(event)
 			if self.MAINWINDOW_OPEN == True:
 				self.destroy_mainwindow()
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
