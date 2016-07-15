@@ -2978,7 +2978,8 @@ class Systray:
 		self.read_options_file()
 		if self.PASSPHRASE == False:
 			self.debug(text="def check_passphrase: popup receive passphrase")
-			if self.form_ask_passphrase() == True:
+			self.form_ask_passphrase()
+			if not self.PASSPHRASE == False:
 				return True
 		else:
 			if self.read_apikey_config():
@@ -3895,15 +3896,19 @@ class Systray:
 		return True
 
 	def form_ask_passphrase(self):
-		self.debug(text="def form_ask_passphrase()")
+		GLib.idle_add(self.form_ask_passphrase2)
+
+	def form_ask_passphrase2(self):
+		self.debug(text="def form_ask_passphrase2()")
 		self.destroy_systray_menu()
 		try:
-			GLib.idle_add(self.dialogWindow_form_ask_passphrase.destroy)
+			self.dialogWindow_form_ask_passphrase.destroy
 		except:
 			pass
 		if self.timer_check_certdl_running == False:
 			try:
 				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+				self.dialogWindow_form_ask_passphrase = dialogWindow
 				dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 				dialogWindow.set_transient_for(self.window)
 				try:
@@ -3927,49 +3932,38 @@ class Systray:
 				dialogBox.pack_start(checkbox_title,False,False,0)
 				dialogBox.pack_start(checkbox,False,False,0)
 				dialogWindow.show_all()
-				response = dialogWindow.run()
-					#*fixme* we crash here... sometimes....
-				#response = dialogWindow.show()
-				self.dialogWindow_form_ask_passphrase = dialogWindow
-				ph1 = ph1Entry.get_text().rstrip()
-				saveph = checkbox.get_active()
-				self.debug(text="checkbox saveph = %s" %(saveph))
-				if response == Gtk.ResponseType.CANCEL:
-					#dialogWindow.destroy()
-					dialogWindow.destroy()
-					print "response: btn cancel %s" % (response)
-					self.PASSPHRASE = False
-					return False
-				elif response == Gtk.ResponseType.OK:
-					dialogWindow.destroy()
-					#dialogWindow.destroy()
-					if len(ph1) > 0:
-						self.PASSPHRASE = ph1
-						if self.read_apikey_config():
-							if self.compare_confighash():
-								self.debug(text="def check_passphrase: self.compare_confighash() :True")
-								if saveph == True:
-									self.PPP_NO_SAVE = False
-									self.write_options_file()
-									return True
-								else:
-									self.PPP_NO_SAVE = True
-									self.write_options_file()
-									return True
-							else:
-								self.PASSPHRASE = False
-								return False
-					else:
-						#dialogWindow.destroy()
-						dialogWindow.destroy()
-						self.PASSPHRASE = False
-						return False
-				else:
-					self.PASSPHRASE = False
-					return False
+				dialogWindow.connect("response", self.response_ask_passphrase, ph1Entry, checkbox)
+				dialogWindow.connect("close", self.response_ask_passphrase, None, None)
+				dialogWindow.run()
 			except:
 				self.debug(text="def form_ask_passphrase: Failed")
 
+	def response_ask_passphrase(self, dialog, response_id, ph1Entry, checkbox):
+		self.debug(text="response_ask_passphrase()")
+		if response_id == Gtk.ResponseType.CANCEL:
+			self.PASSPHRASE = False
+			self.debug(text="def response_ask_passphrase: response_id == Gtk.ResponseType.CANCEL")
+			dialog.destroy()
+			return
+		elif response_id == Gtk.ResponseType.OK:
+			self.PASSPHRASE = ph1Entry.get_text().rstrip()
+			saveph = checkbox.get_active()
+			self.debug(text="def response_ask_passphrase: checkbox saveph = %s" %(saveph))
+			if self.read_apikey_config():
+				if self.compare_confighash():
+					self.debug(text="def response_ask_passphrase: self.compare_confighash() :True")
+					if saveph == True:
+						self.PPP_NO_SAVE = False
+					else:
+						self.PPP_NO_SAVE = True
+				else:
+					self.PASSPHRASE = False
+			else:
+				self.PASSPHRASE = False
+		dialog.destroy()
+		self.write_options_file()
+		self.UPDATE_SWITCH == True
+		
 	def form_ask_userid(self):
 		self.debug(text="def form_ask_userid()")
 		try:
