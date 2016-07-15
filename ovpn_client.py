@@ -165,7 +165,7 @@ class Systray:
 		
 		self.d0wns_DNS = {}
 		
-		self.PASSPHRASE = False
+		#self.PASSPHRASE = False
 		self.PPP_NO_SAVE = True
 		self.LOAD_ACCDATA = True
 		
@@ -246,10 +246,10 @@ class Systray:
 					if self.win_pre2_check_profiles_win():
 						if self.win_pre3_load_profile_dir_vars():
 							if self.check_config_folders():
-								if self.read_options_file():
-									if self.read_interfaces():
-										if self.write_options_file():
-											return True
+								#if self.read_options_file():
+								if self.read_interfaces():
+									if self.write_options_file():
+										return True
 		elif OS == "linux2" :
 			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
 		elif OS == "darwin":
@@ -296,7 +296,8 @@ class Systray:
 			self.debug(text="No profiles found")
 			if self.USERID == False:
 				self.debug(text="spawn popup userid = %s" % (self.USERID))
-				if self.form_ask_userid():
+				self.form_ask_userid()
+				if not self.USERID == False and not self.APIKEY == False:
 					return True
 		elif self.profiles_count == 1 and self.profiles[0] > 1:
 			self.USERID = self.profiles[0]
@@ -317,7 +318,7 @@ class Systray:
 				pass
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		self.opt_file = "%s\\options.cfg" % (self.api_dir)
-		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
+		#self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
 		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
 		self.prx_dir = "%s\\proxy" % (self.api_dir)
 		self.stu_dir = "%s\\stunnel" % (self.api_dir)
@@ -431,20 +432,14 @@ class Systray:
 				return False
 			if os.path.exists(self.api_dir) and os.path.exists(self.vpn_dir) and os.path.exists(self.vpn_cfg) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
-				if os.path.isfile(self.api_cfg):
-					self.debug(text="def check_config_folders :True")
+				if self.read_options_file():
+					if self.APIKEY == False:
+						self.form_ask_userid()
+						if not self.APIKEY == False:
+							return True
+						else:
+							self.form_ask_userid()
 					return True
-				else:
-					self.debug(text="def check_config_folders :False self.api_cfg not found")
-					if not self.PASSPHRASE == False:
-						if self.write_new_apikey_config():
-							if self.check_passphrase():
-								return True
-					else:
-						if self.form_ask_userid():
-							if self.write_new_apikey_config():
-								if self.check_passphrase():
-									return True
 			else:
 				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
@@ -456,6 +451,16 @@ class Systray:
 			try:
 				parser = SafeConfigParser()
 				parser.read(self.opt_file)
+				
+				try:
+					APIKEY = parser.get('oVPN','apikey')
+					if APIKEY == "False":
+						self.APIKEY = False
+					else:
+						self.APIKEY = APIKEY
+				except:
+					pass
+
 				try:
 					self.DEBUG = parser.getboolean('oVPN','debugmode')
 				except:
@@ -465,18 +470,6 @@ class Systray:
 					self.LAST_CFG_UPDATE = parser.get('oVPN','lastcfgupdate')
 					if not self.LAST_CFG_UPDATE >= 0:
 						self.LAST_CFG_UPDATE = 0
-				except:
-					pass
-				
-				try:
-					if self.PASSPHRASE == False:
-						self.PASSPHRASE = parser.get('oVPN','passphrase')
-						if self.PASSPHRASE == "False":
-							self.PASSPHRASE = False
-						else:
-							self.PPP_NO_SAVE = False
-					else:
-						self.debug(text="def read_options_file: self.PASSPHRASE = '-NOT_FALSE-'")
 				except:
 					pass
 				
@@ -605,34 +598,15 @@ class Systray:
 					self.debug(text="self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
 				except:
 					pass
-				
+					
 				try:
-					if self.PASSPHRASE == False:
-						self.LOAD_ACCDATA = False
-					else:
-						self.LOAD_ACCDATA = parser.getboolean('oVPN','loadaccinfo')
-						if self.LOAD_ACCDATA == True:
-							if self.read_apikey_config() == True and self.compare_confighash() == True:
-								pass
-							else:
-								self.PASSPHRASE = False
-								self.LOAD_ACCDATA = False
+					self.LOAD_ACCDATA = parser.getboolean('oVPN','loadaccinfo')
 					self.debug(text="self.LOAD_ACCDATA = '%s'" % (self.LOAD_ACCDATA))
 				except:
 					pass
 				
 				try:
-					if self.PASSPHRASE == False:
-						self.LOAD_SRVDATA = False
-					else:
-						self.LOAD_SRVDATA = parser.getboolean('oVPN','serverviewextend')
-						if self.LOAD_SRVDATA == True:
-							if self.read_apikey_config() == True and self.compare_confighash() == True:
-								pass
-							else:
-								self.PASSPHRASE = False
-								self.LOAD_SRVDATA = False
-				
+					self.LOAD_SRVDATA = parser.getboolean('oVPN','serverviewextend')
 					self.debug(text="self.LOAD_SRVDATA = '%s'" % (self.LOAD_SRVDATA))
 				except:
 					pass
@@ -727,8 +701,8 @@ class Systray:
 			cfg = open(self.opt_file,'wb')
 			parser = SafeConfigParser()
 			parser.add_section('oVPN')
+			parser.set('oVPN','apikey','%s'%(self.APIKEY))
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
-			parser.set('oVPN','passphrase','%s'%(plaintext_passphrase))
 			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
 			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
@@ -965,86 +939,6 @@ class Systray:
 		dialogWindow.destroy()
 		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.app_dir,self.USERID)):
 			return True
-
-	def load_decryption(self):
-		self.debug(text="def load_decryption()")
-		if self.PASSPHRASE == False:
-			return False
-		elif len(self.PASSPHRASE) > 0:
-				self.aeskey = hashlib.sha256(self.PASSPHRASE.rstrip()).digest()
-				return True
-
-	def read_apikey_config(self):
-		#self.debug(text="def read_apikey_config: self.PASSPHRASE = %s" %(self.PASSPHRASE))
-		self.debug(text="def read_apikey_config: self.PASSPHRASE = '-NOT_FALSE-'")
-		if not self.PASSPHRASE == False and self.load_decryption() and os.path.isfile(self.api_cfg):
-			self.debug(text="def read_apikey_config: go")
-			cfg = open(self.api_cfg,'r')
-			read_data = cfg.read()
-			cfg.close()
-			b64decode = base64.b64decode(read_data)
-			configdata = b64decode.split(",")
-			aesiv = base64.b64decode(configdata[0])
-			b64config = base64.b64decode(configdata[1])
-			crypt = AES.new(self.aeskey, AES.MODE_CBC, aesiv)
-			self.apidata = crypt.decrypt(b64config).split(",")
-			aesiv = False
-			self.aeskey = False
-			if len(self.apidata) > 3:
-				USERID = self.apidata[0].split("=")
-				APIKEY = self.apidata[1].split("=")
-				CFGSHA = self.apidata[2].split("=")
-				if len(USERID) == 2 and USERID[1] > 1 and USERID[1].isdigit():
-					#self.debug(text="def read_apikey_config USERID = %s :True" % (USERID))
-					#self.debug(text="def read_apikey_config USERID = profile-folder :True" % (USERID))
-					if len(APIKEY) == 2 and len(APIKEY[1]) == 128 and APIKEY[1].isalnum():
-						#self.debug(text="def read_apikey_config APIKEY len = %s :True" % (len(APIKEY)))
-						if len(CFGSHA) == 2 and len(CFGSHA[1]) == 64 and CFGSHA[1].isalnum():
-							#self.debug(text="def read_apikey_config CFGSHA = %s" % (CFGSHA))
-							self.APIKEY = APIKEY[1]
-							self.CFGSHA = CFGSHA[1]
-							return True
-			self.debug(text="def read_apikey_config: passphrase invalid")
-			self.form_ask_passphrase()
-			return False
-
-	def write_new_apikey_config(self):
-		self.debug(text="def write_new_apikey_config()")
-		self.aeskeyhash = hashlib.sha256(self.PASSPHRASE).digest()
-		self.aesiv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
-		self.make_confighash()
-		self.randint = random.randint(0,9)
-		self.text2aes = "%s,CFGSHA=%s,AESPAD=%s" % (self.text2hash1,self.hash2aes,self.randint)
-		self.text2aeslen = len(self.text2aes)
-		self.targetpad = 64*64
-		self.addpad = self.targetpad - self.text2aeslen
-		self.padfill = 2
-		self.paddata = self.randint
-		while self.padfill <= self.addpad:
-			self.randadd = random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
-			self.paddata = '%s%s' % (self.paddata,self.randadd)
-			#if self.DEBUG: print("padfill=%s\npaddata=%s" % (self.padfill,self.paddata))
-			self.padfill += 1
-		self.text2aes = "%s%s" % (self.text2aes,self.paddata)
-		self.text2aeslen = len(self.text2aes)
-		#if self.DEBUG: print("text2aeslen=%s\n" % (self.text2aeslen))
-		#if self.DEBUG: print("\n	#######	#######debug:text2aes=%s\ndebug:aesiv=%s\ndebug:len(self.text2aeslen)=%s\nself.addpad=%s" % (self.text2aes,self.aesiv,self.text2aeslen,self.addpad))
-		self.crypt = AES.new(self.aeskeyhash, AES.MODE_CBC, self.aesiv)
-		cipherd_data = base64.b64encode(self.crypt.encrypt(self.text2aes))
-		data2file = "%s,%s" % (base64.b64encode(self.aesiv),cipherd_data)
-		try:	
-			cfg = open(self.api_cfg,'wb')
-			cipherd_data_b64 = base64.b64encode(data2file)
-			cfg.write(cipherd_data_b64)
-			cfg.close()
-			self.aesiv = False
-			self.aeskeyhash = False
-			self.hash2aes = False
-			self.text2aes = False
-			self.paddata = False
-			return True
-		except:
-			return False
 
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(text="def on_right_click_mainwindow()")
@@ -1460,11 +1354,7 @@ class Systray:
 		self.debug(text="def make_systray_menu()")
 		try:
 			self.systray_menu = Gtk.Menu()
-			self.MOUSE_IN_TRAY = time.time() + 2
-			# *** fixme *** try to detect focus-in/out
-			#self.systray_menu.grab_focus()
-			#self.systray_menu.set_accept_focus(True)
-			#self.systray_menu.attach_to_widget(self.window,self.destroy_systray_menu)
+			self.MOUSE_IN_TRAY = time.time() + 3
 			
 			try:
 				self.load_ovpn_server()
@@ -1618,7 +1508,7 @@ class Systray:
 				resetlogin = Gtk.MenuItem(_("Reset API Login"))
 				resetlogin.connect('button-press-event', self.cb_form_reask_userid)
 				updatesmenu.append(resetlogin)
-				
+				"""
 				if not self.PASSPHRASE == False:
 					clearphram = Gtk.MenuItem(_("Clear Passphrase from RAM"))
 					clearphram.connect('button-press-event', self.cb_clear_passphrase_ram)
@@ -1627,6 +1517,7 @@ class Systray:
 					clearphcfg = Gtk.MenuItem(_("Clear Passphrase from CFG"))
 					clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
 					updatesmenu.append(clearphcfg)
+				"""
 			except:
 				self.debug(text="def make_systray_updates_menu: #6 failed")
 		except:
@@ -1796,17 +1687,15 @@ class Systray:
 		self.debug(text="def check_remote_update()")
 		if self.timer_check_certdl_running == False:
 			if self.check_inet_connection() == True:
-				self.debug(text="def check_remote_update()")
-				if self.check_passphrase():
-					#self.make_progressbar()
-					try:
-						thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
-						thread_certdl.start()
-						threadid_certdl = threading.currentThread()
-						self.debug(text="threadid_certdl = %s" %(threadid_certdl))
-						return True
-					except:
-						self.debug(text="starting thread_certdl failed")
+				self.debug(text="def check_remote_update: check_inet_connection() == True")
+				try:
+					thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
+					thread_certdl.start()
+					threadid_certdl = threading.currentThread()
+					self.debug(text="def check_remote_update threadid_certdl = %s" %(threadid_certdl))
+					return True
+				except:
+					self.debug(text="starting thread_certdl failed")
 		return False
 
 	def make_progressbar(self):
@@ -1866,22 +1755,22 @@ class Systray:
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 									return True
 								else:
-									self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
+									self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
 							else:
-								self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
+								self.msgwarn(_("Failed to download certificates"),_("Error: def inThread_timer_check_certdl"))
 							# finish downloading certs
 						else:
-							self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
+							self.msgwarn(_("Failed to request certificates!"),_("Error: def inThread_timer_check_certdl"))
 					else:
-						self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
+						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
 				else:
 					self.timer_check_certdl_running = False
 					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
 					return True
-			else:
-				self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
+			#else:
+			#	self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
 		except:
-			self.msgwarn(_("oVPN Update failed"),_("Error: def inThread_timer_check_certdl"))
+			self.msgwarn(_("Failed to check for updates!"),_("Error: def inThread_timer_check_certdl"))
 		self.timer_check_certdl_running = False
 		return False
 
@@ -2793,10 +2682,9 @@ class Systray:
 		if self.ACCWINDOW_OPEN == True:
 			reopen = True
 		if self.LOAD_ACCDATA == True:
-			if self.check_passphrase() == True:
-				self.LOAD_ACCDATA = True
-				self.LAST_OVPN_ACC_DATA_UPDATE = 0
-				self.OVPN_ACC_DATA = {}
+			self.LOAD_ACCDATA = True
+			self.LAST_OVPN_ACC_DATA_UPDATE = 0
+			self.OVPN_ACC_DATA = {}
 		self.write_options_file()
 		if reopen == True:
 			GLib.idle_add(self.call_redraw_accwindow)
@@ -2828,12 +2716,9 @@ class Systray:
 		if self.MAINWINDOW_OPEN == True:
 			reopen = True
 		if self.LOAD_SRVDATA == True:
-			if self.check_passphrase() == True:
-				self.LOAD_SRVDATA = True
-				self.LAST_OVPN_SRV_DATA_UPDATE = 0
-				self.OVPN_SRV_DATA = {}
-			else:
-				self.LOAD_SRVDATA = False
+			self.LOAD_SRVDATA = True
+			self.LAST_OVPN_SRV_DATA_UPDATE = 0
+			self.OVPN_SRV_DATA = {}
 		self.write_options_file()
 		if reopen == True:
 			GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
@@ -3009,20 +2894,6 @@ class Systray:
 		except:
 			self.debug(text="def set_statusbar_text: text = '%s' failed" % (text))
 
-	def check_passphrase(self):
-		self.debug(text="def check_passphrase()")
-		self.read_options_file()
-		if self.PASSPHRASE == False:
-			self.debug(text="def check_passphrase: popup receive passphrase")
-			self.form_ask_passphrase()
-			if not self.PASSPHRASE == False:
-				return True
-		else:
-			if self.read_apikey_config():
-				if self.compare_confighash() == True:
-					return True
-			self.PASSPHRASE == False
-
 	def cb_set_ovpn_favorite_server(self,widget,event,server):
 		if event.button == 1:
 			self.destroy_context_menu_servertab()
@@ -3195,6 +3066,7 @@ class Systray:
 				not os.path.isfile(self.ovpn_cli_crt) or \
 				not os.path.isfile(self.ovpn_cli_key):
 					self.msgwarn(_("Files missing: '%s'") % (self.ovpn_server_dir),_("Error: Certs not found!"))
+					self.reset_ovpn_values_disconnected()
 					return False
 			try:
 				ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
@@ -3208,6 +3080,7 @@ class Systray:
 				self.debug(text="Started: oVPN %s on Thread: %s" % (server,self.OVPN_THREADID))
 			except:
 				self.debug(text="Error: Unable to start thread: oVPN %s " % (server))
+				self.reset_ovpn_values_disconnected()
 				return False
 		else:
 			self.debug(text="def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
@@ -3931,80 +3804,19 @@ class Systray:
 		self.debug(text="def isValueIPv6()")
 		return True
 
-	def form_ask_passphrase(self):
-		GLib.idle_add(self.form_ask_passphrase2)
+	def form_ask_userid(self):
+		GLib.idle_add(self.form_ask_userid2)
 
-	def form_ask_passphrase2(self):
-		self.debug(text="def form_ask_passphrase2()")
-		self.destroy_systray_menu()
+	def form_ask_userid2(self):
+		self.debug(text="def form_ask_userid()")
 		try:
-			self.dialogWindow_form_ask_passphrase.destroy
+			self.dialog_form_ask_userid.destroy()
 		except:
 			pass
-		if self.timer_check_certdl_running == False:
-			try:
-				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
-				self.dialogWindow_form_ask_passphrase = dialogWindow
-				dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-				dialogWindow.set_transient_for(self.window)
-				try:
-					dialogWindow.set_icon_from_file(self.app_icon)
-				except:
-					self.debug(text="def form_ask_passphrase: dialogWindow.set_icon_from_file(self.app_icon) failed")
-				text = _("Enter your Passphrase")
-				dialogWindow.set_title(text)
-				dialogWindow.set_markup(text)
-				dialogBox = dialogWindow.get_content_area()
-				checkbox = Gtk.Switch()
-				checkbox_title = Gtk.Label(label=_("Save Passphrase in File?"))
-				checkbox.set_active(False)
-				ph1Entry = Gtk.Entry()
-				ph1Entry.set_visibility(False)
-				ph1Entry.set_invisible_char("X")
-				ph1Entry.set_size_request(200,24)
-				ph1Label = Gtk.Label(label=_("Passphrase:"))
-				dialogBox.pack_start(ph1Label,False,False,0)
-				dialogBox.pack_start(ph1Entry,False,False,0)
-				dialogBox.pack_start(checkbox_title,False,False,0)
-				dialogBox.pack_start(checkbox,False,False,0)
-				dialogWindow.show_all()
-				dialogWindow.connect("response", self.response_ask_passphrase, ph1Entry, checkbox)
-				dialogWindow.connect("close", self.response_ask_passphrase, None, None)
-				dialogWindow.run()
-			except:
-				self.debug(text="def form_ask_passphrase: Failed")
-
-	def response_ask_passphrase(self, dialog, response_id, ph1Entry, checkbox):
-		self.debug(text="response_ask_passphrase()")
-		if response_id == Gtk.ResponseType.CANCEL:
-			self.PASSPHRASE = False
-			self.debug(text="def response_ask_passphrase: response_id == Gtk.ResponseType.CANCEL")
-			dialog.destroy()
-			return
-		elif response_id == Gtk.ResponseType.OK:
-			self.PASSPHRASE = ph1Entry.get_text().rstrip()
-			saveph = checkbox.get_active()
-			self.debug(text="def response_ask_passphrase: checkbox saveph = %s" %(saveph))
-			if self.read_apikey_config():
-				if self.compare_confighash():
-					self.debug(text="def response_ask_passphrase: self.compare_confighash() :True")
-					if saveph == True:
-						self.PPP_NO_SAVE = False
-					else:
-						self.PPP_NO_SAVE = True
-				else:
-					self.PASSPHRASE = False
-			else:
-				self.PASSPHRASE = False
-		dialog.destroy()
-		self.write_options_file()
-		self.UPDATE_SWITCH == True
-		
-	def form_ask_userid(self):
-		self.debug(text="def form_ask_userid()")
 		try:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+			self.dialog_form_ask_userid = dialogWindow
 			try:
 				dialogWindow.set_icon_from_file(self.app_icon)
 			except:
@@ -4015,30 +3827,21 @@ class Systray:
 			dialogBox = dialogWindow.get_content_area()
 			
 			useridEntry = Gtk.Entry()
+			if not self.USERID == False:
+				useridEntry.set_text('%s'%(self.USERID))
 			useridEntry.set_visibility(True)
 			useridEntry.set_max_length(9)
 			useridEntry.set_size_request(200,24)
 			useridLabel = Gtk.Label(label=_("User-ID:"))
 			
 			apikeyEntry = Gtk.Entry()
+
+			
 			apikeyEntry.set_visibility(False)
 			apikeyEntry.set_max_length(128)
 			apikeyEntry.set_invisible_char("*")
 			apikeyEntry.set_size_request(200,24)
 			apikeyLabel = Gtk.Label(label=_("API-Key:"))
-			
-			ph1Entry = Gtk.Entry()
-			ph1Entry.set_visibility(False)
-			ph1Entry.set_invisible_char("X")
-			ph1Entry.set_size_request(200,24)
-			ph0Label = Gtk.Label(label=_("\n\nEnter a secure passphrase to encrypt your API-Login!"))
-			ph1Label = Gtk.Label(label=_("Passphrase:"))
-			
-			ph2Entry = Gtk.Entry()
-			ph2Entry.set_visibility(False)
-			ph2Entry.set_invisible_char("X")
-			ph2Entry.set_size_request(200,24)
-			ph2Label = Gtk.Label(label=_("Repeat:"))
 			
 			dialogBox.pack_start(useridLabel,False,False,0)
 			dialogBox.pack_start(useridEntry,False,False,0)
@@ -4046,39 +3849,50 @@ class Systray:
 			dialogBox.pack_start(apikeyLabel,False,False,0)
 			dialogBox.pack_start(apikeyEntry,False,False,0)
 			
-			dialogBox.pack_start(ph0Label,False,False,0)
-			dialogBox.pack_start(ph1Label,False,False,0)
-			dialogBox.pack_start(ph1Entry,False,False,0)
-			
-			dialogBox.pack_start(ph2Label,False,False,0)
-			dialogBox.pack_start(ph2Entry,False,False,0)
-			
 			dialogWindow.show_all()
-			response = dialogWindow.run()
 			
-			userid = useridEntry.get_text().rstrip()
-			apikey = apikeyEntry.get_text().rstrip()
-			ph1 = ph1Entry.get_text().rstrip()
-			ph2 = ph2Entry.get_text().rstrip()
-			
-			if response == Gtk.ResponseType.OK:
-				if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum() and ph1 == ph2 and len(ph1) > 0:
-					dialogWindow.destroy()
-					self.USERID = userid
-					self.APIKEY = apikey
-					self.PASSPHRASE = ph1
-					return True
-				else:
-					self.form_ask_userid()
+			dialogWindow.connect("response", self.response_form_ask_userid, useridEntry, apikeyEntry)
+			dialogWindow.connect("close", self.response_form_ask_userid, None, None)
+			dialogWindow.run()
 		except:
 			self.debug(text="def form_ask_userid: Failed")
 
+	def response_form_ask_userid(self, dialog, response_id, useridEntry, apikeyEntry):
+		self.debug(text="response_form_ask_userid()")
+		if response_id == Gtk.ResponseType.CANCEL:
+			self.debug(text="def response_form_ask_userid: response_id == Gtk.ResponseType.CANCEL")
+			dialog.destroy()
+			return
+		elif response_id == Gtk.ResponseType.OK:
+			userid = useridEntry.get_text().rstrip()
+			apikey = apikeyEntry.get_text().rstrip()
+			if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum():
+				dialog.destroy()
+				if self.USERID == userid:
+					print "A self.USERID = '%s', userid '%s'" % (self.USERID,userid)
+					self.USERID = userid
+					self.APIKEY = apikey
+					self.write_options_file()
+				else:
+					self.APIKEY = apikey
+					print "B self.USERID = '%s', userid '%s'" % (self.USERID,userid)
+					try:
+						self.api_dir = "%s\\%s" % (self.app_dir,userid)
+						if not os.path.exists(self.api_dir):
+							os.mkdir(self.api_dir)
+						if self.remove_lock():
+							self.preboot()
+					except:
+						self.debug(text="def response_form_ask_userid: create new userid failed")
+					
+
+
 	def form_reask_userid(self):
 		self.debug(text="def form_reask_userid()")
-		if self.form_ask_userid():
-			if self.write_new_apikey_config():
-				if self.check_passphrase():
-					return True
+		self.form_ask_userid()
+		if not self.APIKEY == False:
+			self.debug(text="def form_reask_userid: self.APIKEY '-NOT_FALSE-'")
+			return True
 		return False
 
 	def cb_interface_selector_changed(self, combobox):
@@ -4124,46 +3938,7 @@ class Systray:
 		if event.button == 1:
 			self.debug(text="def cb_form_reask_userid()")
 			self.destroy_systray_menu()
-			self.PASSPHRASE = False
-			self.write_options_file()
 			self.form_reask_userid()
-
-	def cb_clear_passphrase_ram(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_clear_passphrase_ram()")
-			self.destroy_systray_menu()
-			self.PASSPHRASE = False
-			self.LOAD_SRVDATA = False
-			self.LOAD_ACCDATA = False
-			self.APIKEY = False
-			self.CFGSHA = False
-			self.UPDATE_SWITCH = True
-
-	def cb_clear_passphrase_cfg(self,widget,event):
-		self.destroy_systray_menu()
-		if event.button == 1:
-			self.debug(text="def cb_clear_passphrase_cfg()")
-			self.PASSPHRASE = False
-			self.LOAD_SRVDATA = False
-			self.APIKEY = False
-			self.CFGSHA = False
-			self.write_options_file()
-
-	def make_confighash(self):
-		self.debug(text="def make_confighash()")
-		self.text2hash1 = "USERID=%s,APIKEY=%s" % (self.USERID,self.APIKEY)
-		self.hash2aes = hashlib.sha256(self.text2hash1).hexdigest()
-
-	def compare_confighash(self):
-		self.debug(text="def compare_confighash()")
-		self.make_confighash()
-		if self.hash2aes == self.CFGSHA:
-			#self.debug(text="def compare_confighash :True : self.PASSPHRASE = '%s'" % (self.PASSPHRASE))
-			self.debug(text="def compare_confighash :True : self.PASSPHRASE = '-NOT_FALSE-'")
-			return True
-		else:
-			self.PASSPHRASE = False
-			return False
 
 	def check_last_server_update(self,remote_lastupdate):
 		self.debug(text="def check_last_server_update()")
@@ -4205,7 +3980,7 @@ class Systray:
 			if self.check_inet_connection() == False:
 				self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
 				return False
-			if self.reset_last_update():
+			if self.reset_last_update() == True:
 				self.debug(text="def cb_force_update: self.reset_last_update")
 				self.cb_check_normal_update(widget,event)
 
@@ -4218,7 +3993,7 @@ class Systray:
 			self.WIN_RESET_EXT_DEVICE = True
 			self.read_interfaces()
 			self.write_options_file()
-	# *fixme* delete me later
+
 	def cb_extserverview(self,widget,event):
 		if event.button == 1:
 			self.debug(text="def cb_extserverview()")
@@ -4228,10 +4003,9 @@ class Systray:
 				reopen = True
 				GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
 			if self.LOAD_SRVDATA == False:
-				if self.check_passphrase() == True:
-					self.LOAD_SRVDATA = True
-					self.LAST_OVPN_SRV_DATA_UPDATE = 0
-					self.OVPN_SRV_DATA = {}
+				self.LOAD_SRVDATA = True
+				self.LAST_OVPN_SRV_DATA_UPDATE = 0
+				self.OVPN_SRV_DATA = {}
 			else:
 				self.LOAD_SRVDATA = False
 			self.write_options_file()
@@ -4393,23 +4167,6 @@ class Systray:
 				self.NETSH_CMDLIST.append('advfirewall import "%s"' % (fwbak))
 				return self.win_join_netsh_cmd()
 
-	# *fixme* delete me later
-	def cb_switch_accinfo_old(self,widget,event):
-		self.debug(text="def cb_switch_accinfo()")
-		self.destroy_systray_menu()
-		if self.LOAD_ACCDATA == True:
-			self.LOAD_ACCDATA = False
-			self.OVPN_ACC_DATA = {}
-		elif self.LOAD_ACCDATA == False:
-			self.LOAD_ACCDATA = True
-			if self.PASSPHRASE == False:
-				self.form_ask_passphrase()
-			if not self.read_apikey_config():
-				self.LOAD_ACCDATA = False
-			else:
-				self.LAST_OVPN_ACC_DATA_UPDATE = 0
-		self.write_options_file()
-
 	def delete_dir(self,path):
 		self.debug(text="def delete_dir()")
 		if self.OS == "win32":
@@ -4448,6 +4205,10 @@ class Systray:
 
 	def API_REQUEST(self,API_ACTION):
 		self.debug(text="def API_REQUEST()")
+		if self.APIKEY == False:
+			self.msgwarn(_("No API-Key!"),_("Error: def API_REQUEST"))
+			self.form_ask_userid()
+			return False
 		if API_ACTION == "lastupdate": 
 			self.TO_CURL = "uid=%s&apikey=%s&action=%s" % (self.USERID,self.APIKEY,API_ACTION)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
@@ -4476,6 +4237,9 @@ class Systray:
 			if self.body == "wait":
 				pass
 				#self.set_progressbar(text="Waiting for oVPN Certificates...")
+			if self.body == "AUTHERROR":
+				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
+				return False
 			
 			if self.body.isalnum() and len(self.body) <= 128:
 				self.debug("def API_REQUEST: self.body = %s"%(self.body))
@@ -4498,7 +4262,7 @@ class Systray:
 					self.debug(text="def API_REQUEST: self.curldata = '%s'" % (self.curldata))
 					return True
 			else:
-				text = _("Invalid User-ID / API-Key or Account expired.")
+				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
 				self.body = False
 				#self.set_progressbar(text)
 				self.timer_check_certdl_running = False
@@ -4690,7 +4454,7 @@ class Systray:
 		if self.timer_load_remote_data_running == True:
 			return False
 		self.timer_load_remote_data_running = True
-		if self.APIKEY == False or self.PASSPHRASE == False:
+		if self.APIKEY == False:
 			#self.debug(text="def load_remote_data: no api data")
 			self.timer_load_remote_data_running = False
 			return False
@@ -4781,6 +4545,7 @@ class Systray:
 				else:
 					self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
 					self.debug(text="def load_serverdata_from_remote: AUTH ERROR")
+					self.msgwarn(text=_("API-Login failed! Invalid User-ID or API-Key or Account expired!"))
 					return False
 			except:
 				self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
@@ -4837,6 +4602,7 @@ class Systray:
 				else:
 					self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
 					self.debug(text="def load_accinfo_from_remote: AUTH ERROR")
+					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def load_accinfo_from_remote"))
 					return False
 			except:
 				self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
