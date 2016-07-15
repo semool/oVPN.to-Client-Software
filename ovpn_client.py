@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.3-gtk3"
+CLIENTVERSION="v0.5.4-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -660,7 +660,10 @@ class Systray:
 				
 				try:
 					self.MYDNS = json.loads(parser.get('oVPN','mydns'))
+					self.debug(text="def read_options_file: len(self.MYDNS) == '%s'"%(len(self.MYDNS)))
+					self.debug(text="def read_options_file: self.MYDNS == '%s'"%(self.MYDNS))
 				except:
+					self.debug(text="def read_options_file: self.MYDNS = json.loads failed")
 					self.MYDNS = {}
 				
 				return True
@@ -1151,7 +1154,8 @@ class Systray:
 			try:
 				pridns = self.MYDNS[servername]["primary"]["ip4"]
 				priname = self.MYDNS[servername]["primary"]["dnsname"]
-				pridnsm = Gtk.MenuItem(_("Primary DNS: %s (%s)") % (priname,pridns))
+				string = _("Primary DNS: %s (%s)") % (priname,pridns)
+				pridnsm = Gtk.MenuItem(string)
 				cbdata = {servername:{"primary":{"ip4":pridns,"dnsname":priname}}}
 				pridnsm.connect('button-release-event',self.cb_del_dns,cbdata)
 				self.context_menu_servertab.append(pridnsm)
@@ -1161,7 +1165,8 @@ class Systray:
 			try:
 				secdns = self.MYDNS[servername]["secondary"]["ip4"]
 				secname = self.MYDNS[servername]["secondary"]["dnsname"]
-				secdnsm = Gtk.MenuItem(_("Secondary DNS: %s (%s)") % (secname,secdns))
+				string = _("Secondary DNS: %s (%s)") % (secname,secdns)
+				secdnsm = Gtk.MenuItem(string)
 				cbdata = {servername:{"secondary":{"ip4":secdns,"dnsname":secname}}}
 				secdnsm.connect('button-release-event',self.cb_del_dns,cbdata)
 				self.context_menu_servertab.append(secdnsm)
@@ -1325,7 +1330,7 @@ class Systray:
 			try:
 				if self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
 					self.OVPN_AUTO_CONNECT_ON_START = False
-					self.debug(text="def systray_timer: self.OVPN_AUTO_CONNECT_ON_START")
+					self.debug(text="def systray_timer: self.OVPN_AUTO_CONNECT_ON_START: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 					self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
 			except:
 				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
@@ -3063,8 +3068,8 @@ class Systray:
 		self.kill_openvpn()
 
 	def cb_jump_openvpn(self,widget,event,server):
-		if event.button == 1:
-			self.debug(text="def cb_jump_openvpn()")
+		if (widget == 0 and event == 0) or event.button == 1:
+			self.debug(text="def cb_jump_openvpn(%s)"%(server))
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
 			#if (not self.OVPN_CONNECTEDto == False and not self.OVPN_PING_LAST > 0) or (self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 20):
@@ -5168,6 +5173,7 @@ class Systray:
 			return False
 
 	def load_d0wns_dns_from_remote(self):
+		return
 		#self.debug(text="def load_d0wns_dns_from_remote()")
 		try:
 			if not os.path.isfile(self.dns_d0wntxt):
