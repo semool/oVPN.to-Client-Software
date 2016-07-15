@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GdkPixbuf, GLib, GObject
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
 
 from datetime import datetime as datetime
 from Crypto.Cipher import AES
@@ -187,7 +187,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 900
+		self.LOAD_DATA_EVERY = 66
 		self.LOAD_SRVDATA = False
 		self.SRV_LIGHT_WIDTH = "490"
 		self.SRV_LIGHT_HEIGHT = "830"
@@ -1137,14 +1137,14 @@ class Systray:
 				context_menu_servertab.append(extserverviewsize)
 			except:
 				self.debug(text="def make_context_menu_servertab: extserverviewsize failed")
-
+		"""
 		sep = Gtk.SeparatorMenuItem()
 		context_menu_servertab.append(sep)
 		
 		refresh = Gtk.MenuItem(_("Refresh Window"))
 		refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
 		context_menu_servertab.append(refresh)
-		
+		"""
 		context_menu_servertab.show_all()
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
 		self.debug(text="def make_context_menu_servertab: return")
@@ -2114,6 +2114,7 @@ class Systray:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
+				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
 				self.mainwindow.set_icon_from_file(self.app_icon)
 				self.mainwindow_ovpn_server()
@@ -2321,6 +2322,7 @@ class Systray:
 				self.accwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.accwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
+				self.accwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.accwindow.set_title(_("oVPN Account - %s") % (CLIENT_STRING))
 				self.accwindow.set_icon_from_file(self.app_icon)
 				self.accwindow.set_default_size(370,480)
@@ -2937,6 +2939,11 @@ class Systray:
 			except:
 				self.debug(text="def cb_del_ovpn_favorite_server: failed")
 
+	def cb_reset_load_remote_timer(self,widget,event):
+		if event.keyval == Gdk.KEY_F5:
+			self.debug(text="def cb_reset_load_remote_timer == F5")
+			self.reset_load_remote_timer()
+		
 	def reset_load_remote_timer(self):
 		self.debug(text="reset_load_remote_timer()")
 		if self.LOAD_SRVDATA == True and self.MAINWINDOW_OPEN == True:
