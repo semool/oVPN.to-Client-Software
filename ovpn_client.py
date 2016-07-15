@@ -5432,7 +5432,7 @@ class Systray:
 
 	def init_localization(self):
 		loc = locale.getdefaultlocale()[0][0:2]
-		filename = ".\\locale\\%s\\ovpn_client.mo"
+		filename = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
 		self.debug(text="def init_localization: %s"% (loc))
 		try:
 			translation = gettext.GNUTranslations(open(filename, "rb"))
