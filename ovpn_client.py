@@ -187,7 +187,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
 		self.APIKEY = False
-		self.LOAD_DATA_EVERY = 66
+		self.LOAD_DATA_EVERY = 900
 		self.LOAD_SRVDATA = False
 		self.SRV_LIGHT_WIDTH = "490"
 		self.SRV_LIGHT_HEIGHT = "830"
@@ -598,6 +598,14 @@ class Systray:
 					self.debug(text="self.NO_DNS_CHANGE = '%s'" % (self.NO_DNS_CHANGE))
 				except:
 					pass
+
+				try:
+					self.LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
+					if self.LOAD_DATA_EVERY <= 60:
+						self.LOAD_DATA_EVERY = 66
+					self.debug(text="self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
+				except:
+					pass
 				
 				try:
 					if self.PASSPHRASE == False:
@@ -695,6 +703,7 @@ class Systray:
 				parser.set('oVPN','windisableextifondisco','False')
 				parser.set('oVPN','wintapblockoutbound','False')
 				parser.set('oVPN','loadaccinfo','False')
+				parser.set('oVPN','loaddataevery','900')
 				parser.set('oVPN','mydns','False')
 				parser.write(cfg)
 				cfg.close()
@@ -741,6 +750,7 @@ class Systray:
 			parser.set('oVPN','windisableextifondisco','%s'%(self.WIN_DISABLE_EXT_IF_ON_DISCO))
 			parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 			parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
+			parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
 			parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
 			parser.write(cfg)
 			cfg.close()
@@ -1120,7 +1130,7 @@ class Systray:
 				else:
 					opt = _("[disabled]")
 				extserverview = Gtk.MenuItem(_("Load extended Server-View %s") %(opt))
-				extserverview.connect('button-press-event', self.cb_extserverview)
+				extserverview.connect('button-release-event', self.cb_extserverview)
 				context_menu_servertab.append(extserverview)
 			except:
 				self.debug(text="def make_context_menu_servertab: extserverview failed")
@@ -1133,18 +1143,18 @@ class Systray:
 					WIDTH = self.SRV_LIGHT_WIDTH
 					HEIGHT = self.SRV_LIGHT_HEIGHT
 				extserverviewsize = Gtk.MenuItem(_("Set Server-View Size [%sx%s]") %(int(WIDTH),int(HEIGHT)))
-				extserverviewsize.connect('button-press-event', self.cb_extserverview_size)
+				extserverviewsize.connect('button-release-event', self.cb_extserverview_size)
 				context_menu_servertab.append(extserverviewsize)
 			except:
 				self.debug(text="def make_context_menu_servertab: extserverviewsize failed")
-		"""
-		sep = Gtk.SeparatorMenuItem()
-		context_menu_servertab.append(sep)
-		
-		refresh = Gtk.MenuItem(_("Refresh Window"))
-		refresh.connect('button-release-event',self.cb_redraw_mainwindow_vbox)
-		context_menu_servertab.append(refresh)
-		"""
+				
+			try:
+				loaddataevery = Gtk.MenuItem(_("Update every: %s seconds") %(self.LOAD_DATA_EVERY))
+				loaddataevery.connect('button-release-event', self.cb_set_loaddataevery)
+				context_menu_servertab.append(loaddataevery)
+			except:
+				self.debug(text="def make_context_menu_servertab: loaddataevery failed")
+
 		context_menu_servertab.show_all()
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
 		self.debug(text="def make_context_menu_servertab: return")
@@ -2945,13 +2955,15 @@ class Systray:
 			self.reset_load_remote_timer()
 		
 	def reset_load_remote_timer(self):
-		self.debug(text="reset_load_remote_timer()")
+		
 		if self.LOAD_SRVDATA == True and self.MAINWINDOW_OPEN == True:
 			if self.LAST_OVPN_SRV_DATA_UPDATE > 0 and self.LAST_OVPN_SRV_DATA_UPDATE < time.time()-60:
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
+				self.debug(text="reset_load_remote_timer: SRV")
 		if self.LOAD_ACCDATA == True and self.ACCWINDOW_OPEN == True:
 			if self.LAST_OVPN_ACC_DATA_UPDATE > 0 and self.LAST_OVPN_ACC_DATA_UPDATE < time.time()-60:
 				self.LAST_OVPN_ACC_DATA_UPDATE = 0
+				self.debug(text="reset_load_remote_timer: ACC")
 
 	def cb_redraw_mainwindow_vbox(self,widget,event):
 		if event.button == 1:
@@ -4197,6 +4209,46 @@ class Systray:
 				return True
 			else:
 				return False
+
+
+	def cb_set_loaddataevery(self,widget,event):
+		if event.button == 1:
+			self.debug(text="def cb_set_loaddataevery()")
+			self.destroy_systray_menu()
+			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+			dialogWindow.set_transient_for(self.window)
+			try:
+				dialogWindow.set_icon_from_file(self.app_icon)
+			except:
+				self.debug(text="def cb_set_loaddataevery: dialogWindow.set_icon_from_file(self.app_icon) failed")
+			text = _("Load Data every X seconds")
+			dialogWindow.set_title(text)
+			dialogWindow.set_markup(text)
+			dialogBox = dialogWindow.get_content_area()
+			Label = Gtk.Label(label=_("seconds:"))
+			Entry = Gtk.Entry()
+			Entry.set_visibility(True)
+			Entry.set_size_request(40,24)
+			dialogBox.pack_start(Label,False,False,0)
+			dialogBox.pack_start(Entry,False,False,0)
+			dialogWindow.show_all()
+			response = dialogWindow.run()
+			if response == Gtk.ResponseType.CANCEL:
+				dialogWindow.destroy()
+				print "response: btn cancel %s" % (response)
+				return False
+			elif response == Gtk.ResponseType.OK:
+				seconds = int(Entry.get_text().rstrip())
+				if seconds <= 66:
+					seconds = 66
+				self.LOAD_DATA_EVERY = seconds
+				dialogWindow.destroy()
+				self.write_options_file()
+				return True
+			else:
+				return False
+				
 
 	def cb_change_ipmode1(self,widget,event):
 		if event.button == 1:
