@@ -22,6 +22,7 @@ IF NOT EXIST %PYEXE% (echo PYEXE %PYEXE% NOT FOUND && PAUSE && EXIT)
 set INCLUDESDIR=%SOURCEDIR%\includes
 set LOCALEDIR=%SOURCEDIR%\locale
 set DISTDIR=%SOURCEDIR%\dist
+set LANGPATH=%SOURCEDIR%\dist\share\locale\
 
 echo dir vars loaded
 echo %SOURCEDIR%

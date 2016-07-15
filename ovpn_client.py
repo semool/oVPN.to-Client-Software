@@ -78,7 +78,6 @@ class Systray:
 		self.MAINWINDOW_HIDE = False
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
-		self.ENABLE_THEME_SWITCHER = True
 		self.APP_LANGUAGE = "en"
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
@@ -1044,30 +1043,6 @@ class Systray:
 		except:
 			return False
 
-	def theme_switcher(self,widget,event):
-		self.debug(text="def theme_switcher()")
-		self.destroy_systray_menu()
-		
-		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-		dialogWindow.set_transient_for(self.window)
-		try:
-			dialogWindow.set_icon_from_file(self.app_icon)
-		except:
-			self.debug(text="def theme_switcher: dialogWindow.set_icon_from_file(self.app_icon) failed")
-		text = _("Choose App Theme")
-		dialogWindow.set_title(text)
-		dialogWindow.set_markup(text)
-		dialogBox = dialogWindow.get_content_area()
-		combobox = Gtk.ComboBoxText.new()
-		for theme in self.INSTALLED_THEMES:
-			combobox.append_text(theme)
-		combobox.connect('changed',self.cb_theme_switcher_changed)
-		dialogBox.pack_start(combobox,False,False,0)
-		dialogWindow.show_all()
-		dialogWindow.run()
-		dialogWindow.destroy()
-
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(text="def on_right_click_mainwindow()")
 		self.destroy_systray_menu()
@@ -1310,23 +1285,29 @@ class Systray:
 			else:
 				self.switch_disableextifondisco.set_active(False)
 			
-			# settings_updates_switch_updateovpnonstart
+			# settings_options_switch_updateovpnonstart
 			if self.UPDATEOVPNONSTART == True:
 				self.switch_updateovpnonstart.set_active(True)
 			else:
 				self.switch_updateovpnonstart.set_active(False)
 			
-			# settings_updates_switch_accinfo
+			# settings_options_switch_accinfo
 			if self.LOAD_ACCDATA == True:
 				self.switch_accinfo.set_active(True)
 			else:
 				self.switch_accinfo.set_active(False)
 			
-			# settings_updates_switch_srvinfo
+			# settings_options_switch_srvinfo
 			if self.LOAD_SRVDATA == True:
 				self.switch_srvinfo.set_active(True)
 			else:
 				self.switch_srvinfo.set_active(False)
+			
+			# settings_options_switch_debugmode
+			if self.DEBUG == True:
+				self.switch_debugmode.set_active(True)
+			else:
+				self.switch_debugmode.set_active(False)
 			
 			# end switches update
 			self.UPDATE_SWITCH = False
@@ -1528,25 +1509,8 @@ class Systray:
 					self.debug(text="def make_systray_options_dnsleak: failed")
 
 			self.make_systray_options_ipv6_menu()
-			
-			if self.DEBUG == True:
-				opt = _("[enabled]")
-			else:
-				opt = _("[disabled]")
-			switchdebug = Gtk.MenuItem(_("DEBUG Mode %s") % (opt))
-			switchdebug.connect('button-press-event', self.cb_switch_debug)
-			
-			self.systray_optionsmenu.append(switchdebug)
 		except:
 			self.debug(text="def make_systray_options_menu failed")
-
-		try:
-			if self.ENABLE_THEME_SWITCHER == True:
-				theme = Gtk.MenuItem(_("Set App Theme [%s]") %(self.APP_THEME))
-				theme.connect('button-press-event', self.theme_switcher)
-				self.systray_optionsmenu.append(theme)
-		except:
-			self.debug(text="def make_systray_options_menu failed: theme failed")
 
 	def make_systray_options_ipv6_menu(self):
 		self.debug(text="def make_systray_options_ipv6_menu()")
@@ -2472,37 +2436,42 @@ class Systray:
 				try:
 					nbpage1 = Gtk.VBox(False,spacing=2)
 					nbpage1.set_border_width(8)
-					nbpage1.pack_start(Gtk.Label(label=_("Windows Firewall Settings\n")),False,False,0)
+					nbpage1.pack_start(Gtk.Label(label=_("Security Settings\n")),False,False,0)
 					self.settings_firewall_switch_nofw(nbpage1)
 					self.settings_firewall_switch_fwblockonexit(nbpage1)
 					self.settings_firewall_switch_fwdontaskonexit(nbpage1)
 					self.settings_firewall_switch_tapblockoutbound(nbpage1)
 					self.settings_firewall_switch_fwresetonconnect(nbpage1)
 					self.settings_firewall_switch_fwbackupmode(nbpage1)
-					self.settingsnotebook.append_page(nbpage1, Gtk.Label(_(" Firewall ")))
+					self.settings_network_switch_nodns(nbpage1)
+					self.settings_network_switch_disableextifondisco(nbpage1)
+					self.settingsnotebook.append_page(nbpage1, Gtk.Label(_(" Security ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
-				
+
 				try:
 					nbpage2 = Gtk.VBox(False,spacing=2)
 					nbpage2.set_border_width(8)
-					nbpage2.pack_start(Gtk.Label(label=_("Network Adapter Settings\n")),False,False,0)
-					self.settings_network_switch_nodns(nbpage2)
-					self.settings_network_switch_disableextifondisco(nbpage2)
-					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Network ")))
+					nbpage2.pack_start(Gtk.Label(label=_("Options\n")),False,False,0)
+					self.settings_options_switch_updateovpnonstart(nbpage2)
+					self.settings_options_switch_accinfo(nbpage2)
+					self.settings_options_switch_srvinfo(nbpage2)
+					self.settings_options_switch_debugmode(nbpage2)
+					self.settings_options_switch_theme(nbpage2)
+					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
-					
-				try:
-					nbpage3 = Gtk.VBox(False,spacing=2)
-					nbpage3.set_border_width(8)
-					nbpage3.pack_start(Gtk.Label(label=_("Update Settings\n")),False,False,0)
-					self.settings_updates_switch_updateovpnonstart(nbpage3)
-					self.settings_updates_switch_accinfo(nbpage3)
-					self.settings_updates_switch_srvinfo(nbpage3)
-					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
-				except:
-					self.debug(text="def show_settingswindow: nbpage3 failed")
+				
+				#try:
+				#	nbpage3 = Gtk.VBox(False,spacing=2)
+				#	nbpage3.set_border_width(8)
+				#	nbpage3.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
+					#self.settings_options_switch_updateovpnonstart(nbpage3)
+					#self.settings_options_switch_accinfo(nbpage3)
+					#self.settings_options_switch_srvinfo(nbpage3)
+				#	self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
+				#except:
+				#	self.debug(text="def show_settingswindow: nbpage3 failed")
 				
 				self.settingswindow.show_all()
 				self.SETTINGSWINDOW_OPEN = True
@@ -2748,7 +2717,7 @@ class Systray:
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 		
-	def settings_updates_switch_updateovpnonstart(self,page):
+	def settings_options_switch_updateovpnonstart(self,page):
 		try:
 			switch = Gtk.Switch()
 			self.switch_updateovpnonstart = switch
@@ -2762,7 +2731,7 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_updates_switch_updateovpnonstart: failed")
+			self.debug(text="def settings_options_switch_updateovpnonstart: failed")
 
 	def cb_switch_updateovpnonstart(self,switch,gparam):
 		self.debug(text="def cb_switch_updateovpnonstart()")
@@ -2773,7 +2742,7 @@ class Systray:
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
-	def settings_updates_switch_accinfo(self,page):
+	def settings_options_switch_accinfo(self,page):
 		try:
 			switch = Gtk.Switch()
 			self.switch_accinfo = switch
@@ -2787,7 +2756,7 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_updates_switch_accinfo: failed")
+			self.debug(text="def settings_options_switch_accinfo: failed")
 
 	def cb_switch_accinfo(self,switch,gparam):
 		self.debug(text="def cb_switch_accinfo()")
@@ -2808,7 +2777,7 @@ class Systray:
 			GLib.idle_add(self.call_redraw_accwindow)
 		self.UPDATE_SWITCH = True
 
-	def settings_updates_switch_srvinfo(self,page):
+	def settings_options_switch_srvinfo(self,page):
 		try:
 			switch = Gtk.Switch()
 			self.switch_srvinfo = switch
@@ -2822,7 +2791,7 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_updates_switch_srvinfo: failed")
+			self.debug(text="def settings_options_switch_srvinfo: failed")
 
 	def cb_switch_srvinfo(self,switch,gparam):
 		self.debug(text="def cb_switch_srvinfo()")
@@ -2845,6 +2814,48 @@ class Systray:
 			GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
 			GLib.idle_add(self.mainwindow_ovpn_server)
 		self.UPDATE_SWITCH = True
+
+	def settings_options_switch_debugmode(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_debugmode = switch
+			checkbox_title = Gtk.Label(label=_("Debug Mode (default: OFF)"))
+			if self.DEBUG == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_debugmode)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_options_switch_debugmode: failed")
+
+	def cb_switch_debugmode(self,switch,gparam):
+		self.debug(text="def cb_switch_debugmode()")
+		if switch.get_active():
+			self.DEBUG = True
+			self.msgwarn(_("Logfile:\n'%s'") % (self.debug_log),_("Debug Mode Enabled"))
+		else:
+			self.DEBUG = False
+			if os.path.isfile(self.debug_log):
+				os.remove(self.debug_log)
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
+	def settings_options_switch_theme(self,page):
+		try:
+			self.debug(text="def settings_options_switch_theme()")
+			combobox_title = Gtk.Label(label=_("Change App Theme"))
+			combobox = Gtk.ComboBoxText.new()
+			for theme in self.INSTALLED_THEMES:
+				combobox.append_text(theme)
+			combobox.connect('changed',self.cb_theme_switcher_changed)
+			page.pack_start(combobox_title,False,False,0)
+			page.pack_start(combobox,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_options_switch_theme: failed")
 
 	def destroy_settingswindow(self):
 		self.debug(text="def destroy_settingswindow()")
@@ -4112,20 +4123,6 @@ class Systray:
 			self.APIKEY = False
 			self.CFGSHA = False
 			self.write_options_file()
-
-	def cb_switch_debug(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_switch_debug()")
-			self.destroy_systray_menu()
-			if self.DEBUG == False:
-				self.DEBUG = True
-				self.write_options_file()
-				self.msgwarn(_("Logfile:\n'%s'") % (self.debug_log),_("Debug Mode Enabled"))
-			else:
-				self.DEBUG = False
-				self.write_options_file()
-				if os.path.isfile(self.debug_log):
-					os.remove(self.debug_log)
 
 	def make_confighash(self):
 		self.debug(text="def make_confighash()")

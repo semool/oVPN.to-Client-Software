@@ -22,5 +22,12 @@ copy /Y "%INCLUDESDIR%\themes\switcher.ini" "%DISTDIR%\etc\gtk-3.0\settings.ini"
 
 copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "%DISTDIR%\crypt32.dll"
 
+::Delete unneded Language Files 
+for /f "delims=" %%i in ('dir /b "%LANGPATH%*.*"') do (
+    IF NOT "%%i" == "de" IF NOT "%%i" == "en" (
+        rd /s /q "%LANGPATH%%%i" 2>nul
+    )
+)
+
 mkdir "%DISTDIR%\appdata"
 echo %RELEASE% > "%DISTDIR%\appdata\version

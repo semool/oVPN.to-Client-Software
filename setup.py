@@ -5,7 +5,7 @@ import sys, os, site, shutil
 site_dir = site.getsitepackages()[1] 
 include_dll_path = os.path.join(site_dir, 'gnome')
 
-gtk_dirs_to_include = ['etc\\fonts', 'etc\\gtk-3.0', 'lib\\gtk-3.0', 'lib\\girepository-1.0', 'share\\glib-2.0', 'share\\icons\\hicolor', 'share\\icons\\Adwaita']
+gtk_dirs_to_include = ['etc\\fonts', 'etc\\gtk-3.0', 'lib\\gtk-3.0', 'lib\\girepository-1.0', 'share\\glib-2.0', 'share\\icons\\hicolor', 'share\\icons\\Adwaita', 'share\\locale']
 
 gtk_dlls = []
 tmp_dlls = []
