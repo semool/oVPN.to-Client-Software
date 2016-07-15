@@ -37,3 +37,9 @@
 + edit 'set_version.bat' and 'set_dirs.bat' to your needs!
 + go to includes folder and unzip 'Adwaita.7z' + 'MS-Windows.7z'
 + put 'crypt32_win32.dll' + 'crypt_win64.dll' into 'includes/' for working cross-builds
+
+## Generate locales:
++ run generate_po.bat
++ start poedit 1.8+
++ open file 'locale/de/ovpn_client.po'
++ catalog -> update from POT -> './messages.pot'
