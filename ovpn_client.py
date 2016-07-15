@@ -1152,25 +1152,43 @@ class Systray:
 			self.dnsmenu = dnsmenu
 			
 			try:
+				self.debug(text="mydns debug 1.1")
 				pridns = self.MYDNS[servername]["primary"]["ip4"]
+				self.debug(text="mydns debug 1.2")
 				priname = self.MYDNS[servername]["primary"]["dnsname"]
-				string = _("Primary DNS: %s (%s)") % (priname,pridns)
+				self.debug(text="mydns debug 1.3")
+				string = "Primary DNS: %s (%s)" % (priname,pridns)
+				self.debug(text="mydns debug 1.4")
 				pridnsm = Gtk.MenuItem(string)
+				self.debug(text="mydns debug 1.5")
 				cbdata = {servername:{"primary":{"ip4":pridns,"dnsname":priname}}}
+				self.debug(text="mydns debug 1.6")
 				pridnsm.connect('button-release-event',self.cb_del_dns,cbdata)
+				self.debug(text="mydns debug 1.7")
 				self.context_menu_servertab.append(pridnsm)
+				self.debug(text="mydns debug 1.8")
 			except:
+				self.debug(text="mydns debug 1.9")
 				pridns = False
 			
 			try:
+				self.debug(text="mydns debug 2.1")
 				secdns = self.MYDNS[servername]["secondary"]["ip4"]
+				self.debug(text="mydns debug 2.2")
 				secname = self.MYDNS[servername]["secondary"]["dnsname"]
-				string = _("Secondary DNS: %s (%s)") % (secname,secdns)
+				self.debug(text="mydns debug 2.3")
+				string = "Secondary DNS: %s (%s)" % (secname,secdns)
+				self.debug(text="mydns debug 2.4")
 				secdnsm = Gtk.MenuItem(string)
+				self.debug(text="mydns debug 2.5")
 				cbdata = {servername:{"secondary":{"ip4":secdns,"dnsname":secname}}}
+				self.debug(text="mydns debug 2.6")
 				secdnsm.connect('button-release-event',self.cb_del_dns,cbdata)
+				self.debug(text="mydns debug 2.7")
 				self.context_menu_servertab.append(secdnsm)
+				self.debug(text="mydns debug 2.8")
 			except:
+				self.debug(text="mydns debug 2.9")
 				secdns = False
 			
 			for name,value in sorted(self.d0wns_DNS.iteritems()):
@@ -1199,7 +1217,8 @@ class Systray:
 					
 					cbdata = {servername:{"primary":{"ip4":dnsip4,"dnsname":name}}}
 					if pridns == dnsip4:
-						setpridns = Gtk.MenuItem(_("Primary DNS '%s' @ %s") % (pridns,servername))
+						string = "Primary DNS '%s' @ %s" % (pridns,servername)
+						setpridns = Gtk.MenuItem(string)
 						setpridns.connect('button-release-event',self.cb_del_dns,cbdata)
 					else:
 						setpridns = Gtk.MenuItem(_("Set Primary DNS"))
@@ -1208,7 +1227,8 @@ class Systray:
 					
 					cbdata = {servername:{"secondary":{"ip4":dnsip4,"dnsname":name}}}
 					if secdns == dnsip4:
-						setsecdns = Gtk.MenuItem(_("Secondary DNS '%s' @ %s") % (secdns,servername))
+						string = "Secondary DNS '%s' @ %s" % (secdns,servername)
+						setsecdns = Gtk.MenuItem(string)
 						setsecdns.connect('button-release-event',self.cb_del_dns,cbdata)
 					else:
 						setsecdns = Gtk.MenuItem(_("Set Secondary DNS"))
@@ -1545,15 +1565,15 @@ class Systray:
 			self.debug(text="def make_systray_options_ipv6_menu: failed")
 
 	def make_systray_firewall_menu(self):
-		self.debug(text="def make_systray_firewall_menu()")
-		try:
-			fwmenu = Gtk.Menu()
-			fwmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_fwmenu")
-			fwm = Gtk.MenuItem(_("Firewall"))
-			fwm.set_submenu(fwmenu)
-			self.systray_menu.append(fwm)
-			
-			if self.STATE_OVPN == False:
+		if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+			self.debug(text="def make_systray_firewall_menu()")
+			try:
+				fwmenu = Gtk.Menu()
+				fwmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_fwmenu")
+				fwm = Gtk.MenuItem(_("Firewall"))
+				fwm.set_submenu(fwmenu)
+				self.systray_menu.append(fwm)
+				
 				if self.NO_WIN_FIREWALL == False:
 					fwrm = Gtk.MenuItem(_("Restore Firewall Backups"))
 					fwrm.connect('enter-notify-event', self.systray_notify_event_enter,"fwrm")
@@ -1567,8 +1587,8 @@ class Systray:
 						fwrentry.connect('enter-notify-event', self.systray_notify_event_enter,"fwrentry")
 						fwrentry.connect('leave-notify-event', self.systray_notify_event_leave,"fwrentry")
 						fwrmenu.append(fwrentry)
-		except:
-			self.debug(text="make_systray_firewall_menu: failed")
+			except:
+				self.debug(text="make_systray_firewall_menu: failed")
 
 	def make_systray_updates_menu(self):
 		self.debug(text="def make_systray_updates_menu()")
