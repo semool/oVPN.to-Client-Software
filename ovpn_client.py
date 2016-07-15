@@ -4551,7 +4551,7 @@ class Systray:
 				else:
 					self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
 					self.debug(text="def load_serverdata_from_remote: AUTH ERROR")
-					self.msgwarn(text=_("API-Login failed! Invalid User-ID or API-Key or Account expired!"))
+					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),"Error!")
 					return False
 			except:
 				self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
@@ -4608,7 +4608,7 @@ class Systray:
 				else:
 					self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
 					self.debug(text="def load_accinfo_from_remote: AUTH ERROR")
-					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def load_accinfo_from_remote"))
+					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),"Error: def load_accinfo_from_remote")
 					return False
 			except:
 				self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
