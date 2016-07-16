@@ -5,7 +5,6 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
 
 from datetime import datetime as datetime
-from Crypto.Cipher import AES
 import gettext
 import locale
 import types
@@ -14,7 +13,6 @@ import platform
 import sys
 import hashlib
 import random
-import base64
 import time
 import zipfile
 import subprocess
@@ -2666,7 +2664,7 @@ class Systray:
 		"""
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
-		
+
 	def cb_settings_options_switch_ipv6(self,event):
 		if not self.OVPN_CONFIGVERSION == "23x":
 			GLib.idle_add(self.cb_change_ipmode1)
