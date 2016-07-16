@@ -2685,6 +2685,13 @@ class Systray:
 			combobox = Gtk.ComboBoxText.new()
 			for theme in self.INSTALLED_THEMES:
 				combobox.append_text(theme)
+			if self.APP_THEME == "ms-windows":
+				active_item = 0
+			if self.APP_THEME == "Adwaita":
+				active_item = 1
+			if self.APP_THEME == "Greybird":
+				active_item = 2
+			combobox.set_active(active_item)
 			combobox.connect('changed',self.cb_theme_switcher_changed)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
