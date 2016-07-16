@@ -1546,23 +1546,24 @@ class Systray:
 			settwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"settwindowentry")
 		except:
 			self.debug(text="def make_systray_bottom_menu: settwindowentry failed")
-		
-		if self.STATE_OVPN == False:
-			try:
-				sep = Gtk.SeparatorMenuItem()
-				self.systray_menu.append(sep)
-				about = Gtk.MenuItem(_("About"))
-				self.systray_menu.append(about)
-				about.connect('button-release-event', self.show_about_dialog)
-				about.connect('leave-notify-event', self.systray_notify_event_leave,"about")
-			except:
-				self.debug(text="def make_systray_bottom_menu: about failed")
-			
-			# add quit item
-			quit = Gtk.MenuItem(_("Quit"))
-			self.systray_menu.append(quit)
-			quit.connect('button-release-event', self.on_closing)
-			quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
+
+		try:
+			sep = Gtk.SeparatorMenuItem()
+			self.systray_menu.append(sep)
+			about = Gtk.MenuItem(_("About"))
+			self.systray_menu.append(about)
+			about.connect('button-release-event', self.show_about_dialog)
+			about.connect('leave-notify-event', self.systray_notify_event_leave,"about")
+		except:
+			self.debug(text="def make_systray_bottom_menu: about failed")
+
+		# add quit item
+		quit = Gtk.MenuItem(_("Quit"))
+		if self.STATE_OVPN == True:
+			quit.set_sensitive(False)
+		self.systray_menu.append(quit)
+		quit.connect('button-release-event', self.on_closing)
+		quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
 
 	def systray_notify_event_leave(self, widget, event, data = None):
 		#self.debug(text="def systray_notify_event_leave() data = '%s'" % (data))
@@ -2272,7 +2273,7 @@ class Systray:
 				self.settings_firewall_backup_restore(self.nbpage4)
 				self.settingsnotebook.append_page(self.nbpage4, Gtk.Label(_(" Backups ")))
 		except:
-			self.debug(text="def show_settingswindow: nbpage1a failed")
+			self.debug(text="def show_settingswindow: nbpage4 failed")
 
 	def settings_firewall_switch_nofw(self,page):
 		try:
@@ -4963,6 +4964,10 @@ class Systray:
 				pass
 			try:
 				self.destroy_accwindow()
+			except:
+				pass
+			try:
+				self.destroy_settingswindow()
 			except:
 				pass
 			try:
