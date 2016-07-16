@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.4-gtk3"
+CLIENTVERSION="v0.5.5-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -246,7 +246,6 @@ class Systray:
 					if self.win_pre2_check_profiles_win():
 						if self.win_pre3_load_profile_dir_vars():
 							if self.check_config_folders():
-								#if self.read_options_file():
 								if self.read_interfaces():
 									if self.write_options_file():
 										return True
@@ -283,26 +282,30 @@ class Systray:
 		else:
 			self.errorquit(text = _("Could not create app_dir: %s") % (self.app_dir))
 
-	def win_pre2_check_profiles_win(self):
-		self.debug(text="def win_pre2_check_profiles_win()")
+	def list_profiles(self):
+		self.debug(text="def list_profiles()")
 		self.profiles_unclean = os.listdir(self.app_dir)
-		self.profiles = list()
+		self.PROFILES = list()
 		for profile in self.profiles_unclean:
 			if profile.isdigit():
-				self.profiles.append(profile)
-		self.profiles_count = len(self.profiles)
-		self.debug(text="def win_pre2_check_profiles_win: profiles_count %s" % (self.profiles_count))
-		if self.profiles_count == 0:
+				self.PROFILES.append(profile)
+		self.PROFILES_COUNT = len(self.PROFILES)
+		self.debug(text="def list_profiles: profiles_count %s" % (self.PROFILES_COUNT))
+		
+	def win_pre2_check_profiles_win(self):
+		self.debug(text="def win_pre2_check_profiles_win()")
+		self.list_profiles()
+		if self.PROFILES_COUNT == 0:
 			self.debug(text="No profiles found")
 			if self.USERID == False:
 				self.debug(text="spawn popup userid = %s" % (self.USERID))
 				self.form_ask_userid()
 				if not self.USERID == False and not self.APIKEY == False:
 					return True
-		elif self.profiles_count == 1 and self.profiles[0] > 1:
-			self.USERID = self.profiles[0]
+		elif self.PROFILES_COUNT == 1 and self.PROFILES[0] > 1:
+			self.USERID = self.PROFILES[0]
 			return True
-		elif self.profiles_count > 1:
+		elif self.PROFILES_COUNT > 1:
 			if not self.select_userid() == True:
 				self.errorquit(text=_("Select User-ID failed!"))
 			return True
@@ -318,7 +321,9 @@ class Systray:
 				pass
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
 		self.opt_file = "%s\\options.cfg" % (self.api_dir)
-		#self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
+		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
+		if os.path.isfile(self.api_cfg):
+			os.remove(self.api_cfg)
 		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
 		self.prx_dir = "%s\\proxy" % (self.api_dir)
 		self.stu_dir = "%s\\stunnel" % (self.api_dir)
@@ -675,7 +680,7 @@ class Systray:
 				parser.set('oVPN','winbackupfirewall','False')
 				parser.set('oVPN','nowinfirewall','False')
 				parser.set('oVPN','nodnschange','False')
-				parser.set('oVPN','winnoaskfwonexit','True')
+				parser.set('oVPN','winnoaskfwonexit','False')
 				parser.set('oVPN','winfwblockonexit','True')
 				parser.set('oVPN','windisableextifondisco','False')
 				parser.set('oVPN','wintapblockoutbound','False')
@@ -928,7 +933,7 @@ class Systray:
 		dialogBox = dialogWindow.get_content_area()
 		liststore = Gtk.ListStore(str)
 		combobox = Gtk.ComboBoxText.new()
-		for userid in self.profiles:
+		for userid in self.PROFILES:
 			self.debug(text="add userid '%s' to combobox" % (userid))
 			combobox.append_text(userid)
 		combobox.connect('changed',self.cb_select_userid)
@@ -940,6 +945,7 @@ class Systray:
 		dialogWindow.destroy()
 		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.app_dir,self.USERID)):
 			return True
+
 
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(text="def on_right_click_mainwindow()")
@@ -1153,7 +1159,6 @@ class Systray:
 		
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
-			# firewall page
 			
 			# def settings_firewall_switch_nofw()
 			if self.NO_WIN_FIREWALL == True:
@@ -1191,7 +1196,6 @@ class Systray:
 			else:
 				self.switch_fwbackupmode.set_active(False)
 			
-			# network page
 			
 			# def settings_network_switch_nodns()
 			if self.NO_DNS_CHANGE == True:
@@ -1363,11 +1367,6 @@ class Systray:
 				self.debug(text="def make_systray_menu: self.load_ovpn_server() failed")
 			
 			try:
-				self.make_systray_updates_menu()
-			except:
-				self.debug(text="def make_systray_updates_menu: self.make_systray_updates_menu() failed")
-			
-			try:
 				self.make_systray_options_menu()
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_options_menu() failed")
@@ -1480,38 +1479,6 @@ class Systray:
 						fwrmenu.append(fwrentry)
 			except:
 				self.debug(text="make_systray_firewall_menu: failed")
-
-	def make_systray_updates_menu(self):
-		self.debug(text="def make_systray_updates_menu()")
-		try:
-			try:
-				updatesmenu = Gtk.Menu()
-				updatesmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_updatesmenu")
-				updatesmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_updatesmenu")
-				updatesm = Gtk.MenuItem(_("Updates"))
-				updatesm.set_submenu(updatesmenu)
-				self.systray_menu.append(updatesm)
-			except:
-				self.debug(text="def make_systray_updates_menu: #1 failed")
-
-			try:
-				resetlogin = Gtk.MenuItem(_("Reset API Login"))
-				resetlogin.connect('button-press-event', self.cb_form_reask_userid)
-				updatesmenu.append(resetlogin)
-				"""
-				if not self.PASSPHRASE == False:
-					clearphram = Gtk.MenuItem(_("Clear Passphrase from RAM"))
-					clearphram.connect('button-press-event', self.cb_clear_passphrase_ram)
-					updatesmenu.append(clearphram)
-					
-					clearphcfg = Gtk.MenuItem(_("Clear Passphrase from CFG"))
-					clearphcfg.connect('button-press-event', self.cb_clear_passphrase_cfg)
-					updatesmenu.append(clearphcfg)
-				"""
-			except:
-				self.debug(text="def make_systray_updates_menu: #6 failed")
-		except:
-			self.debug(text="def make_systray_updates_menu: failed")
 
 	def make_systray_server_menu(self):
 		self.debug(text="def make_systray_server_menu()")
@@ -1687,37 +1654,6 @@ class Systray:
 				except:
 					self.debug(text="starting thread_certdl failed")
 		return False
-
-	def make_progressbar(self):
-		self.debug(text="def make_progressbar()")
-		try:
-			self.progressbarfraction = 0.1
-			self.progresswindow = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
-			self.progresswindow.set_default_size(250,128)
-			#self.progresswindow.set_border_width(6)
-			self.progresswindow.set_title(_("oVPN Server Update"))
-			self.progresswindow.set_icon_from_file(self.systray_icon_syncupdate)
-			self.progressbar = Gtk.ProgressBar()
-			self.progressbar.set_pulse_step(0)
-			self.progresswindow.add(self.progressbar)
-			self.progresswindow.show_all()
-			self.progresswindow.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
-		except:
-			text = "def make_progressbar: failed"
-			self.debug(text=text)
-
-	def set_progressbar(self,text):
-		self.debug(text="def set_progressbar()")
-		try:
-			if self.progressbarfraction < 0.95:
-				self.progressbarfraction += 0.05
-			else:
-				self.progressbarfraction = 0.05
-			self.progressbar.set_text(text)
-			#self.progressbar.set_fraction(self.progressbarfraction)
-		except:
-			text = "def set_progressbar: failed"
-			self.debug(text=text)
 
 	def inThread_timer_check_certdl(self):
 		self.debug(text="def inThread_timer_check_certdl()")
@@ -2372,6 +2308,7 @@ class Systray:
 					nbpage3.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
 					self.settings_updates_normal_conf(nbpage3)
 					self.settings_updates_force_conf(nbpage3)
+					self.settings_updates_api_reset(nbpage3)
 					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage3 failed")
@@ -2762,8 +2699,8 @@ class Systray:
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
-	def cb_settings_updates_normal_conf(self,page):
-		GLib.idle_add(self.cb_check_normal_update, page)
+	def cb_settings_updates_normal_conf(self,event):
+		GLib.idle_add(self.cb_check_normal_update)
 
 	def settings_updates_force_conf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
@@ -2771,9 +2708,17 @@ class Systray:
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
-	def cb_settings_updates_force_conf(self,page):
-		GLib.idle_add(self.cb_force_update, page)
+	def cb_settings_updates_force_conf(self,event):
+		GLib.idle_add(self.cb_force_update)
 
+	def settings_updates_api_reset(self,page):
+		button = Gtk.Button(label=_("Reset API-Login"))
+		button.connect('clicked', self.cb_settings_updates_api_reset)
+		page.pack_start(button,False,False,0)
+		page.pack_start(Gtk.Label(label=""),False,False,0)
+		
+	def cb_settings_updates_api_reset(self,event):
+		GLib.idle_add(self.dialog_apikey)
 
 	def destroy_settingswindow(self):
 		self.debug(text="def destroy_settingswindow()")
@@ -2998,6 +2943,9 @@ class Systray:
 	def kill_openvpn(self):
 		self.debug(text="def kill_openvpn()")
 		if self.STATE_OVPN == False:
+			return False
+		if self.timer_check_certdl_running == True:
+			self.msgwarn(_("Update is running."),_("Please wait!"))
 			return False
 		self.debug(text="def kill_openvpn")
 		try:
@@ -3813,9 +3761,6 @@ class Systray:
 		return True
 
 	def form_ask_userid(self):
-		GLib.idle_add(self.form_ask_userid2)
-
-	def form_ask_userid2(self):
 		self.debug(text="def form_ask_userid()")
 		try:
 			self.dialog_form_ask_userid.destroy()
@@ -3859,16 +3804,16 @@ class Systray:
 			
 			dialogWindow.show_all()
 			
-			dialogWindow.connect("response", self.response_form_ask_userid, useridEntry, apikeyEntry)
-			dialogWindow.connect("close", self.response_form_ask_userid, None, None)
+			dialogWindow.connect("response", self.response_dialog_apikey, useridEntry, apikeyEntry)
+			dialogWindow.connect("close", self.response_dialog_apikey, None, None)
 			dialogWindow.run()
 		except:
 			self.debug(text="def form_ask_userid: Failed")
 
-	def response_form_ask_userid(self, dialog, response_id, useridEntry, apikeyEntry):
-		self.debug(text="response_form_ask_userid()")
+	def response_dialog_apikey(self, dialog, response_id, useridEntry, apikeyEntry):
+		self.debug(text="response_dialog_apikey()")
 		if response_id == Gtk.ResponseType.CANCEL:
-			self.debug(text="def response_form_ask_userid: response_id == Gtk.ResponseType.CANCEL")
+			self.debug(text="def response_dialog_apikey: response_id == Gtk.ResponseType.CANCEL")
 			dialog.destroy()
 			return
 		elif response_id == Gtk.ResponseType.OK:
@@ -3877,13 +3822,11 @@ class Systray:
 			if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum():
 				dialog.destroy()
 				if self.USERID == userid:
-					print "A self.USERID = '%s', userid '%s'" % (self.USERID,userid)
 					self.USERID = userid
 					self.APIKEY = apikey
 					self.write_options_file()
 				else:
 					self.APIKEY = apikey
-					print "B self.USERID = '%s', userid '%s'" % (self.USERID,userid)
 					try:
 						self.api_dir = "%s\\%s" % (self.app_dir,userid)
 						if not os.path.exists(self.api_dir):
@@ -3891,18 +3834,17 @@ class Systray:
 						if self.remove_lock():
 							self.preboot()
 					except:
-						self.debug(text="def response_form_ask_userid: create new userid failed")
-					
+						self.debug(text="def response_dialog_apikey: create new userid failed")
+		elif dialog:
+			dialog.destroy()
 
-
-	def form_reask_userid(self):
-		self.debug(text="def form_reask_userid()")
+	def dialog_apikey(self):
+		self.debug(text="def dialog_apikey()")
 		self.form_ask_userid()
 		if not self.APIKEY == False:
-			self.debug(text="def form_reask_userid: self.APIKEY '-NOT_FALSE-'")
-			return True
-		return False
-
+			self.debug(text="def dialog_apikey: self.APIKEY '-NOT_FALSE-'")
+			self.UPDATE_SWITCH == True
+			
 	def cb_interface_selector_changed(self, combobox):
 		self.debug(text="def cb_interface_selector_changed()")
 		model = combobox.get_model()
@@ -3942,12 +3884,6 @@ class Systray:
 			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
 		return
 
-	def cb_form_reask_userid(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_form_reask_userid()")
-			self.destroy_systray_menu()
-			self.form_reask_userid()
-
 	def check_last_server_update(self,remote_lastupdate):
 		self.debug(text="def check_last_server_update()")
 		if self.LAST_CFG_UPDATE < remote_lastupdate:
@@ -3970,7 +3906,7 @@ class Systray:
 		if self.write_options_file():
 			return True
 
-	def cb_check_normal_update(self,event):
+	def cb_check_normal_update(self):
 		self.debug(text="def cb_check_normal_update()")
 		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
@@ -3988,7 +3924,7 @@ class Systray:
 			return False
 		if self.reset_last_update() == True:
 			self.debug(text="def cb_force_update: self.reset_last_update")
-			self.cb_check_normal_update(event)
+			self.cb_check_normal_update()
 
 	def cb_resetextif(self,widget,event):
 		if event.button == 1:
@@ -4128,7 +4064,7 @@ class Systray:
 			self.read_options_file()
 			self.load_ovpn_server()
 			if len(self.OVPN_SERVER) == 0:
-				self.cb_check_normal_update(event)
+				self.cb_check_normal_update()
 			if self.MAINWINDOW_OPEN == True:
 				self.destroy_mainwindow()
 
@@ -4142,7 +4078,7 @@ class Systray:
 			self.load_ovpn_server()
 			if len(self.OVPN_SERVER) == 0:
 				self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv4+6"))
-				self.cb_check_normal_update(event)
+				self.cb_check_normal_update()
 			if self.MAINWINDOW_OPEN == True:
 				self.destroy_mainwindow()
 
@@ -4157,7 +4093,7 @@ class Systray:
 			self.read_options_file()
 			self.load_ovpn_server()
 			if len(self.OVPN_SERVER) == 0:
-				self.cb_check_normal_update(event)
+				self.cb_check_normal_update()
 			if self.MAINWINDOW_OPEN == True:
 				self.destroy_mainwindow()
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
@@ -4242,7 +4178,6 @@ class Systray:
 				self.body = r.text
 			if self.body == "wait":
 				pass
-				#self.set_progressbar(text="Waiting for oVPN Certificates...")
 			if self.body == "AUTHERROR":
 				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
 				return False
@@ -4252,7 +4187,6 @@ class Systray:
 		
 		except requests.exceptions.ConnectionError as e:
 			text = "def API_REQUEST: requests error on: %s = %s" % (API_ACTION,e)
-			#self.set_progressbar(text)
 			self.debug(text=text)
 			return False
 		except:
@@ -4270,9 +4204,7 @@ class Systray:
 			else:
 				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
 				self.body = False
-				#self.set_progressbar(text)
 				self.timer_check_certdl_running = False
-				#self.progressbar.set_fraction(0)
 				return False
 			
 			if API_ACTION == "getconfigs":
@@ -5162,9 +5094,11 @@ class Systray:
 				self.debug(text="remove lock")
 				return True
 			except:
-				sys.exit()
+				self.debug(text="def remove_lock: remove lock failed!")
+				return False
 		else:
-			sys.exit()
+			self.debug(text="def remove_lock: lock not found!")
+			return False
 
 	def errorquit(self,text):
 		if self.DEBUG == False:
