@@ -24,7 +24,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.5-gtk3"
+CLIENTVERSION="v0.5.6-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1414,14 +1414,6 @@ class Systray:
 			optionsm.set_submenu(self.systray_optionsmenu)
 			
 			self.systray_menu.append(optionsm)
-			
-			try:
-				if self.STATE_OVPN == False:
-					resetextif = Gtk.MenuItem(_("Select Network Adapter"))
-					resetextif.connect('button-press-event', self.cb_resetextif)
-					self.systray_optionsmenu.append(resetextif)
-			except:
-					self.debug(text="def make_systray_options_dnsleak: failed")
 
 			self.make_systray_options_ipv6_menu()
 		except:
@@ -2297,6 +2289,7 @@ class Systray:
 					self.settings_options_switch_accinfo(nbpage2)
 					self.settings_options_switch_srvinfo(nbpage2)
 					self.settings_options_switch_debugmode(nbpage2)
+					self.settings_options_switch_network_adapter(nbpage2)
 					self.settings_options_switch_theme(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
 				except:
@@ -2416,7 +2409,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_fwdontaskonexit = switch
-			checkbox_title = Gtk.Label(label=_("Disable FW question on Quit (default: ON)"))
+			checkbox_title = Gtk.Label(label=_("Disable FW question on Quit (default: OFF)"))
 			if self.WIN_DONT_ASK_FW_EXIT == True:
 				switch.set_active(True)
 			else:
@@ -2678,6 +2671,15 @@ class Systray:
 				os.remove(self.debug_log)
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
+
+	def settings_options_switch_network_adapter(self,page):
+		button = Gtk.Button(label=_("Select Network Adapter"))
+		button.connect('clicked', self.cb_settings_options_switch_network_adapter)
+		page.pack_start(button,False,False,0)
+		page.pack_start(Gtk.Label(label=""),False,False,0)
+		
+	def cb_settings_options_switch_network_adapter(self,event):
+		GLib.idle_add(self.cb_resetextif)
 
 	def settings_options_switch_theme(self,page):
 		try:
@@ -3916,7 +3918,7 @@ class Systray:
 			self.debug(text="def cb_check_normal_update: self.check_remote_update() == True")
 			return True
 
-	def cb_force_update(self,event):
+	def cb_force_update(self):
 		self.debug(text="def cb_force_update()")
 		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
@@ -3926,15 +3928,13 @@ class Systray:
 			self.debug(text="def cb_force_update: self.reset_last_update")
 			self.cb_check_normal_update()
 
-	def cb_resetextif(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_resetextif()")
-			self.destroy_systray_menu()
-			self.WIN_EXT_DEVICE = False
-			self.WIN_TAP_DEVICE = False
-			self.WIN_RESET_EXT_DEVICE = True
-			self.read_interfaces()
-			self.write_options_file()
+	def cb_resetextif(self):
+		self.debug(text="def cb_resetextif()")
+		self.WIN_EXT_DEVICE = False
+		self.WIN_TAP_DEVICE = False
+		self.WIN_RESET_EXT_DEVICE = True
+		self.read_interfaces()
+		self.write_options_file()
 
 	def cb_extserverview(self,widget,event):
 		if event.button == 1:
@@ -4029,7 +4029,9 @@ class Systray:
 			dialogWindow.set_markup(text)
 			dialogBox = dialogWindow.get_content_area()
 			Label = Gtk.Label(label=_("seconds:"))
-			Entry = Gtk.Entry()
+			adjustment = Gtk.Adjustment(0, 66, 3000, 1, 10, 0)
+			Entry = Gtk.SpinButton()
+			Entry.set_adjustment(adjustment)
 			Entry.set_visibility(True)
 			Entry.set_size_request(40,24)
 			dialogBox.pack_start(Label,False,False,0)
