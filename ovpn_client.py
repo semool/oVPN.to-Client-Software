@@ -4030,7 +4030,7 @@ class Systray:
 			dialogWindow.set_markup(text)
 			dialogBox = dialogWindow.get_content_area()
 			Label = Gtk.Label(label=_("seconds:"))
-			adjustment = Gtk.Adjustment(0, 66, 3000, 1, 10, 0)
+			adjustment = Gtk.Adjustment(0, 66, 86400, 1, 10, 0)
 			Entry = Gtk.SpinButton()
 			Entry.set_adjustment(adjustment)
 			Entry.set_visibility(True)
