@@ -1367,16 +1367,6 @@ class Systray:
 				self.debug(text="def make_systray_menu: self.load_ovpn_server() failed")
 
 			try:
-				self.load_firewall_backups()
-				if len(self.FIREWALL_BACKUPS) > 0:
-					self.make_systray_firewall_menu()
-					if len(self.OVPN_SERVER) > 0:
-						sep = Gtk.SeparatorMenuItem()
-						self.systray_menu.append(sep)
-			except:
-				self.debug(text="def make_systray_menu: self.make_systray_firewall_menu() failed")
-
-			try:
 				self.make_systray_server_menu()
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_server_menu() failed")
@@ -1397,32 +1387,6 @@ class Systray:
 		except:
 			self.destroy_systray_menu()
 			self.debug(text="def make_systray_menu: failed")
-
-	def make_systray_firewall_menu(self):
-		if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
-			self.debug(text="def make_systray_firewall_menu()")
-			try:
-				fwmenu = Gtk.Menu()
-				fwmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_fwmenu")
-				fwm = Gtk.MenuItem(_("Firewall"))
-				fwm.set_submenu(fwmenu)
-				self.systray_menu.append(fwm)
-				
-				if self.NO_WIN_FIREWALL == False:
-					fwrm = Gtk.MenuItem(_("Restore Firewall Backups"))
-					fwrm.connect('enter-notify-event', self.systray_notify_event_enter,"fwrm")
-					fwrmenu = Gtk.Menu()
-					fwrm.set_submenu(fwrmenu)
-					fwmenu.append(fwrm)
-					
-					for file in self.FIREWALL_BACKUPS:
-						fwrentry = Gtk.MenuItem('%s'%(file))
-						fwrentry.connect('button-release-event', self.cb_restore_firewallbackup, file)
-						fwrentry.connect('enter-notify-event', self.systray_notify_event_enter,"fwrentry")
-						fwrentry.connect('leave-notify-event', self.systray_notify_event_leave,"fwrentry")
-						fwrmenu.append(fwrentry)
-			except:
-				self.debug(text="make_systray_firewall_menu: failed")
 
 	def make_systray_server_menu(self):
 		self.debug(text="def make_systray_server_menu()")
@@ -2234,6 +2198,15 @@ class Systray:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
 
 				try:
+					nbpage1a = Gtk.VBox(False,spacing=2)
+					nbpage1a.set_border_width(8)
+					nbpage1a.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
+					self.settings_firewall_backup_restore(nbpage1a)
+					self.settingsnotebook.append_page(nbpage1a, Gtk.Label(_(" Backups ")))
+				except:
+					self.debug(text="def show_settingswindow: nbpage1a failed")
+
+				try:
 					nbpage2 = Gtk.VBox(False,spacing=2)
 					nbpage2.set_border_width(8)
 					nbpage2.pack_start(Gtk.Label(label=_("Options\n")),False,False,0)
@@ -2242,7 +2215,6 @@ class Systray:
 					self.settings_options_switch_srvinfo(nbpage2)
 					self.settings_options_switch_debugmode(nbpage2)
 					self.settings_options_switch_network_adapter(nbpage2)
-					self.settings_options_switch_ipv6(nbpage2)
 					self.settings_options_switch_theme(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
 				except:
@@ -2254,6 +2226,7 @@ class Systray:
 					nbpage3.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
 					self.settings_updates_normal_conf(nbpage3)
 					self.settings_updates_force_conf(nbpage3)
+					self.settings_options_switch_ipv6(nbpage3)
 					self.settings_updates_api_reset(nbpage3)
 					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
 				except:
@@ -2514,7 +2487,35 @@ class Systray:
 			self.win_enable_ext_interface()
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
-		
+
+	def settings_firewall_backup_restore(self, page):
+		self.load_firewall_backups()
+		if len(self.FIREWALL_BACKUPS) == 0:
+			button = Gtk.Button(label=_("No Firewall Backups found!"))
+			button.set_sensitive(False)
+			page.pack_start(button,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		elif self.NO_WIN_FIREWALL == True:
+			button = Gtk.Button(label=_("Cannot restore Backups when use Windows Firewall is off!"))
+			button.set_sensitive(False)
+			page.pack_start(button,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		else:
+			if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+				for file in self.FIREWALL_BACKUPS:
+					button = Gtk.Button(label=("%s")%(file))
+					button.connect('clicked', self.cb_settings_firewall_backup_restore, file)
+					page.pack_start(button,False,False,0)
+					page.pack_start(Gtk.Label(label=""),False,False,0)
+			else:
+				button = Gtk.Button(label=_("Cannot restore Backups when oVPN is connected!"))
+				button.set_sensitive(False)
+				page.pack_start(button,False,False,0)
+				page.pack_start(Gtk.Label(label=""),False,False,0)
+
+	def cb_settings_firewall_backup_restore(self, file):
+		GLib.idle_add(self.cb_restore_firewallbackup, file)
+
 	def settings_options_switch_updateovpnonstart(self,page):
 		try:
 			switch = Gtk.Switch()
@@ -2650,15 +2651,15 @@ class Systray:
 
 	def settings_options_switch_ipv6(self,page):
 		if not self.OVPN_CONFIGVERSION == "23x":
-			button = Gtk.Button(label=_("Select: IPv4 Entry Server with Exit to IPv4 (standard)"))
+			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
 			button.connect('clicked', self.cb_settings_options_switch_ipv6)
 		if not self.OVPN_CONFIGVERSION  == "23x46":
-			button = Gtk.Button(label=_("Select: IPv4 Entry Server with Exits to IPv4 + IPv6"))
+			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
 			button.connect('clicked', self.cb_settings_options_switch_ipv6)
 		"""
 		 *** fixme need isValueIPv6 first! ***
 		if not self.OVPN_CONFIGVERSION == "23x64":
-			button = Gtk.Button(label=_("Select: IPv6 Entry Server with Exits to IPv6 + IPv4"))
+			button = Gtk.Button(label=_("Use IPv6 Entry Server with Exits to IPv6 + IPv4"))
 			button.connect('clicked', self.cb_settings_options_switch_ipv6)
 		"""
 		page.pack_start(button,False,False,0)
@@ -4088,16 +4089,14 @@ class Systray:
 			self.destroy_mainwindow()
 		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
 
-	def cb_restore_firewallbackup(self,widget,event,file):
-		if event.button == 1:
-			self.debug(text="def cb_restore_firewallbackup()")
-			self.destroy_systray_menu()
-			fwbak = "%s\\%s" % (self.pfw_dir,file)
-			if os.path.isfile(fwbak):
-				self.debug(text="def cb_restore_firewallbackup: %s" % (fwbak))
-				self.win_firewall_export_on_start()
-				self.NETSH_CMDLIST.append('advfirewall import "%s"' % (fwbak))
-				return self.win_join_netsh_cmd()
+	def cb_restore_firewallbackup(self,file):
+		self.debug(text="def cb_restore_firewallbackup()")
+		fwbak = "%s\\%s" % (self.pfw_dir,file)
+		if os.path.isfile(fwbak):
+			self.debug(text="def cb_restore_firewallbackup: %s" % (fwbak))
+			self.win_firewall_export_on_start()
+			self.NETSH_CMDLIST.append('advfirewall import "%s"' % (fwbak))
+			return self.win_join_netsh_cmd()
 
 	def delete_dir(self,path):
 		self.debug(text="def delete_dir()")
