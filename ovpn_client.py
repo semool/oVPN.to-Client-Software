@@ -1365,23 +1365,17 @@ class Systray:
 				self.load_ovpn_server()
 			except:
 				self.debug(text="def make_systray_menu: self.load_ovpn_server() failed")
-			
-			try:
-				self.make_systray_options_menu()
-			except:
-				self.debug(text="def make_systray_menu: self.make_systray_options_menu() failed")
-			
+
 			try:
 				self.load_firewall_backups()
 				if len(self.FIREWALL_BACKUPS) > 0:
 					self.make_systray_firewall_menu()
+					if len(self.OVPN_SERVER) > 0:
+						sep = Gtk.SeparatorMenuItem()
+						self.systray_menu.append(sep)
 			except:
 				self.debug(text="def make_systray_menu: self.make_systray_firewall_menu() failed")
-			
-			if len(self.OVPN_SERVER) > 0:
-				sep = Gtk.SeparatorMenuItem()
-				self.systray_menu.append(sep)
-			
+
 			try:
 				self.make_systray_server_menu()
 			except:
@@ -1403,48 +1397,6 @@ class Systray:
 		except:
 			self.destroy_systray_menu()
 			self.debug(text="def make_systray_menu: failed")
-
-	def make_systray_options_menu(self):
-		self.debug(text="def make_systray_options_menu()")
-		try:
-			self.systray_optionsmenu = Gtk.Menu()
-			self.systray_optionsmenu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_optionsmenu")
-			self.systray_optionsmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_optionsmenu")
-			optionsm = Gtk.MenuItem(_("Options"))
-			optionsm.set_submenu(self.systray_optionsmenu)
-			
-			self.systray_menu.append(optionsm)
-
-			self.make_systray_options_ipv6_menu()
-		except:
-			self.debug(text="def make_systray_options_menu failed")
-
-	def make_systray_options_ipv6_menu(self):
-		self.debug(text="def make_systray_options_ipv6_menu()")
-		try:
-			ipv6menu = Gtk.Menu()
-			ipv6menu.connect('enter-notify-event', self.systray_notify_event_enter,"sub_ipv6menu")
-			ipv6menu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_ipv6menu")
-			ipv6m = Gtk.MenuItem(_("IPv6 Options"))
-			ipv6m.set_submenu(ipv6menu)
-			self.systray_optionsmenu.append(ipv6m)
-			if not self.OVPN_CONFIGVERSION == "23x":
-				ipv6entry1 = Gtk.MenuItem(_("Select: IPv4 Entry Server with Exit to IPv4 (standard)"))
-				ipv6entry1.connect('button-press-event', self.cb_change_ipmode1)
-				ipv6menu.append(ipv6entry1)
-			if not self.OVPN_CONFIGVERSION  == "23x46":
-				ipv6entry2 = Gtk.MenuItem(_("Select: IPv4 Entry Server with Exits to IPv4 + IPv6"))
-				ipv6entry2.connect('button-press-event', self.cb_change_ipmode2)
-				ipv6menu.append(ipv6entry2)
-			"""
-			 *** fixme need isValueIPv6 first! ***
-			if not self.OVPN_CONFIGVERSION == "23x64":
-				ipv6entry3 = Gtk.MenuItem(_("Select: IPv6 Entry Server with Exits to IPv6 + IPv4"))
-				ipv6entry3.connect('button-press-event', self.cb_change_ipmode3)
-				ipv6menu.append(ipv6entry3)
-			"""
-		except:
-			self.debug(text="def make_systray_options_ipv6_menu: failed")
 
 	def make_systray_firewall_menu(self):
 		if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
@@ -2290,6 +2242,7 @@ class Systray:
 					self.settings_options_switch_srvinfo(nbpage2)
 					self.settings_options_switch_debugmode(nbpage2)
 					self.settings_options_switch_network_adapter(nbpage2)
+					self.settings_options_switch_ipv6(nbpage2)
 					self.settings_options_switch_theme(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
 				except:
@@ -2694,6 +2647,33 @@ class Systray:
 		
 	def cb_settings_options_switch_network_adapter(self,event):
 		GLib.idle_add(self.cb_resetextif)
+
+	def settings_options_switch_ipv6(self,page):
+		if not self.OVPN_CONFIGVERSION == "23x":
+			button = Gtk.Button(label=_("Select: IPv4 Entry Server with Exit to IPv4 (standard)"))
+			button.connect('clicked', self.cb_settings_options_switch_ipv6)
+		if not self.OVPN_CONFIGVERSION  == "23x46":
+			button = Gtk.Button(label=_("Select: IPv4 Entry Server with Exits to IPv4 + IPv6"))
+			button.connect('clicked', self.cb_settings_options_switch_ipv6)
+		"""
+		 *** fixme need isValueIPv6 first! ***
+		if not self.OVPN_CONFIGVERSION == "23x64":
+			button = Gtk.Button(label=_("Select: IPv6 Entry Server with Exits to IPv6 + IPv4"))
+			button.connect('clicked', self.cb_settings_options_switch_ipv6)
+		"""
+		page.pack_start(button,False,False,0)
+		page.pack_start(Gtk.Label(label=""),False,False,0)
+		
+	def cb_settings_options_switch_ipv6(self,event):
+		if not self.OVPN_CONFIGVERSION == "23x":
+			GLib.idle_add(self.cb_change_ipmode1)
+		if not self.OVPN_CONFIGVERSION  == "23x46":
+			GLib.idle_add(self.cb_change_ipmode2)
+		"""
+		 *** fixme need isValueIPv6 first! ***
+		if not self.OVPN_CONFIGVERSION == "23x64":
+			GLib.idle_add(self.cb_change_ipmode3)
+		"""
 
 	def settings_options_switch_theme(self,page):
 		try:
@@ -4071,48 +4051,42 @@ class Systray:
 			else:
 				return False
 
-	def cb_change_ipmode1(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_change_ipmode1()")
-			self.destroy_systray_menu()
-			self.OVPN_CONFIGVERSION = "23x"
-			self.write_options_file()
-			self.read_options_file()
-			self.load_ovpn_server()
-			if len(self.OVPN_SERVER) == 0:
-				self.cb_check_normal_update()
-			if self.MAINWINDOW_OPEN == True:
-				self.destroy_mainwindow()
+	def cb_change_ipmode1(self):
+		self.debug(text="def cb_change_ipmode1()")
+		self.OVPN_CONFIGVERSION = "23x"
+		self.write_options_file()
+		self.read_options_file()
+		self.load_ovpn_server()
+		if len(self.OVPN_SERVER) == 0:
+			self.cb_check_normal_update()
+		if self.MAINWINDOW_OPEN == True:
+			self.destroy_mainwindow()
 
-	def cb_change_ipmode2(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_change_ipmode2()")
-			self.destroy_systray_menu()
-			self.OVPN_CONFIGVERSION = "23x46"
-			self.write_options_file()
-			self.read_options_file()
-			self.load_ovpn_server()
-			if len(self.OVPN_SERVER) == 0:
-				self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv4+6"))
-				self.cb_check_normal_update()
-			if self.MAINWINDOW_OPEN == True:
-				self.destroy_mainwindow()
+	def cb_change_ipmode2(self):
+		self.debug(text="def cb_change_ipmode2()")
+		self.OVPN_CONFIGVERSION = "23x46"
+		self.write_options_file()
+		self.read_options_file()
+		self.load_ovpn_server()
+		if len(self.OVPN_SERVER) == 0:
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv4+6"))
+			self.cb_check_normal_update()
+		if self.MAINWINDOW_OPEN == True:
+			self.destroy_mainwindow()
 
 	# *** fixme: need isValueIPv6 first! ***
-	def cb_change_ipmode3(self,widget,event):
-		if event.button == 1:
-			self.debug(text="def cb_change_ipmode3()")
-			return True
-			self.destroy_systray_menu()
-			self.OVPN_CONFIGVERSION = "23x64"
-			self.write_options_file()
-			self.read_options_file()
-			self.load_ovpn_server()
-			if len(self.OVPN_SERVER) == 0:
-				self.cb_check_normal_update()
-			if self.MAINWINDOW_OPEN == True:
-				self.destroy_mainwindow()
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
+	def cb_change_ipmode3(self):
+		self.debug(text="def cb_change_ipmode3()")
+		return True
+		self.OVPN_CONFIGVERSION = "23x64"
+		self.write_options_file()
+		self.read_options_file()
+		self.load_ovpn_server()
+		if len(self.OVPN_SERVER) == 0:
+			self.cb_check_normal_update()
+		if self.MAINWINDOW_OPEN == True:
+			self.destroy_mainwindow()
+		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
 
 	def cb_restore_firewallbackup(self,widget,event,file):
 		if event.button == 1:
