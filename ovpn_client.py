@@ -2326,6 +2326,8 @@ class Systray:
 			else:
 				switch.set_active(True)
 			switch.connect("notify::state", self.cb_switch_winfirewall)
+			if self.STATE_OVPN == True:
+				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2387,6 +2389,8 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwblockonexit)
+			if self.STATE_OVPN == True:
+				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2443,6 +2447,8 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwresetonconnect)
+			if self.STATE_OVPN == True:
+				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2473,6 +2479,8 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwbackupmode)
+			if self.STATE_OVPN == True:
+				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2503,6 +2511,8 @@ class Systray:
 			else:
 				switch.set_active(True)
 			switch.connect("notify::state", self.cb_switch_nodns)
+			if self.STATE_OVPN == True:
+				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2675,6 +2685,8 @@ class Systray:
 	def settings_options_switch_network_adapter(self,page):
 		button = Gtk.Button(label=_("Select Network Adapter"))
 		button.connect('clicked', self.cb_settings_options_switch_network_adapter)
+		if self.STATE_OVPN == True:
+			button.set_sensitive(False)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 		
