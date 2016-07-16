@@ -1168,7 +1168,10 @@ class Systray:
 				self.switch_fwbackupmode.set_sensitive(False)
 				self.switch_nodns.set_sensitive(False)
 				self.button_switch_network_adapter.set_sensitive(False)
-				self.settingsnotebook.remove(self.nbpage4)
+				try:
+					self.settingsnotebook.remove(self.nbpage4)
+				except:
+					pass
 			else:
 				self.switch_fw.set_sensitive(True)
 				self.switch_fwblockonexit.set_sensitive(True)
@@ -1177,13 +1180,19 @@ class Systray:
 				self.switch_fwbackupmode.set_sensitive(True)
 				self.switch_nodns.set_sensitive(True)
 				self.button_switch_network_adapter.set_sensitive(True)
-				self.show_hide_backup_window()
-				self.settingswindow.show_all()
+				try:
+					self.show_hide_backup_window()
+					self.settingswindow.show_all()
+				except:
+					pass
 
 			# def settings_firewall_switch_nofw()
 			if self.NO_WIN_FIREWALL == True:
 				self.switch_fw.set_active(False)
-				self.settingsnotebook.remove(self.nbpage4)
+				try:
+					self.settingsnotebook.remove(self.nbpage4)
+				except:
+					pass
 			else:
 				self.switch_fw.set_active(True)
 
