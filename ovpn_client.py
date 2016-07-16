@@ -351,7 +351,7 @@ class Systray:
 		self.ico_dir = "%s\\ico" % (self.bin_dir)
 		if not os.path.isdir(self.ico_dir):
 			return False
-		self.app_icon = "%s\\shield_exe.ico" % (self.ico_dir)
+		self.app_icon = "%s\\shield_exe_inapp.ico" % (self.ico_dir)
 		self.systray_icon_connected = "%s\\292.ico" % (self.ico_dir)
 		self.systray_icon_disconnected = "%s\\263.ico" % (self.ico_dir)
 		self.systray_icon_disconnected_traymenu = "%s\\263a.ico" % (self.ico_dir)
