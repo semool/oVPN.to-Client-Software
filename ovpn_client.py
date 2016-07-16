@@ -2419,6 +2419,8 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwdontaskonexit)
+			if self.STATE_OVPN == True:
+				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
