@@ -2272,7 +2272,7 @@ class Systray:
 				self.settings_firewall_backup_restore(self.nbpage4)
 				self.settingsnotebook.append_page(self.nbpage4, Gtk.Label(_(" Backups ")))
 		except:
-			self.debug(text="def show_settingswindow: nbpage1a failed")
+			self.debug(text="def show_settingswindow: nbpage4 failed")
 
 	def settings_firewall_switch_nofw(self,page):
 		try:
@@ -4963,6 +4963,10 @@ class Systray:
 				pass
 			try:
 				self.destroy_accwindow()
+			except:
+				pass
+			try:
+				self.destroy_settingswindow()
 			except:
 				pass
 			try:
