@@ -1160,6 +1160,23 @@ class Systray:
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
 			
+			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+				self.switch_fw.set_sensitive(False)
+				self.switch_fwblockonexit.set_sensitive(False)
+				self.switch_fwdontaskonexit.set_sensitive(False)
+				self.switch_fwresetonconnect.set_sensitive(False)
+				self.switch_fwbackupmode.set_sensitive(False)
+				self.switch_nodns.set_sensitive(False)
+				self.button_switch_network_adapter.set_sensitive(False)
+			else:
+				self.switch_fw.set_sensitive(True)
+				self.switch_fwblockonexit.set_sensitive(True)
+				self.switch_fwdontaskonexit.set_sensitive(True)
+				self.switch_fwresetonconnect.set_sensitive(True)
+				self.switch_fwbackupmode.set_sensitive(True)
+				self.switch_nodns.set_sensitive(True)
+				self.button_switch_network_adapter.set_sensitive(True)
+				
 			# def settings_firewall_switch_nofw()
 			if self.NO_WIN_FIREWALL == True:
 				self.switch_fw.set_active(False)
@@ -1318,7 +1335,7 @@ class Systray:
 		if self.systray_timer2_running == False:
 			#self.debug(text="def systray_timer: GLib.idle_add(self.systray_timer2)")
 			GLib.idle_add(self.systray_timer2)
-		time.sleep(1)
+		time.sleep(0.5)
 		thread = threading.Thread(target=self.systray_timer)
 		thread.daemon = True
 		thread.start()
@@ -2231,7 +2248,7 @@ class Systray:
 					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage3 failed")
-				
+				self.UPDATE_SWITCH = True
 				self.settingswindow.show_all()
 				self.SETTINGSWINDOW_OPEN = True
 				return True
@@ -2252,8 +2269,6 @@ class Systray:
 			else:
 				switch.set_active(True)
 			switch.connect("notify::state", self.cb_switch_winfirewall)
-			if self.STATE_OVPN == True:
-				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2315,8 +2330,6 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwblockonexit)
-			if self.STATE_OVPN == True:
-				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2345,8 +2358,6 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwdontaskonexit)
-			if self.STATE_OVPN == True:
-				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2375,8 +2386,6 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwresetonconnect)
-			if self.STATE_OVPN == True:
-				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2407,8 +2416,6 @@ class Systray:
 			else:
 				switch.set_active(False)
 			switch.connect("notify::state", self.cb_switch_fwbackupmode)
-			if self.STATE_OVPN == True:
-				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2439,8 +2446,6 @@ class Systray:
 			else:
 				switch.set_active(True)
 			switch.connect("notify::state", self.cb_switch_nodns)
-			if self.STATE_OVPN == True:
-				switch.set_sensitive(False)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
@@ -2640,9 +2645,8 @@ class Systray:
 
 	def settings_options_switch_network_adapter(self,page):
 		button = Gtk.Button(label=_("Select Network Adapter"))
+		self.button_switch_network_adapter = button
 		button.connect('clicked', self.cb_settings_options_switch_network_adapter)
-		if self.STATE_OVPN == True:
-			button.set_sensitive(False)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 		
@@ -2927,6 +2931,7 @@ class Systray:
 			return
 		else:
 			self.inThread_jump_server_running = True
+			self.UPDATE_SWITCH = True
 			self.debug(text="def inThread_jump_server: server %s" % (server))
 			if self.STATE_OVPN == True:
 				self.kill_openvpn()
@@ -3095,6 +3100,7 @@ class Systray:
 		self.OVPN_PING_STAT = 0
 		self.OVPN_PING_LAST = 0
 		self.OVPN_PING = list()
+		self.UPDATE_SWITCH = True
 		try:
 			if os.path.isfile(self.ovpn_sessionlog):
 				os.remove(self.ovpn_sessionlog)
@@ -3840,7 +3846,7 @@ class Systray:
 		self.form_ask_userid()
 		if not self.APIKEY == False:
 			self.debug(text="def dialog_apikey: self.APIKEY '-NOT_FALSE-'")
-			self.UPDATE_SWITCH == True
+			self.UPDATE_SWITCH = True
 			
 	def cb_interface_selector_changed(self, combobox):
 		self.debug(text="def cb_interface_selector_changed()")
