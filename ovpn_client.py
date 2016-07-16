@@ -1156,10 +1156,10 @@ class Systray:
 				self.LAST_MSGWARN_WINDOW = 0
 		except:
 			pass
-		
+
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
-			
+
 			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 				self.switch_fw.set_sensitive(False)
 				self.switch_fwblockonexit.set_sensitive(False)
@@ -1168,6 +1168,10 @@ class Systray:
 				self.switch_fwbackupmode.set_sensitive(False)
 				self.switch_nodns.set_sensitive(False)
 				self.button_switch_network_adapter.set_sensitive(False)
+				try:
+					self.settingsnotebook.remove(self.nbpage4)
+				except:
+					pass
 			else:
 				self.switch_fw.set_sensitive(True)
 				self.switch_fwblockonexit.set_sensitive(True)
@@ -1176,56 +1180,64 @@ class Systray:
 				self.switch_fwbackupmode.set_sensitive(True)
 				self.switch_nodns.set_sensitive(True)
 				self.button_switch_network_adapter.set_sensitive(True)
-				
+				try:
+					self.show_hide_backup_window()
+					self.settingswindow.show_all()
+				except:
+					pass
+
 			# def settings_firewall_switch_nofw()
 			if self.NO_WIN_FIREWALL == True:
 				self.switch_fw.set_active(False)
+				try:
+					self.settingsnotebook.remove(self.nbpage4)
+				except:
+					pass
 			else:
 				self.switch_fw.set_active(True)
-			
+
 			# def settings_firewall_switch_tapblockoutbound()
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.switch_tapblockoutbound.set_active(True)
 			else:
 				self.switch_tapblockoutbound.set_active(False)
-			
+
 			# def settings_firewall_switch_fwblockonexit()
 			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 				self.switch_fwblockonexit.set_active(True)
 			else:
 				self.switch_fwblockonexit.set_active(False)
-			
+
 			# def settings_firewall_switch_fwdontaskonexit()
 			if self.WIN_DONT_ASK_FW_EXIT == True:
 				self.switch_fwdontaskonexit.set_active(True)
 			else:
 				self.switch_fwdontaskonexit.set_active(False)
-			
+
 			# def settings_firewall_switch_fwresetonconnect()
 			if self.WIN_RESET_FIREWALL == True:
 				self.switch_fwresetonconnect.set_active(True)
 			else:
 				self.switch_fwresetonconnect.set_active(False)
-				
+
 			# def settings_firewall_switch_fwbackupmode()
 			if self.WIN_BACKUP_FIREWALL == True:
 				self.switch_fwbackupmode.set_active(True)
 			else:
 				self.switch_fwbackupmode.set_active(False)
-			
-			
+
 			# def settings_network_switch_nodns()
 			if self.NO_DNS_CHANGE == True:
 				self.switch_nodns.set_active(False)
 			else:
 				self.switch_nodns.set_active(True)
-			
+
 			# settings_network_switch_disableextifondisco
 			if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
 				self.switch_disableextifondisco.set_active(True)
 			else:
 				self.switch_disableextifondisco.set_active(False)
-			
+
 			# settings_options_switch_updateovpnonstart
 			if self.UPDATEOVPNONSTART == True:
 				self.switch_updateovpnonstart.set_active(True)
@@ -1249,7 +1261,7 @@ class Systray:
 				self.switch_debugmode.set_active(True)
 			else:
 				self.switch_debugmode.set_active(False)
-			
+
 			# end switches update
 			self.UPDATE_SWITCH = False
 		else:
@@ -2215,15 +2227,6 @@ class Systray:
 					self.debug(text="def show_settingswindow: nbpage1 failed")
 
 				try:
-					nbpage1a = Gtk.VBox(False,spacing=2)
-					nbpage1a.set_border_width(8)
-					nbpage1a.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
-					self.settings_firewall_backup_restore(nbpage1a)
-					self.settingsnotebook.append_page(nbpage1a, Gtk.Label(_(" Backups ")))
-				except:
-					self.debug(text="def show_settingswindow: nbpage1a failed")
-
-				try:
 					nbpage2 = Gtk.VBox(False,spacing=2)
 					nbpage2.set_border_width(8)
 					nbpage2.pack_start(Gtk.Label(label=_("Options\n")),False,False,0)
@@ -2258,6 +2261,18 @@ class Systray:
 				return False
 		else:
 			self.destroy_settingswindow()
+
+	def show_hide_backup_window(self):
+		try:
+			self.load_firewall_backups()
+			if len(self.FIREWALL_BACKUPS) > 0 and self.NO_WIN_FIREWALL == False and self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+				self.nbpage4 = Gtk.VBox(False,spacing=2)
+				self.nbpage4.set_border_width(8)
+				self.nbpage4.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
+				self.settings_firewall_backup_restore(self.nbpage4)
+				self.settingsnotebook.append_page(self.nbpage4, Gtk.Label(_(" Backups ")))
+		except:
+			self.debug(text="def show_settingswindow: nbpage1a failed")
 
 	def settings_firewall_switch_nofw(self,page):
 		try:
@@ -2494,29 +2509,11 @@ class Systray:
 		self.UPDATE_SWITCH = True
 
 	def settings_firewall_backup_restore(self, page):
-		self.load_firewall_backups()
-		if len(self.FIREWALL_BACKUPS) == 0:
-			button = Gtk.Button(label=_("No Firewall Backups found!"))
-			button.set_sensitive(False)
+		for file in self.FIREWALL_BACKUPS:
+			button = Gtk.Button(label=("%s")%(file))
+			button.connect('clicked', self.cb_settings_firewall_backup_restore, file)
 			page.pack_start(button,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
-		elif self.NO_WIN_FIREWALL == True:
-			button = Gtk.Button(label=_("Cannot restore Backups when use Windows Firewall is off!"))
-			button.set_sensitive(False)
-			page.pack_start(button,False,False,0)
-			page.pack_start(Gtk.Label(label=""),False,False,0)
-		else:
-			if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
-				for file in self.FIREWALL_BACKUPS:
-					button = Gtk.Button(label=("%s")%(file))
-					button.connect('clicked', self.cb_settings_firewall_backup_restore, file)
-					page.pack_start(button,False,False,0)
-					page.pack_start(Gtk.Label(label=""),False,False,0)
-			else:
-				button = Gtk.Button(label=_("Cannot restore Backups when oVPN is connected!"))
-				button.set_sensitive(False)
-				page.pack_start(button,False,False,0)
-				page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_firewall_backup_restore(self, file):
 		GLib.idle_add(self.cb_restore_firewallbackup, file)
