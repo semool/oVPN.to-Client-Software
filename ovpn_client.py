@@ -1041,9 +1041,7 @@ class Systray:
 		try:
 			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
 			if len(self.d0wns_DNS) == 0:
-				self.load_d0wns_dns_from_remote()
-				self.debug(text="len(self.d0wns_DNS) == 0")
-				return False
+				self.read_d0wns_dns()
 			
 			dnsmenu = Gtk.Menu()
 			dnsm = Gtk.MenuItem(_("Change DNS"))
@@ -2473,6 +2471,7 @@ class Systray:
 		self.debug(text="def cb_switch_nodns()")
 		if switch.get_active():
 			self.NO_DNS_CHANGE = False
+			self.read_d0wns_dns()
 		else:
 			self.NO_DNS_CHANGE = True
 			self.win_netsh_restore_dns_from_backup()
@@ -4834,6 +4833,8 @@ class Systray:
 				return True
 			except:
 				self.debug(text="def read_d0wns_dns: failed!")
+		else:
+			self.debug(text="def read_d0wns_dns: file '%s' not found" % (self.dns_d0wntxt))
 
 	def check_d0wns_dnscryptports(self,value):
 		#self.debug(text="def check_d0wns_dnscryptports()")
