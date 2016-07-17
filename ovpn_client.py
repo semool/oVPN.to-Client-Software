@@ -695,6 +695,7 @@ class Systray:
 				parser.set('oVPN','wintapblockoutbound','False')
 				parser.set('oVPN','loadaccinfo','False')
 				parser.set('oVPN','loaddataevery','900')
+				parser.set('oVPN','disablequitentry','True')
 				parser.set('oVPN','mydns','False')
 				parser.write(cfg)
 				cfg.close()
@@ -742,6 +743,7 @@ class Systray:
 			parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 			parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
 			parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
+			parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 			parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
 			parser.write(cfg)
 			cfg.close()
@@ -2270,12 +2272,13 @@ class Systray:
 					nbpage2 = Gtk.VBox(False,spacing=2)
 					nbpage2.set_border_width(8)
 					nbpage2.pack_start(Gtk.Label(label=_("Options\n")),False,False,0)
+					self.settings_options_button_networkadapter(nbpage2)
 					self.settings_options_switch_updateovpnonstart(nbpage2)
 					self.settings_options_switch_accinfo(nbpage2)
 					self.settings_options_switch_srvinfo(nbpage2)
 					self.settings_options_switch_debugmode(nbpage2)
-					self.settings_options_button_networkadapter(nbpage2)
 					self.settings_options_combobox_theme(nbpage2)
+					self.settings_options_switch_disablequit(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
@@ -2738,6 +2741,30 @@ class Systray:
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_options_combobox_theme: failed")
+
+	def settings_options_switch_disablequit(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_disablequit = switch
+			checkbox_title = Gtk.Label(label=_("Disable About and Quit on Connection (default: ON)"))
+			if self.DISABLE_QUIT_ENTRY == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_settings_options_switch_disablequit)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_options_switch_disablequit: failed")
+
+	def cb_settings_options_switch_disablequit(self,switch,gparam ):
+		self.debug(text="def cb_settings_options_switch_disablequit()")
+		if switch.get_active():
+			self.DISABLE_QUIT_ENTRY = True
+		else:
+			self.DISABLE_QUIT_ENTRY = False
+		self.write_options_file()
 
 	def settings_updates_button_normalconf(self,page):
 		button = Gtk.Button(label=_("Normal Config Update"))
