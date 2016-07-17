@@ -3385,13 +3385,11 @@ class Systray:
 							self.OVPN_PING_DEAD_COUNT = 0
 							#self.debug(text="def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
 						else:
-							self.OVPN_PING_LAST = -2
-							self.OVPN_PING_DEAD_COUNT += 1
+							self.set_ovpn_ping_dead()
 				except:
-					self.OVPN_PING_LAST = -2
-					self.NEXT_PING_EXEC = int(time.time())+5
-					self.OVPN_PING_DEAD_COUNT += 1
+					self.set_ovpn_ping_dead()
 			except:
+				self.set_ovpn_ping_dead()
 				self.debug(text="def inThread_timer_ovpn_ping: failed")
 			time.sleep(0.5)
 			try:
@@ -3401,6 +3399,11 @@ class Systray:
 				return True
 			except:
 				self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
+
+	def set_ovpn_ping_dead(self):
+		self.OVPN_PING_LAST = -2
+		self.NEXT_PING_EXEC = int(time.time())+5
+		self.OVPN_PING_DEAD_COUNT += 1
 
 	def get_ovpn_ping(self):
 		#self.debug(text="def get_ovpn_ping()")
