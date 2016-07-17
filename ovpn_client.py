@@ -50,7 +50,7 @@ class Systray:
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 		self.window.connect("delete-event", Gtk.main_quit)
-		self.init_localization()
+		self.init_localization(None)
 		if self.preboot():
 			self.init_theme()
 			self.tray.connect('popup-menu', self.on_right_click)
@@ -77,9 +77,9 @@ class Systray:
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.APP_LANGUAGE = "en"
-		self.FORCE_APP_LANGUAGE = False
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
+		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
@@ -468,11 +468,24 @@ class Systray:
 						self.APIKEY = APIKEY
 				except:
 					pass
-
+				
 				try:
 					self.DEBUG = parser.getboolean('oVPN','debugmode')
 				except:
 					pass
+				
+				try:
+					APPLANG = parser.get('oVPN','applanguage')
+					self.debug(text="APPLANG = parser.get(oVPN,'%s') " % (APPLANG))
+					if APPLANG in self.INSTALLED_LANGUAGES:
+						self.debug(text="APPLANG '%s' in self.INSTALLED_LANGUAGES" % (APPLANG))
+						if self.init_localization(APPLANG) == True:
+							if self.APP_LANGUAGE == APPLANG:
+								self.debug(text="NEW self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
+					else:
+						self.debug(text="self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
+				except:
+					self.debug(text="self.APP_LANGUAGE FAILED")
 				
 				try:
 					self.LAST_CFG_UPDATE = parser.get('oVPN','lastcfgupdate')
@@ -629,14 +642,14 @@ class Systray:
 						self.SRV_LIGHT_HEIGHT = SRV_LIGHT_HEIGHT
 						self.SRV_WIDTH = SRV_WIDTH
 						self.SRV_HEIGHT = SRV_HEIGHT
-						self.debug(text="Load Light Server Window Size = '%sx%s'" % (SRV_LIGHT_WIDTH,SRV_LIGHT_HEIGHT))
-						self.debug(text="Load Extended Server Window Size = '%sx%s'" % (SRV_WIDTH,SRV_HEIGHT))
+						self.debug(text="self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
+						self.debug(text="self.SRV_WIDTH,self.SRV_HEIGHT Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
 				except:
 					pass
 				
 				try:
 					self.APP_THEME = parser.get('oVPN','theme')
-					self.debug(text="Theme is set to: '%s'" % (self.APP_THEME))
+					self.debug(text="self.APP_THEME = '%s'" % (self.APP_THEME))
 				except:
 					pass
 					
@@ -671,6 +684,7 @@ class Systray:
 				parser = SafeConfigParser()
 				parser.add_section('oVPN')
 				parser.set('oVPN','debugmode','False')
+				parser.set('oVPN','applanguage',self.APP_LANGUAGE)
 				parser.set('oVPN','passphrase','False')
 				parser.set('oVPN','lastcfgupdate','0')
 				parser.set('oVPN','autoconnect','False')
@@ -720,6 +734,7 @@ class Systray:
 			parser.add_section('oVPN')
 			parser.set('oVPN','apikey','%s'%(self.APIKEY))
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
+			parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
 			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
@@ -2277,9 +2292,10 @@ class Systray:
 					self.settings_options_switch_updateovpnonstart(nbpage2)
 					self.settings_options_switch_accinfo(nbpage2)
 					self.settings_options_switch_srvinfo(nbpage2)
-					self.settings_options_switch_debugmode(nbpage2)
-					self.settings_options_combobox_theme(nbpage2)
 					self.settings_options_switch_disablequit(nbpage2)
+					self.settings_options_combobox_theme(nbpage2)
+					self.settings_options_combobox_language(nbpage2)
+					self.settings_options_switch_debugmode(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
@@ -2316,7 +2332,7 @@ class Systray:
 				self.settings_firewall_switch_backuprestore(self.nbpage4)
 				self.settingsnotebook.append_page(self.nbpage4, Gtk.Label(_(" Backups ")))
 		except:
-			self.debug(text="def show_settingswindow: nbpage4 failed")
+			self.debug(text="def show_hide_backup_window: nbpage4 failed")
 
 	def settings_firewall_switch_nofw(self,page):
 		try:
@@ -2742,6 +2758,52 @@ class Systray:
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_options_combobox_theme: failed")
+
+	def cb_theme_switcher_changed(self, combobox):
+		self.debug(text="def cb_theme_switcher_changed()")
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.APP_THEME = combobox.get_active_text()
+			get_settings = Gtk.Settings.get_default()
+			get_settings.set_property("gtk-theme-name", self.APP_THEME)
+			self.write_options_file()
+			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
+		return
+
+	def settings_options_combobox_language(self,page):
+		try:
+			i=0; 
+			self.debug(text="def settings_options_combobox_theme()")
+			combobox_title = Gtk.Label(label=_("Change Language"))
+			combobox = Gtk.ComboBoxText.new()
+			for lang in self.INSTALLED_LANGUAGES:
+				combobox.append_text(lang)
+			if self.APP_LANGUAGE == "en":
+				active_item = 0
+			if self.APP_LANGUAGE == "de":
+				active_item = 1
+			if self.APP_LANGUAGE == "es":
+				active_item = 2
+			combobox.set_active(active_item)
+			combobox.connect('changed',self.cb_settings_options_combobox_language)
+			page.pack_start(combobox_title,False,False,0)
+			page.pack_start(combobox,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+			self.debug(text="def settings_options_combobox_language()")
+		except:
+			self.debug(text="def settings_options_combobox_language: failed")
+			
+	def cb_settings_options_combobox_language(self, combobox):
+		self.debug(text="def cb_settings_options_combobox_language()")
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.APP_LANGUAGE = combobox.get_active_text()
+			self.write_options_file()
+			if self.init_localization(self.APP_LANGUAGE) == True:
+				self.debug(text="def cb_settings_options_combobox_language: selected lang = '%s'" % (self.APP_LANGUAGE))
+		return
 
 	def settings_options_switch_disablequit(self,page):
 		try:
@@ -3950,18 +4012,6 @@ class Systray:
 		if index > -1:
 			self.WIN_TAP_DEVICE = model[index][0]
 			self.debug(text="def cb_tap_interface_selector_changed: selected tap IF = '%s'" % (self.WIN_TAP_DEVICE))
-		return
-
-	def cb_theme_switcher_changed(self, combobox):
-		self.debug(text="def cb_theme_switcher_changed()")
-		model = combobox.get_model()
-		index = combobox.get_active()
-		if index > -1:
-			self.APP_THEME = combobox.get_active_text()
-			get_settings = Gtk.Settings.get_default()
-			get_settings.set_property("gtk-theme-name", self.APP_THEME)
-			self.write_options_file()
-			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
 		return
 
 	def check_last_server_update(self,remote_lastupdate):
@@ -5237,24 +5287,43 @@ class Systray:
 		get_settings.set_property("gtk-theme-name", self.APP_THEME)
 		return True
 
-	def init_localization(self):
-		if self.FORCE_APP_LANGUAGE == True:
-			loc = self.APP_LANGUAGE
-		else:
-			loc = locale.getdefaultlocale()[0][0:2]
-		self.debug(text="def init_localization: %s"% (loc))
-		
-		filename = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
-		if not os.path.isfile(filename):
-			filename = "E:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
-		if os.path.isfile(filename):
+	def init_localization(self,LANG):
+		try:
+			if not LANG == None:
+				loc = LANG
+			else:
+				loc = locale.getdefaultlocale()[0][0:2]
+			
+			filename1 = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
+			filename2 = "E:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
+			
+			if os.path.isfile(filename1):
+				filename = filename1
+			elif os.path.isfile(filename2):
+				filename = filename2
+			else:
+				filename = False
+			self.debug(text="def init_localization: filename = '%s'"% (filename))
 			try:
-				translation = gettext.GNUTranslations(open(filename, "rb"))
-			except IOError:
-				translation = gettext.NullTranslations()
+				if not filename == False:
+					translation = gettext.GNUTranslations(open(filename, "rb"))
+			except:
+				translation = False
 				self.debug(text="def init_localization: %s not found, fallback to en"% (filename))
-				#sys.exit()
-		translation.install()
+				
+			if translation == False or filename == False:
+				translation = gettext.NullTranslations()
+			
+			try:
+				translation.install()
+			except:
+				self.debug(text="def init_localization: translation.install() failed")
+				return False
+			self.APP_LANGUAGE = loc
+			self.debug(text="def init_localization: %s"% (self.APP_LANGUAGE))
+			return True
+		except:
+			self.debug(text="def init_localization: failed")
 
 	def msgwarn(self,text,title):
 		GLib.idle_add(self.msgwarn_glib,text,title)
