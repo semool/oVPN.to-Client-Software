@@ -5292,7 +5292,12 @@ class Systray:
 			if not LANG == None:
 				loc = LANG
 			else:
-				loc = locale.getdefaultlocale()[0][0:2]
+				try:
+					loc = locale.getdefaultlocale()[0][0:2]
+					self.debug(text="def init_localization: OS LANGUAGE %s"% (loc))
+				except:
+					self.debug(text="def init_localization: locale.getdefaultlocale() failed")
+					loc = False
 			
 			filename1 = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
 			filename2 = "E:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
@@ -5304,23 +5309,22 @@ class Systray:
 			else:
 				filename = False
 			self.debug(text="def init_localization: filename = '%s'"% (filename))
+			translation = False
 			try:
 				if not filename == False:
 					translation = gettext.GNUTranslations(open(filename, "rb"))
 			except:
 				translation = False
 				self.debug(text="def init_localization: %s not found, fallback to en"% (filename))
-				
 			if translation == False or filename == False:
 				translation = gettext.NullTranslations()
-			
 			try:
 				translation.install()
 			except:
 				self.debug(text="def init_localization: translation.install() failed")
 				return False
 			self.APP_LANGUAGE = loc
-			self.debug(text="def init_localization: %s"% (self.APP_LANGUAGE))
+			self.debug(text="def init_localization: return self.APP_LANGUAGE = '%s'"% (self.APP_LANGUAGE))
 			return True
 		except:
 			self.debug(text="def init_localization: failed")
