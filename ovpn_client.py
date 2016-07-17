@@ -360,10 +360,9 @@ class Systray:
 		self.systray_icon_disconnected = "%s\\263.ico" % (self.ico_dir)
 		self.systray_icon_disconnected_traymenu = "%s\\263a.ico" % (self.ico_dir)
 		self.systray_icon_connect = "%s\\396.ico" % (self.ico_dir)
-		self.systray_icon_hourglass = "%s\\205.ico" % (self.ico_dir)
+		self.systray_icon_testing = "%s\\205.ico" % (self.ico_dir)
 		self.systray_icon_syncupdate = "%s\\266.ico" % (self.ico_dir)
-		self.systray_icon_greenshield = "%s\\074.ico" % (self.ico_dir)
-		
+
 		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
 		if not self.load_ca_cert():
 			return False
@@ -1331,12 +1330,12 @@ class Systray:
 			elif self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
 				systraytext = _("Testing connection to %s") % (self.OVPN_CONNECTEDto)
-				systrayicon = self.systray_icon_hourglass
+				systrayicon = self.systray_icon_testing
 				statusbar_text = systraytext
 				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
 			elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 3:
 				systraytext = _("Connection to %s unstable or failed!") % (self.OVPN_CONNECTEDto)
-				systrayicon = self.systray_icon_hourglass
+				systrayicon = self.systray_icon_testing
 				statusbar_text = systraytext
 			elif self.OVPN_PING_STAT > 0:
 				try:
