@@ -209,6 +209,7 @@ class Systray:
 		self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"
 		self.DISABLE_SRV_WINDOW = False
 		self.DISABLE_ACC_WINDOW = False
+		self.DISABLE_QUIT_ENTRY = True
 		self.MOUSE_IN_TRAY = 0
 		self.UPDATE_SWITCH = False
 		self.isWRITING_OPTFILE = False
@@ -637,6 +638,14 @@ class Systray:
 					self.debug(text="Theme is set to: '%s'" % (self.APP_THEME))
 				except:
 					pass
+					
+				try:
+					self.DISABLE_QUIT_ENTRY = parser.getboolean('oVPN','disablequitentry')
+					self.debug(text="self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
+				except:
+					pass
+					
+				
 				
 				try:
 					self.MYDNS = json.loads(parser.get('oVPN','mydns'))
@@ -1561,24 +1570,27 @@ class Systray:
 			settwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"settwindowentry")
 		except:
 			self.debug(text="def make_systray_bottom_menu: settwindowentry failed")
-
-		try:
-			sep = Gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
-			about = Gtk.MenuItem(_("About"))
-			self.systray_menu.append(about)
-			about.connect('button-release-event', self.show_about_dialog)
-			about.connect('leave-notify-event', self.systray_notify_event_leave,"about")
-		except:
-			self.debug(text="def make_systray_bottom_menu: about failed")
-
-		# add quit item
-		quit = Gtk.MenuItem(_("Quit"))
-		if self.STATE_OVPN == True:
-			quit.set_sensitive(False)
-		self.systray_menu.append(quit)
-		quit.connect('button-release-event', self.on_closing)
-		quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
+		
+		if self.DISABLE_QUIT_ENTRY == True and (self.STATE_OVPN == True or self.inThread_jump_server_running == True):
+			pass
+		else:
+			try:
+				sep = Gtk.SeparatorMenuItem()
+				self.systray_menu.append(sep)
+				about = Gtk.MenuItem(_("About"))
+				self.systray_menu.append(about)
+				about.connect('button-release-event', self.show_about_dialog)
+				about.connect('leave-notify-event', self.systray_notify_event_leave,"about")
+			except:
+				self.debug(text="def make_systray_bottom_menu: about failed")
+			
+			# add quit item
+			quit = Gtk.MenuItem(_("Quit"))
+			if self.STATE_OVPN == True:
+				quit.set_sensitive(False)
+			self.systray_menu.append(quit)
+			quit.connect('button-release-event', self.on_closing)
+			quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
 
 	def systray_notify_event_leave(self, widget, event, data = None):
 		#self.debug(text="def systray_notify_event_leave() data = '%s'" % (data))
@@ -2262,8 +2274,8 @@ class Systray:
 					self.settings_options_switch_accinfo(nbpage2)
 					self.settings_options_switch_srvinfo(nbpage2)
 					self.settings_options_switch_debugmode(nbpage2)
-					self.settings_options_switch_network_adapter(nbpage2)
-					self.settings_options_switch_theme(nbpage2)
+					self.settings_options_button_networkadapter(nbpage2)
+					self.settings_options_combobox_theme(nbpage2)
 					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage2 failed")
@@ -2272,10 +2284,10 @@ class Systray:
 					nbpage3 = Gtk.VBox(False,spacing=2)
 					nbpage3.set_border_width(8)
 					nbpage3.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
-					self.settings_updates_normal_conf(nbpage3)
-					self.settings_updates_force_conf(nbpage3)
-					self.settings_options_switch_ipv6(nbpage3)
-					self.settings_updates_api_reset(nbpage3)
+					self.settings_updates_button_normalconf(nbpage3)
+					self.settings_updates_button_forceconf(nbpage3)
+					self.settings_options_button_ipv6(nbpage3)
+					self.settings_updates_button_apireset(nbpage3)
 					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
 				except:
 					self.debug(text="def show_settingswindow: nbpage3 failed")
@@ -2297,7 +2309,7 @@ class Systray:
 				self.nbpage4 = Gtk.VBox(False,spacing=2)
 				self.nbpage4.set_border_width(8)
 				self.nbpage4.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
-				self.settings_firewall_backup_restore(self.nbpage4)
+				self.settings_firewall_switch_backuprestore(self.nbpage4)
 				self.settingsnotebook.append_page(self.nbpage4, Gtk.Label(_(" Backups ")))
 		except:
 			self.debug(text="def show_settingswindow: nbpage4 failed")
@@ -2311,18 +2323,18 @@ class Systray:
 				switch.set_active(False)
 			else:
 				switch.set_active(True)
-			switch.connect("notify::state", self.cb_switch_winfirewall)
+			switch.connect("notify::state", self.cb_settings_firewall_switch_nofw)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_nofw: failed")
 
-	def cb_switch_winfirewall(self,switch,gparam):
+	def cb_settings_firewall_switch_nofw(self,switch,gparam):
 		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_winfirewall()")
+		self.debug(text="def cb_settings_firewall_switch_nofw()")
 		if switch.get_active():
 			self.NO_WIN_FIREWALL = False
 			self.WIN_DONT_ASK_FW_EXIT = True
@@ -2341,18 +2353,18 @@ class Systray:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_tapblockoutbound)
+			switch.connect("notify::state", self.cb_settings_firewall_switch_tapblockoutbound)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_tapblockoutbound: failed")
 
-	def cb_switch_tapblockoutbound(self,switch,gparam):
+	def cb_settings_firewall_switch_tapblockoutbound(self,switch,gparam):
 		if self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True or self.win_firewall_tap_blockoutbound_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_tapblockoutbound()")
+		self.debug(text="def cb_settings_firewall_switch_tapblockoutbound()")
 		if switch.get_active():
 			self.TAP_BLOCKOUTBOUND = True
 		else:
@@ -2372,18 +2384,18 @@ class Systray:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_fwblockonexit)
+			switch.connect("notify::state", self.cb_settings_firewall_switch_fwblockonexit)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
 
-	def cb_switch_fwblockonexit(self,switch,gparam):
+	def cb_settings_firewall_switch_fwblockonexit(self,switch,gparam):
 		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_fwblockonexit()")
+		self.debug(text="def cb_settings_firewall_switch_fwblockonexit()")
 		if switch.get_active():
 			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
 		else:
@@ -2400,18 +2412,18 @@ class Systray:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_fwdontaskonexit)
+			switch.connect("notify::state", self.cb_settings_firewall_switch_fwdontaskonexit)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
 
-	def cb_switch_fwdontaskonexit(self,switch,gparam):
+	def cb_settings_firewall_switch_fwdontaskonexit(self,switch,gparam):
 		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_fwdontaskonexit()")
+		self.debug(text="def cb_settings_firewall_switch_fwdontaskonexit()")
 		if switch.get_active():
 			self.WIN_DONT_ASK_FW_EXIT = True
 		else:
@@ -2428,18 +2440,18 @@ class Systray:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_fwresetonconnect)
+			switch.connect("notify::state", self.cb_settings_firewall_switch_fwresetonconnect)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_fwresetonconnect: failed")
 
-	def cb_switch_fwresetonconnect(self,switch,gparam):
+	def cb_settings_firewall_switch_fwresetonconnect(self,switch,gparam):
 		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_fwresetonconnect()")
+		self.debug(text="def cb_settings_firewall_switch_fwresetonconnect()")
 		if switch.get_active():
 			self.WIN_RESET_FIREWALL = True
 			if not self.win_firewall_export_on_start():
@@ -2458,18 +2470,18 @@ class Systray:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_fwbackupmode)
+			switch.connect("notify::state", self.cb_settings_firewall_switch_fwbackupmode)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_firewall_switch_fwbackupmode: failed")
 
-	def cb_switch_fwbackupmode(self,switch,gparam):
+	def cb_settings_firewall_switch_fwbackupmode(self,switch,gparam):
 		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_fwbackupmode()")
+		self.debug(text="def cb_settings_firewall_switch_fwbackupmode()")
 		if switch.get_active():
 			self.WIN_BACKUP_FIREWALL = True
 			if not self.win_firewall_export_on_start():
@@ -2518,15 +2530,15 @@ class Systray:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
-			switch.connect("notify::state", self.cb_switch_disableextifondisco)
+			switch.connect("notify::state", self.cb_settings_network_switch_disableextifondisco)
 			page.pack_start(checkbox_title,False,False,0)
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
 			self.debug(text="def settings_network_switch_disableextifondisco: failed")
 
-	def cb_switch_disableextifondisco(self,switch,gparam):
-		self.debug(text="def cb_switch_disableextifondisco()")
+	def cb_settings_network_switch_disableextifondisco(self,switch,gparam):
+		self.debug(text="def cb_settings_network_switch_disableextifondisco()")
 		if switch.get_active():
 			self.WIN_DISABLE_EXT_IF_ON_DISCO = True
 			if self.STATE_OVPN == False:
@@ -2537,14 +2549,14 @@ class Systray:
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
-	def settings_firewall_backup_restore(self, page):
+	def settings_firewall_switch_backuprestore(self, page):
 		for file in self.FIREWALL_BACKUPS:
 			button = Gtk.Button(label=("%s")%(file))
-			button.connect('clicked', self.cb_settings_firewall_backup_restore, file)
+			button.connect('clicked', self.cb_settings_firewall_switch_backuprestore, file)
 			page.pack_start(button,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 
-	def cb_settings_firewall_backup_restore(self, file):
+	def cb_settings_firewall_switch_backuprestore(self, file):
 		GLib.idle_add(self.cb_restore_firewallbackup, file)
 
 	def settings_options_switch_updateovpnonstart(self,page):
@@ -2669,33 +2681,33 @@ class Systray:
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
-	def settings_options_switch_network_adapter(self,page):
+	def settings_options_button_networkadapter(self,page):
 		button = Gtk.Button(label=_("Select Network Adapter"))
 		self.button_switch_network_adapter = button
-		button.connect('clicked', self.cb_settings_options_switch_network_adapter)
+		button.connect('clicked', self.cb_settings_options_button_networkadapter)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 		
-	def cb_settings_options_switch_network_adapter(self,event):
+	def cb_settings_options_button_networkadapter(self,event):
 		GLib.idle_add(self.cb_resetextif)
 
-	def settings_options_switch_ipv6(self,page):
+	def settings_options_button_ipv6(self,page):
 		if not self.OVPN_CONFIGVERSION == "23x":
 			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
-			button.connect('clicked', self.cb_settings_options_switch_ipv6)
+			button.connect('clicked', self.cb_settings_options_button_ipv6)
 		if not self.OVPN_CONFIGVERSION  == "23x46":
 			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
-			button.connect('clicked', self.cb_settings_options_switch_ipv6)
+			button.connect('clicked', self.cb_settings_options_button_ipv6)
 		"""
 		 *** fixme need isValueIPv6 first! ***
 		if not self.OVPN_CONFIGVERSION == "23x64":
 			button = Gtk.Button(label=_("Use IPv6 Entry Server with Exits to IPv6 + IPv4"))
-			button.connect('clicked', self.cb_settings_options_switch_ipv6)
+			button.connect('clicked', self.cb_settings_options_button_ipv6)
 		"""
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
-	def cb_settings_options_switch_ipv6(self,event):
+	def cb_settings_options_button_ipv6(self,event):
 		if not self.OVPN_CONFIGVERSION == "23x":
 			GLib.idle_add(self.cb_change_ipmode1)
 		if not self.OVPN_CONFIGVERSION  == "23x46":
@@ -2706,9 +2718,9 @@ class Systray:
 			GLib.idle_add(self.cb_change_ipmode3)
 		"""
 
-	def settings_options_switch_theme(self,page):
+	def settings_options_combobox_theme(self,page):
 		try:
-			self.debug(text="def settings_options_switch_theme()")
+			self.debug(text="def settings_options_combobox_theme()")
 			combobox_title = Gtk.Label(label=_("Change App Theme"))
 			combobox = Gtk.ComboBoxText.new()
 			for theme in self.INSTALLED_THEMES:
@@ -2725,33 +2737,33 @@ class Systray:
 			page.pack_start(combobox,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_switch_theme: failed")
+			self.debug(text="def settings_options_combobox_theme: failed")
 
-	def settings_updates_normal_conf(self,page):
+	def settings_updates_button_normalconf(self,page):
 		button = Gtk.Button(label=_("Normal Config Update"))
-		button.connect('clicked', self.cb_settings_updates_normal_conf)
+		button.connect('clicked', self.cb_settings_updates_button_normalconf)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
-	def cb_settings_updates_normal_conf(self,event):
+	def cb_settings_updates_button_normalconf(self,event):
 		GLib.idle_add(self.cb_check_normal_update)
 
-	def settings_updates_force_conf(self,page):
+	def settings_updates_button_forceconf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
-		button.connect('clicked', self.cb_settings_updates_force_conf)
+		button.connect('clicked', self.cb_settings_updates_button_forceconf)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
-	def cb_settings_updates_force_conf(self,event):
+	def cb_settings_updates_button_forceconf(self,event):
 		GLib.idle_add(self.cb_force_update)
 
-	def settings_updates_api_reset(self,page):
+	def settings_updates_button_apireset(self,page):
 		button = Gtk.Button(label=_("Reset API-Login"))
-		button.connect('clicked', self.cb_settings_updates_api_reset)
+		button.connect('clicked', self.cb_settings_updates_button_apireset)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 		
-	def cb_settings_updates_api_reset(self,event):
+	def cb_settings_updates_button_apireset(self,event):
 		GLib.idle_add(self.dialog_apikey)
 
 	def destroy_settingswindow(self):
