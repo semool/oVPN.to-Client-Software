@@ -364,7 +364,8 @@ class Systray:
 		self.systray_icon_disconnected_traymenu = "%s\\263a.ico" % (self.ico_dir)
 		self.systray_icon_connect = "%s\\396.ico" % (self.ico_dir)
 		self.systray_icon_testing = "%s\\205.ico" % (self.ico_dir)
-		self.systray_icon_syncupdate = "%s\\266.ico" % (self.ico_dir)
+		self.systray_icon_syncupdate1 = "%s\\289_1.ico" % (self.ico_dir)
+		self.systray_icon_syncupdate2 = "%s\\289_2.ico" % (self.ico_dir)
 
 		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
 		if not self.load_ca_cert():
@@ -1328,18 +1329,27 @@ class Systray:
 			if not self.STATE_CERTDL == False:
 				if self.STATE_CERTDL == "lastupdate":
 					systraytext = _("Checking for Updates!")
+					systrayicon = self.systray_icon_syncupdate1
 				elif self.STATE_CERTDL == "getconfigs":
 					systraytext = _("Downloading Configurations...")
+					systrayicon = self.systray_icon_syncupdate2
 				elif self.STATE_CERTDL == "requestcerts":
 					systraytext = _("Requesting Certificates...")
+					systrayicon = self.systray_icon_syncupdate1
 				elif self.STATE_CERTDL == "wait":
 						systraytext = _("Please wait... Certificates requested from backend! (%s)") % (self.API_COUNTER)
+						if self.STATUS_ICON_BLINK%2==0:
+							systrayicon = self.systray_icon_syncupdate1
+						else:
+							systrayicon = self.systray_icon_syncupdate2
 				elif self.STATE_CERTDL == "getcerts":
 					systraytext = _("Downloading Certificates...")
+					systrayicon = self.systray_icon_syncupdate1
 				elif self.STATE_CERTDL == "extract":
 					systraytext = _("Extracting Configs and Certs...")
+					systrayicon = self.systray_icon_syncupdate2
 				statusbar_text = systraytext
-				systrayicon = self.systray_icon_syncupdate
+				
 		elif self.STATE_OVPN == False:
 			systraytext = _("Disconnected! Have a nice and anonymous day!")
 			statusbar_text = systraytext
@@ -1688,6 +1698,7 @@ class Systray:
 					if self.API_REQUEST(API_ACTION = "getconfigs"):
 						self.STATE_CERTDL = "requestcerts"
 						if self.API_REQUEST(API_ACTION = "requestcerts"):
+							self.STATUS_ICON_BLINK = 0
 							self.STATE_CERTDL = "wait"
 							self.API_COUNTER = 120
 							while not self.body == "ready":
@@ -1695,8 +1706,9 @@ class Systray:
 									self.timer_check_certdl_running = False
 									self.msgwarn(_("Update took too long...aborted!\nPlease retry in few minutes..."),_("Error: Update Timeout"))
 									return False
-								time.sleep(6)
-								self.API_COUNTER -= 6
+								time.sleep(5)
+								self.API_COUNTER -= 5
+								self.STATUS_ICON_BLINK += 1
 								self.API_REQUEST(API_ACTION = "requestcerts")
 							# final step to download certs
 							self.STATE_CERTDL = "getcerts"
