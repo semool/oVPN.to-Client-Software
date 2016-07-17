@@ -116,9 +116,10 @@ class Systray:
 		self.inThread_jump_server_running = False
 		self.USERID = False
 		self.STATE_OVPN = False
+		self.STATE_CERTDL = False
 		self.LAST_CFG_UPDATE = 0
 		self.LAST_CHECK_MYIP = 0
-		self.LAST_PING_EXEC = 0
+		self.NEXT_PING_EXEC = 0
 		self.LAST_CHECK_INET_FALSE = 0
 		self.LAST_MSGWARN_WINDOW = 0
 		self.GATEWAY_LOCAL = False
@@ -158,6 +159,7 @@ class Systray:
 		self.OVPN_isTESTING = False
 		self.OVPN_PING_LAST = -1
 		self.OVPN_PING_STAT = 0
+		self.OVPN_PING_DEAD_COUNT = 0
 		self.OVPN_PING_EVERY = "15,30"
 		self.INTERFACES = False
 		
@@ -1265,8 +1267,21 @@ class Systray:
 		
 		systraytext = False
 		if self.timer_check_certdl_running == True:
-			systraytext = _("Checking for Updates!")
-			systrayicon = self.systray_icon_syncupdate
+			if not self.STATE_CERTDL == False:
+				if self.STATE_CERTDL == "lastupdate":
+					systraytext = _("Checking for Updates!")
+				elif self.STATE_CERTDL == "getconfigs":
+					systraytext = _("Downloading Configurations...")
+				elif self.STATE_CERTDL == "requestcerts":
+					systraytext = _("Requesting Certificates...")
+				elif self.STATE_CERTDL == "wait":
+						systraytext = _("Please wait... Certificates requested from backend! (%s)") % (self.API_COUNTER)
+				elif self.STATE_CERTDL == "getcerts":
+					systraytext = _("Downloading Certificates...")
+				elif self.STATE_CERTDL == "extract":
+					systraytext = _("Extracting Configs and Certs...")
+				statusbar_text = systraytext
+				systrayicon = self.systray_icon_syncupdate
 		elif self.STATE_OVPN == False:
 			systraytext = _("Disconnected! Have a nice and anonymous day!")
 			statusbar_text = systraytext
@@ -1292,6 +1307,10 @@ class Systray:
 				systrayicon = self.systray_icon_hourglass
 				statusbar_text = systraytext
 				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
+			elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 3:
+				systraytext = _("Connection to %s unstable or failed!") % (self.OVPN_CONNECTEDto)
+				systrayicon = self.systray_icon_hourglass
+				statusbar_text = systraytext
 			elif self.OVPN_PING_STAT > 0:
 				try:
 					if self.OVPN_isTESTING == True:
@@ -1600,16 +1619,28 @@ class Systray:
 			except:
 				self.debug(text="def inThread_timer_check_certdl: self.load_ovpn_server() failed")
 			self.debug(text="def inThread_timer_check_certdl()")
+			self.STATE_CERTDL = "lastupdate"
 			if self.API_REQUEST(API_ACTION = "lastupdate"):
 				self.debug(text="def inThread_timer_check_certdl: API_ACTION lastupdate")
 				if self.check_last_server_update(self.curldata):
+					self.STATE_CERTDL = "getconfigs"
 					if self.API_REQUEST(API_ACTION = "getconfigs"):
+						self.STATE_CERTDL = "requestcerts"
 						if self.API_REQUEST(API_ACTION = "requestcerts"):
+							self.STATE_CERTDL = "wait"
+							self.API_COUNTER = 120
 							while not self.body == "ready":
+								if self.API_COUNTER <= 0:
+									self.timer_check_certdl_running = False
+									self.msgwarn(_("Update took too long...aborted!\nPlease retry in few minutes..."),_("Error: Update Timeout"))
+									return False
 								time.sleep(6)
+								self.API_COUNTER -= 6
 								self.API_REQUEST(API_ACTION = "requestcerts")
 							# final step to download certs
+							self.STATE_CERTDL = "getcerts"
 							if self.API_REQUEST(API_ACTION = "getcerts"):
+								self.STATE_CERTDL = "extract"
 								if self.extract_ovpn():
 									self.timer_check_certdl_running = False
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
@@ -3062,7 +3093,7 @@ class Systray:
 		self.OVPN_CONNECTEDto = self.OVPN_CALL_SRV
 		self.OVPN_PING_STAT = -1
 		self.OVPN_PING_LAST = -1
-		self.LAST_PING_EXEC = 0
+		self.NEXT_PING_EXEC = 0
 		self.reset_load_remote_timer()
 		self.STATE_OVPN = True
 		if self.timer_ovpn_ping_running == False:
@@ -3126,7 +3157,7 @@ class Systray:
 		elif self.STATE_OVPN == True:
 			try:
 				try:
-					if self.LAST_PING_EXEC < int(time.time()) and self.OVPN_CONNECTEDseconds > 5:
+					if self.NEXT_PING_EXEC < int(time.time()) and self.OVPN_CONNECTEDseconds > 5:
 						PING = self.get_ovpn_ping()
 						if PING > 0 and PING < 1:
 							PING = round(PING,3)
@@ -3134,7 +3165,7 @@ class Systray:
 							PING = int(PING)
 						if PING > 0 and self.check_myip() == True:
 							randint = random.randint(15,30)
-							self.LAST_PING_EXEC = int(time.time())+randint
+							self.NEXT_PING_EXEC = int(time.time())+randint
 							pingsum = 0
 							if PING > 0:
 								self.OVPN_PING.append(PING)
@@ -3145,11 +3176,15 @@ class Systray:
 									pingsum += int(pingi)
 								self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 							self.OVPN_PING_LAST = PING
+							self.OVPN_PING_DEAD_COUNT = 0
 							#self.debug(text="def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
+						else:
+							self.OVPN_PING_LAST = -2
+							self.OVPN_PING_DEAD_COUNT += 1
 				except:
 					self.OVPN_PING_LAST = -2
-					self.debug(text="ping failed")
-					pass
+					self.NEXT_PING_EXEC = int(time.time())+5
+					self.OVPN_PING_DEAD_COUNT += 1
 			except:
 				self.debug(text="def inThread_timer_ovpn_ping: failed")
 			time.sleep(0.5)
