@@ -76,7 +76,8 @@ class Systray:
 		self.MAINWINDOW_HIDE = False
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
-		self.APP_LANGUAGE = "en"
+		self.APP_LANGUAGE = "es"
+		self.FORCE_APP_LANGUAGE = True
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ACCWINDOW_OPEN = False
@@ -5237,14 +5238,22 @@ class Systray:
 		return True
 
 	def init_localization(self):
-		loc = locale.getdefaultlocale()[0][0:2]
-		filename = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
+		if self.FORCE_APP_LANGUAGE == True:
+			loc = self.APP_LANGUAGE
+		else:
+			loc = locale.getdefaultlocale()[0][0:2]
 		self.debug(text="def init_localization: %s"% (loc))
-		try:
-			translation = gettext.GNUTranslations(open(filename, "rb"))
-		except IOError:
-			translation = gettext.NullTranslations()
-			self.debug(text="def init_localization: %s not found, fallback to en"% (loc))
+		
+		filename = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
+		if not os.path.isfile(filename):
+			filename = "E:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
+		if os.path.isfile(filename):
+			try:
+				translation = gettext.GNUTranslations(open(filename, "rb"))
+			except IOError:
+				translation = gettext.NullTranslations()
+				self.debug(text="def init_localization: %s not found, fallback to en"% (filename))
+				#sys.exit()
 		translation.install()
 
 	def msgwarn(self,text,title):

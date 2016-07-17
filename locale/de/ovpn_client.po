@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-16 20:55+0200\n"
-"PO-Revision-Date: 2016-07-16 22:52+0200\n"
+"PO-Revision-Date: 2016-07-16 20:55+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -223,7 +223,7 @@ msgstr "Verbunden zu %s [%s]:%s (%s) [ %s ] (%s / %s ms)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1473
 msgid " [ disconnect ]"
-msgstr " [ Trennen ]"
+msgstr "[ Trennen ]"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1516
 msgid "Close Servers"
