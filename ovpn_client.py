@@ -5379,6 +5379,9 @@ class Systray:
 		try:
 			if not LANG == None:
 				loc = LANG
+				os.environ['LANGUAGE'] = loc
+				os.environ['LANG'] = loc
+				os.putenv(loc, 'LANG')
 			else:
 				try:
 					loc = locale.getdefaultlocale()[0][0:2]
