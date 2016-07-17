@@ -76,8 +76,8 @@ class Systray:
 		self.MAINWINDOW_HIDE = False
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
-		self.APP_LANGUAGE = "es"
-		self.FORCE_APP_LANGUAGE = True
+		self.APP_LANGUAGE = "en"
+		self.FORCE_APP_LANGUAGE = False
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ACCWINDOW_OPEN = False
