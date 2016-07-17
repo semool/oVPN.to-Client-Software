@@ -5314,7 +5314,6 @@ class Systray:
 				if not filename == False:
 					translation = gettext.GNUTranslations(open(filename, "rb"))
 			except:
-				translation = False
 				self.debug(text="def init_localization: %s not found, fallback to en"% (filename))
 			if translation == False or filename == False:
 				translation = gettext.NullTranslations()
