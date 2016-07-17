@@ -77,7 +77,9 @@ class Systray:
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.APP_LANGUAGE = "en"
-		self.LANG_CHANGE = False
+		self.LANG_FONT_CHANGE = False
+		self.APP_FONT_SIZE = "9"
+		self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
@@ -652,7 +654,13 @@ class Systray:
 					self.debug(text="self.APP_THEME = '%s'" % (self.APP_THEME))
 				except:
 					pass
-					
+				
+				try:
+					self.APP_FONT_SIZE = parser.get('oVPN','font')
+					self.debug(text="self.APP_FONT_SIZE = '%s'" % (self.APP_FONT_SIZE))
+				except:
+					pass
+				
 				try:
 					self.DISABLE_QUIT_ENTRY = parser.getboolean('oVPN','disablequitentry')
 					self.debug(text="self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
@@ -749,6 +757,7 @@ class Systray:
 			parser.set('oVPN','serverviewextendwidth','%s'%(self.SRV_WIDTH))
 			parser.set('oVPN','serverviewextendheight','%s'%(self.SRV_HEIGHT))
 			parser.set('oVPN','theme','%s'%(self.APP_THEME))
+			parser.set('oVPN','font','%s'%(self.APP_FONT_SIZE))
 			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
 			parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
 			parser.set('oVPN','nowinfirewall','%s'%(self.NO_WIN_FIREWALL))
@@ -1186,7 +1195,7 @@ class Systray:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
 
 			# Language changed
-			if self.LANG_CHANGE == True:
+			if self.LANG_FONT_CHANGE == True:
 				try:
 					self.settingsnotebook.remove(self.nbpage0)
 					self.settingsnotebook.remove(self.nbpage1)
@@ -1206,7 +1215,7 @@ class Systray:
 					self.settingsnotebook.set_current_page(1)
 				except:
 					pass
-				self.LANG_CHANGE = False
+				self.LANG_FONT_CHANGE = False
 
 			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 				self.switch_fw.set_sensitive(False)
@@ -2334,6 +2343,7 @@ class Systray:
 			self.settings_options_switch_srvinfo(self.nbpage1)
 			self.settings_options_switch_disablequit(self.nbpage1)
 			self.settings_options_combobox_theme(self.nbpage1)
+			self.settings_options_combobox_fontsize(self.nbpage1)
 			self.settings_options_combobox_language(self.nbpage1)
 			self.settings_options_switch_debugmode(self.nbpage1)
 			self.settingsnotebook.append_page(self.nbpage1, Gtk.Label(_(" Options ")))
@@ -2772,7 +2782,7 @@ class Systray:
 	def settings_options_combobox_theme(self,page):
 		try:
 			self.debug(text="def settings_options_combobox_theme()")
-			combobox_title = Gtk.Label(label=_("Change App Theme"))
+			combobox_title = Gtk.Label(label=_("Change App Theme (default: ms-windows)"))
 			combobox = Gtk.ComboBoxText.new()
 			for theme in self.INSTALLED_THEMES:
 				combobox.append_text(theme)
@@ -2800,6 +2810,51 @@ class Systray:
 			get_settings.set_property("gtk-theme-name", self.APP_THEME)
 			self.write_options_file()
 			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
+		return
+
+	def settings_options_combobox_fontsize(self,page):
+		try:
+			self.debug(text="def settings_options_combobox_fontsize()")
+			combobox_title = Gtk.Label(label=_("Change App Font Size (default: 9)"))
+			combobox = Gtk.ComboBoxText.new()
+			for size in self.APP_FONT_SIZE_AVAIABLE:
+				combobox.append_text(size)
+			if self.APP_FONT_SIZE == "6":
+				active_item = 0
+			if self.APP_FONT_SIZE == "7":
+				active_item = 1
+			if self.APP_FONT_SIZE == "8":
+				active_item = 2
+			if self.APP_FONT_SIZE == "9":
+				active_item = 3
+			if self.APP_FONT_SIZE == "10":
+				active_item = 4
+			if self.APP_FONT_SIZE == "11":
+				active_item = 5
+			if self.APP_FONT_SIZE == "12":
+				active_item = 6
+			if self.APP_FONT_SIZE == "13":
+				active_item = 7
+			combobox.set_active(active_item)
+			combobox.connect('changed',self.cb_settings_options_combobox_fontsize)
+			page.pack_start(combobox_title,False,False,0)
+			page.pack_start(combobox,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_options_combobox_theme: failed")
+
+	def cb_settings_options_combobox_fontsize(self, combobox):
+		self.debug(text="def cb_settings_options_combobox_fontsize()")
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.APP_FONT_SIZE = combobox.get_active_text()
+			get_settings = Gtk.Settings.get_default()
+			get_settings.set_property("gtk-font-name", self.APP_FONT_SIZE)
+			self.write_options_file()
+			self.UPDATE_SWITCH = True
+			self.LANG_FONT_CHANGE = True
+			self.debug(text="def cb_settings_options_combobox_fontsize: selected Size = '%s'" % (self.APP_FONT_SIZE))
 		return
 
 	def settings_options_combobox_language(self,page):
@@ -2833,7 +2888,7 @@ class Systray:
 			self.APP_LANGUAGE = combobox.get_active_text()
 			self.write_options_file()
 			self.UPDATE_SWITCH = True
-			self.LANG_CHANGE = True
+			self.LANG_FONT_CHANGE = True
 			if self.init_localization(self.APP_LANGUAGE) == True:
 				self.debug(text="def cb_settings_options_combobox_language: selected lang = '%s'" % (self.APP_LANGUAGE))
 		return
@@ -5318,6 +5373,7 @@ class Systray:
 	def init_theme(self):
 		get_settings = Gtk.Settings.get_default()
 		get_settings.set_property("gtk-theme-name", self.APP_THEME)
+		get_settings.set_property("gtk-font-name", self.APP_FONT_SIZE)
 		return True
 
 	def init_localization(self,LANG):
