@@ -214,6 +214,7 @@ class Systray:
 		self.DISABLE_SRV_WINDOW = False
 		self.DISABLE_ACC_WINDOW = False
 		self.DISABLE_QUIT_ENTRY = True
+		self.OVERWRITE_TRAYICON = False
 		self.MOUSE_IN_TRAY = 0
 		self.UPDATE_SWITCH = False
 		self.isWRITING_OPTFILE = False
@@ -366,6 +367,7 @@ class Systray:
 		self.systray_icon_testing = "%s\\205.ico" % (self.ico_dir)
 		self.systray_icon_syncupdate1 = "%s\\289_1.ico" % (self.ico_dir)
 		self.systray_icon_syncupdate2 = "%s\\289_2.ico" % (self.ico_dir)
+		self.systray_icon_syncupdate3 = "%s\\266.ico" % (self.ico_dir)
 
 		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
 		if not self.load_ca_cert():
@@ -1338,7 +1340,9 @@ class Systray:
 					systrayicon = self.systray_icon_syncupdate1
 				elif self.STATE_CERTDL == "wait":
 						systraytext = _("Please wait... Certificates requested from backend! (%s)") % (self.API_COUNTER)
-						if self.STATUS_ICON_BLINK%2==0:
+						if not self.OVERWRITE_TRAYICON == False:
+							systrayicon = self.OVERWRITE_TRAYICON
+						elif self.STATUS_ICON_BLINK%2==0:
 							systrayicon = self.systray_icon_syncupdate1
 						else:
 							systrayicon = self.systray_icon_syncupdate2
@@ -1707,9 +1711,11 @@ class Systray:
 									self.timer_check_certdl_running = False
 									self.msgwarn(_("Update took too long...aborted!\nPlease retry in few minutes..."),_("Error: Update Timeout"))
 									return False
-								time.sleep(1)
+								time.sleep(0.5)
 								if LAST_requestcerts > 6:
+									self.OVERWRITE_TRAYICON = self.systray_icon_syncupdate3
 									self.API_REQUEST(API_ACTION = "requestcerts")
+									self.OVERWRITE_TRAYICON = False
 									LAST_requestcerts = 0
 								else:
 									LAST_requestcerts += 1
