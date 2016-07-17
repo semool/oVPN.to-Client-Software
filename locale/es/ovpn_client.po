@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2016-07-17 15:28+0200\n"
-"PO-Revision-Date: 2016-07-17 15:28+0200\n"
+"POT-Creation-Date: 2016-07-17 19:58+0200\n"
+"PO-Revision-Date: 2016-07-17 20:01+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -210,23 +210,24 @@ msgstr "¡Comprobando actualizaciones!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1332
 msgid "Downloading Configurations..."
-msgstr ""
+msgstr "Descargando configuraciones..."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1334
 msgid "Requesting Certificates..."
-msgstr ""
+msgstr "Solicitando certificados..."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1336
 msgid "Please wait... Certificates requested from backend! (%s)"
 msgstr ""
+"Solicitado los certificados desde el back-end (%s), por favor, espere..."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1338
 msgid "Downloading Certificates..."
-msgstr ""
+msgstr "Descargando certificados..."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1340
 msgid "Extracting Configs and Certs..."
-msgstr ""
+msgstr "Extrayendo configuraciones y certificados..."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1344
 msgid "Disconnected! Have a nice and anonymous day!"
@@ -242,7 +243,7 @@ msgstr "Comprobando conexión a %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1369
 msgid "Connection to %s unstable or failed!"
-msgstr ""
+msgstr "Conexión inestable o fallada a %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1383
 msgid "Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)"
@@ -288,13 +289,15 @@ msgstr "Salir"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1696
 msgid "Error: Update Timeout"
-msgstr ""
+msgstr "Error: Tiempo expirado para actualización"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1696
 msgid ""
 "Update took too long...aborted!\n"
 "Please retry in few minutes..."
 msgstr ""
+"¡La actualización ha llevado demasiado tiempo...abortado!\n"
+"Por favor, reinténtelo en unos minutos..."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1707
 msgid "Certificates and Configs updated!"
@@ -377,11 +380,11 @@ msgstr " Actualizaciones"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2371
 msgid "Restore Firewall Backups\n"
-msgstr ""
+msgstr "Restaurar copias de seguridad del cortafuegos\n"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2373
 msgid " Backups "
-msgstr ""
+msgstr "Copias de seguridad"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2381
 msgid "Use Windows Firewall (default: ON) "
@@ -395,9 +398,11 @@ msgstr "Bloque Saliente de Adaptador de TAP (por defecto: apagado)"
 msgid "Block Internet on Disconnect or Quit (default: ON)"
 msgstr "Bloquear Internet al desconectar o cerrar (por defecto: encendido)"
 
+# Instead 'FW' it can be 'Cortafuegos'
+# already very long, client supposed to know what is FW.
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2470
 msgid "Disable FW question on Quit (default: OFF)"
-msgstr ""
+msgstr "Deshabilitar pregunta acerca de FW al salir (por defecto: encendido)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2498
 msgid "Clear Rules on Connect (default: OFF)"
@@ -463,27 +468,27 @@ msgstr "Seleccione Adaptador de Red"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2756
 msgid "Use IPv4 Entry Server with Exit to IPv4 (standard)"
-msgstr ""
+msgstr "Selección: Servidor entrante con salida a IPv4 (estándar)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2759
 msgid "Use IPv4 Entry Server with Exits to IPv4 + IPv6"
-msgstr ""
+msgstr "Selección: Servidor entrante con salida a IPv4 + IPv6"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2784
 msgid "Change App Theme (default: ms-windows)"
-msgstr ""
+msgstr "Cambiar el tema de la aplicación (por defecto: ms-windows)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2817
 msgid "Change App Font Size (default: 9)"
-msgstr ""
+msgstr "Cambiar tamaño de fuente de la aplicación (por defecto: 9)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2863
 msgid "Change Language"
-msgstr ""
+msgstr "Cambiar idioma"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2899
 msgid "Disable About and Quit on Connection (default: ON)"
-msgstr ""
+msgstr "Deshabilitar Acerca de y Salir al conectar (por defecto: encendido)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2920
 msgid "Normal Config Update"
