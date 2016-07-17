@@ -4295,7 +4295,7 @@ class Systray:
 				r = requests.get(url,timeout=2)
 				rip = r.content.strip().split()[0]
 				if rip == self.OVPN_CONNECTEDtoIP:
-					self.debug(text="def check_myip: rip = '%s'" % (rip))
+					self.debug(text="def check_myip: rip == self.OVPN_CONNECTEDtoIP")
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
 			except:
