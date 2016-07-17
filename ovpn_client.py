@@ -77,6 +77,7 @@ class Systray:
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.APP_LANGUAGE = "en"
+		self.LANG_CHANGE = False
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
@@ -1193,7 +1194,7 @@ class Systray:
 				self.switch_nodns.set_sensitive(False)
 				self.button_switch_network_adapter.set_sensitive(False)
 				try:
-					self.settingsnotebook.remove(self.nbpage4)
+					self.settingsnotebook.remove(self.nbpage3)
 				except:
 					pass
 			else:
@@ -1214,7 +1215,7 @@ class Systray:
 			if self.NO_WIN_FIREWALL == True:
 				self.switch_fw.set_active(False)
 				try:
-					self.settingsnotebook.remove(self.nbpage4)
+					self.settingsnotebook.remove(self.nbpage3)
 				except:
 					pass
 			else:
@@ -1285,6 +1286,29 @@ class Systray:
 				self.switch_debugmode.set_active(True)
 			else:
 				self.switch_debugmode.set_active(False)
+
+			# Language changed
+			if self.LANG_CHANGE == True:
+				try:
+					self.settingsnotebook.remove(self.nbpage0)
+					self.settingsnotebook.remove(self.nbpage1)
+					self.settingsnotebook.remove(self.nbpage2)
+				except:
+					pass
+				try:
+					self.settingsnotebook.remove(self.nbpage3)
+				except:
+					pass
+				try:
+					self.show_hide_security_window()
+					self.show_hide_options_window()
+					self.show_hide_updates_window()
+					self.show_hide_backup_window()
+					self.settingswindow.show_all()
+					self.settingsnotebook.set_current_page(1)
+				except:
+					pass
+				self.LANG_CHANGE = False
 
 			# end switches update
 			self.UPDATE_SWITCH = False
@@ -2267,49 +2291,10 @@ class Systray:
 				self.settingsnotebook = Gtk.Notebook()
 				self.settingswindow.add(self.settingsnotebook)
 				
-				try:
-					nbpage1 = Gtk.VBox(False,spacing=2)
-					nbpage1.set_border_width(8)
-					nbpage1.pack_start(Gtk.Label(label=_("Security Settings\n")),False,False,0)
-					self.settings_firewall_switch_nofw(nbpage1)
-					self.settings_firewall_switch_fwblockonexit(nbpage1)
-					self.settings_firewall_switch_fwdontaskonexit(nbpage1)
-					self.settings_firewall_switch_tapblockoutbound(nbpage1)
-					self.settings_firewall_switch_fwresetonconnect(nbpage1)
-					self.settings_firewall_switch_fwbackupmode(nbpage1)
-					self.settings_network_switch_nodns(nbpage1)
-					self.settings_network_switch_disableextifondisco(nbpage1)
-					self.settingsnotebook.append_page(nbpage1, Gtk.Label(_(" Security ")))
-				except:
-					self.debug(text="def show_settingswindow: nbpage1 failed")
-
-				try:
-					nbpage2 = Gtk.VBox(False,spacing=2)
-					nbpage2.set_border_width(8)
-					nbpage2.pack_start(Gtk.Label(label=_("Options\n")),False,False,0)
-					self.settings_options_button_networkadapter(nbpage2)
-					self.settings_options_switch_updateovpnonstart(nbpage2)
-					self.settings_options_switch_accinfo(nbpage2)
-					self.settings_options_switch_srvinfo(nbpage2)
-					self.settings_options_switch_disablequit(nbpage2)
-					self.settings_options_combobox_theme(nbpage2)
-					self.settings_options_combobox_language(nbpage2)
-					self.settings_options_switch_debugmode(nbpage2)
-					self.settingsnotebook.append_page(nbpage2, Gtk.Label(_(" Options ")))
-				except:
-					self.debug(text="def show_settingswindow: nbpage2 failed")
+				self.show_hide_security_window()
+				self.show_hide_options_window()
+				self.show_hide_updates_window()
 				
-				try:
-					nbpage3 = Gtk.VBox(False,spacing=2)
-					nbpage3.set_border_width(8)
-					nbpage3.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
-					self.settings_updates_button_normalconf(nbpage3)
-					self.settings_updates_button_forceconf(nbpage3)
-					self.settings_options_button_ipv6(nbpage3)
-					self.settings_updates_button_apireset(nbpage3)
-					self.settingsnotebook.append_page(nbpage3, Gtk.Label(_(" Updates ")))
-				except:
-					self.debug(text="def show_settingswindow: nbpage3 failed")
 				self.UPDATE_SWITCH = True
 				self.settingswindow.show_all()
 				self.SETTINGSWINDOW_OPEN = True
@@ -2321,17 +2306,64 @@ class Systray:
 		else:
 			self.destroy_settingswindow()
 
+	def show_hide_security_window(self):
+		try:
+			self.nbpage0 = Gtk.VBox(False,spacing=2)
+			self.nbpage0.set_border_width(8)
+			self.nbpage0.pack_start(Gtk.Label(label=_("Security Settings\n")),False,False,0)
+			self.settings_firewall_switch_nofw(self.nbpage0)
+			self.settings_firewall_switch_fwblockonexit(self.nbpage0)
+			self.settings_firewall_switch_fwdontaskonexit(self.nbpage0)
+			self.settings_firewall_switch_tapblockoutbound(self.nbpage0)
+			self.settings_firewall_switch_fwresetonconnect(self.nbpage0)
+			self.settings_firewall_switch_fwbackupmode(self.nbpage0)
+			self.settings_network_switch_nodns(self.nbpage0)
+			self.settings_network_switch_disableextifondisco(self.nbpage0)
+			self.settingsnotebook.append_page(self.nbpage0, Gtk.Label(_(" Security ")))
+		except:
+			self.debug(text="def show_settingswindow: nbpage0 failed")
+
+	def show_hide_options_window(self):
+		try:
+			self.nbpage1 = Gtk.VBox(False,spacing=2)
+			self.nbpage1.set_border_width(8)
+			self.nbpage1.pack_start(Gtk.Label(label=_("Options\n")),False,False,0)
+			self.settings_options_button_networkadapter(self.nbpage1)
+			self.settings_options_switch_updateovpnonstart(self.nbpage1)
+			self.settings_options_switch_accinfo(self.nbpage1)
+			self.settings_options_switch_srvinfo(self.nbpage1)
+			self.settings_options_switch_disablequit(self.nbpage1)
+			self.settings_options_combobox_theme(self.nbpage1)
+			self.settings_options_combobox_language(self.nbpage1)
+			self.settings_options_switch_debugmode(self.nbpage1)
+			self.settingsnotebook.append_page(self.nbpage1, Gtk.Label(_(" Options ")))
+		except:
+			self.debug(text="def show_settingswindow: nbpage1 failed")
+
+	def show_hide_updates_window(self):
+		try:
+			self.nbpage2 = Gtk.VBox(False,spacing=2)
+			self.nbpage2.set_border_width(8)
+			self.nbpage2.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
+			self.settings_updates_button_normalconf(self.nbpage2)
+			self.settings_updates_button_forceconf(self.nbpage2)
+			self.settings_options_button_ipv6(self.nbpage2)
+			self.settings_updates_button_apireset(self.nbpage2)
+			self.settingsnotebook.append_page(self.nbpage2, Gtk.Label(_(" Updates ")))
+		except:
+			self.debug(text="def show_settingswindow: nbpage2 failed")
+
 	def show_hide_backup_window(self):
 		try:
 			self.load_firewall_backups()
 			if len(self.FIREWALL_BACKUPS) > 0 and self.NO_WIN_FIREWALL == False and self.STATE_OVPN == False and self.inThread_jump_server_running == False:
-				self.nbpage4 = Gtk.VBox(False,spacing=2)
-				self.nbpage4.set_border_width(8)
-				self.nbpage4.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
-				self.settings_firewall_switch_backuprestore(self.nbpage4)
-				self.settingsnotebook.append_page(self.nbpage4, Gtk.Label(_(" Backups ")))
+				self.nbpage3 = Gtk.VBox(False,spacing=2)
+				self.nbpage3.set_border_width(8)
+				self.nbpage3.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
+				self.settings_firewall_switch_backuprestore(self.nbpage3)
+				self.settingsnotebook.append_page(self.nbpage3, Gtk.Label(_(" Backups ")))
 		except:
-			self.debug(text="def show_hide_backup_window: nbpage4 failed")
+			self.debug(text="def show_hide_backup_window: nbpage3 failed")
 
 	def settings_firewall_switch_nofw(self,page):
 		try:
@@ -2800,6 +2832,8 @@ class Systray:
 		if index > -1:
 			self.APP_LANGUAGE = combobox.get_active_text()
 			self.write_options_file()
+			self.UPDATE_SWITCH = True
+			self.LANG_CHANGE = True
 			if self.init_localization(self.APP_LANGUAGE) == True:
 				self.debug(text="def cb_settings_options_combobox_language: selected lang = '%s'" % (self.APP_LANGUAGE))
 		return
