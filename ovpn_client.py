@@ -1210,7 +1210,6 @@ class Systray:
 					self.show_hide_security_window()
 					self.show_hide_options_window()
 					self.show_hide_updates_window()
-					self.show_hide_backup_window()
 					self.settingswindow.show_all()
 					self.settingsnotebook.set_current_page(1)
 				except:
@@ -2319,7 +2318,7 @@ class Systray:
 		try:
 			self.nbpage0 = Gtk.VBox(False,spacing=2)
 			self.nbpage0.set_border_width(8)
-			self.nbpage0.pack_start(Gtk.Label(label=_("Security Settings\n")),False,False,0)
+			self.nbpage0.pack_start(Gtk.Label(label=""),False,False,0)
 			self.settings_firewall_switch_nofw(self.nbpage0)
 			self.settings_firewall_switch_fwblockonexit(self.nbpage0)
 			self.settings_firewall_switch_fwdontaskonexit(self.nbpage0)
@@ -2336,16 +2335,15 @@ class Systray:
 		try:
 			self.nbpage1 = Gtk.VBox(False,spacing=2)
 			self.nbpage1.set_border_width(8)
-			self.nbpage1.pack_start(Gtk.Label(label=_("Options\n")),False,False,0)
-			self.settings_options_button_networkadapter(self.nbpage1)
+			self.nbpage1.pack_start(Gtk.Label(label=""),False,False,0)
 			self.settings_options_switch_updateovpnonstart(self.nbpage1)
 			self.settings_options_switch_accinfo(self.nbpage1)
 			self.settings_options_switch_srvinfo(self.nbpage1)
 			self.settings_options_switch_disablequit(self.nbpage1)
+			self.settings_options_switch_debugmode(self.nbpage1)
 			self.settings_options_combobox_theme(self.nbpage1)
 			self.settings_options_combobox_fontsize(self.nbpage1)
 			self.settings_options_combobox_language(self.nbpage1)
-			self.settings_options_switch_debugmode(self.nbpage1)
 			self.settingsnotebook.append_page(self.nbpage1, Gtk.Label(_(" Options ")))
 		except:
 			self.debug(text="def show_settingswindow: nbpage1 failed")
@@ -2354,7 +2352,8 @@ class Systray:
 		try:
 			self.nbpage2 = Gtk.VBox(False,spacing=2)
 			self.nbpage2.set_border_width(8)
-			self.nbpage2.pack_start(Gtk.Label(label=_("Updates\n")),False,False,0)
+			self.nbpage2.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_button_networkadapter(self.nbpage2)
 			self.settings_updates_button_normalconf(self.nbpage2)
 			self.settings_updates_button_forceconf(self.nbpage2)
 			self.settings_options_button_ipv6(self.nbpage2)
