@@ -7,7 +7,7 @@ xcopy /Y /E "%INCLUDESDIR%\ico" "%DISTDIR%\ico\"
 xcopy /Y /E "%INCLUDESDIR%\dns" "%DISTDIR%\dns\"
 xcopy /Y /E "%LOCALEDIR%" "%DISTDIR%\locale\"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
-copy /Y "%INCLUDESDIR%\themes\switcher.ini" "%DISTDIR%\etc\gtk-3.0\settings.ini"
+del "%DISTDIR%\etc\gtk-3.0\settings.ini"
 
 copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "%DISTDIR%\crypt32.dll"
 
