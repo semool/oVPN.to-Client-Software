@@ -1185,6 +1185,29 @@ class Systray:
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
 
+			# Language changed
+			if self.LANG_CHANGE == True:
+				try:
+					self.settingsnotebook.remove(self.nbpage0)
+					self.settingsnotebook.remove(self.nbpage1)
+					self.settingsnotebook.remove(self.nbpage2)
+				except:
+					pass
+				try:
+					self.settingsnotebook.remove(self.nbpage3)
+				except:
+					pass
+				try:
+					self.show_hide_security_window()
+					self.show_hide_options_window()
+					self.show_hide_updates_window()
+					self.show_hide_backup_window()
+					self.settingswindow.show_all()
+					self.settingsnotebook.set_current_page(1)
+				except:
+					pass
+				self.LANG_CHANGE = False
+
 			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 				self.switch_fw.set_sensitive(False)
 				self.switch_fwblockonexit.set_sensitive(False)
@@ -1286,29 +1309,6 @@ class Systray:
 				self.switch_debugmode.set_active(True)
 			else:
 				self.switch_debugmode.set_active(False)
-
-			# Language changed
-			if self.LANG_CHANGE == True:
-				try:
-					self.settingsnotebook.remove(self.nbpage0)
-					self.settingsnotebook.remove(self.nbpage1)
-					self.settingsnotebook.remove(self.nbpage2)
-				except:
-					pass
-				try:
-					self.settingsnotebook.remove(self.nbpage3)
-				except:
-					pass
-				try:
-					self.show_hide_security_window()
-					self.show_hide_options_window()
-					self.show_hide_updates_window()
-					self.show_hide_backup_window()
-					self.settingswindow.show_all()
-					self.settingsnotebook.set_current_page(1)
-				except:
-					pass
-				self.LANG_CHANGE = False
 
 			# end switches update
 			self.UPDATE_SWITCH = False
