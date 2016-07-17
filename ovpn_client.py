@@ -1701,15 +1701,20 @@ class Systray:
 							self.STATUS_ICON_BLINK = 0
 							self.STATE_CERTDL = "wait"
 							self.API_COUNTER = 120
+							LAST_requestcerts = 0
 							while not self.body == "ready":
 								if self.API_COUNTER <= 0:
 									self.timer_check_certdl_running = False
 									self.msgwarn(_("Update took too long...aborted!\nPlease retry in few minutes..."),_("Error: Update Timeout"))
 									return False
-								time.sleep(5)
-								self.API_COUNTER -= 5
+								time.sleep(1)
+								if LAST_requestcerts > 6:
+									self.API_REQUEST(API_ACTION = "requestcerts")
+									LAST_requestcerts = 0
+								else:
+									LAST_requestcerts += 1
 								self.STATUS_ICON_BLINK += 1
-								self.API_REQUEST(API_ACTION = "requestcerts")
+								self.API_COUNTER -= 1
 							# final step to download certs
 							self.STATE_CERTDL = "getcerts"
 							if self.API_REQUEST(API_ACTION = "getcerts"):
