@@ -3164,8 +3164,6 @@ class Systray:
 			self.debug(text="def cb_jump_openvpn(%s)"%(server))
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
-			#if (not self.OVPN_CONNECTEDto == False and not self.OVPN_PING_LAST > 0) or (self.OVPN_CONNECTEDseconds > 0 and self.OVPN_CONNECTEDseconds < 20):
-			#	return
 			self.debug(text="def cb_jump_openvpn: %s" % (server))
 			jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
 			jumpthread.daemon = True
@@ -3187,7 +3185,6 @@ class Systray:
 				self.debug(text="def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
 				time.sleep(0.1)
 			self.call_openvpn(server)
-			#self.inThread_jump_server_running == False
 			self.debug(text="def inThread_jump_server: exit")
 
 	def kill_openvpn(self):
