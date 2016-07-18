@@ -1354,7 +1354,7 @@ class Systray:
 					systrayicon = self.systray_icon_syncupdate2
 				statusbar_text = systraytext
 				
-		elif self.STATE_OVPN == False:
+		elif self.STATE_OVPN == False and self.OVERWRITE_TRAYICON == False:
 			systraytext = _("Disconnected! Have a nice and anonymous day!")
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
@@ -1365,15 +1365,15 @@ class Systray:
 					self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
 			except:
 				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
+		elif self.inThread_jump_server_running == True and self.OVERWRITE_TRAYICON == True:
+			systraytext = _("Connecting to %s") % (self.OVPN_CALL_SRV)
+			systrayicon = self.systray_icon_connect
+			statusbar_text = systraytext
+			self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
 		elif self.STATE_OVPN == True:
 			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 			self.OVPN_CONNECTEDseconds = connectedseconds
-			if self.OVPN_PING_STAT == -1:
-				systraytext = _("Connecting to %s") % (self.OVPN_CONNECTEDto)
-				systrayicon = self.systray_icon_connect
-				statusbar_text = systraytext
-				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
-			elif self.OVPN_PING_STAT == -2:
+			if self.OVPN_PING_STAT == -2:
 				self.OVPN_isTESTING = True
 				systraytext = _("Testing connection to %s") % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_testing
@@ -1383,6 +1383,7 @@ class Systray:
 				systraytext = _("Connection to %s unstable or failed!") % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_testing
 				statusbar_text = systraytext
+				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
 			elif self.OVPN_PING_STAT > 0:
 				try:
 					if self.OVPN_isTESTING == True:
@@ -1481,7 +1482,7 @@ class Systray:
 				self.load_ovpn_server()
 			except:
 				self.debug(text="def make_systray_menu: self.load_ovpn_server() failed")
-
+			
 			try:
 				self.make_systray_server_menu()
 			except:
@@ -3159,6 +3160,7 @@ class Systray:
 
 	def cb_jump_openvpn(self,widget,event,server):
 		if (widget == 0 and event == 0) or event.button == 1:
+			self.OVPN_CALL_SRV = server
 			self.debug(text="def cb_jump_openvpn(%s)"%(server))
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
@@ -3176,15 +3178,16 @@ class Systray:
 			return
 		else:
 			self.inThread_jump_server_running = True
+			self.OVERWRITE_TRAYICON = True
 			self.UPDATE_SWITCH = True
 			self.debug(text="def inThread_jump_server: server %s" % (server))
 			if self.STATE_OVPN == True:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
 				self.debug(text="def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
-				time.sleep(1)
+				time.sleep(0.1)
 			self.call_openvpn(server)
-			self.inThread_jump_server_running == False
+			#self.inThread_jump_server_running == False
 			self.debug(text="def inThread_jump_server: exit")
 
 	def kill_openvpn(self):
@@ -3226,7 +3229,6 @@ class Systray:
 			self.debug(text="def openvpn: sleep while timer_check_certdl_running")
 			time.sleep(0.5)
 		self.debug(text="def openvpn: server = '%s'" % (server))
-		self.OVPN_CALL_SRV = server
 		if self.STATE_OVPN == False:
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
@@ -3307,6 +3309,7 @@ class Systray:
 		self.OVPN_PING_LAST = -1
 		self.NEXT_PING_EXEC = 0
 		self.reset_load_remote_timer()
+		self.OVERWRITE_TRAYICON = False
 		self.STATE_OVPN = True
 		if self.timer_ovpn_ping_running == False:
 			self.debug("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
