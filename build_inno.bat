@@ -23,9 +23,12 @@ if exist %EXESTRING% del %EXESTRING%
 call includes_to_dist.bat %~1
 
 echo Run inno_setup%BITS%.iss now
-pause
+%INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
+
 rmdir /S/Q dist\ build\
 
+echo Compiled %EXESTRING%
+pause
 REM exit
 call release.bat
 echo release.bat finished

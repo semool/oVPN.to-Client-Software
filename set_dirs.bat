@@ -23,6 +23,7 @@ set INCLUDESDIR=%SOURCEDIR%\includes
 set LOCALEDIR=%SOURCEDIR%\locale
 set DISTDIR=%SOURCEDIR%\dist
 set LANGPATH=%SOURCEDIR%\dist\share\locale\
+set INNOCOMPILE="C:\Program Files (x86)\Inno Setup 5\Compil32.exe"
 
 echo dir vars loaded
 echo %SOURCEDIR%
