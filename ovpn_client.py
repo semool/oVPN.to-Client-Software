@@ -3183,7 +3183,7 @@ class Systray:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
 				self.debug(text="def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
-				time.sleep(0.1)
+				time.sleep(1)
 			self.call_openvpn(server)
 			self.debug(text="def inThread_jump_server: exit")
 
@@ -3224,7 +3224,7 @@ class Systray:
 		self.debug(text="def openvpn()")
 		while self.timer_check_certdl_running == True:
 			self.debug(text="def openvpn: sleep while timer_check_certdl_running")
-			time.sleep(0.5)
+			time.sleep(1)
 		self.debug(text="def openvpn: server = '%s'" % (server))
 		if self.STATE_OVPN == False:
 			self.ovpn_server_UPPER = server
