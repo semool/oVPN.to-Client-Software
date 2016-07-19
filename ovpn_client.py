@@ -48,7 +48,6 @@ class Systray:
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		self.tray.connect('size-changed', self.statusicon_size_changed)
-		self.tray.connect('query-tooltip', self.statusicon_query_tooltip)
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 		self.window.connect("delete-event", Gtk.main_quit)
@@ -5474,12 +5473,9 @@ class Systray:
 		except:
 			self.debug(text="def msgwarn_glib: failed")
 
-	def statusicon_size_changed(widget, event):
-		self.debug(text="def statusicon_size_changed()")
+	def statusicon_size_changed(widget, size):
+		self.debug(text="def statusicon_size_changed() size = '%s'" % (size))
 
-	def statusicon_query_tooltip(widget, event):
-		self.debug(text="def statusicon_query_tooltip()")
-		
 def app():
 	Systray()
 	Gtk.main()
