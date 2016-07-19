@@ -22,7 +22,7 @@ import requests
 import json
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.6-gtk3"
+CLIENTVERSION="v0.5.7-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -458,7 +458,9 @@ class Systray:
 				
 				try:
 					APIKEY = parser.get('oVPN','apikey')
-					if APIKEY == "False":
+					if not self.APIKEY == False:
+						pass
+					elif APIKEY == "False" and self.APIKEY == False:
 						self.APIKEY = False
 					else:
 						self.APIKEY = APIKEY
@@ -725,14 +727,14 @@ class Systray:
 		self.isWRITING_OPTFILE = True
 		self.debug(text="def write_options_file()")
 		try:
-			if self.PPP_NO_SAVE == True:
-				plaintext_passphrase = False
+			if self.SAVE_APIKEY_INFILE == True:
+				APIKEY = self.APIKEY
 			else:
-				plaintext_passphrase = self.PASSPHRASE
+				APIKEY = False
 			cfg = open(self.opt_file,'wb')
 			parser = SafeConfigParser()
 			parser.add_section('oVPN')
-			parser.set('oVPN','apikey','%s'%(self.APIKEY))
+			parser.set('oVPN','apikey','%s'%(APIKEY))
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 			parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
@@ -4053,18 +4055,25 @@ class Systray:
 			apikeyEntry.set_size_request(200,24)
 			apikeyLabel = Gtk.Label(label=_("API-Key:"))
 			
+			checkbox = Gtk.Switch()
+			checkbox_title = Gtk.Label(label="Save Passphrase in File?")
+			checkbox.set_active(False)
+
 			dialogBox.pack_start(apikeyLabel,False,False,0)
 			dialogBox.pack_start(apikeyEntry,False,False,0)
 			
+			dialogBox.pack_start(checkbox_title,False,False,0)
+			dialogBox.pack_start(checkbox,False,False,0)
+
 			dialogWindow.show_all()
 			
-			dialogWindow.connect("response", self.response_dialog_apilogin, useridEntry, apikeyEntry)
+			dialogWindow.connect("response", self.response_dialog_apilogin, useridEntry, apikeyEntry, checkbox)
 			dialogWindow.connect("close", self.response_dialog_apilogin, None, None)
 			dialogWindow.run()
 		except:
 			self.debug(text="def form_ask_userid: Failed")
 
-	def response_dialog_apilogin(self, dialog, response_id, useridEntry, apikeyEntry):
+	def response_dialog_apilogin(self, dialog, response_id, useridEntry, apikeyEntry, checkbox):
 		self.debug(text="response_dialog_apilogin()")
 		if response_id == Gtk.ResponseType.CANCEL:
 			self.debug(text="def response_dialog_apilogin: response_id == Gtk.ResponseType.CANCEL")
@@ -4080,6 +4089,11 @@ class Systray:
 			self.debug(text="def response_dialog_apilogin: Gtk.ResponseType.OK userid = '%s'"%(userid))
 			if userid.isdigit() and userid > 1 and (len(apikey) == 0 or (len(apikey) == 128 and apikey.isalnum())) and (self.USERID == False or self.USERID == userid):
 				dialog.destroy()
+				saveph = checkbox.get_active()
+				if saveph == True:
+					self.SAVE_APIKEY_INFILE = True
+				else:
+					self.SAVE_APIKEY_INFILE = False
 				if self.USERID == False:
 					self.debug(text="def response_dialog_apilogin: self.USERID == False")
 					api_dir = "%s\\%s" % (self.app_dir,userid)
