@@ -140,7 +140,7 @@ class Systray:
 		self.MYDNS = {}
 		self.NETSH_CMDLIST = list()
 		self.ROUTE_CMDLIST = list()
-		
+		self.API_DIR = False
 		self.OPENVPN_EXE = False
 		self.OPENVPN_SILENT_SETUP = False
 		
@@ -305,8 +305,11 @@ class Systray:
 			self.debug(text="No profiles found")
 			if self.USERID == False:
 				self.debug(text="spawn popup userid = %s" % (self.USERID))
+				self.debug(text="def win_pre2_check_profiles_win: L:308")
 				self.form_ask_userid()
+				self.debug(text="def win_pre2_check_profiles_win: L:309")
 				if not self.USERID == False and not self.APIKEY == False:
+					self.debug(text="def win_pre2_check_profiles_win: L:310")
 					return True
 		elif self.PROFILES_COUNT == 1 and self.PROFILES[0] > 1:
 			self.USERID = self.PROFILES[0]
@@ -318,22 +321,22 @@ class Systray:
 
 	def win_pre3_load_profile_dir_vars(self):
 		self.debug(text="def win_pre3_load_profile_dir_vars()")
-		self.api_dir = "%s\\%s" % (self.app_dir,self.USERID)
-		self.debug_log = "%s\\client_debug.log" % (self.api_dir)
+		self.API_DIR = "%s\\%s" % (self.app_dir,self.USERID)
+		self.debug_log = "%s\\client_debug.log" % (self.API_DIR)
 		if os.path.isfile(self.debug_log):
 			try:
 				os.remove(self.debug_log)
 			except:
 				pass
 		self.lock_file = "%s\\lock.file" % (self.app_dir)
-		self.opt_file = "%s\\options.cfg" % (self.api_dir)
-		self.api_cfg = "%s\\ovpnapi.conf" % (self.api_dir)
+		self.opt_file = "%s\\options.cfg" % (self.API_DIR)
+		self.api_cfg = "%s\\ovpnapi.conf" % (self.API_DIR)
 		if os.path.isfile(self.api_cfg):
 			os.remove(self.api_cfg)
-		self.vpn_dir = "%s\\openvpn" % (self.api_dir)
-		self.prx_dir = "%s\\proxy" % (self.api_dir)
-		self.stu_dir = "%s\\stunnel" % (self.api_dir)
-		self.pfw_dir = "%s\\pfw" % (self.api_dir)
+		self.vpn_dir = "%s\\openvpn" % (self.API_DIR)
+		self.prx_dir = "%s\\proxy" % (self.API_DIR)
+		self.stu_dir = "%s\\stunnel" % (self.API_DIR)
+		self.pfw_dir = "%s\\pfw" % (self.API_DIR)
 		self.pfw_bak = "%s\\pfw.%s.bak.wfw" % (self.pfw_dir,self.BOOTTIME)
 		self.pfw_private_log = "%s\\pfw.private.%s.log" % (self.pfw_dir,self.BOOTTIME)
 		self.pfw_public_log = "%s\\pfw.public.%s.log" % (self.pfw_dir,self.BOOTTIME)
@@ -402,9 +405,9 @@ class Systray:
 		try:
 			#self.debug(text="def check_config_folders userid = %s" % (self.USERID))
 			self.debug(text="def check_config_folders: userid found")
-			if not os.path.exists(self.api_dir):
-				if self.DEBUG: print("api_dir %s not found, creating." % (self.api_dir))
-				os.mkdir(self.api_dir)
+			if not os.path.exists(self.API_DIR):
+				if self.DEBUG: print("api_dir %s not found, creating." % (self.API_DIR))
+				os.mkdir(self.API_DIR)
 			if os.path.isfile(self.lock_file):
 				try:
 					os.remove(self.lock_file)
@@ -443,7 +446,7 @@ class Systray:
 			#	os.mkdir(self.dns_ung)
 			if not self.build_openvpn_dlurl():
 				return False
-			if os.path.exists(self.api_dir) and os.path.exists(self.vpn_dir) and os.path.exists(self.vpn_cfg) \
+			if os.path.exists(self.API_DIR) and os.path.exists(self.vpn_dir) and os.path.exists(self.vpn_cfg) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
 				if self.read_options_file():
 					if self.APIKEY == False:
@@ -454,7 +457,7 @@ class Systray:
 							self.form_ask_userid()
 					return True
 			else:
-				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.api_dir,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
+				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.API_DIR,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
 			self.errorquit(text=_("Creating config Folders failed"))
 
@@ -1616,7 +1619,8 @@ class Systray:
 			if self.ACCWINDOW_OPEN == True:
 				accwindowentry = Gtk.MenuItem(_("Close Account"))
 			else:
-				accwindowentry = Gtk.MenuItem(_("Account"))
+				if self.LOAD_ACCDATA == True:
+					accwindowentry = Gtk.MenuItem(_("Account"))
 			self.systray_menu.append(accwindowentry)
 			accwindowentry.connect('button-release-event', self.show_accwindow)
 			accwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"accwindowentry")
@@ -4059,37 +4063,39 @@ class Systray:
 			
 			dialogWindow.show_all()
 			
-			dialogWindow.connect("response", self.response_dialog_apikey, useridEntry, apikeyEntry)
-			dialogWindow.connect("close", self.response_dialog_apikey, None, None)
+			dialogWindow.connect("response", self.response_dialog_apilogin, useridEntry, apikeyEntry)
+			dialogWindow.connect("close", self.response_dialog_apilogin, None, None)
 			dialogWindow.run()
 		except:
 			self.debug(text="def form_ask_userid: Failed")
 
-	def response_dialog_apikey(self, dialog, response_id, useridEntry, apikeyEntry):
-		self.debug(text="response_dialog_apikey()")
+	def response_dialog_apilogin(self, dialog, response_id, useridEntry, apikeyEntry):
+		self.debug(text="response_dialog_apilogin()")
 		if response_id == Gtk.ResponseType.CANCEL:
-			self.debug(text="def response_dialog_apikey: response_id == Gtk.ResponseType.CANCEL")
+			self.debug(text="def response_dialog_apilogin: response_id == Gtk.ResponseType.CANCEL")
 			dialog.destroy()
 			return
 		elif response_id == Gtk.ResponseType.OK:
+			self.debug(text="def response_dialog_apilogin: Gtk.ResponseType.OK self.USERID = '%s'"%(self.USERID))
 			userid = useridEntry.get_text().rstrip()
 			apikey = apikeyEntry.get_text().rstrip()
-			if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum():
+			self.debug(text="def response_dialog_apilogin: Gtk.ResponseType.OK userid = '%s'"%(userid))
+			if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum() and (self.USERID == False or self.USERID == userid):
 				dialog.destroy()
-				if self.USERID == userid:
-					self.USERID = userid
+				if self.USERID == False:
+					self.debug(text="def response_dialog_apilogin: self.USERID == False")
+					api_dir = "%s\\%s" % (self.app_dir,userid)
+					if not os.path.isdir(api_dir):
+						os.mkdir(api_dir)
+						if os.path.isdir(api_dir):
+							self.API_DIR = api_dir
+							self.USERID = userid
+							self.APIKEY = apikey
+							self.write_options_file()
+				elif not self.API_DIR == False and os.path.isdir(self.API_DIR):
 					self.APIKEY = apikey
-					self.write_options_file()
-				else:
-					self.APIKEY = apikey
-					try:
-						self.api_dir = "%s\\%s" % (self.app_dir,userid)
-						if not os.path.exists(self.api_dir):
-							os.mkdir(self.api_dir)
-						if self.remove_lock():
-							self.preboot()
-					except:
-						self.debug(text="def response_dialog_apikey: create new userid failed")
+					if not self.write_options_file() == True:
+						self.APIKEY = False
 		elif dialog:
 			dialog.destroy()
 
@@ -5327,12 +5333,16 @@ class Systray:
 
 	def remove_lock(self):
 		self.debug(text="def remove_lock()")
-		if os.path.isfile(self.lock_file):
-			self.debug(text="close lock")
+		try:
+			LOCKFILE = self.lock_file
+		except:
+			return True
+		if os.path.isfile(LOCKFILE):
 			self.LOCK.close()
+			self.debug(text="def remove_lock: self.LOCK.close()")
 			try:
-				os.remove(self.lock_file)
-				self.debug(text="remove lock")
+				os.remove(LOCKFILE)
+				self.debug(text="def remove_lock: os.remove(LOCKFILE)")
 				return True
 			except:
 				self.debug(text="def remove_lock: remove lock failed!")
