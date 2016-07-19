@@ -255,9 +255,9 @@ class Systray:
 					if self.win_pre2_check_profiles_win():
 						if self.win_pre3_load_profile_dir_vars():
 							if self.check_config_folders():
-								if self.read_interfaces():
-									if self.write_options_file():
-										if self.read_options_file():
+								if self.read_options_file():
+									if self.read_interfaces():
+										if self.write_options_file():
 											return True
 		elif OS == "linux2" :
 			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
@@ -444,8 +444,7 @@ class Systray:
 				return False
 			if os.path.exists(self.API_DIR) and os.path.exists(self.vpn_dir) and os.path.exists(self.VPN_CFG) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
-				if self.read_options_file():
-					return True
+				return True
 			else:
 				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.API_DIR,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
@@ -460,11 +459,10 @@ class Systray:
 				
 				try:
 					APIKEY = parser.get('oVPN','apikey')
-					if not self.APIKEY == False:
-						pass
-					elif APIKEY == "False" and self.APIKEY == False:
+					if APIKEY == "False":
 						self.APIKEY = False
 					else:
+						self.SAVE_APIKEY_INFILE = True
 						self.APIKEY = APIKEY
 				except:
 					pass
@@ -729,8 +727,11 @@ class Systray:
 		self.isWRITING_OPTFILE = True
 		self.debug(text="def write_options_file()")
 		try:
-			if self.SAVE_APIKEY_INFILE == True:
-				APIKEY = self.APIKEY
+			if not self.APIKEY == False:
+				if self.SAVE_APIKEY_INFILE == True:
+					APIKEY = self.APIKEY
+				else:
+					APIKEY = False
 			else:
 				APIKEY = False
 			cfg = open(self.opt_file,'wb')
@@ -4035,9 +4036,8 @@ class Systray:
 			dialogWindow.set_title(_("oVPN.to Setup"))
 			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
 			dialogBox = dialogWindow.get_content_area()
-			
+			useridEntry = Gtk.Entry()
 			if self.USERID == False:
-				useridEntry = Gtk.Entry()
 				useridEntry.set_visibility(True)
 				useridEntry.set_max_length(9)
 				useridEntry.set_size_request(200,24)
@@ -4049,7 +4049,6 @@ class Systray:
 				useridLabel2 = Gtk.Label(label=" %s"%(self.USERID))
 				dialogBox.pack_start(useridLabel1,False,False,0)
 				dialogBox.pack_start(useridLabel2,False,False,0)
-			
 			apikeyEntry = Gtk.Entry()
 			apikeyEntry.set_visibility(False)
 			apikeyEntry.set_max_length(128)
@@ -4063,14 +4062,13 @@ class Systray:
 
 			dialogBox.pack_start(apikeyLabel,False,False,0)
 			dialogBox.pack_start(apikeyEntry,False,False,0)
-			
+
 			dialogBox.pack_start(checkbox_title,False,False,0)
 			dialogBox.pack_start(checkbox,False,False,0)
 
 			dialogWindow.show_all()
-			
 			dialogWindow.connect("response", self.response_dialog_apilogin, useridEntry, apikeyEntry, checkbox)
-			dialogWindow.connect("close", self.response_dialog_apilogin, None, None)
+			dialogWindow.connect("close", self.response_dialog_apilogin, None, None, None)
 			dialogWindow.run()
 		except:
 			self.debug(text="def form_ask_userid: Failed")
