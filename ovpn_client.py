@@ -72,6 +72,7 @@ class Systray:
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		
 		self.OS = sys.platform
+		self.INIT_FIRST_UPDATE = True
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
 		self.SETTINGSWINDOW_OPEN = False
@@ -254,7 +255,8 @@ class Systray:
 							if self.check_config_folders():
 								if self.read_interfaces():
 									if self.write_options_file():
-										return True
+										if self.read_options_file():
+											return True
 		elif OS == "linux2" :
 			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
 		elif OS == "darwin":
@@ -342,11 +344,10 @@ class Systray:
 		self.pfw_public_log = "%s\\pfw.public.%s.log" % (self.pfw_dir,self.BOOTTIME)
 		self.pfw_domain_log = "%s\\pfw.domain.%s.log" % (self.pfw_dir,self.BOOTTIME)
 		
-		self.vpn_cfg = "%s\\config" % (self.vpn_dir)
-		self.vpn_cfgold = self.vpn_cfg
-		self.vpn_cfgip4 = "%s\\ip4" % (self.vpn_cfg)
-		self.vpn_cfgip46 = "%s\\ip46" % (self.vpn_cfg)
-		self.vpn_cfgip64 = "%s\\ip64" % (self.vpn_cfg)
+		self.VPN_CFG = "%s\\config" % (self.vpn_dir)
+		self.VPN_CFGip4 = "%s\\ip4" % (self.VPN_CFG)
+		self.VPN_CFGip46 = "%s\\ip46" % (self.VPN_CFG)
+		self.VPN_CFGip64 = "%s\\ip64" % (self.VPN_CFG)
 		
 		self.zip_cfg = "%s\\confs.zip" % (self.vpn_dir)
 		self.zip_crt = "%s\\certs.zip" % (self.vpn_dir)
@@ -419,18 +420,18 @@ class Systray:
 			if not os.path.exists(self.vpn_dir):
 				if self.DEBUG: print("vpn_dir %s not found, creating." % (self.vpn_dir))
 				os.mkdir(self.vpn_dir)
-			if not os.path.exists(self.vpn_cfg):
-				if self.DEBUG: print("vpn_cfg %s not found, creating." % (self.vpn_cfg))
-				os.mkdir(self.vpn_cfg)
-			if not os.path.exists(self.vpn_cfgip4):
-				if self.DEBUG: print("vpn_cfgip4 %s not found, creating." % (self.vpn_cfgip4))
-				os.mkdir(self.vpn_cfgip4)
-			if not os.path.exists(self.vpn_cfgip46):
-				if self.DEBUG: print("vpn_cfgip46 %s not found, creating." % (self.vpn_cfgip46))
-				os.mkdir(self.vpn_cfgip46)
-			if not os.path.exists(self.vpn_cfgip64):
-				if self.DEBUG: print("vpn_cfgip64 %s not found, creating." % (self.vpn_cfgip64))
-				os.mkdir(self.vpn_cfgip64)
+			if not os.path.exists(self.VPN_CFG):
+				if self.DEBUG: print("vpn_cfg %s not found, creating." % (self.VPN_CFG))
+				os.mkdir(self.VPN_CFG)
+			if not os.path.exists(self.VPN_CFGip4):
+				if self.DEBUG: print("vpn_cfgip4 %s not found, creating." % (self.VPN_CFGip4))
+				os.mkdir(self.VPN_CFGip4)
+			if not os.path.exists(self.VPN_CFGip46):
+				if self.DEBUG: print("vpn_cfgip46 %s not found, creating." % (self.VPN_CFGip46))
+				os.mkdir(self.VPN_CFGip46)
+			if not os.path.exists(self.VPN_CFGip64):
+				if self.DEBUG: print("vpn_cfgip64 %s not found, creating." % (self.VPN_CFGip64))
+				os.mkdir(self.VPN_CFGip64)
 			if not os.path.exists(self.prx_dir):
 				if self.DEBUG: print("prx_dir %s not found, creating." % (self.prx_dir))
 				os.mkdir(self.prx_dir)
@@ -446,15 +447,9 @@ class Systray:
 			#	os.mkdir(self.dns_ung)
 			if not self.build_openvpn_dlurl():
 				return False
-			if os.path.exists(self.API_DIR) and os.path.exists(self.vpn_dir) and os.path.exists(self.vpn_cfg) \
+			if os.path.exists(self.API_DIR) and os.path.exists(self.vpn_dir) and os.path.exists(self.VPN_CFG) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
 				if self.read_options_file():
-					if self.APIKEY == False:
-						self.form_ask_userid()
-						if not self.APIKEY == False:
-							return True
-						else:
-							self.form_ask_userid()
 					return True
 			else:
 				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.API_DIR,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
@@ -557,15 +552,13 @@ class Systray:
 					
 					if self.OVPN_CONFIGVERSION == "23x":
 						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4A
-						self.vpn_cfg = self.vpn_cfgip4
+						self.VPN_CFG = self.VPN_CFGip4
 					elif self.OVPN_CONFIGVERSION == "23x46":
 						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
-						self.vpn_cfg = self.vpn_cfgip46
+						self.VPN_CFG = self.VPN_CFGip46
 					elif self.OVPN_CONFIGVERSION == "23x64":
 						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
-						self.vpn_cfg = self.vpn_cfgip64
-					
-					self.move_configs()
+						self.VPN_CFG = self.VPN_CFGip64
 					
 					self.debug(text="self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
 				except:
@@ -1362,10 +1355,19 @@ class Systray:
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
 			try:
-				if self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
+				if len(self.OVPN_SERVER) == 0 and self.INIT_FIRST_UPDATE == True:
+					self.INIT_FIRST_UPDATE = False
+					self.load_ovpn_server()
+					if len(self.OVPN_SERVER) == 0:
+						self.debug(text="zero server found, initiate first update")
+						self.check_remote_update()
+				elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
+					self.INIT_FIRST_UPDATE = False
+				elif self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
 					self.OVPN_AUTO_CONNECT_ON_START = False
 					self.debug(text="def systray_timer: self.OVPN_AUTO_CONNECT_ON_START: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 					self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
+				
 			except:
 				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
 		elif self.inThread_jump_server_running == True and self.OVERWRITE_TRAYICON == True:
@@ -1549,7 +1551,6 @@ class Systray:
 											self.debug(text="def make_systray_server_menu: imgpath '%s' not found" % (imgpath))
 									except:
 										self.debug(text="def make_systray_server_menu: if imgpath '%s' is file append to systray failed " % (imgpath))
-										self.destroy_systray_menu()
 								except:
 									self.debug(text="def make_systray_server_menu: imgpath = self.FLAG_IMG[%s] failed" % (countrycode))
 									self.destroy_systray_menu()
@@ -1619,7 +1620,7 @@ class Systray:
 			if self.ACCWINDOW_OPEN == True:
 				accwindowentry = Gtk.MenuItem(_("Close Account"))
 			else:
-				if self.LOAD_ACCDATA == True:
+				if self.LOAD_ACCDATA == True and not self.APIKEY == False:
 					accwindowentry = Gtk.MenuItem(_("Account"))
 			self.systray_menu.append(accwindowentry)
 			accwindowentry.connect('button-release-event', self.show_accwindow)
@@ -1676,16 +1677,16 @@ class Systray:
 	def check_remote_update(self):
 		self.debug(text="def check_remote_update()")
 		if self.timer_check_certdl_running == False:
-			if self.check_inet_connection() == True:
-				self.debug(text="def check_remote_update: check_inet_connection() == True")
-				try:
-					thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
-					thread_certdl.start()
-					threadid_certdl = threading.currentThread()
-					self.debug(text="def check_remote_update threadid_certdl = %s" %(threadid_certdl))
-					return True
-				except:
-					self.debug(text="starting thread_certdl failed")
+			self.debug(text="def check_remote_update: check_inet_connection() == True")
+			try:
+				thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
+				thread_certdl.daemon = True
+				thread_certdl.start()
+				threadid_certdl = threading.currentThread()
+				self.debug(text="def check_remote_update threadid_certdl = %s" %(threadid_certdl))
+				return True
+			except:
+				self.debug(text="starting thread_certdl failed")
 		return False
 
 	def inThread_timer_check_certdl(self):
@@ -2951,7 +2952,7 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_updates_button_normalconf(self,event):
-		GLib.idle_add(self.cb_check_normal_update)
+		self.cb_check_normal_update()
 
 	def settings_updates_button_forceconf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
@@ -3233,7 +3234,7 @@ class Systray:
 		if self.STATE_OVPN == False:
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
-			self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.vpn_cfg,self.ovpn_server_UPPER)
+			self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.VPN_CFG,self.ovpn_server_UPPER)
 			if os.path.isfile(self.ovpn_server_config_file):
 				for line in open(self.ovpn_server_config_file):
 					if "remote " in line:
@@ -3261,7 +3262,7 @@ class Systray:
 				self.debug(text="Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
 				return False
 			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.vpn_dir)
-			self.ovpn_server_dir = "%s\\%s" % (self.vpn_cfg,self.ovpn_server_LOWER)
+			self.ovpn_server_dir = "%s\\%s" % (self.VPN_CFG,self.ovpn_server_LOWER)
 			self.ovpn_cert_ca = "%s\\%s.crt" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_tls_key = "%s\\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_cli_crt = "%s\\client%s.crt" % (self.ovpn_server_dir,self.USERID)
@@ -4038,25 +4039,26 @@ class Systray:
 			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
 			dialogBox = dialogWindow.get_content_area()
 			
-			useridEntry = Gtk.Entry()
-			if not self.USERID == False:
-				useridEntry.set_text('%s'%(self.USERID))
-			useridEntry.set_visibility(True)
-			useridEntry.set_max_length(9)
-			useridEntry.set_size_request(200,24)
-			useridLabel = Gtk.Label(label=_("User-ID:"))
+			if self.USERID == False:
+				useridEntry = Gtk.Entry()
+				useridEntry.set_visibility(True)
+				useridEntry.set_max_length(9)
+				useridEntry.set_size_request(200,24)
+				useridLabel = Gtk.Label(label=_("User-ID:"))
+				dialogBox.pack_start(useridLabel,False,False,0)
+				dialogBox.pack_start(useridEntry,False,False,0)
+			else:
+				useridLabel1 = Gtk.Label(label=_("User-ID:"))
+				useridLabel2 = Gtk.Label(label=" %s"%(self.USERID))
+				dialogBox.pack_start(useridLabel1,False,False,0)
+				dialogBox.pack_start(useridLabel2,False,False,0)
 			
 			apikeyEntry = Gtk.Entry()
-
-			
 			apikeyEntry.set_visibility(False)
 			apikeyEntry.set_max_length(128)
 			apikeyEntry.set_invisible_char("*")
 			apikeyEntry.set_size_request(200,24)
 			apikeyLabel = Gtk.Label(label=_("API-Key:"))
-			
-			dialogBox.pack_start(useridLabel,False,False,0)
-			dialogBox.pack_start(useridEntry,False,False,0)
 			
 			dialogBox.pack_start(apikeyLabel,False,False,0)
 			dialogBox.pack_start(apikeyEntry,False,False,0)
@@ -4077,10 +4079,13 @@ class Systray:
 			return
 		elif response_id == Gtk.ResponseType.OK:
 			self.debug(text="def response_dialog_apilogin: Gtk.ResponseType.OK self.USERID = '%s'"%(self.USERID))
-			userid = useridEntry.get_text().rstrip()
+			if self.USERID == False:
+				userid = useridEntry.get_text().rstrip()
+			else:
+				userid = self.USERID
 			apikey = apikeyEntry.get_text().rstrip()
 			self.debug(text="def response_dialog_apilogin: Gtk.ResponseType.OK userid = '%s'"%(userid))
-			if userid.isdigit() and userid > 1 and len(apikey) == 128 and apikey.isalnum() and (self.USERID == False or self.USERID == userid):
+			if userid.isdigit() and userid > 1 and (len(apikey) == 0 or (len(apikey) == 128 and apikey.isalnum())) and (self.USERID == False or self.USERID == userid):
 				dialog.destroy()
 				if self.USERID == False:
 					self.debug(text="def response_dialog_apilogin: self.USERID == False")
@@ -4091,11 +4096,19 @@ class Systray:
 							self.API_DIR = api_dir
 							self.USERID = userid
 							self.APIKEY = apikey
-							self.write_options_file()
+							self.debug(text="def response_dialog_apilogin: return True #1")
+							return True
 				elif not self.API_DIR == False and os.path.isdir(self.API_DIR):
-					self.APIKEY = apikey
+					if len(apikey) == 0:
+						self.APIKEY = False
+					else:
+						self.APIKEY = apikey
 					if not self.write_options_file() == True:
 						self.APIKEY = False
+						return False
+					self.INIT_FIRST_UPDATE = True
+					self.debug(text="def response_dialog_apilogin: return True #2")
+					return True
 		elif dialog:
 			dialog.destroy()
 
@@ -4157,7 +4170,6 @@ class Systray:
 
 	def cb_check_normal_update(self):
 		self.debug(text="def cb_check_normal_update()")
-		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
 			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
 			return False
@@ -4167,7 +4179,6 @@ class Systray:
 
 	def cb_force_update(self):
 		self.debug(text="def cb_force_update()")
-		self.destroy_systray_menu()
 		if self.check_inet_connection() == False:
 			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
 			return False
@@ -4186,7 +4197,6 @@ class Systray:
 	def cb_extserverview(self,widget,event):
 		if event.button == 1:
 			self.debug(text="def cb_extserverview()")
-			self.destroy_systray_menu()
 			reopen = False
 			if self.MAINWINDOW_OPEN == True:
 				reopen = True
@@ -4204,7 +4214,6 @@ class Systray:
 	def cb_extserverview_size(self,widget,event):
 		if event.button == 1:
 			self.debug(text="def cb_extserverview_size()")
-			self.destroy_systray_menu()
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
@@ -4263,7 +4272,6 @@ class Systray:
 	def cb_set_loaddataevery(self,widget,event):
 		if event.button == 1:
 			self.debug(text="def cb_set_loaddataevery()")
-			self.destroy_systray_menu()
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
@@ -4363,26 +4371,24 @@ class Systray:
 			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):
 				z1file = zipfile.ZipFile(self.zip_cfg)
 				z2file = zipfile.ZipFile(self.zip_crt)
-				if os.path.isdir(self.vpn_cfg):
-					self.delete_dir(self.vpn_cfg)
-				if not os.path.isdir(self.vpn_cfg):
+				if os.path.isdir(self.VPN_CFG):
+					self.debug(text="def extract_ovpn: os.path.isdir(%s)"%(self.VPN_CFG))
+					self.delete_dir(self.VPN_CFG)
+				if not os.path.isdir(self.VPN_CFG):
 					try:
-						os.mkdir(self.vpn_cfg)
+						os.mkdir(self.VPN_CFG)
+						self.debug(text="def extract_ovpn: os.mkdir(%s)"%(self.VPN_CFG))
 					except:
-						self.debug(text="def extract_ovpn: %s not found, create failed."%(self.vpn_cfg))
+						self.debug(text="def extract_ovpn: %s not found, create failed."%(self.VPN_CFG))
 				try:
-					z1file.extractall(self.vpn_cfg)
-					z2file.extractall(self.vpn_cfg)
+					z1file.extractall(self.VPN_CFG)
+					z2file.extractall(self.VPN_CFG)
 					if self.write_last_update():
-						text = "Certificates and Configs extracted."
-						#self.set_statusbar_text(text)
-						self.debug(text=text)
+						self.debug(text="Certificates and Configs extracted.")
 						return True
 				except:
-						text = "Error on extracting Certificates and Configs!"
-						#self.set_statusbar_text(text)
-						self.debug(text=text)
-						return False
+					self.debug(text="Error on extracting Certificates and Configs!")
+					return False
 		except:
 			self.debug(text="def extract_ovpn: failed")
 
@@ -4390,7 +4396,6 @@ class Systray:
 		self.debug(text="def API_REQUEST()")
 		if self.APIKEY == False:
 			self.msgwarn(_("No API-Key!"),_("Error: def API_REQUEST"))
-			self.form_ask_userid()
 			return False
 		if API_ACTION == "lastupdate": 
 			self.TO_CURL = "uid=%s&apikey=%s&action=%s" % (self.USERID,self.APIKEY,API_ACTION)
@@ -4527,20 +4532,6 @@ class Systray:
 		except:
 			self.debug(text="def load_firewall_backups: failed")
 
-	def move_configs(self):
-		self.debug(text="def move_configs()")
-		if os.path.exists(self.vpn_cfgold):
-			content = os.listdir(self.vpn_cfgold)
-			for file in content:
-				if file.endswith('.ovpn.to.ovpn') or file.endswith('.ovpn.to') or file.endswith('.txt') or file.endswith('.log'):
-					shellcmd = 'move.exe /Y "%s\\%s" "%s\\"' % (self.vpn_cfgold,file,self.vpn_cfg)
-					self.debug(text="def move_configs: '%s'" % shellcmd)
-					exitcode = subprocess.call('%s' % (shellcmd),shell=True)
-					if exitcode == 0:
-						self.debug(text="def move_configs: exitcode = %s" % (exitcode))
-					else:
-						self.debug(text="def move_configs: exitcode = %s" % (exitcode))
-
 	def copy_appdata(self,oldpath,newpath):
 		self.debug(text="def move_appdata()")
 		shellcmd = 'xcopy /Y /E "%s" "%s\\"' % (oldpath,newpath)
@@ -4555,14 +4546,14 @@ class Systray:
 	def load_ovpn_server(self):
 		self.debug(text="def load_ovpn_server()")
 		try:
-			if os.path.exists(self.vpn_cfg):
-				content = os.listdir(self.vpn_cfg)
+			if os.path.exists(self.VPN_CFG):
+				content = os.listdir(self.VPN_CFG)
 				#self.debug(text="def load_ovpn_server: self.body = %s " % (self.body))
 				self.OVPN_SERVER = list()
 				self.OVPN_SERVER_INFO = {}
 				for file in content:
 					if file.endswith('.ovpn.to.ovpn'):
-						filepath = "%s\\%s" % (self.vpn_cfg,file)
+						filepath = "%s\\%s" % (self.VPN_CFG,file)
 						servername = file[:-5]
 						countrycode = servername[:2].lower()
 						servershort = servername[:3].upper()
