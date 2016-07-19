@@ -271,13 +271,6 @@ class Systray:
 			print "alternative folder found"
 			self.bin_dir = os.getcwd()
 			self.app_dir = "%s\\appdata\\ovpn" % (self.bin_dir)
-			oldpath = "%s\\ovpn" % (os_appdata)
-			newpath = self.app_dir
-			try:
-				if os.path.exists(oldpath) and not os.path.exists(newpath):
-					self.copy_appdata(oldpath,newpath)
-			except:
-				self.msgwarn(_("Copy old appdata to new folder failed!"),_("Error: def win_pre1_check_app_dir()"))
 		else:
 			self.app_dir = "%s\\ovpn" % (os_appdata)
 			self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
@@ -4531,17 +4524,6 @@ class Systray:
 						self.FIREWALL_BACKUPS.append(file)
 		except:
 			self.debug(text="def load_firewall_backups: failed")
-
-	def copy_appdata(self,oldpath,newpath):
-		self.debug(text="def move_appdata()")
-		shellcmd = 'xcopy /Y /E "%s" "%s\\"' % (oldpath,newpath)
-		self.msgwarn(_("Move Userdata to new folder: '%s'") % (shellcmd),_("Error: def move_appdata"))
-		exitcode = subprocess.call('%s' % (shellcmd),shell=True)
-		self.debug(text="def move_appdata: exitcode = %s" % (exitcode))
-		if os.path.exists("%s\\bin"%(self.app_dir)):
-			shellcmd = 'rmdir.exe /S /Q "%s\\bin"' % (self.app_dir)
-			exitcode = subprocess.call('%s' % (shellcmd),shell=True)
-			self.debug(text="def move_appdata: exitcode '%s' = %s" % (shellcmd,exitcode))
 
 	def load_ovpn_server(self):
 		self.debug(text="def load_ovpn_server()")
