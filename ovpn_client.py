@@ -853,7 +853,7 @@ class Systray:
 								while not self.read_gateway_from_routes():
 									if i > 5:
 										return False
-									sleep 5
+									time.sleep(5)
 									i += 1
 								return True
 			else:
