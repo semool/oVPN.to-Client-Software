@@ -1387,9 +1387,11 @@ class Systray:
 			
 			# settings_options_button_ipv6
 			if self.OVPN_CONFIGVERSION == "23x":
-				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
-			elif self.OVPN_CONFIGVERSION == "23x46":
+				self.button_title.set_label(_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
 				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
+			elif self.OVPN_CONFIGVERSION == "23x46":
+				self.button_title.set_label(_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
+				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
 			
 			# end switches update
 			self.UPDATE_SWITCH = False
@@ -2857,12 +2859,16 @@ class Systray:
 
 	def settings_options_button_ipv6(self,page):
 		if self.OVPN_CONFIGVERSION == "23x":
-			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
-			button.connect('clicked', self.cb_settings_options_button_ipv6)
-		elif self.OVPN_CONFIGVERSION  == "23x46":
+			button_title = Gtk.Label(label=_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
 			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
 			button.connect('clicked', self.cb_settings_options_button_ipv6)
+		elif self.OVPN_CONFIGVERSION  == "23x46":
+			button_title = Gtk.Label(label=_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
+			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
+			button.connect('clicked', self.cb_settings_options_button_ipv6)
 		self.button_ipmode = button
+		self.button_title = button_title
+		page.pack_start(button_title,False,False,0)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
