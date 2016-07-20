@@ -47,6 +47,8 @@ class Systray:
 	def __init__(self):
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
+		traysize = self.tray.get_size()
+		self.debug(text="TrayIcon Output Size: %s pixel" % (traysize))
 		self.tray.connect('size-changed', self.statusicon_size_changed)
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
