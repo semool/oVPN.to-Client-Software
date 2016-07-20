@@ -1627,17 +1627,18 @@ class Systray:
 			self.debug(text="def make_systray_bottom_menu: mainwindowentry failed")
 		
 		try:
+			accwindowentry = False
 			if self.ACCWINDOW_OPEN == True:
 				accwindowentry = Gtk.MenuItem(_("Close Account"))
 			else:
 				if self.LOAD_ACCDATA == True and not self.APIKEY == False:
 					accwindowentry = Gtk.MenuItem(_("Account"))
-			self.systray_menu.append(accwindowentry)
-			accwindowentry.connect('button-release-event', self.show_accwindow)
-			accwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"accwindowentry")
+			if accwindowentry:
+				self.systray_menu.append(accwindowentry)
+				accwindowentry.connect('button-release-event', self.show_accwindow)
+				accwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"accwindowentry")
 		except:
 			self.debug(text="def make_systray_bottom_menu: accwindowentry failed")
-		
 		
 		try:
 			if self.SETTINGSWINDOW_OPEN == True:
