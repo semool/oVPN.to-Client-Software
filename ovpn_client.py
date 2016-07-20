@@ -5370,6 +5370,9 @@ class Systray:
 
 	def debug(self,text):
 		timefromboot = round(time.time() - self.BOOTTIME,3)
+		debugstringsht = False
+		debugstringsht1 = False
+		debugstringsht2 = False
 		if self.DEBUGcount > 0 and not self.DEBUGfrombefore == text:
 			debugstringsht1 = "(%s):(d1) %s (repeat: %s)" % (timefromboot, self.DEBUGfrombefore,self.DEBUGcount)
 			debugstringsht2 = "(%s):(d2) %s" % (timefromboot,text)
@@ -5387,22 +5390,23 @@ class Systray:
 			debugstringsht = "(%s):(d4) %s"%(timefromboot,text)
 			print("%s" % (debugstringsht))
 		self.DEBUGfrombefore = text
-		if self.DEBUG == True:
-			if not self.debug_log == False:
-				try:
-					localtime = time.asctime(time.localtime(time.time()))
-					debugstringlog = "%s (%s):(d5) %s"%(localtime,timefromboot,text)
-					try:
-						debugstringlog = localtime+" "+debugstringsht1+"\n"+debugstringlog
-					except:
-						pass
-					if len(text) > 1:
-						dbg = open(self.debug_log,'a')
-						dbg.write("%s\n" % (debugstringlog))
-						dbg.close()
-					return True
-				except:
-					print("Write to %s failed"%(self.debug_log))
+		if not debugstringsht == False:
+			self.write_debug(debugstringsht,timefromboot)
+		if not debugstringsht1 == False:
+			self.write_debug(debugstringsht1,timefromboot)
+		if not debugstringsht2 == False:
+			self.write_debug(debugstringsht2,timefromboot)
+
+	def write_debug(self,string,timefromboot):
+		try:
+			if self.DEBUG == True and not self.debug_log == False:
+				localtime = time.asctime(time.localtime(time.time()))
+				debugstringlog = "%s (%s):(d5) %s"%(localtime,timefromboot,string)
+				dbg = open(self.debug_log,'a')
+				dbg.write("%s\n" % (debugstringlog))
+				dbg.close()
+		except:
+			print("def write_debug: write to %s failed"%(self.debug_log))
 
 	def init_theme(self):
 		get_settings = Gtk.Settings.get_default()
