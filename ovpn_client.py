@@ -5426,7 +5426,7 @@ class Systray:
 					loc = False
 			
 			filename1 = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
-			filename2 = "X:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
+			filename2 = "E:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
 			
 			if not loc == "en" and os.path.isfile(filename1):
 				filename = filename1
