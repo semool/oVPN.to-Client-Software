@@ -1187,10 +1187,10 @@ class Systray:
 				self.LAST_MSGWARN_WINDOW = 0
 		except:
 			pass
-
+		
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
 			self.debug(text="def systray_timer2: UPDATE_SWITCH")
-
+			
 			# Language changed
 			if self.LANG_FONT_CHANGE == True:
 				try:
@@ -1212,7 +1212,7 @@ class Systray:
 				except:
 					pass
 				self.LANG_FONT_CHANGE = False
-
+			
 			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 				self.switch_fw.set_sensitive(False)
 				self.switch_fwblockonexit.set_sensitive(False)
@@ -1225,6 +1225,12 @@ class Systray:
 					self.settingsnotebook.remove(self.nbpage3)
 				except:
 					pass
+			elif self.NO_WIN_FIREWALL == True:
+				self.switch_fwblockonexit.set_sensitive(False)
+				self.switch_fwdontaskonexit.set_sensitive(False)
+				self.switch_fwresetonconnect.set_sensitive(False)
+				self.switch_fwbackupmode.set_sensitive(False)
+				self.switch_tapblockoutbound.set_sensitive(False)
 			else:
 				self.switch_fw.set_sensitive(True)
 				self.switch_fwblockonexit.set_sensitive(True)
@@ -1238,7 +1244,7 @@ class Systray:
 					self.settingswindow.show_all()
 				except:
 					pass
-
+			
 			# def settings_firewall_switch_nofw()
 			if self.NO_WIN_FIREWALL == True:
 				self.switch_fw.set_active(False)
@@ -1248,49 +1254,49 @@ class Systray:
 					pass
 			else:
 				self.switch_fw.set_active(True)
-
+			
 			# def settings_firewall_switch_tapblockoutbound()
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.switch_tapblockoutbound.set_active(True)
 			else:
 				self.switch_tapblockoutbound.set_active(False)
-
+			
 			# def settings_firewall_switch_fwblockonexit()
 			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 				self.switch_fwblockonexit.set_active(True)
 			else:
 				self.switch_fwblockonexit.set_active(False)
-
+			
 			# def settings_firewall_switch_fwdontaskonexit()
 			if self.WIN_DONT_ASK_FW_EXIT == True:
 				self.switch_fwdontaskonexit.set_active(True)
 			else:
 				self.switch_fwdontaskonexit.set_active(False)
-
+			
 			# def settings_firewall_switch_fwresetonconnect()
 			if self.WIN_RESET_FIREWALL == True:
 				self.switch_fwresetonconnect.set_active(True)
 			else:
 				self.switch_fwresetonconnect.set_active(False)
-
+			
 			# def settings_firewall_switch_fwbackupmode()
 			if self.WIN_BACKUP_FIREWALL == True:
 				self.switch_fwbackupmode.set_active(True)
 			else:
 				self.switch_fwbackupmode.set_active(False)
-
+			
 			# def settings_network_switch_nodns()
 			if self.NO_DNS_CHANGE == True:
 				self.switch_nodns.set_active(False)
 			else:
 				self.switch_nodns.set_active(True)
-
+			
 			# settings_network_switch_disableextifondisco
 			if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
 				self.switch_disableextifondisco.set_active(True)
 			else:
 				self.switch_disableextifondisco.set_active(False)
-
+			
 			# settings_options_switch_updateovpnonstart
 			if self.UPDATEOVPNONSTART == True:
 				self.switch_updateovpnonstart.set_active(True)
@@ -1314,7 +1320,13 @@ class Systray:
 				self.switch_debugmode.set_active(True)
 			else:
 				self.switch_debugmode.set_active(False)
-
+			
+			# settings_options_button_ipv6
+			if self.OVPN_CONFIGVERSION == "23x":
+				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
+			elif self.OVPN_CONFIGVERSION == "23x46":
+				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
+			
 			# end switches update
 			self.UPDATE_SWITCH = False
 		else:
@@ -2779,18 +2791,13 @@ class Systray:
 		GLib.idle_add(self.cb_resetextif)
 
 	def settings_options_button_ipv6(self,page):
-		if not self.OVPN_CONFIGVERSION == "23x":
+		if self.OVPN_CONFIGVERSION == "23x":
 			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
 			button.connect('clicked', self.cb_settings_options_button_ipv6)
-		if not self.OVPN_CONFIGVERSION  == "23x46":
+		elif self.OVPN_CONFIGVERSION  == "23x46":
 			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
 			button.connect('clicked', self.cb_settings_options_button_ipv6)
-		"""
-		 *** fixme need isValueIPv6 first! ***
-		if not self.OVPN_CONFIGVERSION == "23x64":
-			button = Gtk.Button(label=_("Use IPv6 Entry Server with Exits to IPv6 + IPv4"))
-			button.connect('clicked', self.cb_settings_options_button_ipv6)
-		"""
+		self.button_ipmode = button
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
@@ -4329,6 +4336,7 @@ class Systray:
 			self.cb_check_normal_update()
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
+		self.UPDATE_SWITCH = True
 
 	def cb_change_ipmode2(self):
 		self.debug(text="def cb_change_ipmode2()")
@@ -4341,6 +4349,7 @@ class Systray:
 			self.cb_check_normal_update()
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
+		self.UPDATE_SWITCH = True
 
 	# *** fixme: need isValueIPv6 first! ***
 	def cb_change_ipmode3(self):
@@ -4815,7 +4824,7 @@ class Systray:
 		if not self.OPENVPN_DL_URL == False:
 			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 				return self.verify_openvpnbin_dl()
-			self.msgwarn(_("Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait...") % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO),_("Setup: openVPN"))
+			#self.msgwarn(_("Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait...") % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO),_("Setup: openVPN"))
 			try:
 				ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
 				r1 = requests.get(self.OPENVPN_DL_URL)
@@ -5414,11 +5423,11 @@ class Systray:
 					loc = False
 			
 			filename1 = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
-			filename2 = "E:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
+			filename2 = "X:\\Persoenlich\\ovpn-client\\locale\\%s\\ovpn_client.mo" % (loc)
 			
-			if os.path.isfile(filename1):
+			if not loc == "en" and os.path.isfile(filename1):
 				filename = filename1
-			elif os.path.isfile(filename2):
+			elif not loc == "en" and os.path.isfile(filename2):
 				filename = filename2
 			else:
 				filename = False
