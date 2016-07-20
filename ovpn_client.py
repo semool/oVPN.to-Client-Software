@@ -1,5 +1,69 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
+from _winreg import *
+
+# Patching libgtk-3-0.dll for 16px or 32px TrayIcon Output
+# File Size win32 dll: 6453248
+# File Size win64 dll: 6675968
+
+bin_dir = os.getcwd()
+gtkfile = "%s\\libgtk-3-0.dll" % (bin_dir)
+
+if os.path.exists(gtkfile) and sys.platform == "win32":
+
+	# Check filesize to detect 32 or 64bit dll
+	offset = False
+	filesize = os.path.getsize(gtkfile)
+	if filesize == 6675968:
+		offset = 0x3D051
+		version = "win64"
+	if filesize == 6453248:
+		offset = 0x3E4E2
+		version = "win32"
+
+	if not offset == False:
+
+		print "Found: %s [%s]" % (gtkfile,version)
+
+		# Get Windows DPI Scaling Factor from Registry (96 = 100%, 120 = 125%)
+		# When reg key = False, use standard 16px output
+		pixel = "\x10"
+		pixeldez = "16"
+		RawKey = False
+		try:
+			Registry = ConnectRegistry(None, HKEY_CURRENT_USER)
+			RawKey = OpenKey(Registry, "Control Panel\Desktop")
+		except:
+			pass
+		try:
+			if not RawKey == False:
+				i = 0
+				while 1:
+					name, value, type = EnumValue(RawKey, i)
+					if name == "LogPixels":
+						if value > 96:
+							pixel = "\x20"
+							pixeldez = "32"
+						if value == 96:
+							pass
+						break
+					i += 1
+		except:
+			pass
+
+		# Patching
+		with open(gtkfile,'r+b') as f:
+				f.seek(offset)
+				if not f.read(1) == pixel:
+					print "Patch TrayIcon Output Size to: %s pixel" % (pixeldez)
+					f.seek(offset)
+					f.write(pixel)
+
+	else:
+		print "No compatible gtk-3-0.dll found"
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
@@ -8,9 +72,7 @@ from datetime import datetime as datetime
 import gettext
 import locale
 import types
-import os
 import platform
-import sys
 import hashlib
 import random
 import time
@@ -87,7 +149,7 @@ class Systray:
 		self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
-		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
+		self.INSTALLED_LANGUAGES = [ "en", "de", "es", "nl" ]
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
@@ -2907,6 +2969,8 @@ class Systray:
 				active_item = 1
 			if self.APP_LANGUAGE == "es":
 				active_item = 2
+			if self.APP_LANGUAGE == "nl":
+				active_item = 3
 			combobox.set_active(active_item)
 			combobox.connect('changed',self.cb_settings_options_combobox_language)
 			page.pack_start(combobox_title,False,False,0)
