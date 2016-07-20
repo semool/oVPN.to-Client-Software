@@ -4131,7 +4131,7 @@ class Systray:
 			apikeyLabel = Gtk.Label(label=_("API-Key:"))
 			
 			checkbox = Gtk.Switch()
-			checkbox_title = Gtk.Label(label="Save Passphrase in File?")
+			checkbox_title = Gtk.Label(label=_("Save Passphrase in File?"))
 			checkbox.set_active(False)
 
 			dialogBox.pack_start(apikeyLabel,False,False,0)
