@@ -3070,8 +3070,8 @@ class Systray:
 				self.write_options_file()
 				self.debug(text="def cb_icons_switcher_changed: selected Icons = '%s'" % (self.ICONS_THEME))
 			else:
+				self.debug(text="def cb_icons_switcher_changed: failed icon theme = '%s', revert to '%s'" % (self.ICONS_THEME,self.ICONS_THEME_frombefore))
 				self.ICONS_THEME = self.ICONS_THEME_frombefore
-				self.debug(text="def cb_icons_switcher_changed: failed icon theme = '%s'" % (self.ICONS_THEME))
 			self.UPDATE_SWITCH = True
 		return
 
