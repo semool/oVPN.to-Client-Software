@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-
+"""
+import ctypes
+user32 = ctypes.windll.user32
+user32.SetProcessDPIAware()
+"""
 import os
 import sys
 from _winreg import *
@@ -150,7 +154,8 @@ class Systray:
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ICONS_THEME = "standard"
-		self.INSTALLED_ICONS = [ "standard", "classic", "experimental" ]
+		self.ICONS_THEME_frombefore = self.ICONS_THEME
+		self.INSTALLED_ICONS = [ "standard", "classic", "classic2", "shield_bluesync", "experimental", "private" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
@@ -450,19 +455,42 @@ class Systray:
 		return True
 
 	def load_icons(self):
+		# called from: def cb_icons_switcher_changed()
 		self.ico_dir = "%s\\ico" % (self.bin_dir)
-		self.ico_dir_theme = "%s\\ico\\standard" % (self.bin_dir)
-
-		if self.ICONS_THEME == "classic":
+		if self.ICONS_THEME == "standard":
+			self.ico_dir_theme = "%s\\ico\\standard" % (self.bin_dir)
+		elif self.ICONS_THEME == "classic":
 			self.ico_dir_theme = "%s\\ico\\classic" % (self.bin_dir)
-		if self.ICONS_THEME == "experimental":
+		elif self.ICONS_THEME == "classic2":
+			self.ico_dir_theme = "%s\\ico\\classic2" % (self.bin_dir)
+		elif self.ICONS_THEME == "shield_bluesync":
+			self.ico_dir_theme = "%s\\ico\\shield_bluesync" % (self.bin_dir)
+		elif self.ICONS_THEME == "experimental":
 			self.ico_dir_theme = "%s\\ico\\experimental" % (self.bin_dir)
+		elif self.ICONS_THEME == "private":
+			self.ico_dir_theme = "%s\\ico\\private" % (self.bin_dir)
 
 		if not os.path.isdir(self.ico_dir):
 			return False
 		if not os.path.isdir(self.ico_dir_theme):
 			return False
-
+		
+		app_icon = "%s\\app.ico" % (self.ico_dir_theme)
+		systray_icon_connected = "%s\\app.ico" % (self.ico_dir_theme)
+		systray_icon_disconnected = "%s\\disconnect.ico" % (self.ico_dir_theme)
+		systray_icon_disconnected_traymenu = "%s\\disconnect_menu.ico" % (self.ico_dir_theme)
+		systray_icon_connect = "%s\\connect.ico" % (self.ico_dir_theme)
+		systray_icon_testing = "%s\\testing.ico" % (self.ico_dir_theme)
+		systray_icon_syncupdate1 = "%s\\sync_1.ico" % (self.ico_dir_theme)
+		systray_icon_syncupdate2 = "%s\\sync_2.ico" % (self.ico_dir_theme)
+		systray_icon_syncupdate3 = "%s\\sync_3.ico" % (self.ico_dir_theme)
+		
+		checkfiles = [app_icon,systray_icon_connected,systray_icon_disconnected,systray_icon_disconnected_traymenu,systray_icon_connect,systray_icon_testing,systray_icon_syncupdate1,systray_icon_syncupdate2,systray_icon_syncupdate3]
+		for file in checkfiles:
+			if not os.path.isfile(file):
+				self.debug(text="def load_icons: file '%s' not found" %(file))
+				return False
+			
 		self.app_icon = "%s\\app.ico" % (self.ico_dir_theme)
 		self.systray_icon_connected = "%s\\app.ico" % (self.ico_dir_theme)
 		self.systray_icon_disconnected = "%s\\disconnect.ico" % (self.ico_dir_theme)
@@ -472,6 +500,10 @@ class Systray:
 		self.systray_icon_syncupdate1 = "%s\\sync_1.ico" % (self.ico_dir_theme)
 		self.systray_icon_syncupdate2 = "%s\\sync_2.ico" % (self.ico_dir_theme)
 		self.systray_icon_syncupdate3 = "%s\\sync_3.ico" % (self.ico_dir_theme)
+		
+		self.systrayicon_from_before = False
+		
+		return True
 
 	def check_config_folders(self):
 		self.debug(text="def check_config_folders()")
@@ -1424,6 +1456,21 @@ class Systray:
 			elif self.OVPN_CONFIGVERSION == "23x46":
 				self.button_title.set_label(_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
 				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
+			
+			# settings_options_combobox_icons
+			if self.ICONS_THEME == "standard":
+				active_item = 0
+			if self.ICONS_THEME == "classic":
+				active_item = 1
+			if self.ICONS_THEME == "classic2":
+				active_item = 2
+			if self.ICONS_THEME == "shield_bluesync":
+				active_item = 3
+			if self.ICONS_THEME == "experimental":
+				active_item = 4
+			if self.ICONS_THEME == "private":
+				active_item = 5
+			self.combobox_icons.set_active(active_item)
 			
 			# resize settings window
 			self.settingswindow.resize(1,1)
@@ -2989,14 +3036,21 @@ class Systray:
 			self.debug(text="def settings_options_combobox_icons()")
 			combobox_title = Gtk.Label(label=_("Change App Icons"))
 			combobox = Gtk.ComboBoxText.new()
+			self.combobox_icons = combobox
 			for icons in self.INSTALLED_ICONS:
 				combobox.append_text(icons)
 			if self.ICONS_THEME == "standard":
 				active_item = 0
 			if self.ICONS_THEME == "classic":
 				active_item = 1
-			if self.ICONS_THEME == "experimental":
+			if self.ICONS_THEME == "classic2":
 				active_item = 2
+			if self.ICONS_THEME == "shield_bluesync":
+				active_item = 3
+			if self.ICONS_THEME == "experimental":
+				active_item = 4
+			if self.ICONS_THEME == "private":
+				active_item = 5
 			combobox.set_active(active_item)
 			combobox.connect('changed',self.cb_icons_switcher_changed)
 			page.pack_start(combobox_title,False,False,0)
@@ -3010,10 +3064,15 @@ class Systray:
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
+			self.ICONS_THEME_frombefore = self.ICONS_THEME
 			self.ICONS_THEME = combobox.get_active_text()
-			self.write_options_file()
-			self.load_icons()
-			self.debug(text="def cb_icons_switcher_changed: selected Icons = '%s'" % (self.ICONS_THEME))
+			if self.load_icons():
+				self.write_options_file()
+				self.debug(text="def cb_icons_switcher_changed: selected Icons = '%s'" % (self.ICONS_THEME))
+			else:
+				self.debug(text="def cb_icons_switcher_changed: failed icon theme = '%s', revert to '%s'" % (self.ICONS_THEME,self.ICONS_THEME_frombefore))
+				self.ICONS_THEME = self.ICONS_THEME_frombefore
+			self.UPDATE_SWITCH = True
 		return
 
 	def settings_options_combobox_fontsize(self,page):
