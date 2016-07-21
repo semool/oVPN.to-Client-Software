@@ -1472,7 +1472,9 @@ class Systray:
 				active_item = 5
 			self.combobox_icons.set_active(active_item)
 			
+			# resize settings window
 			self.settingswindow.resize(1,1)
+			
 			# end switches update
 			self.UPDATE_SWITCH = False
 		else:
