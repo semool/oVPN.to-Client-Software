@@ -848,6 +848,14 @@ class Systray:
 						if self.win_netsh_read_dns_to_backup():
 							if self.read_gateway_from_routes():
 								return True
+							else:
+								i = 0
+								while not self.read_gateway_from_routes():
+									if i > 5:
+										return False
+									time.sleep(5)
+									i += 1
+								return True
 			else:
 				self.win_netsh_restore_dns_from_backup()
 				self.WIN_RESET_EXT_DEVICE = False
