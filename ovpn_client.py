@@ -70,9 +70,10 @@ if os.path.exists(gtkfile) and sys.platform == "win32":
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 
 from datetime import datetime as datetime
+import base64
 import gettext
 import locale
 import types
@@ -457,8 +458,12 @@ class Systray:
 
 	def load_icons(self):
 		# called from: def cb_icons_switcher_changed()
+
+		base64_data = base64.b64decode(self.base64_icons("app_icon"))
+		base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
+		self.app_icon = GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
+
 		self.ico_dir = "%s\\ico" % (self.bin_dir)
-		self.app_icon = "%s\\app.ico" % (self.ico_dir)
 
 		if self.ICONS_THEME == "standard":
 			self.ico_dir_theme = "%s\\ico\\standard" % (self.bin_dir)
@@ -477,7 +482,7 @@ class Systray:
 			return False
 		if not os.path.isdir(self.ico_dir_theme):
 			return False
-		
+
 		systray_icon_connected = "%s\\connected.ico" % (self.ico_dir_theme)
 		systray_icon_disconnected = "%s\\disconnect.ico" % (self.ico_dir_theme)
 		systray_icon_disconnected_traymenu = "%s\\disconnect_menu.ico" % (self.ico_dir_theme)
@@ -487,7 +492,7 @@ class Systray:
 		systray_icon_syncupdate2 = "%s\\sync_2.ico" % (self.ico_dir_theme)
 		systray_icon_syncupdate3 = "%s\\sync_3.ico" % (self.ico_dir_theme)
 		
-		checkfiles = [self.app_icon,systray_icon_connected,systray_icon_disconnected,systray_icon_disconnected_traymenu,systray_icon_connect,systray_icon_testing,systray_icon_syncupdate1,systray_icon_syncupdate2,systray_icon_syncupdate3]
+		checkfiles = [systray_icon_connected,systray_icon_disconnected,systray_icon_disconnected_traymenu,systray_icon_connect,systray_icon_testing,systray_icon_syncupdate1,systray_icon_syncupdate2,systray_icon_syncupdate3]
 		for file in checkfiles:
 			if not os.path.isfile(file):
 				self.debug(text="def load_icons: file '%s' not found" %(file))
@@ -1015,9 +1020,9 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_file(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
-				self.debug(text="def win_read_interfaces: #1 dialogWindow.set_icon_from_file(self.app_icon) failed")
+				self.debug(text="def win_read_interfaces: #1 dialogWindow.set_icon(self.app_icon) failed")
 				pass
 			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
 			dialogWindow.set_title(text)
@@ -1053,9 +1058,9 @@ class Systray:
 					dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 					dialogWindow.set_transient_for(self.window)
 					try:
-						dialogWindow.set_icon_from_file(self.app_icon)
+						dialogWindow.set_icon(self.app_icon)
 					except:
-						self.debug(text="def win_read_interfaces: #2 dialogWindow.set_icon_from_file(self.app_icon) failed")
+						self.debug(text="def win_read_interfaces: #2 dialogWindow.set_icon(self.app_icon) failed")
 					text = _("Choose your External Network Adapter!")
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
@@ -1086,9 +1091,9 @@ class Systray:
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
 		try:
-			dialogWindow.set_icon_from_file(self.app_icon)
+			dialogWindow.set_icon(self.app_icon)
 		except:
-			self.debug(text="def select_userid: dialogWindow.set_icon_from_file(self.app_icon) failed")
+			self.debug(text="def select_userid: dialogWindow.set_icon(self.app_icon) failed")
 		text = _("Please select your User-ID!")
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
@@ -2157,7 +2162,7 @@ class Systray:
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
-				self.mainwindow.set_icon_from_file(self.app_icon)
+				self.mainwindow.set_icon(self.app_icon)
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
@@ -2365,7 +2370,7 @@ class Systray:
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
 				self.accwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.accwindow.set_title(_("oVPN Account - %s") % (CLIENT_STRING))
-				self.accwindow.set_icon_from_file(self.app_icon)
+				self.accwindow.set_icon(self.app_icon)
 				self.accwindow.set_default_size(370,480)
 				self.accwindow_accinfo()
 				self.ACCWINDOW_OPEN = True
@@ -2484,7 +2489,7 @@ class Systray:
 				self.settingswindow.set_position(Gtk.WindowPosition.CENTER)
 				self.settingswindow.connect("destroy",self.cb_destroy_settingswindow)
 				self.settingswindow.set_title(_("oVPN Settings - %s") % (CLIENT_STRING))
-				self.settingswindow.set_icon_from_file(self.app_icon)
+				self.settingswindow.set_icon(self.app_icon)
 				self.settingsnotebook = Gtk.Notebook()
 				self.settingswindow.add(self.settingsnotebook)
 				
@@ -4269,9 +4274,9 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			self.dialog_form_ask_userid = dialogWindow
 			try:
-				dialogWindow.set_icon_from_file(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
-				self.debug(text="def form_ask_userid: dialogWindow.set_icon_from_file(self.app_icon) failed")
+				self.debug(text="def form_ask_userid: dialogWindow.set_icon(self.app_icon) failed")
 			dialogWindow.set_transient_for(self.window)
 			dialogWindow.set_title(_("oVPN.to Setup"))
 			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
@@ -4465,9 +4470,9 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_file(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
-				self.debug(text="def cb_extserverview_size: dialogWindow.set_icon_from_file(self.app_icon) failed")
+				self.debug(text="def cb_extserverview_size: dialogWindow.set_icon(self.app_icon) failed")
 			text = _("Server Window Size")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -4523,9 +4528,9 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_file(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
-				self.debug(text="def cb_set_loaddataevery: dialogWindow.set_icon_from_file(self.app_icon) failed")
+				self.debug(text="def cb_set_loaddataevery: dialogWindow.set_icon(self.app_icon) failed")
 			text = _("Load Data every X seconds")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -5398,8 +5403,8 @@ class Systray:
 			self.WINDOW_ABOUT_OPEN = True
 			self.about_dialog = Gtk.AboutDialog()
 			self.about_dialog.set_position(Gtk.WindowPosition.CENTER)
-			self.about_dialog.set_icon_from_file(self.app_icon)
-			self.about_dialog.set_logo(GdkPixbuf.Pixbuf.new_from_file(self.app_icon))
+			self.about_dialog.set_icon(self.app_icon)
+			self.about_dialog.set_logo(self.app_icon)
 			self.about_dialog.set_program_name("oVPN.to Client")
 			self.about_dialog.set_website("https://ovpn.to")
 			self.about_dialog.set_website_label("oVPN.to")
@@ -5453,7 +5458,7 @@ class Systray:
 				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 				dialog.set_position(Gtk.WindowPosition.CENTER)
 				dialog.set_title(_("Quit oVPN.to Client"))
-				dialog.set_icon_from_file(self.app_icon)
+				dialog.set_icon(self.app_icon)
 				dialog.set_transient_for(self.window)
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup(_("Do you really want to quit?"))
@@ -5523,7 +5528,7 @@ class Systray:
 					self.dialog_ask_loadorunload_fw = dialog
 					dialog.set_position(Gtk.WindowPosition.CENTER)
 					dialog.set_title(_("Firewall Settings"))
-					dialog.set_icon_from_file(self.app_icon)
+					dialog.set_icon(self.app_icon)
 					dialog.set_transient_for(self.window)
 					if self.WIN_BACKUP_FIREWALL == True:
 						text = _("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
@@ -5589,7 +5594,7 @@ class Systray:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_position(Gtk.WindowPosition.CENTER)
 			message.set_title(_("Error"))
-			message.set_icon_from_file(self.app_icon)
+			message.set_icon(self.app_icon)
 			message.set_markup("%s"%(text))
 			message.run()
 			message.destroy()
@@ -5708,9 +5713,9 @@ class Systray:
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_file(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
-				self.debug(text="def msgwarn: dialogWindow.set_icon_from_file(self.app_icon) failed")
+				self.debug(text="def msgwarn: dialogWindow.set_icon(self.app_icon) failed")
 			dialogWindow.set_markup("%s"%(text))
 			dialogWindow.run()
 			dialogWindow.destroy()
@@ -5719,6 +5724,152 @@ class Systray:
 
 	def statusicon_size_changed(widget, size):
 		self.debug(text="def statusicon_size_changed() size = '%s'" % (size))
+
+	def base64_icons(self, icon):
+		app =	"""
+					AAABAAMAEBAAAAEAIABoBAAANgAAABgYAAABACAAiAkAAJ4EAAAgIAAAAQAgAKgQAAAmDgAAKAAA
+					ABAAAAAgAAAAAQAgAAAAAABABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUQlgAEjtTABhOaAASN0YE
+					F05sHx1RbG0hTGLCKlZswjNogmw2boceKlFgBEyFmgBCbn8ARnqOAAAAAAAQQlsADjpPABJDXAAS
+					P18HF05mMxlFW5EZM0DeHCw09yU1PPcuSlbdOmh7j0B2jDI7coQHR3eWAEJofgBRg5QABxolABRF
+					XQAQN0wFF0xmORc7TbITJCzsGCw2+CRRZPouWm76L0RN9zRGTexAZ3exSICWOD9ofwVJfpEAOExU
+					AA47UQAQPVMDEkxqKRI8UKMOHyfvESw5+R9ffPsxhar7Qpa6+0eIofo8V2L4OkxS7kh0g6FSiZ8p
+					RG2CA0x4iAAMLj8BEktkDw9CW4EKICvpDCo3+RZcevsmfaL7OJK3+0umyftcs9T7XqW++0dkbflC
+					WGDoUYKTgVGClg9DZXEBCRkgAhpUbjALLT7KBxgf9xBMZ/oacpb7LIaq/D+avPxSrs/8ZL/f/HPL
+					6PtlorH7QlFW90xteMlZjpwvNkNLAihTYAUaUGllBhkh6Q4qN/kUYoT7H3md+zKNsPxFocH8WbXU
+					/GrG5Px71u/7fc/f+1Fuc/lEV1voXJGdZENgcAUqaIMPE0NZjwUSF/IRPlH5FmyO+yV/ofw4lLT8
+					SqfF/F661/xwzOf8gNvy/Ing7Ptlkpb6Q09R8luLlI5flKAPIGeIHA05TKoFExn2EUlg+hpyk/sq
+					haX7PZq4/FCtyf1kwNv8ddLq/IXg9PuP6PL7c6uv+kZUVfZZhIuobK22GxpkhSULM0S6BRYd9xJS
+					a/oed5f8L4qo/EKeuvxUscv9aMTd/HnV6/yI5PT8k+vz+3y5vPpKWVr3WYCEuXO3viUXYX4sCi49
+					xQYZIfgTWXP6IXuZ+zKNqvtFobz8V7TN/WrH3v172O38i+b1+5Xt8/uDxMb6TV9g91h9gMN0usEr
+					FVx4LgkrOcoFFh34FFBl+iN5lvs0j6v7R6K8/Fm1zvxsyN/8fNjt/Izm9PuT5+37ebKz+ktbXPdX
+					e37IdLi+LhZdeisNNke+BRMZ8wofJvkdX3P7NI2o+0eiu/xZtc38bMfe/HzX6/yJ4u/7ebm9+05i
+					YvlHVFbzXIaJvXa4visaYX8QGVVtVhQ7SLUKGR/yEjA5+idfcPs3eIr7R4ud/FaZqvxenq37Ypmi
+					+05rbfpGV1jzXISItGihp1VwsbkQGVRqARZKXAoeV2pNEzE81g0YG/gTHSD7GSUo/CEsL/wpNDb8
+					Lzk8+zZAQvs7Rkj3U3N41W+osUxijpQKZJqjARljggAXSVsCI2d9IiJYa5QhSlfQJUpW5ylMVfQv
+					Tlf6NVVd+j1eZ/RGanLmTnV90F6SnJNmqLQhU4WLAnW4vgDwD///4Af//8AD//+AAf//AAD//wAA
+					//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//+AAf//KAAAABgAAAAwAAAAAQAg
+					AAAAAABgCQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWRFoAF0dkABpVdQAYSnUB
+					GUZgByFceygjYH9wJmB9xC1ohMQ0co9vNnGNKDBheAc1e5EBRoOZADhvgQA3Z3sAAAAAAAAAAAAA
+					AAAAAAAAAAAAAAAAAAAAAAAAABRDWgAFJUIAGll3ABZJXQIYSWAOHl19TB5XdK0cRFjqHjM++yc8
+					R/sxWWzqO3SPrD+Am0oxZncNNGt7AlCOpwApSmYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+					ABJXagAYU3EAGE5rAxlRbh0eXHp1HEpi0BgtN/UaIST6HiMk/CMoKfwoMDP6MUZQ9D5vhM9Ghp90
+					RH2SG0R+kgNLhpoANnyMAAAAAAAAAAAAAAAAAAAAAAAAAAAAFlJwABVIYQAPPlsCGlNxIh1VcpYa
+					PU7pFB4j9xUbHfobKjH8JExc/CtQYvwpOT/8LDE0+jM9QfdAZnXoS4eek0qGnCE9bIUCUYedAFSP
+					pQAAAAAAAAAAAAAAAAAUU3IAFUlhABRTawIWUW8YG1h2ihg4R+0RFhn5ERca+xg2RPwlZID9M4es
+					/T6St/0/fpj8NVNf/DE2Ofs1PD75QmVz7FOSqolLhpoYRYmaAVF+jQBfoLUAAAAAAAAAAAAHGyYA
+					GVd1ARhTcQ8YWXpxFDxQ4g0UGPkNFhr8FDpM/B9qjPwrg6r9OJK5/UWgxv1Rqcz8U568/EJodvw2
+					PkH7OUFE+UlzguFam7NvUYebD1aSpwExSE4AAAAAACdqigATUW8AFUZdBBhcfkoRQ1zUChYd+AoU
+					GPwRPE/8GWiL/CN8o/0wirD9PJe9/Uqlyv1WsdX9Ybvc/WW10v1OeIf8O0RH/D5LUPhShJXSXpyy
+					SEp1gwRenbEAaqu6AB5dewARO1ABIVx5EhZUcp8KIi/3BwwO+w4uPPwUYYP8G3Sa/SeBp/00j7P9
+					QZy//U6qzP1attj9ZsHj/XHL6/1vvtf8Smlx/DxBQvxGYGn3XpirnViNnhFIc4EBaam2ACVmhgAU
+					KzIBKmuKPBA/VtwFDA/6CRUa+xJRbfwVbZP9Hnqf/SuHq/04lLf9RaHD/VOv0P1fu9v9a8fm/XbS
+					8P1/2fL8aqm3/T9KTPw9RUj6V4WS22GdqzswR0oBaam4ACRlhQBDbH8FJWaGfQkjMPIEBgf6FDI/
+					+xNjhv0YcZb9In6i/TCLr/09mLr9SaXG/Vey0v1jv979b8vp/XvX8/2E3/b9g9bm/VBucvw+P0D6
+					SGRr8Wiot3o6Y2oFaaq4ABlUcABHfpgVHFh0rQURFvcJDQ77GUpg/BRpjv0cdpn9J4Kl/TSQsP1A
+					nLz9TarI/Vu31f1nw+D9c8/r/X7a9P2H4vf9jeXz/WiboP0/Q0P7Qk9R92airqtYjJUUZaKuAA9A
+					VgAyeJYsFEhgyAIJC/kOGB38F1Zy/BVukf0fepz9Koan/TeTtP1EoL/9Ua3L/V671/1rx+L9d9Pt
+					/YHe9f2L5vj9kuz2/Xu8wf1ETk/8QUhJ+WGVn8dpp7EqX5GbAAkvPwEnc5VCDjtQ2gIGCPoNICn8
+					FFx6/BhxlP0jfqD9Loqr/TyYtv1IpcL9VbHO/WO/2v1uy+X9etbv/YXh9/2O6vn9le/4/YfQ1P1L
+					XV/8QkZH+lyKkthyt8FAV3+GAQciLgEhcJNUDDNE5AIGB/oNKDP8FGKB/Rp0lf0mgaH9Mo6s/T6a
+					uP1Lp8P9WLTP/WbC3P1xzeb9fNjw/Yfj9/2Q6/n9l/H5/Y7a3f1Samv8QkZG+lmBhuN4v8dTUHB0
+					AQUYIQEda41jCy087AIGB/sOLz38FmiH/R14mP0ohKP9NJCu/UGeuv1NqsX9WrfR/WjE3f1zz+f9
+					ftvx/Ynl+P2S7vn9mfL5/ZTh5P1Zd3j8QkZG+lZ7fup6wsphS2NmAQMRFwEaZoZuCSg08gIGCPoP
+					NkX8F2uL/R96mv0qhqT9NpOv/UOfuv1PrMb9XLnS/WnF3f110ej9gNzy/Yvn+P2U7/n9m/P4/Zjo
+					6f1gg4P8QkZG+lR0ePF6wslsR1lbAQMNEQEZY4F1CSUw9wMHCfsPPEz8GG2N/SB8m/0siKb9N5Sw
+					/USgu/1Rrcf9XrrS/WrG3/110un9gd3z/Yzo+P2V8Pn9nPT5/Zvr7P1mjI38QkdH+lNxdPV6wcd0
+					RVNVAQEKDgEYX3x5CCIt+AIGCPsOLjn8G2N8/SN7mf0uiab9OZWx/UaivP1Srsj9X7vT/WzI3/12
+					0+n9gt/z/Y3p+P2V8Pn9mu/0/YrP0P1ZdXb8Q0dH+lJvcfd5v8V4Q1FSAQQQFQAYYHx8CSYy+AIF
+					B/kFCgv7DiMr/B1iePwuiKT9OpWw/UejvP1Tr8j9X7vT/WzI3/130+n9gt7y/Yzn9/2T7fb8g8XH
+					/FFlZfxCRkb7QkVG+VR0dvd6wMZ6RlZYABpPZAAda4laGVBmyxAuOvAHDhH6BwsM/BI1QPwsf5j9
+					OpSv/Ueiu/1Trsf9X7vT/W3I3v130uj9gdzw/Yrj8/2J2+P9WHl7/D9CQ/xCSkv6VHN272eeosl6
+					wchZZZqfACl0kgAhb5ERKHCONSZlfIsWOUbpCRAS+w0XG/saP0v9Jlhm/TJre/09e4v9RoaX/VCP
+					n/1WkqH9WI+c/VeGjv1Rc3f8P0pK/EBISfxdg4fpernBiXW6wDRys7oResPKAAwpNAAYU24BFkBh
+					BSJhdyMhWm6qDh8k9woMDfoOEhP8EhcY/BgeH/wcIyT9ISgp/SYtLv0rMDL8LjQ1/DM3OPw3Ojr7
+					OTs8+kteYfd3s7yoeLW/ImiSlgVqo6kBUHByACp3lQAjdZQAKHGLARlOXQsnbIR7GkBN7xIlKvoU
+					HyT9FR4g/RgeH/0bHyD9HyIj/SMnJ/0oLC39LDI0/TM7Pvw5Rkn8QFJW+lh/h+52u8d5VoWPCne+
+					yAFxtLsAfMbNAAAAAAAUOVQAK3GNABlWbQMtepU7LXKJjy5tgLQxbH/OM2x94Tdreu85a3n3PGx5
+					+0FwfftIeIT3TX+N71SJluBakZ7NXZektGalsY9ts746T4KMAnO5xQBSdnwAAAAAAP4Af//8AD//
+					+AAf//AAD//gAAf/wAAD/8AAA/+AAAH/gAAB/4AAAf+AAAH/gAAB/wAAAP8AAAD/AAAA/wAAAP8A
+					AAD/AAAA/4AAAf+AAAH/gAAB/4AAAf/AAAP/4AAH/ygAAAAgAAAAQAAAAAEAIAAAAAAAgBAAAAAA
+					AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACNlhwAeTGQAIVl2
+					ACJvlgEfTmUCJFJpGCpqiWstdJjMMXmcyzJxj2ktWW8YOGd8AkqXugE+dY0AOGh9AEWGowAAAAAA
+					AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACJUbgAf
+					bZQAIEVYACBigwEjaYwCIEpfDSRigVclbZDCIl179h49Tf0qSlr9OHSR9j2FpsE6d5RVMlpuDE2V
+					tQJKi6cBNVlpAFShwgBCcYUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+					AAAAAAAiV3MAGm2YACBHWgAeZIcBIldxAyBVcCsiZ4qiIF9/8Rk5SPwaICP8ISIi/iQlJf4nLTD8
+					M1Jg/EKCn/BFi6qgPXGIKUR8lANSl7QBOV1sAF+01wBIe48AAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+					AAAAAAAAAAAAAAAAAAAAIFZyABpumAAgRlkAHmWJASFOZQYfXHpPIWeK0h5JX/oXISX8Ghsb/R4f
+					H/0gIiL+JCUl/igqKv0qLCz9Ljg9/EBugvpNlLPQR4KbTT9tgQVYn7sBOlxqAGe83gBLfpIAAAAA
+					AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZaJEAIUhcABxjhwEgTmUIHl19ZyJjhOYcNkP7
+					FBcY/BcYGf0aGxz9GyIl/SRFU/4oR1X+JCsu/SssLf0vMDH9MDM0/DxaZvtSlrPlTo2nZEJwggdb
+					or0BPWFvAGq62AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHmSJAB5QagAdZIcBH09nBh1e
+					fmkiYIDsGisz+xESE/0UFRb9FRgZ/RoxPP0paIT9Noyy/j6Uuv47eZT9LUNM/SwvMP0zNDT9NDU2
+					/TpPV/tVmLLrVJOsZkd2iAZcoLkBTH+SAGGjugAAAAAAAAAAAAAAAAAAAAAAAAAAACVtkQAYZo0A
+					HmOHAB9VcQMdW3tVH2GC6BgpMvsODxD9ERIT/hIZHP0bRVj+J3eb/jCJsf45lLv/Qp3E/0ymzP5Q
+					oMH+PWZ2/i81OP01Nzf9Nzg5/TxRWftcobvnV5OqUlKKnQNdnrYAbsHcAFmPoQAAAAAAAAAAAAAA
+					AAAAAAAAGWyVAB5jhgAdZooBH1p5MRtihtgULz37CwwN/Q0PEP0QGh/+GVBq/SF3nv0pg6r9Mo20
+					/TyXvv9Gocf/UKrP/Vm02P1gt9n9ToSZ/TM+Qf04OTr9OTo7/UFfavtjq8bVVIueL2SqwQFfoLYA
+					d8jgAAAAAAAAAAAAAAAAAAAAAAAjao4AH2ySASJdew8bZIqrEj5U+wkLDf0LDA39DRgd/RdTbv4b
+					c5r9I32k/SyHrv02kbf9QJvA/kmkyf5Tr9P9Xbjc/WXA4v1txuf9WpWq/TZARP07PT3+Ojw9/U58
+					i/pnrsenTHiFDmu2zwFclqgAAAAAAAAAAAAAAAAAAAAAAB5skwAjWHMCIWuRWxVUc/IIERX8CQoK
+					/QsQEv0USGD+Fm2U/hx2nf4lgKf+L4qw/jmUuf5Dn8P+TajM/lay1f5gu97+acTm/nHM7P530O/+
+					WIuc/jg8Pv4+P0D+O0RH/GGhtvFjobVYUH+NAWuyyAAAAAAAAAAAAAAAAAAAAAAAGmWKATp7mhIe
+					apC/DCg3/AYHCP0ICgr9ETJB/RRnjf0XcZj+IHuh/SiDqf0yjbL9PJe7/Uaixf5QrM7+WbXX/WK+
+					4P1syOn9dNDw/XvW9P190ur9SGZt/jw+Pv4+P0D9RmZv/G63zLxQe4cRcsHYAQAAAAAAAAAAAAAA
+					AAAAAAAdQlQBOoCiTRZUcvIFCw78BgcI/QwVGv0XWnn+FGuS/hp1m/8ifqP+LIes/jWRtf4/m77+
+					SaXH/1Ov0f9dudn+ZsLi/m/L6/541PL+gNz3/ofi+f5wssD/O0JE/kBCQv07QkT8ZaS08WajskpH
+					bnkBAAAAAAAAAAAAAAAAAAAAAGOBkAQwep2YDDJE/AQFBf0GBwj9GzlH/RVnjP0VbpT9HXid/iWB
+					pf0vi679OpW4/UOfwP1NqMn+VrLS/mC82/1pxeT9cs7s/XvX9P2D3/n9ieT6/Yrh8P5MaW3+P0BB
+					/T9AQP1Pd4H8crnKlD5WWwQAAAAAAAAAAAAAAAAAAAAAYJOrGCRrjdAHFx/8BAUF/QsOD/0kWXH9
+					EmmP/Rhyl/0ge5/+KYSo/TKOsP08mLn9RqLC/VCszP5ZttT+Y8De/W3J5v110e79ftr1/Ybi+v2L
+					5/v9ku36/mujqf48Pz/9QkND/UFTV/xyusnNUn2GFwAAAAAAAAAAAAAAAAAAAABGhqQ7GVh27QMJ
+					DPwEBAX9FiAk/R9nhv0TbJH9G3aZ/SJ+of4siKr9NZGy/T+bu/1IpcT9Uq/N/l251v5mwt/9cMzo
+					/XjV8P2A3Pb9h+P6/Y7q+/2V8Pv+htHX/kBKS/1DRET9PURF/GusuexjnKc4AAAAAAAAAAAAAAAA
+					AAAAADN8nV8SR1/5AgQE/QQFBv0cMjz9F2mN/RZvk/0deJv9JYGj/i6Kq/04lLX9QZ29/Uunxv1V
+					sc/+X7zY/mnF4f1yzun9e9fx/YLf9/2K5vv9ke38/Zfy+/6V6e/+SmBh/UJDRP0+QUH9ZZym+W6u
+					uVsAAAAAAAAAAAAAAAAAAAAAK3ibgA05Tf0CAwP9BAUG/Ro9TP0Uao79GHGU/R97nf0ohKX/MY2u
+					/TuXtv1Fob/9T6vI/Vm10f9iv9r/a8ji/XTR6/192fL9heH4/Yzp+/2U8Pz9mfT7/5zz+P9WeHn9
+					QUJD/UFCQv1ejZX9dbrEfAAAAAAAAAAAAAAAAAAAAAAmdZmdCi09/gIDA/0EBQb+GUdb/hRsj/4Z
+					dJb+In2f/iuHp/40kK/+PZq4/kejwP5Rrcn+W7fS/mTA2/5uyuT+d9Ps/n/b8/6H4/n+jur8/pXx
+					/P6a9fz+n/f7/mONjv5AQUH+Q0ND/Vd/hP14wMqZAAAAAAAAAAAAAAAAAAAAACNylbYJJDD+AgMD
+					/QYICf4ZUWj+FW+R/hx2mP4kgKD+LYmo/zeTsf5AnLn+SaXC/lOwy/5dudT/Z8Pd/3DM5f551u3+
+					gd30/ojk+f6Q7Pz+l/P8/pz2/P+h+Pv/b6Gi/j9BQf5ERET9UXJ2/XzFzbMAAAAAAAAAAAAAAAAA
+					AAAAH26QywccJf4CAgL9BwsN/RlZcv0XcZP9Hnma/SaCov0vi6n+OZWy/UKeu/1LqMP9VbLM/V67
+					1P5nxN3+cc3l/XnW7v2C3/X9iub6/ZHt/P2Y9Pz9nvf8/qL5+/56s7T9PkFB/URFRf1NZ2r9fcbO
+					xwAAAAAAAAAAAAAAAAAAAAAdaorbBhYd/gIDA/0JDxL9GF96/RhylP0fe5v9J4Oi/TCMqv46lrP9
+					Q6C7/Uypw/1Ws839YLzV/mjF3f5yzub9e9jv/YPf9f2L5/r9ku78/Zn0/P2e9/z+o/r8/oPCw/0/
+					Q0P9REVF/UpfYf18xs3XAAAAAAAAAAAAAAAAAAAAABxnhucFEhf+AgIC/QoTF/0YY4D9GXOU/SB8
+					nP0phaP9Mo6s/jqXs/1Dn7v9TanE/Vi0zv1hvtb+acbe/nPP5/182O/9hOD2/Yzp+/2U8Pz9mvX8
+					/Z/4/P6j+fv+is7P/UBHR/1ERUX9SFlb/X3Fy+QAAAAAAAAAAAAAAAAAAAAAG2SC8AQOEv8CAgL+
+					Chgd/hhnhP4adJX+In2d/iqGpf4zj6z/O5i0/kWhvP5Pq8X+WLXN/mK+1v9rx9//dNDn/nzZ8P6G
+					4vf+jen6/pTw/P6b9vz+oPj8/6T5+v+S2Nn+Q0xM/kRFRf5GVVf+fMPK7QAAAAAAAAAAAAAAAAAA
+					AAAaYX/2AwwQ/gIDA/0HDhH9Gktd/SFxjf0jfp39LIel/TSQrf49mrX9RqO9/VCsxv1Zts79Yr7W
+					/mzI4P510ej9fdrw/Ybj9/2N6vv9lfH8/Zv2/P2g9/v+mOXm/myZmf1CSEj9REVF/UVTVP17wsj0
+					AAAAAAAAAAAAAAAAAAAAABlffPkDCg39AgID/QQFBf0HCgv9FCw1/SBshf0sh6T9NZCs/j6atf1H
+					o739Ua3H/Vq2zv1jv9f+bcng/nbS6P1+2vD9huL3/Y7q+/2V8Pz9mvT7/ZPa3P5Wa2v+P0JC/UJD
+					Q/1FRUX9RE9R/HvBx/YAAAAAAAAAAAAAAAAAAAAAHWqI+w4uO/0GDhL8BAUF/QYHCP0ICgr9EDE7
+					/iqBnP41kKz/Ppm0/keivP5QrMX+WrbN/mO/1/9syN//ddHn/n3Z7/6F4fX+jen5/pPu+v6W6/H+
+					V3Z3/j0+Pv5BQ0P9QEFB/UFKS/xUd3r8gcvR+AAAAAAAAAAAAAAAAAAAAAAmeZlvLHybqiZogesQ
+					KDH8BggI/QkKCv0KEhX9I2Z8/TWOqf4+mbP9R6O8/VGsxf1ats79ZL/X/m7J3/520ef9fdnv/YXg
+					9P2L5fb9jubx/Xm6v/07QkL+P0BA/j0/P/1NZ2n8ebzE6n7K0ah0uL5tAAAAAAAAAAAAAAAAAAAA
+					ACBphgI9eI4JOYShTStzjdwQJCv8CAkJ/QsMDP0SIif9GzlD/iNMV/0sXWv9Nmx7/T53hv1Efo7+
+					S4WU/k+Hlf1Qg5D9TnuF/UltdP1EXWH9PUpL/To8PP49Pj7+TWVp/IjS29qX3+dKaKCmCYHIzgIA
+					AAAAAAAAAAAAAAAAAAAAI3iZASZ4lwIcSFkEKHCKbyFWaPkJCwv9DAwN/Q4PD/0REhL+ExQU/hcY
+					GP4ZGxv+HB4e/iAiIv8jJSX/Jygo/iorK/4tLi7+MjIz/jU2Nv05Ojr9PD0+/j5AQf14srr4hc3X
+					bHSfpAOL3eYCfcbNAQAAAAAAAAAAAAAAAAAAAAA1iKcANniPAC5tgwEiW28rKGqB5QsSFPsKCwv8
+					DQ4O/REREf4UFRX9GBkZ/RscHP0eHx/9IiMj/iUmJv4pKir9LC0t/S8wMP0zMzT9NTY2/Tg4OP05
+					Ojr8QUtN+3/F0ONnn6gphsrTAXO0vQCV5e4AAAAAAAAAAAAAAAAAAAAAAAAAAAAvh6YAMX6YASVi
+					dxMwfZjKJFZn+x5CTv0cN0D9Gi41/hooLf4aJSj+GyMl/h0jJf4gJSf+Iygp/iYtLv4qMjT+Ljk8
+					/jRDR/47T1T9Q19l/UxweP1ekpv7e8fUyFeGjhGE0+EBk+v3AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+					AAAAACVlfAA2iqcAMHaOBDWFoUQ5jalyPZGskkCSrK5DkqvHRZKp2keQpehIj6PzSo6h+UyOoP1P
+					kaP9VZip+VufsPJgprjoZq7A2Wu1x8ZvusuucLvLkW+3xnJpqrZDXIyVBG63xAB2ucIAAAAAAAAA
+					AAAAAAAA/+AH//+AAf//AAD//gAAf/wAAD/4AAAf+AAAH/AAAA/gAAAH4AAAB8AAAAPAAAADwAAA
+					A8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAAD
+					wAAAA8AAAAPwAAAP8AAAD/gAAB8=
+					"""
+
+		if icon == "app_icon":
+			return app
 
 def app():
 	Systray()

@@ -31,7 +31,7 @@ setup_dict = dict(
         'bundle_files':3,
         'compressed'   : False,
         'unbuffered'   : False,
-        'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg' ],
+        'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
         'excludes'      : [ ],
         'optimize'     : 0,
         'packages': ['gi'],
