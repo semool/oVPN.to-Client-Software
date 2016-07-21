@@ -1425,6 +1425,9 @@ class Systray:
 				self.button_title.set_label(_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
 				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
 			
+			# resize settings window
+			self.settingswindow.resize(1,1)
+			
 			# end switches update
 			self.UPDATE_SWITCH = False
 		else:
@@ -2977,6 +2980,7 @@ class Systray:
 			get_settings = Gtk.Settings.get_default()
 			get_settings.set_property("gtk-theme-name", self.APP_THEME)
 			self.write_options_file()
+			self.UPDATE_SWITCH = True
 			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
 		return
 
