@@ -493,14 +493,14 @@ class Systray:
 				self.debug(text="def load_icons: file '%s' not found" %(file))
 				return False
 			
-		self.systray_icon_connected = "%s\\app.ico" % (self.ico_dir_theme)
-		self.systray_icon_disconnected = "%s\\disconnect.ico" % (self.ico_dir_theme)
-		self.systray_icon_disconnected_traymenu = "%s\\disconnect_menu.ico" % (self.ico_dir_theme)
-		self.systray_icon_connect = "%s\\connect.ico" % (self.ico_dir_theme)
-		self.systray_icon_testing = "%s\\testing.ico" % (self.ico_dir_theme)
-		self.systray_icon_syncupdate1 = "%s\\sync_1.ico" % (self.ico_dir_theme)
-		self.systray_icon_syncupdate2 = "%s\\sync_2.ico" % (self.ico_dir_theme)
-		self.systray_icon_syncupdate3 = "%s\\sync_3.ico" % (self.ico_dir_theme)
+		self.systray_icon_connected = systray_icon_connected
+		self.systray_icon_disconnected = systray_icon_disconnected
+		self.systray_icon_disconnected_traymenu = systray_icon_disconnected_traymenu
+		self.systray_icon_connect = systray_icon_connect
+		self.systray_icon_testing = systray_icon_testing
+		self.systray_icon_syncupdate1 = systray_icon_syncupdate1
+		self.systray_icon_syncupdate2 = systray_icon_syncupdate2
+		self.systray_icon_syncupdate3 = systray_icon_syncupdate3
 		
 		self.systrayicon_from_before = False
 		
@@ -1741,10 +1741,9 @@ class Systray:
 
 	def make_systray_openvpn_menu(self):
 		self.debug(text="def make_systray_openvpn_menu()")
-		if self.STATE_OVPN == True:
+		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 			try:
 				sep = Gtk.SeparatorMenuItem()
-				self.systray_menu.append(sep)
 				servershort = self.OVPN_CONNECTEDto[:3]
 				textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
 				disconnect = Gtk.ImageMenuItem(textstring)
@@ -1752,6 +1751,7 @@ class Systray:
 				img.set_from_file(self.systray_icon_disconnected_traymenu)
 				disconnect.set_always_show_image(True)
 				disconnect.set_image(img)
+				self.systray_menu.append(sep)
 				self.systray_menu.append(disconnect)
 				disconnect.connect('button-release-event', self.cb_kill_openvpn)
 			except:
@@ -1815,7 +1815,7 @@ class Systray:
 			
 			# add quit item
 			quit = Gtk.MenuItem(_("Quit"))
-			if self.STATE_OVPN == True:
+			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 				quit.set_sensitive(False)
 			self.systray_menu.append(quit)
 			quit.connect('button-release-event', self.on_closing)
@@ -2789,7 +2789,7 @@ class Systray:
 			self.debug(text="def settings_network_switch_nodns: failed")
 
 	def cb_switch_nodns(self,switch,gparam):
-		if self.STATE_OVPN == True:
+		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_nodns()")
@@ -5425,7 +5425,7 @@ class Systray:
 			self.QUIT_DIALOG.destroy()
 			return False
 		self.WINDOW_QUIT_OPEN = True
-		if self.STATE_OVPN == True:
+		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
 			return False
 		else:
 			try: 
