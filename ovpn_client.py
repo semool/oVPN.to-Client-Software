@@ -1019,11 +1019,7 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon(self.app_icon)
-			except:
-				self.debug(text="def win_read_interfaces: #1 dialogWindow.set_icon(self.app_icon) failed")
-				pass
+			dialogWindow.set_icon(self.app_icon)
 			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -1057,10 +1053,7 @@ class Systray:
 					dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 					dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 					dialogWindow.set_transient_for(self.window)
-					try:
-						dialogWindow.set_icon(self.app_icon)
-					except:
-						self.debug(text="def win_read_interfaces: #2 dialogWindow.set_icon(self.app_icon) failed")
+					dialogWindow.set_icon(self.app_icon)
 					text = _("Choose your External Network Adapter!")
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
@@ -1090,10 +1083,7 @@ class Systray:
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
-		try:
-			dialogWindow.set_icon(self.app_icon)
-		except:
-			self.debug(text="def select_userid: dialogWindow.set_icon(self.app_icon) failed")
+		dialogWindow.set_icon(self.app_icon)
 		text = _("Please select your User-ID!")
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
@@ -4273,10 +4263,7 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			self.dialog_form_ask_userid = dialogWindow
-			try:
-				dialogWindow.set_icon(self.app_icon)
-			except:
-				self.debug(text="def form_ask_userid: dialogWindow.set_icon(self.app_icon) failed")
+			dialogWindow.set_icon(self.app_icon)
 			dialogWindow.set_transient_for(self.window)
 			dialogWindow.set_title(_("oVPN.to Setup"))
 			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
@@ -4469,10 +4456,7 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon(self.app_icon)
-			except:
-				self.debug(text="def cb_extserverview_size: dialogWindow.set_icon(self.app_icon) failed")
+			dialogWindow.set_icon(self.app_icon)
 			text = _("Server Window Size")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -4527,10 +4511,7 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon(self.app_icon)
-			except:
-				self.debug(text="def cb_set_loaddataevery: dialogWindow.set_icon(self.app_icon) failed")
+			dialogWindow.set_icon(self.app_icon)
 			text = _("Load Data every X seconds")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -5712,10 +5693,7 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon(self.app_icon)
-			except:
-				self.debug(text="def msgwarn: dialogWindow.set_icon(self.app_icon) failed")
+			dialogWindow.set_icon(self.app_icon)
 			dialogWindow.set_markup("%s"%(text))
 			dialogWindow.run()
 			dialogWindow.destroy()
