@@ -149,6 +149,8 @@ class Systray:
 		self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
 		self.APP_THEME = "ms-windows"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
+		self.ICONS_THEME = "standard"
+		self.INSTALLED_ICONS = [ "standard", "classic", "experimental" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es", "nl" ]
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
@@ -417,18 +419,7 @@ class Systray:
 		#self.dns_ung =  "%s\\ungefiltert" % (self.dns_dir)
 		#self.dns_ung_alphaindex =  "%s\\alphaindex.txt" % (self.dns_ung)
 		
-		self.ico_dir = "%s\\ico" % (self.bin_dir)
-		if not os.path.isdir(self.ico_dir):
-			return False
-		self.app_icon = "%s\\shield_exe_inapp.ico" % (self.ico_dir)
-		self.systray_icon_connected = "%s\\shield_exe_inapp.ico" % (self.ico_dir)
-		self.systray_icon_disconnected = "%s\\263.ico" % (self.ico_dir)
-		self.systray_icon_disconnected_traymenu = "%s\\263a.ico" % (self.ico_dir)
-		self.systray_icon_connect = "%s\\396.ico" % (self.ico_dir)
-		self.systray_icon_testing = "%s\\205.ico" % (self.ico_dir)
-		self.systray_icon_syncupdate1 = "%s\\289_1.ico" % (self.ico_dir)
-		self.systray_icon_syncupdate2 = "%s\\289_2.ico" % (self.ico_dir)
-		self.systray_icon_syncupdate3 = "%s\\266.ico" % (self.ico_dir)
+		self.load_icons()
 
 		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
 		if not self.load_ca_cert():
@@ -457,6 +448,30 @@ class Systray:
 		
 		self.debug(text="win_pre3_load_profile_dir_vars loaded")
 		return True
+
+	def load_icons(self):
+		self.ico_dir = "%s\\ico" % (self.bin_dir)
+		self.ico_dir_theme = "%s\\ico\\standard" % (self.bin_dir)
+
+		if self.ICONS_THEME == "classic":
+			self.ico_dir_theme = "%s\\ico\\classic" % (self.bin_dir)
+		if self.ICONS_THEME == "experimental":
+			self.ico_dir_theme = "%s\\ico\\experimental" % (self.bin_dir)
+
+		if not os.path.isdir(self.ico_dir):
+			return False
+		if not os.path.isdir(self.ico_dir_theme):
+			return False
+
+		self.app_icon = "%s\\app.ico" % (self.ico_dir_theme)
+		self.systray_icon_connected = "%s\\app.ico" % (self.ico_dir_theme)
+		self.systray_icon_disconnected = "%s\\disconnect.ico" % (self.ico_dir_theme)
+		self.systray_icon_disconnected_traymenu = "%s\\disconnect_menu.ico" % (self.ico_dir_theme)
+		self.systray_icon_connect = "%s\\connect.ico" % (self.ico_dir_theme)
+		self.systray_icon_testing = "%s\\testing.ico" % (self.ico_dir_theme)
+		self.systray_icon_syncupdate1 = "%s\\sync_1.ico" % (self.ico_dir_theme)
+		self.systray_icon_syncupdate2 = "%s\\sync_2.ico" % (self.ico_dir_theme)
+		self.systray_icon_syncupdate3 = "%s\\sync_3.ico" % (self.ico_dir_theme)
 
 	def check_config_folders(self):
 		self.debug(text="def check_config_folders()")
@@ -714,6 +729,13 @@ class Systray:
 					pass
 				
 				try:
+					self.ICONS_THEME = parser.get('oVPN','icons')
+					self.load_icons()
+					self.debug(text="self.ICONS_THEME = '%s'" % (self.ICONS_THEME))
+				except:
+					pass
+				
+				try:
 					self.APP_FONT_SIZE = parser.get('oVPN','font')
 					self.debug(text="self.APP_FONT_SIZE = '%s'" % (self.APP_FONT_SIZE))
 				except:
@@ -766,6 +788,7 @@ class Systray:
 				parser.set('oVPN','serverviewextendwidth','%s' % (self.SRV_WIDTH_DEFAULT))
 				parser.set('oVPN','serverviewextendheight','%s' % (self.SRV_HEIGHT_DEFAULT))
 				parser.set('oVPN','theme','ms-windows')
+				parser.set('oVPN','icons','standard')
 				parser.set('oVPN','winresetfirewall','False')
 				parser.set('oVPN','winbackupfirewall','False')
 				parser.set('oVPN','nowinfirewall','False')
@@ -818,6 +841,7 @@ class Systray:
 			parser.set('oVPN','serverviewextendwidth','%s'%(self.SRV_WIDTH))
 			parser.set('oVPN','serverviewextendheight','%s'%(self.SRV_HEIGHT))
 			parser.set('oVPN','theme','%s'%(self.APP_THEME))
+			parser.set('oVPN','icons','%s'%(self.ICONS_THEME))
 			parser.set('oVPN','font','%s'%(self.APP_FONT_SIZE))
 			parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
 			parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
@@ -2455,9 +2479,41 @@ class Systray:
 			self.settings_options_switch_srvinfo(self.nbpage1)
 			self.settings_options_switch_disablequit(self.nbpage1)
 			self.settings_options_switch_debugmode(self.nbpage1)
-			self.settings_options_combobox_theme(self.nbpage1)
-			self.settings_options_combobox_fontsize(self.nbpage1)
-			self.settings_options_combobox_language(self.nbpage1)
+
+			##
+			self.nbpage1_h1 = Gtk.HBox(False, spacing=2)
+			self.nbpage1_h1.pack_start(Gtk.Label(label=""),False,False,0)
+
+			self.nbpage1_h1_v1 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h1_v1.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_combobox_theme(self.nbpage1_h1_v1)
+			
+			self.nbpage1_h1_v2 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h1_v2.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_combobox_icons(self.nbpage1_h1_v2)
+
+			self.nbpage1_h1.add(self.nbpage1_h1_v1)
+			self.nbpage1_h1.add(self.nbpage1_h1_v2)
+			self.nbpage1.add(self.nbpage1_h1)
+			##
+
+			##
+			self.nbpage1_h2 = Gtk.HBox(False, spacing=2)
+			self.nbpage1_h2.pack_start(Gtk.Label(label=""),False,False,0)
+
+			self.nbpage1_h2_v1 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h2_v1.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_combobox_fontsize(self.nbpage1_h2_v1)
+			
+			self.nbpage1_h2_v2 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h2_v2.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_combobox_language(self.nbpage1_h2_v2)
+
+			self.nbpage1_h2.add(self.nbpage1_h2_v1)
+			self.nbpage1_h2.add(self.nbpage1_h2_v2)
+			self.nbpage1.add(self.nbpage1_h2)
+			##
+
 			self.settingsnotebook.append_page(self.nbpage1, Gtk.Label(_(" Options ")))
 		except:
 			self.debug(text="def show_settingswindow: nbpage1 failed")
@@ -2894,7 +2950,7 @@ class Systray:
 	def settings_options_combobox_theme(self,page):
 		try:
 			self.debug(text="def settings_options_combobox_theme()")
-			combobox_title = Gtk.Label(label=_("Change App Theme (default: ms-windows)"))
+			combobox_title = Gtk.Label(label=_("Change App Theme"))
 			combobox = Gtk.ComboBoxText.new()
 			for theme in self.INSTALLED_THEMES:
 				combobox.append_text(theme)
@@ -2924,10 +2980,42 @@ class Systray:
 			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
 		return
 
+	def settings_options_combobox_icons(self,page):
+		try:
+			self.debug(text="def settings_options_combobox_icons()")
+			combobox_title = Gtk.Label(label=_("Change App Icons"))
+			combobox = Gtk.ComboBoxText.new()
+			for icons in self.INSTALLED_ICONS:
+				combobox.append_text(icons)
+			if self.ICONS_THEME == "standard":
+				active_item = 0
+			if self.ICONS_THEME == "classic":
+				active_item = 1
+			if self.ICONS_THEME == "experimental":
+				active_item = 2
+			combobox.set_active(active_item)
+			combobox.connect('changed',self.cb_icons_switcher_changed)
+			page.pack_start(combobox_title,False,False,0)
+			page.pack_start(combobox,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(text="def settings_options_combobox_icons: failed")
+
+	def cb_icons_switcher_changed(self, combobox):
+		self.debug(text="def cb_icons_switcher_changed()")
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.ICONS_THEME = combobox.get_active_text()
+			self.write_options_file()
+			self.load_icons()
+			self.debug(text="def cb_icons_switcher_changed: selected Icons = '%s'" % (self.ICONS_THEME))
+		return
+
 	def settings_options_combobox_fontsize(self,page):
 		try:
 			self.debug(text="def settings_options_combobox_fontsize()")
-			combobox_title = Gtk.Label(label=_("Change App Font Size (default: 9)"))
+			combobox_title = Gtk.Label(label=_("Change App Font Size"))
 			combobox = Gtk.ComboBoxText.new()
 			for size in self.APP_FONT_SIZE_AVAIABLE:
 				combobox.append_text(size)
@@ -2973,7 +3061,7 @@ class Systray:
 		try:
 			i=0; 
 			self.debug(text="def settings_options_combobox_theme()")
-			combobox_title = Gtk.Label(label=_("Change Language"))
+			combobox_title = Gtk.Label(label=_("Change App Language"))
 			combobox = Gtk.ComboBoxText.new()
 			for lang in self.INSTALLED_LANGUAGES:
 				combobox.append_text(lang)
