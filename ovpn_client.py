@@ -151,7 +151,7 @@ class Systray:
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ICONS_THEME = "standard"
 		self.INSTALLED_ICONS = [ "standard", "classic", "experimental" ]
-		self.INSTALLED_LANGUAGES = [ "en", "de", "es", "nl" ]
+		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG = True
 		self.DEBUGfrombefore = False
