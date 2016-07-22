@@ -129,7 +129,10 @@ class Systray:
 			self.init_theme()
 			if self.UPDATEOVPNONSTART == True:
 				if self.check_inet_connection() == True:
-					self.check_remote_update()
+					if self.APIKEY == False:
+						GLib.idle_add(self.dialog_apikey)
+					else:
+						self.check_remote_update()
 				else:
 					self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Update failed!"))
 			thread = threading.Thread(target=self.systray_timer)
