@@ -3004,7 +3004,6 @@ class Systray:
 	def cb_switch_debugmode(self,switch,gparam):
 		self.debug(1,"def cb_switch_debugmode()")
 		if switch.get_active():
-			self.DEBUG = True
 			self.msgwarn(_("Logfile:\n'%s'") % (self.debug_log),_("Debug Mode Enabled"))
 		else:
 			self.DEBUG = False
@@ -5736,8 +5735,6 @@ class Systray:
 			self.msgwarn_window.destroy()
 		except:
 			pass
-		if self.DEBUG == False:
-			self.DEBUG = True
 		self.debug(1,"def msgwarn: %s"% (text))
 		try:
 			self.LAST_MSGWARN_WINDOW = int(time.time())
