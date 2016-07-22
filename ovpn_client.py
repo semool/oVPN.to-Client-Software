@@ -87,6 +87,7 @@ import threading
 import socket
 import requests
 import json
+#import gc
 from ConfigParser import SafeConfigParser
 
 CLIENTVERSION="v0.5.7-gtk3"
@@ -251,6 +252,9 @@ class Systray:
 		self.COUNTRYNAMES = {
 			'BG':'Bulgaria','CA':'Canada','CH':'Swiss','DE':'Germany','FR':'France','HU':'Hungary','IS':'Iceland','LT':'Lithuania','MD':'Moldova','NL':'Netherlands','RO':'Romania','SE':'Sweden','UA':'Ukraine','UK':'United Kingdom','US':'U.S.A.',
 			}
+		self.FLAG_CACHE_PIXBUF = {}
+		self.ICON_CACHE_PIXBUF = {}
+		#self.IDLE_TIME = 0
 		self.systray_menu = False
 		self.WINDOW_QUIT_OPEN = False
 		self.WINDOW_ABOUT_OPEN = False
@@ -1144,6 +1148,7 @@ class Systray:
 
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(text="def on_right_click_mainwindow()")
+		#self.IDLE_TIME = 0
 		self.destroy_systray_menu()
 		# get selection, also when treeview is sorted by a row
 		servername = False
@@ -1624,8 +1629,31 @@ class Systray:
 				thread.start()
 		except:
 			self.debug(text="def systray_timer2: thread target=self.load_remote_data failed")
-		#self.debug(text="def systray_timer2() return")
+
 		self.systray_timer2_running = False
+		
+		"""
+		if self.IDLE_TIME > 300:
+			
+			if len(self.FLAG_CACHE_PIXBUF) >= 1:
+				self.FLAG_CACHE_PIXBUF = {}
+				for entry in self.FLAG_CACHE_PIXBUF:
+					del entry
+					gc.collect()
+				self.debug(text="def systray_timer2: CLEAR self.FLAG_CACHE_PIXBUF")
+			
+			if len(self.ICON_CACHE_PIXBUF) > 1:
+				self.ICON_CACHE_PIXBUF = {}
+				for entry in self.ICON_CACHE_PIXBUF:
+					del entry
+					gc.collect()
+				self.debug(text="def systray_timer2: CLEAR self.ICON_CACHE_PIXBUF")
+		else:
+			self.IDLE_TIME += 0.5
+			#self.debug(text="self.IDLE_TIME = %s" % (self.IDLE_TIME))
+		"""
+		
+		#self.debug(text="def systray_timer2() return")
 		return
 
 	def systray_timer(self):
@@ -1643,6 +1671,7 @@ class Systray:
 
 	def on_right_click(self, widget, event, event_time):
 		self.debug(text="def on_right_click()")
+		#self.IDLE_TIME = 0
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
@@ -1650,6 +1679,7 @@ class Systray:
 
 	def on_left_click(self, widget):
 		self.debug(text="def on_left_click()")
+		#self.IDLE_TIME = 0
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
@@ -3087,6 +3117,7 @@ class Systray:
 			if self.load_icons():
 				self.write_options_file()
 				self.debug(text="def cb_icons_switcher_changed: selected Icons = '%s'" % (self.ICONS_THEME))
+				self.ICON_CACHE_PIXBUF = {}
 			else:
 				self.debug(text="def cb_icons_switcher_changed: failed icon theme = '%s', revert to '%s'" % (self.ICONS_THEME,self.ICONS_THEME_frombefore))
 				self.ICONS_THEME = self.ICONS_THEME_frombefore
@@ -5719,21 +5750,46 @@ class Systray:
 		self.debug(text="def statusicon_size_changed() size = '%s'" % (size))
 
 	def decode_icon(self,icon):
-		base64_data = base64.b64decode(self.base64_icons(icon))
-		base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
-		return GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
-		
-	def decode_flag(self,flag):
-		#self.debug(text="def decode_flag(%s)" % (flag))
+		#self.debug(text="def decode_icon()")
 		try:
 			try:
-				flagfile = "%s.png" % (flag)
-				base64_flag = self.FLAGS_B64[flagfile]
+				imgpixbuf = self.ICON_CACHE_PIXBUF[icon]
+				if isinstance(imgpixbuf, GdkPixbuf.Pixbuf):
+					#self.debug(text="def decode_icon: isinstance self.ICON_CACHE_PIXBUF[%s]"%(icon))
+					return imgpixbuf
 			except:
-				base64_flag = self.FLAGS_B64["00.png"]
-			base64_data = base64.b64decode(base64_flag)
-			base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
-			return GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
+				try:
+					#self.debug(text="def decode_icon(%s)" % (icon))
+					base64_data = base64.b64decode(self.base64_icons(icon))
+					base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
+					imgpixbuf = GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
+					self.ICON_CACHE_PIXBUF[icon] = imgpixbuf
+					return imgpixbuf
+				except:
+					return False
+		except:
+			self.debug(text="def decode_icon: '%s' failed"%(icon))
+		
+	def decode_flag(self,flag):
+		#self.debug(text="def decode_flag()")
+		try:
+			try:
+				imgpixbuf = self.FLAG_CACHE_PIXBUF[flag]
+				if isinstance(imgpixbuf, GdkPixbuf.Pixbuf):
+					#self.debug(text="def decode_flag: isinstance self.FLAG_CACHE_PIXBUF[%s] return"%(flag))
+					return imgpixbuf
+			except:
+				try:
+					#self.debug(text="def decode_flag(%s)" % (flag))
+					flagfile = "%s.png" % (flag)
+					base64_flag = self.FLAGS_B64[flagfile]
+				except:
+					base64_flag = self.FLAGS_B64["00.png"]
+				base64_data = base64.b64decode(base64_flag)
+				base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
+				imgpixbuf = GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
+				self.FLAG_CACHE_PIXBUF[flag] = imgpixbuf
+				return imgpixbuf
 		except:
 			self.debug(text="def decode_flag: '%s' failed"%(flag))
 
