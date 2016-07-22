@@ -25,9 +25,8 @@
 
 ## Basic Requirements:
 + [PyGObject 3.18.2 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev7-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
-+ [7-zip SFX Builder](http://sourceforge.net/projects/s-zipsfxbuilder/)
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
-+ [7-zip 16.02 x64](http://7-zip.org/a/7z1602-x64.exe)
++ [Inno Setup 5.5.9](http://www.jrsoftware.org/download.php/is.exe)
 
 ## Developer Imports: how to run or build from source
 + create a link (name: DEBUG32) to debug.bat: edit link, set target 'X:\????\ovpn-client\debug.bat 32' and run link as admin!
@@ -35,7 +34,6 @@
 + same for 64 bits!
 + do not run any of the *.bat files directly! you need links do 'debug.bat' and 'build.bat' with bits argument!
 + edit 'set_version.bat' and 'set_dirs.bat' to your needs!
-+ go to includes folder and unzip 'Adwaita.7z' + 'MS-Windows.7z'
 + put 'crypt32_win32.dll' + 'crypt_win64.dll' into 'includes/' for working cross-builds
 
 ## Generate locales:
