@@ -5,7 +5,7 @@ import sys, os, site, shutil
 site_dir = site.getsitepackages()[1] 
 include_dll_path = os.path.join(site_dir, 'gnome')
 
-gtk_dirs_to_include = ['etc\\fonts', 'etc\\gtk-3.0', 'lib\\gtk-3.0', 'lib\\girepository-1.0', 'share\\glib-2.0', 'share\\icons\\hicolor', 'share\\icons\\Adwaita', 'share\\locale']
+gtk_dirs_to_include = ['etc\\fonts', 'lib\\gtk-3.0', 'lib\\girepository-1.0', 'share\\glib-2.0', 'share\\icons\\hicolor', 'share\\icons\\Adwaita\\scalable', 'share\\icons\\Adwaita\\32x32', 'share\\locale']
 
 gtk_dlls = []
 tmp_dlls = []
@@ -28,14 +28,14 @@ setup_dict = dict(
      ],
     options={
     'py2exe': {
-        'bundle_files':3,
+        'bundle_files' :3,
         'compressed'   : False,
         'unbuffered'   : False,
         'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
-        'excludes'      : [ ],
-        'optimize'     : 0,
-        'packages': ['gi'],
-        'dll_excludes': ['tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
+        'excludes'     : [ ],
+        'optimize'     : 2,
+        'packages'     : [ 'gi' ],
+        'dll_excludes' : [ 'tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
     }}
 ) 
 
