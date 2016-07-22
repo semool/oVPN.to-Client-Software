@@ -142,6 +142,7 @@ class Systray:
 	def self_vars(self):
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		self.LOGLEVEL = 1
+		self.LOGLEVELS = [1,2,3,5,48,49]
 		self.OS = sys.platform
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
@@ -4186,7 +4187,7 @@ class Systray:
 			try: 
 				read = subprocess.check_output('%s' % (netshcmd),shell=True)
 				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
-				self.debug(3,"def win_return_netsh_cmd: output = '%s'" % (output))
+				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
 			except:
 				self.debug(1,"def win_return_netsh_cmd: '%s' failed" % (netshcmd))
@@ -4224,7 +4225,7 @@ class Systray:
 			try: 
 				read = subprocess.check_output('%s' % (routecmd),shell=True)
 				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
-				self.debug(3,"def win_return_route_cmd: output = '%s'" % (output))
+				self.debug(5,"def win_return_route_cmd: output = '%s'" % (output))
 				return output
 			except:
 				self.debug(1,"def win_return_route_cmd: '%s' failed" % (routecmd))
@@ -4877,7 +4878,7 @@ class Systray:
 							# end: for line in open(filepath)
 							self.OVPN_SERVER_INFO[servershort] = serverinfo
 						self.OVPN_SERVER.append(servername)
-						self.debug(3,"def load_ovpn_server: file = '%s' END" % (file))
+						self.debug(5,"def load_ovpn_server: file = '%s' END" % (file))
 				# for end
 				self.OVPN_SERVER.sort()
 			else:
@@ -5624,7 +5625,9 @@ class Systray:
 		sys.exit()
 
 	def debug(self,level,text):
-		if not level <= self.LOGLEVEL:
+		#if not level <= self.LOGLEVEL:
+		#	return False
+		if not level in self.LOGLEVELS:
 			return False
 		timefromboot = round(time.time() - self.BOOTTIME,3)
 		debugstringsht = False
@@ -5771,11 +5774,11 @@ class Systray:
 			try:
 				imgpixbuf = self.FLAG_CACHE_PIXBUF[flag]
 				if isinstance(imgpixbuf, GdkPixbuf.Pixbuf):
-					self.debug(49,"def decode_flag: isinstance self.FLAG_CACHE_PIXBUF[%s] return"%(flag))
+					self.debug(48,"def decode_flag: isinstance self.FLAG_CACHE_PIXBUF[%s] return"%(flag))
 					return imgpixbuf
 			except:
 				try:
-					self.debug(49,"def decode_flag(%s)" % (flag))
+					self.debug(48,"def decode_flag(%s)" % (flag))
 					flagfile = "%s.png" % (flag)
 					base64_flag = self.FLAGS_B64[flagfile]
 				except:
