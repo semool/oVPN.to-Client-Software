@@ -2004,7 +2004,9 @@ class Systray:
 									except:
 										self.debug(text="def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
 										break
-								elif server == self.OVPN_CONNECTEDto:
+								
+								# dont elif here!
+								if server == self.OVPN_CONNECTEDto:
 									statusimg = self.decode_icon("shield_go")
 								elif server == self.OVPN_FAV_SERVER:
 									statusimg = self.decode_icon("star")
