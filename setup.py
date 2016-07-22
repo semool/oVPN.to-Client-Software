@@ -22,7 +22,7 @@ setup_dict = dict(
      windows=[
      {
     'script':'ovpn_client.py',
-    'icon_resources': [(1, 'includes\\ico\\shield_exe.ico')],
+    'icon_resources': [(1, 'else\\app_icons\\shield_exe.ico')],
     'uac_info': "requireAdministrator",
      }
      ],
