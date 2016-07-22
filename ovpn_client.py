@@ -1069,7 +1069,7 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
 				pass
 			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
@@ -1106,7 +1106,7 @@ class Systray:
 					dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 					dialogWindow.set_transient_for(self.window)
 					try:
-						dialogWindow.set_icon_from_pixbuf(self.app_icon)
+						dialogWindow.set_icon(self.app_icon)
 					except:
 						pass
 					text = _("Choose your External Network Adapter!")
@@ -1139,7 +1139,7 @@ class Systray:
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
 		try:
-			dialogWindow.set_icon_from_pixbuf(self.app_icon)
+			dialogWindow.set_icon(self.app_icon)
 		except:
 			pass
 		text = _("Please select your User-ID!")
@@ -2217,7 +2217,7 @@ class Systray:
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
 				try:
-					self.mainwindow.set_icon_from_pixbuf(self.app_icon)
+					self.mainwindow.set_icon(self.app_icon)
 				except:
 					pass
 				self.mainwindow_ovpn_server()
@@ -2428,7 +2428,7 @@ class Systray:
 				self.accwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.accwindow.set_title(_("oVPN Account - %s") % (CLIENT_STRING))
 				try:
-					self.accwindow.set_icon_from_pixbuf(self.app_icon)
+					self.accwindow.set_icon(self.app_icon)
 				except:
 					pass
 				self.accwindow.set_default_size(370,480)
@@ -2550,7 +2550,7 @@ class Systray:
 				self.settingswindow.connect("destroy",self.cb_destroy_settingswindow)
 				self.settingswindow.set_title(_("oVPN Settings - %s") % (CLIENT_STRING))
 				try:
-					self.settingswindow.set_icon_from_pixbuf(self.app_icon)
+					self.settingswindow.set_icon(self.app_icon)
 				except:
 					pass
 				self.settingsnotebook = Gtk.Notebook()
@@ -4343,7 +4343,7 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			self.dialog_form_ask_userid = dialogWindow
 			try:
-				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
 				pass
 			dialogWindow.set_transient_for(self.window)
@@ -4537,7 +4537,7 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
 				pass
 			text = _("Server Window Size")
@@ -4595,7 +4595,7 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
 				pass
 			text = _("Load Data every X seconds")
@@ -5468,7 +5468,7 @@ class Systray:
 			self.about_dialog = Gtk.AboutDialog()
 			self.about_dialog.set_position(Gtk.WindowPosition.CENTER)
 			try:
-				self.about_dialog.set_icon_from_pixbuf(self.app_icon)
+				self.about_dialog.set_icon(self.app_icon)
 			except:
 				pass
 			self.about_dialog.set_logo(self.app_icon)
@@ -5526,7 +5526,7 @@ class Systray:
 				dialog.set_position(Gtk.WindowPosition.CENTER)
 				dialog.set_title(_("Quit oVPN.to Client"))
 				try:
-					dialog.set_icon_from_pixbuf(self.app_icon)
+					dialog.set_icon(self.app_icon)
 				except:
 					pass
 				dialog.set_transient_for(self.window)
@@ -5599,7 +5599,7 @@ class Systray:
 					dialog.set_position(Gtk.WindowPosition.CENTER)
 					dialog.set_title(_("Firewall Settings"))
 					try:
-						dialog.set_icon_from_pixbuf(self.app_icon)
+						dialog.set_icon(self.app_icon)
 					except:
 						pass
 					dialog.set_transient_for(self.window)
@@ -5667,7 +5667,7 @@ class Systray:
 			message.set_position(Gtk.WindowPosition.CENTER)
 			message.set_title(_("Error"))
 			try:
-				message.set_icon_from_pixbuf(self.app_icon)
+				message.set_icon(self.app_icon)
 			except:
 				pass
 			message.set_markup("%s"%(text))
@@ -5789,7 +5789,7 @@ class Systray:
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
 			try:
-				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+				dialogWindow.set_icon(self.app_icon)
 			except:
 				pass
 			dialogWindow.set_markup("%s"%(text))
