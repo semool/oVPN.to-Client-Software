@@ -1029,7 +1029,7 @@ class Systray:
 		self.debug(1,"TAP ADAPTERS ap = %s"%(TAPADAPTERS))
 		self.WIN_TAP_DEVS = list()
 		for line in TAPADAPTERS:
-			#self.debug(1,"checking line = %s"%(line))
+			self.debug(10,"checking line = %s"%(line))
 			for INTERFACE in self.INTERFACES:
 				#if len(line) >= 1: self.debug(1,"is IF: '%s' listed as TAP in line '%s'?"%(INTERFACE,line))
 				if line.startswith("'%s' {"%(INTERFACE)) and len(line) >= 1:
@@ -1333,7 +1333,7 @@ class Systray:
 			self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: failed!")
 
 	def systray_timer2(self):
-		#self.debug(1,"def systray_timer2()")
+		self.debug(10,"def systray_timer2()")
 		self.systray_timer2_running = True
 		if self.stop_systray_timer2 == True:
 			self.systray_timer2_running = False
@@ -1652,15 +1652,15 @@ class Systray:
 			#self.debug(1,"self.IDLE_TIME = %s" % (self.IDLE_TIME))
 		"""
 		
-		#self.debug(1,"def systray_timer2() return")
+		self.debug(10,"def systray_timer2() return")
 		return
 
 	def systray_timer(self):
-		#self.debug(1,"def systray_timer()")
+		self.debug(10,"def systray_timer()")
 		if self.stop_systray_timer == True:
 			return False
 		if self.systray_timer2_running == False:
-			#self.debug(1,"def systray_timer: GLib.idle_add(self.systray_timer2)")
+			self.debug(10,"def systray_timer: GLib.idle_add(self.systray_timer2)")
 			GLib.idle_add(self.systray_timer2)
 		time.sleep(0.5)
 		thread = threading.Thread(target=self.systray_timer)
@@ -1868,15 +1868,15 @@ class Systray:
 			quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
 
 	def systray_notify_event_leave(self, widget, event, data = None):
-		#self.debug(1,"def systray_notify_event_leave() data = '%s'" % (data))
+		self.debug(10,"def systray_notify_event_leave() data = '%s'" % (data))
 		self.MOUSE_IN_TRAY = time.time() + 1
 
 	def systray_notify_event_enter(self, widget, event, data = None):
-		#self.debug(1,"def systray_notify_event_enter() data = '%s'" % (data))
+		self.debug(10,"def systray_notify_event_enter() data = '%s'" % (data))
 		self.MOUSE_IN_TRAY = time.time() + 30
 
 	def check_hide_popup(self):
-		#self.debug(1,"def check_hide_popup()")
+		self.debug(10,"def check_hide_popup()")
 		if self.MOUSE_IN_TRAY < time.time():
 			self.destroy_systray_menu()
 
@@ -2159,7 +2159,7 @@ class Systray:
 								except:
 									pass
 									# we may fail silently for private servers
-									#self.debug(1,"def update_mwls: extended values '%s' failed" % (server))
+									#self.debug(11,"def update_mwls: extended values '%s' failed" % (server))
 						except:
 							self.debug(1,"def update_mwls: #0 failed ")
 						cellnumber += 1
@@ -2167,7 +2167,7 @@ class Systray:
 					if row_changed >= 1:
 						path = liststore.get_path(iter)
 						liststore.row_changed(path,iter)
-						#self.debug(1,"def update_mwls: row_changed server '%s'" % (server))
+						self.debug(10,"def update_mwls: row_changed server '%s'" % (server))
 		self.debug(1,"def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
 		return
 
@@ -2430,7 +2430,7 @@ class Systray:
 			self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
 		elif len(self.OVPN_ACC_DATA) > 0:
 			try:
-				#self.debug(1,"def accwindow_accinfo: try get values")
+				self.debug(10,"def accwindow_accinfo: try get values")
 				for key, value in sorted(self.OVPN_ACC_DATA.iteritems()):
 					#print key
 					value1 = False
@@ -2492,7 +2492,7 @@ class Systray:
 					if value1 == False:
 						value1 = value
 					text = "%s: %s" % (head,value1)
-					#self.debug(1,"key [%s] = '%s' value = '%s'" % (key,head,value))
+					self.debug(10,"def accwindow_accinfo: key [%s] = '%s' value = '%s'" % (key,head,value))
 					try:
 						entry = Gtk.Entry()
 						entry.set_max_length(128)
@@ -3357,18 +3357,18 @@ class Systray:
 			pass
 
 	def destroy_systray_menu(self):
-		#self.debug(1,"def destroy_systray_menu()")
+		self.debug(2,"def destroy_systray_menu()")
 		try:
 			GLib.idle_add(self.systray_menu.destroy)
 			self.systray_menu = False
 			self.MOUSE_IN_TRAY = 0
-			self.debug(1,"def destroy_systray_menu: true")
+			self.debug(2,"def destroy_systray_menu: true")
 		except:
-			#self.debug(1,"def destroy_systray_menu: failed")
+			self.debug(1,"def destroy_systray_menu: failed")
 			self.systray_menu = False
 
 	def set_statusbar_text(self,text):
-		#self.debug(1,"def set_statusbar_text()")
+		self.debug(9,"def set_statusbar_text()")
 		try:
 			if not self.statusbar_text == False:
 				GLib.idle_add(self.statusbar_text.set_label,text)
@@ -3640,7 +3640,7 @@ class Systray:
 			pass
 
 	def inThread_timer_ovpn_ping(self):
-		#self.debug(1,"def inThread_timer_ovpn_ping()")
+		self.debug(10,"def inThread_timer_ovpn_ping()")
 		if self.timer_ovpn_ping_running == False:
 			self.OVPN_PING_STAT = -2
 			self.timer_ovpn_ping_running = True
@@ -3676,7 +3676,7 @@ class Systray:
 								self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 							self.OVPN_PING_LAST = PING
 							self.OVPN_PING_DEAD_COUNT = 0
-							#self.debug(1,"def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
+							self.debug(3,"def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
 						else:
 							self.set_ovpn_ping_dead()
 				except:
@@ -3699,7 +3699,7 @@ class Systray:
 		self.OVPN_PING_DEAD_COUNT += 1
 
 	def get_ovpn_ping(self):
-		#self.debug(1,"def get_ovpn_ping()")
+		self.debug(3,"def get_ovpn_ping()")
 		try:
 			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
 			for (family, socktype, proto, canon, sockaddr) in ai_list:
@@ -3712,7 +3712,7 @@ class Systray:
 					PING = (t2-t1)*1000
 					if PING > 3000:
 						PING = -2
-					#self.debug(1,"def get_ovpn_ping: %s ms" % (PING))
+					self.debug(3,"def get_ovpn_ping: %s ms" % (PING))
 					return PING
 				except:
 					self.OVPN_PING_LAST = -2
@@ -3733,7 +3733,7 @@ class Systray:
 						return True
 				except:
 					pass
-					#self.debug(1,"def read_gateway_from_routes: #1 failed")
+					self.debug(8,"def read_gateway_from_routes: #1 failed")
 				try:
 					if self.OVPN_CONNECTEDtoIP in line:
 						self.debug(1,"def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
@@ -3742,7 +3742,7 @@ class Systray:
 						return True
 				except:
 					pass
-					#self.debug(1,"def read_gateway_from_routes: #2 failed")
+					self.debug(8,"def read_gateway_from_routes: #2 failed")
 			if self.GATEWAY_LOCAL == False:
 				self.debug(1,"def read_gateway_from_routes: failed")
 				return False
@@ -4183,7 +4183,7 @@ class Systray:
 			try: 
 				read = subprocess.check_output('%s' % (netshcmd),shell=True)
 				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
-				self.debug(1,"def win_return_netsh_cmd: output = '%s'" % (output))
+				self.debug(3,"def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
 			except:
 				self.debug(1,"def win_return_netsh_cmd: '%s' failed" % (netshcmd))
@@ -4221,7 +4221,7 @@ class Systray:
 			try: 
 				read = subprocess.check_output('%s' % (routecmd),shell=True)
 				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
-				#self.debug(1,"def win_return_route_cmd: output = '%s'" % (output))
+				self.debug(3,"def win_return_route_cmd: output = '%s'" % (output))
 				return output
 			except:
 				self.debug(1,"def win_return_route_cmd: '%s' failed" % (routecmd))
@@ -4282,12 +4282,12 @@ class Systray:
 			self.errorquit(text=_("ipconfig.exe not found!"))
 
 	def isValueIPv4(self,value):
-		#self.debug(1,"def isValueIPv4()")
+		self.debug(9,"def isValueIPv4()")
 		try:
 			if len(value.split('.')) == 4:
 				for n in value.split('.'):
 					if n.isdigit():
-						#self.debug(1,"def isValueIPv4: n = %s"%(n))
+						self.debug(9,"def isValueIPv4: n = %s"%(n))
 						if not n >= 0 and not n <= 255:
 							return False
 				return True
@@ -4756,17 +4756,17 @@ class Systray:
 					return True
 
 	def check_inet_connection(self):
-		#self.debug(1,"def check_inet_connection()")
+		self.debug(3,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
 		if not self.try_socket(DOMAIN,443) == True:
-			self.debug(1,"def check_inet_connection: failed!")
+			self.debug(3,"def check_inet_connection: failed!")
 			self.LAST_CHECK_INET_FALSE = int(time.time())
 			return False
 		return True
 
 	def try_socket(self,host,port):
-		#self.debug(1,"def try_socket()")
+		self.debug(3,"def try_socket()")
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(3)
@@ -4775,11 +4775,11 @@ class Systray:
 		except:
 			return False
 		if result == 0:
-			#self.debug(1,"def try_socket: %s:%s True" % (host,port))
+			self.debug(3,"def try_socket: %s:%s True" % (host,port))
 			return True
 
 	def check_myip(self):
-		#self.debug(1,"def check_myip()")
+		self.debug(3,"def check_myip()")
 		# *** fixme *** missing ipv6 support
 		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
@@ -4874,7 +4874,7 @@ class Systray:
 							# end: for line in open(filepath)
 							self.OVPN_SERVER_INFO[servershort] = serverinfo
 						self.OVPN_SERVER.append(servername)
-						#self.debug(1,"def load_ovpn_server: file = %s " % (file))
+						self.debug(3,"def load_ovpn_server: file = %s " % (file))
 				# for end
 				self.OVPN_SERVER.sort()
 			else:
@@ -4887,15 +4887,15 @@ class Systray:
 			return False
 		self.timer_load_remote_data_running = True
 		if self.APIKEY == False:
-			#self.debug(1,"def load_remote_data: no api data")
+			self.debug(6,"def load_remote_data: no api data")
 			self.timer_load_remote_data_running = False
 			return False
 		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
-			#self.debug(1,"def load_remote_data: waiting for ovpn connection")
+			self.debug(6,"def load_remote_data: waiting for ovpn connection")
 			self.timer_load_remote_data_running = False
 			return False
 		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
-			#self.debug(1,"def load_remote_data: high ping")
+			self.debug(6,"def load_remote_data: high ping")
 			self.timer_load_remote_data_running = False
 			return False
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == True:
@@ -4912,7 +4912,7 @@ class Systray:
 		self.timer_load_remote_data_running = False
 
 	def check_hash_dictdata(self,newdata,olddata):
-		self.debug(1,"def check_hash_dictdata()")
+		self.debug(2,"def check_hash_dictdata()")
 		try:
 			texta = ""
 			textb = ""
@@ -4922,8 +4922,8 @@ class Systray:
 				textb = "%s %s %s" % (textb,key,value)
 			hasha = hashlib.sha256(texta).hexdigest()
 			hashb = hashlib.sha256(textb).hexdigest()
-			#self.debug(1,"hasha newdata = '%s'" % (hasha))
-			#self.debug(1,"hashb olddata = '%s'" % (hashb))
+			self.debug(9,"hasha newdata = '%s'" % (hasha))
+			self.debug(9,"hashb olddata = '%s'" % (hashb))
 			if hasha == hashb:
 				return True
 		except:
@@ -4932,23 +4932,23 @@ class Systray:
 	def load_serverdata_from_remote(self):
 		updatein = self.LAST_OVPN_SRV_DATA_UPDATE + self.LOAD_DATA_EVERY
 		now = int(time.time())
-		#self.debug(1,"def load_serverdata_from_remote: ?")
+		self.debug(6,"def load_serverdata_from_remote: ?")
 		if self.LOAD_SRVDATA == False:
-			#self.debug(1,"def load_serverdata_from_remote: disabled")
+			self.debug(6,"def load_serverdata_from_remote: disabled")
 			return False
 		elif self.MAINWINDOW_OPEN == False:
-			#self.debug(1,"def load_serverdata_from_remote: mainwindow not open")
+			self.debug(6,"def load_serverdata_from_remote: mainwindow not open")
 			return False
 		elif self.MAINWINDOW_HIDE == True:
-			#self.debug(1,"def load_serverdata_from_remote: mainwindow is hide")
+			self.debug(6,"def load_serverdata_from_remote: mainwindow is hide")
 			return False
 		elif updatein > now:
 			diff = updatein - now
-			#self.debug(1,"def load_serverdata_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
+			self.debug(6,"def load_serverdata_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
 			return False
 		elif self.check_inet_connection() == False:
 			self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time()) - self.LOAD_DATA_EVERY + 15
-			#self.debug(1,"def load_serverdata_from_remote: no inet connection")
+			self.debug(6,"def load_serverdata_from_remote: no inet connection")
 			return False
 		try:
 			API_ACTION = "loadserverdata"
@@ -4959,7 +4959,7 @@ class Systray:
 				if not r.content == "AUTHERROR":
 					#self.debug(1,"r.content = '%s'" % (r.content))
 					OVPN_SRV_DATA = json.loads(r.content)
-					#self.debug(1,"OVPN_SRV_DATA = '%s'" % (OVPN_SRV_DATA))
+					self.debug(9,"OVPN_SRV_DATA = '%s'" % (OVPN_SRV_DATA))
 					if len(OVPN_SRV_DATA) > 1:
 						if not self.check_hash_dictdata(OVPN_SRV_DATA,self.OVPN_SRV_DATA):
 							self.OVPN_SRV_DATA = OVPN_SRV_DATA
@@ -4991,20 +4991,20 @@ class Systray:
 	def load_accinfo_from_remote(self):
 		updatein = self.LAST_OVPN_ACC_DATA_UPDATE + self.LOAD_DATA_EVERY
 		now = int(time.time())
-		#self.debug(1,"def load_accinfo_from_remote: ?")
+		self.debug(6,"def load_accinfo_from_remote: ?")
 		if self.LOAD_ACCDATA == False:
-			#self.debug(1,"def load_accinfo_from_remote: disabled")
+			self.debug(6,"def load_accinfo_from_remote: disabled")
 			return False
 		elif self.ACCWINDOW_OPEN == False:
-			#self.debug(1,"def load_remote_data: mainwindow not open")
+			self.debug(6,"def load_remote_data: mainwindow not open")
 			return False
 		elif updatein > now:
 			diff = updatein - now
-			#self.debug(1,"def load_accinfo_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
+			self.debug(6,"def load_accinfo_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
 			return False
 		elif self.check_inet_connection() == False:
 			self.LAST_OVPN_ACC_DATA_UPDATE = now - self.LOAD_DATA_EVERY + 15
-			#self.debug(1,"def load_accinfo_from_remote: no inet connection")
+			self.debug(6,"def load_accinfo_from_remote: no inet connection")
 			return False
 		try:
 			API_ACTION = "accinfo"
@@ -5015,7 +5015,7 @@ class Systray:
 				if not r.content == "AUTHERROR":
 					#self.debug(1,"r.content = '%s'" % (r.content))
 					OVPN_ACC_DATA = json.loads(r.content)
-					#self.debug(1,"OVPN_ACC_DATA = '%s'" % (OVPN_ACC_DATA))
+					self.debug(9,"OVPN_ACC_DATA = '%s'" % (OVPN_ACC_DATA))
 					if len(OVPN_ACC_DATA) > 1:
 						if not self.check_hash_dictdata(OVPN_ACC_DATA,self.OVPN_ACC_DATA):
 							self.OVPN_ACC_DATA = OVPN_ACC_DATA
@@ -5238,7 +5238,7 @@ class Systray:
 				content = os.listdir(dir)
 				filename = self.openvpn_filename_exe()
 				hashs = self.OPENVPN_FILEHASHS[filename]
-				#self.debug(1,"hashs = '%s'" % (hashs))
+				self.debug(2,"hashs = '%s'" % (hashs))
 				for file in content:
 					self.LAST_FAILED_CHECKFILE = file
 					if file.endswith('.exe') or file.endswith('.dll'):
@@ -5334,7 +5334,7 @@ class Systray:
 			self.debug(1,"def read_d0wns_dns: file '%s' not found" % (self.dns_d0wntxt))
 
 	def check_d0wns_dnscryptports(self,value):
-		#self.debug(1,"def check_d0wns_dnscryptports()")
+		self.debug(9,"def check_d0wns_dnscryptports()")
 		try:
 			data = value.split()
 			for entry in data:
@@ -5349,7 +5349,7 @@ class Systray:
 			return False
 
 	def check_d0wns_names(self,name):
-		#self.debug(1,"def check_d0wns_names()")
+		self.debug(9,"def check_d0wns_names()")
 		try:
 			data = name.split('.')
 			#print "def check_d0wns_names: data = '%s' len(data)='%s'" % (data,len(data))
@@ -5365,7 +5365,7 @@ class Systray:
 			return False
 
 	def check_d0wns_dnscountry(self,value):
-		#self.debug(1,"def check_d0wns_dnscountry()")
+		self.debug(9,"def check_d0wns_dnscountry()")
 		try:
 			if not value.isalnum():
 				data = value.split()
@@ -5378,14 +5378,14 @@ class Systray:
 			return False
 
 	def check_d0wns_dnscryptfingerprint(self,value):
-		#self.debug(1,"def check_d0wns_dnscryptfingerprint()")
+		self.debug(9,"def check_d0wns_dnscryptfingerprint()")
 		try:
 			if len(value) == 79:
 				for toc in value.split(':'):
 					if not len(toc) == 4 or not toc.isalnum():
 						self.debug(1,"def check_d0wns_dnscryptfingerprint: value = '%s' toc '%s'"%(value,toc))
 						return False
-				#self.debug(1,"def check_d0wns_dnscryptfingerprint: True")
+				self.debug(9,"def check_d0wns_dnscryptfingerprint: True")
 				return True
 			else:
 				self.debug(1,"def check_d0wns_dnscryptfingerprint: len value = %s" % (len(value)))
@@ -5394,7 +5394,7 @@ class Systray:
 
 	def load_d0wns_dns_from_remote(self):
 		return
-		#self.debug(1,"def load_d0wns_dns_from_remote()")
+		self.debug(1,"def load_d0wns_dns_from_remote()")
 		try:
 			if not os.path.isfile(self.dns_d0wntxt):
 				try:
