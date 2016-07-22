@@ -1818,21 +1818,9 @@ class Systray:
 
 	def make_systray_bottom_menu(self):
 		self.debug(text="def make_systray_bottom_menu()")
-		try:
-			sep = Gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
-			mainwindowentry = False
-			if self.MAINWINDOW_OPEN == True:
-				mainwindowentry = Gtk.MenuItem(_("Close Servers"))
-			else:
-				if len(self.OVPN_SERVER) > 0:
-					mainwindowentry = Gtk.MenuItem(_("Servers"))
-			if mainwindowentry:
-				self.systray_menu.append(mainwindowentry)
-				mainwindowentry.connect('button-release-event', self.show_mainwindow)
-				mainwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"mainwindowentry")
-		except:
-			self.debug(text="def make_systray_bottom_menu: mainwindowentry failed")
+		
+		sep = Gtk.SeparatorMenuItem()
+		self.systray_menu.append(sep)
 		
 		try:
 			accwindowentry = False
