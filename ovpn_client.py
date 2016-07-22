@@ -855,6 +855,7 @@ class Systray:
 					pass
 		
 		else:
+			self.VPN_CFG = self.VPN_CFGip4
 			try:
 				cfg = open(self.opt_file,'wb')
 				parser = SafeConfigParser()
@@ -5473,7 +5474,8 @@ class Systray:
 				pass
 			self.about_dialog.set_logo(self.app_icon)
 			self.about_dialog.set_program_name("oVPN.to Client")
-			self.about_dialog.set_website("https://ovpn.to")
+			# *** Dont work on Windows atm ***
+			#self.about_dialog.set_website("https://ovpn.to")
 			self.about_dialog.set_website_label("oVPN.to")
 			self.about_dialog.set_transient_for(self.window)
 			self.about_dialog.set_destroy_with_parent (True)
