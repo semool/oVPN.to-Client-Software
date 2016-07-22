@@ -1375,7 +1375,7 @@ class Systray:
 					pass
 				self.LANG_FONT_CHANGE = False
 			
-			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+			if self.state_openvpn() == True:
 				self.switch_fw.set_sensitive(False)
 				self.switch_fwblockonexit.set_sensitive(False)
 				self.switch_fwdontaskonexit.set_sensitive(False)
@@ -1542,7 +1542,7 @@ class Systray:
 					systrayicon = self.systray_icon_syncupdate2
 				statusbar_text = systraytext
 				
-		elif self.STATE_OVPN == False and self.OVERWRITE_TRAYICON == False:
+		elif self.state_openvpn() == False:
 			systraytext = _("Disconnected! Have a nice and anonymous day!")
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
@@ -1567,7 +1567,7 @@ class Systray:
 			systrayicon = self.systray_icon_connect
 			statusbar_text = systraytext
 			self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
-		elif self.STATE_OVPN == True:
+		elif self.state_openvpn() == True:
 			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 			self.OVPN_CONNECTEDseconds = connectedseconds
 			if self.OVPN_PING_STAT == -2:
@@ -1797,7 +1797,7 @@ class Systray:
 
 	def make_systray_openvpn_menu(self):
 		self.debug(text="def make_systray_openvpn_menu()")
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		if self.state_openvpn() == True:
 			try:
 				sep = Gtk.SeparatorMenuItem()
 				servershort = self.OVPN_CONNECTEDto[:3]
@@ -1847,7 +1847,7 @@ class Systray:
 		except:
 			self.debug(text="def make_systray_bottom_menu: settwindowentry failed")
 		
-		if self.DISABLE_QUIT_ENTRY == True and (self.STATE_OVPN == True or self.inThread_jump_server_running == True):
+		if self.DISABLE_QUIT_ENTRY == True and self.state_openvpn() == True:
 			pass
 		else:
 			try:
@@ -1862,7 +1862,7 @@ class Systray:
 			
 			# add quit item
 			quit = Gtk.MenuItem(_("Quit"))
-			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+			if self.state_openvpn() == True:
 				quit.set_sensitive(False)
 			self.systray_menu.append(quit)
 			quit.connect('button-release-event', self.on_closing)
@@ -2623,7 +2623,7 @@ class Systray:
 	def show_hide_backup_window(self):
 		try:
 			self.load_firewall_backups()
-			if len(self.FIREWALL_BACKUPS) > 0 and self.NO_WIN_FIREWALL == False and self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+			if len(self.FIREWALL_BACKUPS) > 0 and self.NO_WIN_FIREWALL == False and self.state_openvpn() == False:
 				self.nbpage3 = Gtk.VBox(False,spacing=2)
 				self.nbpage3.set_border_width(8)
 				self.nbpage3.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
@@ -2649,7 +2649,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_nofw: failed")
 
 	def cb_settings_firewall_switch_nofw(self,switch,gparam):
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		if self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_settings_firewall_switch_nofw()")
@@ -2710,7 +2710,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
 
 	def cb_settings_firewall_switch_fwblockonexit(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_settings_firewall_switch_fwblockonexit()")
@@ -2738,7 +2738,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
 
 	def cb_settings_firewall_switch_fwdontaskonexit(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_settings_firewall_switch_fwdontaskonexit()")
@@ -2766,7 +2766,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_fwresetonconnect: failed")
 
 	def cb_settings_firewall_switch_fwresetonconnect(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_settings_firewall_switch_fwresetonconnect()")
@@ -2796,7 +2796,7 @@ class Systray:
 			self.debug(text="def settings_firewall_switch_fwbackupmode: failed")
 
 	def cb_settings_firewall_switch_fwbackupmode(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_settings_firewall_switch_fwbackupmode()")
@@ -2826,7 +2826,7 @@ class Systray:
 			self.debug(text="def settings_network_switch_nodns: failed")
 
 	def cb_switch_nodns(self,switch,gparam):
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		if self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
 		self.debug(text="def cb_switch_nodns()")
@@ -2859,11 +2859,11 @@ class Systray:
 		self.debug(text="def cb_settings_network_switch_disableextifondisco()")
 		if switch.get_active():
 			self.WIN_DISABLE_EXT_IF_ON_DISCO = True
-			if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+			if self.state_openvpn() == False:
 				self.win_disable_ext_interface()
 		else:
 			self.WIN_DISABLE_EXT_IF_ON_DISCO = False
-			if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+			if self.state_openvpn() == False:
 				self.win_enable_ext_interface()
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
@@ -3461,7 +3461,7 @@ class Systray:
 			self.OVERWRITE_TRAYICON = True
 			self.UPDATE_SWITCH = True
 			self.debug(text="def inThread_jump_server: server %s" % (server))
-			if self.STATE_OVPN == True:
+			if self.state_openvpn() == True:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
 				self.debug(text="def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
@@ -3471,7 +3471,7 @@ class Systray:
 
 	def kill_openvpn(self):
 		self.debug(text="def kill_openvpn()")
-		if self.STATE_OVPN == False:
+		if self.state_openvpn() == False:
 			return False
 		if self.timer_check_certdl_running == True:
 			self.msgwarn(_("Update is running."),_("Please wait!"))
@@ -3502,13 +3502,19 @@ class Systray:
 			return False
 		return True
 
+	def state_openvpn(self):
+		if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+			return False
+		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+			return True
+
 	def openvpn(self,server):
 		self.debug(text="def openvpn()")
 		while self.timer_check_certdl_running == True:
 			self.debug(text="def openvpn: sleep while timer_check_certdl_running")
 			time.sleep(1)
 		self.debug(text="def openvpn: server = '%s'" % (server))
-		if self.STATE_OVPN == False:
+		if self.state_openvpn() == False:
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
 			self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.VPN_CFG,self.ovpn_server_UPPER)
@@ -3641,7 +3647,7 @@ class Systray:
 			self.timer_ovpn_ping_running = True
 			self.debug(text="def inThread_timer_ovpn_ping: start")
 		
-		if self.STATE_OVPN == False:
+		if self.state_openvpn() == False:
 			self.OVPN_PING_STAT = -1
 			self.OVPN_PING = list()
 			self.timer_ovpn_ping_running = False
@@ -4889,11 +4895,11 @@ class Systray:
 			#self.debug(text="def load_remote_data: no api data")
 			self.timer_load_remote_data_running = False
 			return False
-		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
+		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
 			#self.debug(text="def load_remote_data: waiting for ovpn connection")
 			self.timer_load_remote_data_running = False
 			return False
-		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
+		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
 			#self.debug(text="def load_remote_data: high ping")
 			self.timer_load_remote_data_running = False
 			return False
@@ -5448,7 +5454,7 @@ class Systray:
 			self.QUIT_DIALOG.destroy()
 			return False
 		self.WINDOW_QUIT_OPEN = True
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		if self.state_openvpn() == True:
 			return False
 		else:
 			try: 
