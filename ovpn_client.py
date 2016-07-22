@@ -1968,6 +1968,9 @@ class Systray:
 								if self.extract_ovpn():
 									self.timer_check_certdl_running = False
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
+									if self.MAINWINDOW_OPEN == True:
+										self.mainwindow.remove(self.mainwindow_vbox)
+										self.mainwindow_ovpn_server()
 									return True
 								else:
 									self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
