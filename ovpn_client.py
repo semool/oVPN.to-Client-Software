@@ -270,7 +270,9 @@ class Systray:
 		self.APIKEY = False
 		self.LOAD_DATA_EVERY = 900
 		self.LOAD_ACCDATA = False
+		self.request_LOAD_ACCDATA = True
 		self.LOAD_SRVDATA = False
+		self.request_LOAD_SRVDATA = False
 		self.SRV_LIGHT_WIDTH = "490"
 		self.SRV_LIGHT_HEIGHT = "830"
 		self.SRV_WIDTH = "910"
@@ -1483,13 +1485,13 @@ class Systray:
 				self.switch_updateovpnonstart.set_active(False)
 			
 			# settings_options_switch_accinfo
-			if self.LOAD_ACCDATA == True:
+			if self.LOAD_ACCDATA == True and not self.APIKEY == False:
 				self.switch_accinfo.set_active(True)
 			else:
 				self.switch_accinfo.set_active(False)
 			
 			# settings_options_switch_srvinfo
-			if self.LOAD_SRVDATA == True:
+			if self.LOAD_SRVDATA == True and not self.APIKEY == False:
 				self.switch_srvinfo.set_active(True)
 			else:
 				self.switch_srvinfo.set_active(False)
@@ -2940,7 +2942,7 @@ class Systray:
 			switch = Gtk.Switch()
 			self.switch_accinfo = switch
 			checkbox_title = Gtk.Label(label=_("Load Account Info (default: OFF)"))
-			if self.LOAD_ACCDATA == True:
+			if self.LOAD_ACCDATA == True and not self.APIKEY == False:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
@@ -2954,7 +2956,13 @@ class Systray:
 	def cb_switch_accinfo(self,switch,gparam):
 		self.debug(1,"def cb_switch_accinfo()")
 		if switch.get_active():
-			self.LOAD_ACCDATA = True
+			if self.APIKEY == False:
+				self.LOAD_ACCDATA = False
+				self.request_LOAD_ACCDATA = True
+				GLib.idle_add(self.dialog_apikey)
+				return
+			else:
+				self.LOAD_ACCDATA = True
 		else:
 			self.LOAD_ACCDATA = False
 		reopen = False
@@ -2974,7 +2982,7 @@ class Systray:
 			switch = Gtk.Switch()
 			self.switch_srvinfo = switch
 			checkbox_title = Gtk.Label(label=_("Load Server Info (default: OFF)"))
-			if self.LOAD_SRVDATA == True:
+			if self.LOAD_SRVDATA == True and not self.APIKEY == False:
 				switch.set_active(True)
 			else:
 				switch.set_active(False)
@@ -2988,7 +2996,13 @@ class Systray:
 	def cb_switch_srvinfo(self,switch,gparam):
 		self.debug(1,"def cb_switch_srvinfo()")
 		if switch.get_active():
-			self.LOAD_SRVDATA = True
+			if self.APIKEY == False:
+				self.LOAD_SRVDATA = False
+				self.request_LOAD_SRVDATA = True
+				GLib.idle_add(self.dialog_apikey)
+				return
+			else:
+				self.LOAD_SRVDATA = True
 		else:
 			self.LOAD_SRVDATA = False
 		reopen = False
@@ -4435,7 +4449,13 @@ class Systray:
 		self.form_ask_userid()
 		if not self.APIKEY == False:
 			self.debug(1,"def dialog_apikey: self.APIKEY '-NOT_FALSE-'")
-			self.UPDATE_SWITCH = True
+			if self.request_LOAD_SRVDATA == True:
+				self.LOAD_SRVDATA = True
+				self.request_LOAD_SRVDATA = False
+			if self.request_LOAD_ACCDATA == True:
+				self.LOAD_ACCDATA = True
+				self.request_LOAD_ACCDATA = False
+		self.UPDATE_SWITCH = True
 			
 	def cb_interface_selector_changed(self, combobox):
 		self.debug(1,"def cb_interface_selector_changed()")
@@ -4516,15 +4536,18 @@ class Systray:
 		if event.button == 1:
 			self.debug(1,"def cb_extserverview()")
 			reopen = False
-			if self.MAINWINDOW_OPEN == True:
-				reopen = True
-				GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
-			if self.LOAD_SRVDATA == False:
+			if self.LOAD_SRVDATA == False and not self.APIKEY == False:
 				self.LOAD_SRVDATA = True
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
 				self.OVPN_SRV_DATA = {}
+			elif self.APIKEY == False:
+				self.request_LOAD_SRVDATA = True
+				GLib.idle_add(self.dialog_apikey)
 			else:
 				self.LOAD_SRVDATA = False
+			if self.MAINWINDOW_OPEN == True:
+				reopen = True
+				GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
 			self.write_options_file()
 			if reopen == True:
 				GLib.idle_add(self.mainwindow_ovpn_server)
@@ -4639,7 +4662,8 @@ class Systray:
 		if len(self.OVPN_SERVER) == 0:
 			self.cb_check_normal_update()
 		if self.MAINWINDOW_OPEN == True:
-			self.destroy_mainwindow()
+			self.mainwindow.remove(self.mainwindow_vbox)
+			self.mainwindow_ovpn_server()
 		self.UPDATE_SWITCH = True
 
 	def cb_change_ipmode2(self):
@@ -4652,7 +4676,8 @@ class Systray:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv4+6"))
 			self.cb_check_normal_update()
 		if self.MAINWINDOW_OPEN == True:
-			self.destroy_mainwindow()
+			self.mainwindow.remove(self.mainwindow_vbox)
+			self.mainwindow_ovpn_server()
 		self.UPDATE_SWITCH = True
 
 	# *** fixme: need isValueIPv6 first! ***
