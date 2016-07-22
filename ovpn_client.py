@@ -2859,11 +2859,12 @@ class Systray:
 		self.debug(text="def cb_settings_network_switch_disableextifondisco()")
 		if switch.get_active():
 			self.WIN_DISABLE_EXT_IF_ON_DISCO = True
-			if self.STATE_OVPN == False:
+			if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
 				self.win_disable_ext_interface()
 		else:
 			self.WIN_DISABLE_EXT_IF_ON_DISCO = False
-			self.win_enable_ext_interface()
+			if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+				self.win_enable_ext_interface()
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
