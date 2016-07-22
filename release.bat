@@ -16,7 +16,6 @@ copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
 del "%SOURCEDIR%\%EXESTRING%"
 copy /Y "%SOURCEDIR%\ovpn_client.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\setup.py" "%DEVDIST%\"
-copy /Y "%SOURCEDIR%\7zSFXcfg%BITS%.txt" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\*.bat" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\inno_setup%BITS%.iss" "%DEVDIST%\"
 
