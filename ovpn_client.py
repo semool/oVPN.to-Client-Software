@@ -3207,8 +3207,6 @@ class Systray:
 				active_item = 1
 			if self.APP_LANGUAGE == "es":
 				active_item = 2
-			if self.APP_LANGUAGE == "nl":
-				active_item = 3
 			combobox.set_active(active_item)
 			combobox.connect('changed',self.cb_settings_options_combobox_language)
 			page.pack_start(combobox_title,False,False,0)
