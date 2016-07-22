@@ -155,7 +155,7 @@ class Systray:
 		self.APP_FONT_SIZE = "9"
 		self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
 		self.APP_THEME = "Adwaita"
-		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
+		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Adwaita-dark", "Greybird" ]
 		self.ICONS_THEME = "standard"
 		self.ICONS_THEME_frombefore = self.ICONS_THEME
 		self.INSTALLED_ICONS = [ "standard", "classic", "classic2", "shield_bluesync", "experimental", "private" ]
@@ -3059,8 +3059,10 @@ class Systray:
 				active_item = 0
 			if self.APP_THEME == "Adwaita":
 				active_item = 1
-			if self.APP_THEME == "Greybird":
+			if self.APP_THEME == "Adwaita-dark":
 				active_item = 2
+			if self.APP_THEME == "Greybird":
+				active_item = 3
 			combobox.set_active(active_item)
 			combobox.connect('changed',self.cb_theme_switcher_changed)
 			page.pack_start(combobox_title,False,False,0)
