@@ -29,7 +29,7 @@ DefaultGroupName={#AppName}
 AllowNoIcons=yes
 OutputDir=.
 OutputBaseFilename=ovpn_client_{#AppString}_setup
-SetupIconFile=includes\ico\shield_exe.ico
+SetupIconFile=else\app_icons\shield_exe.ico
 Compression=lzma2/max
 SolidCompression=yes
 UninstallDisplayIcon={app}\{#AppExeName}
@@ -94,3 +94,6 @@ Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desk
 
 [Run]
 ;Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(AppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser
+
+[Registry]
+Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#AppExeName}"; ValueData: "~ HIGHDPIAWARE"; Flags: uninsdeletekey
