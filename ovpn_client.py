@@ -1549,7 +1549,7 @@ class Systray:
 					systrayicon = self.systray_icon_syncupdate2
 				statusbar_text = systraytext
 				
-		elif self.state_openvpn() == False:
+		elif self.state_openvpn() == False and self.OVERWRITE_TRAYICON == False:
 			systraytext = _("Disconnected! Have a nice and anonymous day!")
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
