@@ -1295,7 +1295,8 @@ class Systray:
 					dnssubm = Gtk.ImageMenuItem(dnssubmtext)
 					dnssubm.set_submenu(dnssubmenu)
 					img = Gtk.Image()
-					img.set_from_pixbuf(self.decode_flag(countrycode))
+					imgfile = self.decode_flag(countrycode)
+					img.set_from_pixbuf(imgfile)
 					dnssubm.set_always_show_image(True)
 					dnssubm.set_image(img)
 					dnsmenu.append(dnssubm)
@@ -1732,7 +1733,8 @@ class Systray:
 							cgm = Gtk.ImageMenuItem(countryname)
 							img = Gtk.Image()
 							try:
-								img.set_from_pixbuf(self.decode_flag(countrycode))
+								imgfile = self.decode_flag(countrycode)
+								img.set_from_pixbuf(imgfile)
 								cgm.set_always_show_image(True)
 								cgm.set_image(img)
 								cgm.set_submenu(cgmenu)
@@ -1753,7 +1755,8 @@ class Systray:
 						serveritem.connect('button-release-event', self.cb_jump_openvpn, servername)
 					
 					img = Gtk.Image()
-					img.set_from_pixbuf(self.decode_flag(countrycode))
+					imgfile = self.decode_flag(countrycode)
+					img.set_from_pixbuf(imgfile)
 					serveritem.set_always_show_image(True)
 					serveritem.set_image(img)
 					cgmenu.append(serveritem)
@@ -2336,7 +2339,7 @@ class Systray:
 			try:
 				countrycode = server[:2].lower()
 				servershort = server[:3].upper()
-				statusimg = GdkPixbuf.Pixbuf.new_from_file("%s\\bullet_white.png" % (self.ico_dir))
+				statusimg = self.decode_icon("bullet_white")
 				countryimg = self.decode_flag(countrycode)
 				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
 				serverport = self.OVPN_SERVER_INFO[servershort][1]
