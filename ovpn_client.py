@@ -855,6 +855,7 @@ class Systray:
 					pass
 		
 		else:
+			self.VPN_CFG = self.VPN_CFGip4
 			try:
 				cfg = open(self.opt_file,'wb')
 				parser = SafeConfigParser()
