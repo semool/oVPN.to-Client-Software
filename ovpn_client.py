@@ -1068,7 +1068,10 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
-			dialogWindow.set_icon(self.app_icon)
+			try:
+				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+			except:
+				pass
 			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -1102,7 +1105,10 @@ class Systray:
 					dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 					dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 					dialogWindow.set_transient_for(self.window)
-					dialogWindow.set_icon(self.app_icon)
+					try:
+						dialogWindow.set_icon_from_pixbuf(self.app_icon)
+					except:
+						pass
 					text = _("Choose your External Network Adapter!")
 					dialogWindow.set_title(text)
 					dialogWindow.set_markup(text)
@@ -1132,7 +1138,10 @@ class Systray:
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
-		dialogWindow.set_icon(self.app_icon)
+		try:
+			dialogWindow.set_icon_from_pixbuf(self.app_icon)
+		except:
+			pass
 		text = _("Please select your User-ID!")
 		dialogWindow.set_title(text)
 		dialogWindow.set_markup(text)
@@ -2207,7 +2216,10 @@ class Systray:
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
-				self.mainwindow.set_icon(self.app_icon)
+				try:
+					self.mainwindow.set_icon_from_pixbuf(self.app_icon)
+				except:
+					pass
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
@@ -2415,7 +2427,10 @@ class Systray:
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
 				self.accwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.accwindow.set_title(_("oVPN Account - %s") % (CLIENT_STRING))
-				self.accwindow.set_icon(self.app_icon)
+				try:
+					self.accwindow.set_icon_from_pixbuf(self.app_icon)
+				except:
+					pass
 				self.accwindow.set_default_size(370,480)
 				self.accwindow_accinfo()
 				self.ACCWINDOW_OPEN = True
@@ -2534,7 +2549,10 @@ class Systray:
 				self.settingswindow.set_position(Gtk.WindowPosition.CENTER)
 				self.settingswindow.connect("destroy",self.cb_destroy_settingswindow)
 				self.settingswindow.set_title(_("oVPN Settings - %s") % (CLIENT_STRING))
-				self.settingswindow.set_icon(self.app_icon)
+				try:
+					self.settingswindow.set_icon_from_pixbuf(self.app_icon)
+				except:
+					pass
 				self.settingsnotebook = Gtk.Notebook()
 				self.settingswindow.add(self.settingsnotebook)
 				
@@ -4324,7 +4342,10 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			self.dialog_form_ask_userid = dialogWindow
-			dialogWindow.set_icon(self.app_icon)
+			try:
+				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+			except:
+				pass
 			dialogWindow.set_transient_for(self.window)
 			dialogWindow.set_title(_("oVPN.to Setup"))
 			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
@@ -4348,17 +4369,15 @@ class Systray:
 			apikeyEntry.set_invisible_char("*")
 			apikeyEntry.set_size_request(200,24)
 			apikeyLabel = Gtk.Label(label=_("API-Key:"))
+			dialogBox.pack_start(apikeyLabel,False,False,0)
+			dialogBox.pack_start(apikeyEntry,False,False,0)
 			
 			checkbox = Gtk.Switch()
 			checkbox_title = Gtk.Label(label=_("Save Passphrase in File?"))
 			checkbox.set_active(False)
-
-			dialogBox.pack_start(apikeyLabel,False,False,0)
-			dialogBox.pack_start(apikeyEntry,False,False,0)
-
 			dialogBox.pack_start(checkbox_title,False,False,0)
 			dialogBox.pack_start(checkbox,False,False,0)
-
+			
 			dialogWindow.show_all()
 			dialogWindow.connect("response", self.response_dialog_apilogin, useridEntry, apikeyEntry, checkbox)
 			dialogWindow.connect("close", self.response_dialog_apilogin, None, None, None)
@@ -4517,7 +4536,10 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
-			dialogWindow.set_icon(self.app_icon)
+			try:
+				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+			except:
+				pass
 			text = _("Server Window Size")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -4572,7 +4594,10 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
-			dialogWindow.set_icon(self.app_icon)
+			try:
+				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+			except:
+				pass
 			text = _("Load Data every X seconds")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -5096,21 +5121,24 @@ class Systray:
 		if not self.OPENVPN_DL_URL == False:
 			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 				return self.verify_openvpnbin_dl()
-			#self.msgwarn(_("Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait...") % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO),_("Setup: openVPN"))
-			try:
-				ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
-				r1 = requests.get(self.OPENVPN_DL_URL)
-				r2 = requests.get(ascfiledl)
-				fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
-				fp1.write(r1.content)
-				fp1.close()
-				fp2 = open(self.OPENVPN_ASC_FILE, "wb")
-				fp2.write(r2.content)
-				fp2.close()
-				return self.verify_openvpnbin_dl()
-			except:
-				self.debug(1,"def load_openvpnbin_from_remote: failed")
-				return False
+			else:
+				self.tray.set_tooltip_markup("%s - Downloading openVPN (1.8 MB)" % (CLIENT_STRING))
+				self.debug(1,"Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
+				try:
+					ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
+					r1 = requests.get(self.OPENVPN_DL_URL)
+					r2 = requests.get(ascfiledl)
+					fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
+					fp1.write(r1.content)
+					fp1.close()
+					fp2 = open(self.OPENVPN_ASC_FILE, "wb")
+					fp2.write(r2.content)
+					fp2.close()
+					self.tray.set_tooltip_markup("%s - Verify openVPN" % (CLIENT_STRING))
+					return self.verify_openvpnbin_dl()
+				except:
+					self.debug(1,"def load_openvpnbin_from_remote: failed")
+					return False
 		else:
 			return False
 
@@ -5127,12 +5155,14 @@ class Systray:
 					os.remove(self.OPENVPN_SAVE_BIN_TO)
 				except:
 					self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error!"))
+				self.tray.set_tooltip_markup("%s - Verify openVPN failed" % (CLIENT_STRING))
 				return False
 		else:
 			return False
 
 	def win_install_openvpn(self):
 		self.debug(1,"def win_install_openvpn()")
+		self.tray.set_tooltip_markup("%s - Install openVPN" % (CLIENT_STRING))
 		if self.OPENVPN_SILENT_SETUP == True:
 			# silent install
 			installtodir = "%s\\runtime" % (self.vpn_dir)
@@ -5437,7 +5467,10 @@ class Systray:
 			self.WINDOW_ABOUT_OPEN = True
 			self.about_dialog = Gtk.AboutDialog()
 			self.about_dialog.set_position(Gtk.WindowPosition.CENTER)
-			self.about_dialog.set_icon(self.app_icon)
+			try:
+				self.about_dialog.set_icon_from_pixbuf(self.app_icon)
+			except:
+				pass
 			self.about_dialog.set_logo(self.app_icon)
 			self.about_dialog.set_program_name("oVPN.to Client")
 			self.about_dialog.set_website("https://ovpn.to")
@@ -5492,7 +5525,10 @@ class Systray:
 				dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.YES_NO)
 				dialog.set_position(Gtk.WindowPosition.CENTER)
 				dialog.set_title(_("Quit oVPN.to Client"))
-				dialog.set_icon(self.app_icon)
+				try:
+					dialog.set_icon_from_pixbuf(self.app_icon)
+				except:
+					pass
 				dialog.set_transient_for(self.window)
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup(_("Do you really want to quit?"))
@@ -5562,7 +5598,10 @@ class Systray:
 					self.dialog_ask_loadorunload_fw = dialog
 					dialog.set_position(Gtk.WindowPosition.CENTER)
 					dialog.set_title(_("Firewall Settings"))
-					dialog.set_icon(self.app_icon)
+					try:
+						dialog.set_icon_from_pixbuf(self.app_icon)
+					except:
+						pass
 					dialog.set_transient_for(self.window)
 					if self.WIN_BACKUP_FIREWALL == True:
 						text = _("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
@@ -5627,7 +5666,10 @@ class Systray:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_position(Gtk.WindowPosition.CENTER)
 			message.set_title(_("Error"))
-			message.set_icon(self.app_icon)
+			try:
+				message.set_icon_from_pixbuf(self.app_icon)
+			except:
+				pass
 			message.set_markup("%s"%(text))
 			message.run()
 			message.destroy()
@@ -5746,7 +5788,10 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
-			dialogWindow.set_icon(self.app_icon)
+			try:
+				dialogWindow.set_icon_from_pixbuf(self.app_icon)
+			except:
+				pass
 			dialogWindow.set_markup("%s"%(text))
 			dialogWindow.run()
 			dialogWindow.destroy()
