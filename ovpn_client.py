@@ -142,7 +142,7 @@ class Systray:
 	def self_vars(self):
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		self.LOGLEVEL = 1
-		self.LOGLEVELS = [1,2,3,5,48,49]
+		self.LOGLEVELS = [1,2,3,49]
 		self.OS = sys.platform
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
@@ -2007,14 +2007,13 @@ class Systray:
 									except:
 										self.debug(1,"def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
 										break
-								
-								# dont elif here!
-								if server == self.OVPN_CONNECTEDto:
-									statusimg = self.decode_icon("shield_go")
-								elif server == self.OVPN_FAV_SERVER:
-									statusimg = self.decode_icon("star")
 								else:
-									statusimg = self.decode_icon("bullet_white")
+									if server == self.OVPN_CONNECTEDto:
+										statusimg = self.decode_icon("shield_go")
+									elif server == self.OVPN_FAV_SERVER:
+										statusimg = self.decode_icon("star")
+									else:
+										statusimg = self.decode_icon("bullet_white")
 								try:
 									liststore.set_value(iter,cellnumber,statusimg)
 									row_changed += 1
@@ -5769,7 +5768,7 @@ class Systray:
 			self.debug(1,"def decode_icon: '%s' failed"%(icon))
 		
 	def decode_flag(self,flag):
-		#self.debug(49,"def decode_flag()")
+		#self.debug(48,"def decode_flag()")
 		try:
 			try:
 				imgpixbuf = self.FLAG_CACHE_PIXBUF[flag]
