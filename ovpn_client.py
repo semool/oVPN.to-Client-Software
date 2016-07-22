@@ -87,6 +87,7 @@ import threading
 import socket
 import requests
 import json
+#import gc
 from ConfigParser import SafeConfigParser
 
 CLIENTVERSION="v0.5.7-gtk3"
@@ -115,7 +116,7 @@ class Systray:
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		traysize = self.tray.get_size()
-		self.debug(text="TrayIcon Output Size: %s pixel" % (traysize))
+		self.debug(1,"TrayIcon Output Size: %s pixel" % (traysize))
 		self.tray.connect('size-changed', self.statusicon_size_changed)
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.tray.set_tooltip_markup(CLIENT_STRING)
@@ -140,7 +141,8 @@ class Systray:
 
 	def self_vars(self):
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
-		
+		self.LOGLEVEL = 1
+		self.LOGLEVELS = [1,2,3,49]
 		self.OS = sys.platform
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
@@ -152,7 +154,7 @@ class Systray:
 		self.LANG_FONT_CHANGE = False
 		self.APP_FONT_SIZE = "9"
 		self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
-		self.APP_THEME = "ms-windows"
+		self.APP_THEME = "Adwaita"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ICONS_THEME = "standard"
 		self.ICONS_THEME_frombefore = self.ICONS_THEME
@@ -245,11 +247,15 @@ class Systray:
 		self.d0wns_DNS = {}
 		
 		
-		self.FLAG_IMG = {}
-		self.FLAG_HASHS = {'ad.png':'8adee4d665c8119ec4f5ad5c43a9a85450e0001c275b6a0ee178ffbf95c4c043','ae.png':'6f20d866841c4514782a46142df22b70b8da9783c513e3d41d8f3313483fe38d','af.png':'c1054fb8d9595948aa96bc57c9ab6fb6b3770d2ee7e09ba7e46b09b21bf51bcd','ag.png':'0dfb5c39e2a3eebe18b431cf41c8c892ab5f1249caa09d43fa1dd7394d486cd7','ai.png':'721542818b00e197fea04303b0afc24763017c14b8cd791dfaf08411d9a99cae','al.png':'3f7278c0c4272b6ff65293c18cdbb7e2e272f59dabe16619c22051d319ef44e0','am.png':'e34d4e7961e7e994775dddfa994e4d9f709876634d36facff6bac70155597c23','an.png':'4c9bd8548dfa58fdf9e6ac703f94c8b96d8136c42b06fbdc8e2d8817e592ffde','ao.png':'49b0a50005440417bd679d03d4d78f9ba0d1c457285c97e94f36e56b1e8b623b','ar.png':'776fbb0600f99ccdc44e2ee7f8b6559988c443f3a754792585b1b7008aaedb91','as.png':'3ef7f1b82b2f28cae0c7df163c5ce9227ef37244da85118374869fc5f2e05868','at.png':'a3acc39d4b61f9cc1056c19176d1559f0dacbb0587a700afdbe4d881040ccd52','au.png':'a7f9683bc4240ef940ee3d4aaf127515add30d25b0b2179a6cdec23944635603','aw.png':'2dc58a1fcd65957140fa06ba9b2f1bd1b3643724cef0905e23e1561a5b3dfa5b','ax.png':'3f38a42fd54e4c7cb1154026f734bc444f9cc942b8b91f099cc65dccf6c7f431','az.png':'45da74f4c8a50cfc13ff612e9052a7df77fae155e20c2b67ec34c4e3d46dcebe','ba.png':'8aab9c83759b1a121043ae5526d7bd4174d6612c7d0c697609731e9f7b819b6b','bb.png':'93977880a9ae72940ed7560758b51a1ba32d27aa5fd2ad5ca38d86fe10061c1a','bd.png':'174d63b291981bb85bc6e90975b23dfd0538a28af9cd99e3530d750dfedf1807','be.png':'45f75a63fadde9018fa5698884c7fb0b2788e8f72ee1f405698b872d59674262','bf.png':'9069275d6c18aaf67463b1fffb7cdefe10da76cd955ee2c5022cff06efa241f2','bg.png':'c4838a24ad388f934b04dbf9dba02a8bc6e9e58d0a1076477b47b5987a5c2d64','bh.png':'d8dfd5dc5157e30aa9e241e4a7d13513dedf608045b6736716ea6c5ca4047855','bi.png':'f2489dfb66723f8585830a51ec1ff4f5a514f5b6fd8bfa423e2880118e18ba75','bj.png':'3eb78453cea7aac6afca9a54ec8a2b0d4998df40a0c5494534992fc38f5c2402','bm.png':'e8087faf03f478266cc279382009391155615af6a7f3eaa47b21717ce8eaa401','bn.png':'05a6a5da710bdd98eb1d8c9b097b687a34ace268e106bd3437298d0ffc8a7473','bo.png':'a802b4b4b31e9c87062e725760b052083ca0d2cc2cced10f44731688289c4ca5','br.png':'dff6f4d907290bdbe74812bf73b590f268694e0a30e64b4bb24b803a47b3e319','bs.png':'aabf518642010552de4ed24400d5d40fa7e6bf1142a183f4989dad88d7cede5e','bt.png':'ae10dea2abad314551038e08771857c6d67d3684487782275c094dab5dfda21e','bv.png':'f8dc302371c809ebda3e9183c606264601f8dd851d2b1878fd25f0f6abe2988c','bw.png':'166ffee51259387356bdadeb22cdc7d053fc89ef6f51ae3c774d522a4dfaf08e','by.png':'cc2b61fff898086df311b22f06fcb400e64c4627ef8495755b24e2f7f3e05429','bz.png':'f7ca75c8e16fb2a11cb30d9f9e7006505a719601b84a6135f478f62a7ff214f1','ca.png':'3a6c5facc8613948b81833101a2ff8c3a114813ce24077585faee268b8ffb541','catalonia.png':'58665da49b1ebca85993de6e799f423b4589359b2eb43cb6b8bb81223fc02b10','cc.png':'25d60905c65429304e895c47dfb9da424190d9be01d924b75cc5cb76a1bdf39c','cd.png':'d26464766b63c4c361821355ca7a36ef288ef72fd6bad23421c695e1dd527743','cf.png':'a476f7f6228a456d767f2f97b73b736cee01a64f0acdac1d0721dcd609476e8a','cg.png':'9b8814baab3cff79d037ee1cf49ecd8993d95169d4d8090d9a7d0eccf18d26fd','_ch.png':'da8c749e3f0119f91875ddaa116f265d440150c8f647dd3f634a0eb0b474e2c9','ch.png':'1a847144ea964355e4abd101179c374d3fd6c7c75f1ad58ca2d3b0946a1cd40f','ci.png':'4a5179c7a54ce4395781fbb535bbffb03b4bdbd56046f9209d4f415b1ad5b19c','ck.png':'38d9b787d10aafadd8aa1deeae343dff8fee30d230d86dfab14df9002dfecb01','cl.png':'516cde928be7cf45bedd28cb9bed291035aa9106a21335a922ca1e0987a8fdb6','cm.png':'3e785d74c3a21a99972a38b021eb475d99940239bc0bc1a4020bc77a9ecf70e1','cn.png':'7058233b5bdfdd4279e92e9dfe64bd4a61afd7e76d97dba498ce1d5777b92185','co.png':'ddbda18a0e3a272e63f2a3e734893bd848fceb76855057ad263823edbb4ca4df','cr.png':'f22dbafc8eaee237cac9a35777e98818868e2e87e47b640bbf4c487afc10b07e','cs.png':'3fe11c2a0b4c2b50035c224d2e6c87ba19a05663811c459d4e3a2f780aede957','cu.png':'9fc72810592496349d14e13a4c5b61b8cae7388be4d5d395ac2bf99d2f3ed4fa','cv.png':'22650dac4b404ca32e73fe64df90e21a955ec8f67a3dc2ef50135d342143dabb','cx.png':'8dc0ef0ae06c717937acbf0bafd947cc9a0c9984bd6839bc6ba22c82857acd43','cy.png':'bd7198c76594a6ed1147412a4e37d1ae258d1fd9358d96ded9b524dbeea7bc30','cz.png':'0f39366d88fabe6f6f5c7a3cb6a11165de6bc6bc2108802c49df5f9840bc6541','de.png':'3323814006fe6739493d27057954941830b59eff37ebaac994310e17c522dd57','dj.png':'4be41bfd725282adc410a23488c290028b8a433e614dffaa49d0cb28d6bbb39f','dk.png':'0c9213be3a5cbc5d656093ca415d2b9f52de067d8ed5d7cfd704ce8cd0564d2c','dm.png':'c91813a9d0753c4f99503e7123c1b40b2c805ae36128afb9eb6384c275c38195','do.png':'505c31334e03e2280f5fe3ebbbc210f71f5ee7242c9021c3d5727ec4114b5b68','dz.png':'f2ea00daa66609ba95a18dac13f3ba0a3d2522f8edbcd109e5fd25fcf1289591','ec.png':'ab0ecc4936f0623e3e298ee6f45d88d208e13b72453ec1bbe2be0abdbefeabbb','ee.png':'6ebe8f7e33db530652a0b1c6394ec4f50a2fcc0b4a31d1ab33db65d6815dd087','eg.png':'e4c44b7ce8a72720e2ab8b38b8885fca36dda04daa14ae37909bbd501d853074','eh.png':'61eda51aebe540c16219767b5c8e64b821d6f857832d8594086fb871c817fd19','england.png':'24c0c0d1e833516a54d890cb63adcd6acbb40c14eac80e5bcd07d92df9ff4cfb','er.png':'cabe5eaa395a681fd51029ef603449bf31914b934f9aaa73486ca55ec77c31ba','es.png':'e9aa6fcf5e814e25b7462ed594643e25979cf9c04f3a68197b5755b476ac38a7','et.png':'69975a423a5a5eb1cc33c554756b6d97e9f52f8253f818a9190db1784e55558f','europeanunion.png':'75bd9bf0f8d27cff7b8005c1a1808d75923ab1ee606f7220b4b35616e3e5a8ad','fam.png':'dec6c95977d90a7e468b2b823d74cd92a79ba623ac3705028eeaf3669ba98906','fi.png':'543f426fb35ad2c761641a67977c8faf0d940d4054d0dc1d7433987ebc3aa181','fj.png':'bc4f5f74e61dfe349dcbc110cfcb0342d0adb0c052652831f3995dfa63bb9b70','fk.png':'e0bd7b739e42aeaac268f77133fc70a228e115553662811c015d2e082da054d6','fm.png':'8c115aeccde699d03d5124eb30f853129cde0f03e94e9d255eda0eae9ea58c28','fo.png':'5b9e9e43b1f7969c97a72b65de12afd2429e83d1e644fc21eca48b59a489d82a','fr.png':'79a39793efbf8217efbbc840e1b2041fe995363a5f12f0c01dd4d1462e5eb842','ga.png':'78565ad916ce1cf8580860cff6184756cf9fbf08f80d04197f567a8f181f9a4b','gb.png':'5d72c5a8bef80fca6f99f476e15ec95ce2d5e5f65c6dab9ee8e56348be0d39fc','gd.png':'859d360193bdc3118b13ded0bc1fe9356deb442090daa91f700267035e9dfecc','ge.png':'a911818976d012613a3cd0afa6f8e996cdffc3a32ba82d88899e69fbc55f67be','gf.png':'79a39793efbf8217efbbc840e1b2041fe995363a5f12f0c01dd4d1462e5eb842','gh.png':'375fa90eeba5f017b1bfa833e8b9257cde8a0d9f23f668fd508952278b096f22','gi.png':'e86dcc7ad5556b7202d34b1cbac72e3bb0b97b19fc43919ac7321da94a8f3973','gl.png':'2ef3adddb67b87cd2f61652cc6c807556bce0b63433958cc8ad49b8a3b4ff0ae','gm.png':'8f4511b0ca233ebe65e9c435b0d620a58bc607700469c9b4ea446d2b5db79952','gn.png':'a6216497c02291a2ea9b2a04d111362fd44f60e754ff74c81561ee730922dc98','gp.png':'6731b1de195ee6d2f1591c37bb86bc5806a43d559e881ab71f11628852388add','gq.png':'a15608299afdeed2939b687d4bee10e9440395f61d69e402c37a81b4f34bc6ef','gr.png':'5648d2078756ae0b084312c46b02d82905cd9fb84262267cafcf9b71828ac358','gs.png':'1f9d0507de88efae157e75f35c25265f5d9d3f06579178fccbbf50987029c93f','gt.png':'0be4d466871ec85bb3892855ae498b2a78e8fca992024ec7efcc119d08b1a844','gu.png':'b7114f95668c77e6293cb3138bf908989089179c37501a70fdc49eedb73c3d45','gw.png':'720539b86c555880637aef705aff4a2c5497a4b5efd633c1835371aee5d6a7ad','gy.png':'b09eae1eaca0581c47b0064825061e3939ee8a938c4c51d004b0868372f13413','hk.png':'21a3c54b0f51243f34747eeb2feb2b2627c29133e6e3a8a1126b7bda81708dab','hm.png':'a7f9683bc4240ef940ee3d4aaf127515add30d25b0b2179a6cdec23944635603','hn.png':'feb47c8bef0dde53d8f4596fe4791d21a8d0ea060aa5b44e1d16d2583cac63e1','hr.png':'b4d87ecdeef29042f05b26ad81fbfece47292270eb0cfb10ab132f18c3ce98cd','ht.png':'4b60e9e656f44feb7b97a0adac55107fe043fbbc0407950e283451d21d2a9050','hu.png':'61a2cecf8326a8da732499312a098f89d050d13546f6204e6204de38c550437e','id.png':'1f85c9e9a1a0def09db35b63b9aae2a3c4f92202d701322621c8cfddf8880162','ie.png':'c04b1e73243fab30031bcd1b13bbe6ffe5e0e931d2125a6312e239056a972cb4','il.png':'5432e244f03e3973153451b1ec88d649459580eab66e2df936fe2f70f2fed823','in.png':'0aa7543328f3fddde96ab8fc7e3a8b85732de57de6e84447b22964971f399f28','io.png':'00653024642da7ae95c9b56770c878d482cce1bfa7478d41e9f15abc61e1c46c','iq.png':'abf11b67187d489d9321ca074a83bf613b08cf9a9de9565fd923088e51096ab7','ir.png':'2354a8a69f05bf7b0fcfc5ed2f89facd8bd1d692d34513acc066103417783c44','is.png':'82327740504dcaa478299427e9f66903b832b684283e7493d68bfe4808727798','it.png':'c7992f57d67156f994a38c6bb4ec72fa57601a284558db5e065c02dc36ee9d8c','jm.png':'92244b267742bbbfbce7f548d5bd5e75449ee446f53032ab3bef03e53ec7fda1','jo.png':'d5d3b3c24da6db1b1cb098da2f8216aab85a2ba04d2088ad97495bbbb3b99da4','jp.png':'5efce88ac7228ea159bcf7fd1cc56d73c19428394218706524bac0e9151d4c61','ke.png':'38512a3038a8e8f4032aa627157463a0fe942f948159beadbd5c10974ae86a82','kg.png':'98caea2321d6742c57073d56ec0135a7c8bb97e65b9fd062a78c11f42a502e38','kh.png':'5d8706b032eba89228abe0180923cbe1445a27dbb8126b340a9fa4a0ca41827e','ki.png':'652161e3308e25802890895e4bbed778493ec36ced3fa740d8fd83b495f620d0','km.png':'569e0181ef9ac05189ba2a88ebe1de0b2763ba54f737a8251d74b5a94609c2d6','kn.png':'1729d04153ae46884480bc9f995f0852915159e1a0e9c47fac199316ebce1353','kp.png':'6bb1d910ab5186e0cf5518492442f6231470920e22250ad48a27a520b1d376e0','kr.png':'6fdd24bd96b3a482bc058d5c9bcfd6f1c664d91bbd47658d65ac5d852535f7fd','kw.png':'345630ebda3d8a5798bc5447ba38c694921596981289b6c494cab31d5c43e350','ky.png':'c6fe83ab80ec3c1af2e81b2409673af43a0a610eecc0f2e8233d2f3886a48255','kz.png':'b639f1e1e00cf0973f7feaf673326300e13de6e830aad5eb08937bf56ee77c3b','la.png':'d56dc25b3ef4af93f12db2b58b72c293e85da54d8615dae008290a73bdb6d0bd','lb.png':'24efc04e761e01ac6c0aea8941bce30038fe3af40eef643c2cb9f96d1efa0230','lc.png':'fc9572f63afedd18082ff89cc8e9c2b51abbf09610a381939672b763da655f31','li.png':'1235def1c1d682ce8a6c0ec7e569972cd27c70f1c72fb0f2c1ba651895af8eaa','lk.png':'2ea160f5aa9c7155d9b0a15029afe24e4309294b3b61fab6f79442481c6f3c53','lr.png':'008caee046d6d14e91edebcb74343133c4592a2a636f53535c01acbb1757f5ea','ls.png':'a9117dc093a45c55b48faa85495b8e91c4b1bf8ac52ca9e791efe329bd297aa9','lt.png':'23ddd0c23304f715e7c5e47f893afbc827a3504ec6f6f828b4d0beb93eafbd62','lu.png':'6f5ef26b9bebad3c5c6572533d23761e2afa46372a9b350bd08214abda19ada4','lv.png':'0153d9f72dcd5563daedd27f7e0407aee3f39fef74e8d75951777da986e05257','ly.png':'75bfedebfb9cc57d3ed2a6fc640c7540195604bacbd8cc8301b3a053deed199a','ma.png':'61b4918e0904f58a113f7132366b1ad9d458dc5311c505f3b9b94b8458620ee2','mc.png':'d29f945dba8413eb510d42b8b4bfe4e2bdf2bd81158254c4279d056cb0d4b5e2','md.png':'0b4e15588de7b1370b9aedb0cd642b53ecb5352bce6c646e06634c79cecf787e','me.png':'3081af04bbaf03a33b15a177af37f0e46ffdc09469bdd3200795f52626a6d693','mg.png':'cde4f13166c5a8ca794977b62911e567cdf7bb6b420c934f0c5b284df81c25c2','mh.png':'2c90e947b0b12087942c92d69afb98af57e6de1e5acb2059854d91817c3b2176','mk.png':'3c47fe838cab9f56788986f6d46b0b57bcc31b7e7365f6d152bd33dd8c57c48c','ml.png':'b0a3a403ea590be753788de634af4c557d05ae4d2b99e739953208d24eb2b1ac','mm.png':'ecb1de767e97ae04cc8fc646f0a533069bb6f5e87e67c8cff13fc8c88799d6a9','mn.png':'c6e6741d6773b599129eb5ead073d8cd5c59386aab87e80f2e7d0b9ffe2ae505','mo.png':'679136a489c373c80a4b8777411af88256904fdb276e8a15885f5f52baca1dbc','mp.png':'604d309375c31da91dce706037f4b3f1047fd04e82eedacc9d804f4abbaa70e2','mq.png':'990809b24a79d60ddf9c22d555f4c99ca53a2a06773e0da2db4905aa35104056','mr.png':'a74f38227aec752324c052e9dd1851122748801ccec7aef5ecfbaa0f94390e8c','ms.png':'31947948b6ba38909344a0a095c1b20dbc3532a8694c4c98b0d065976c172280','mt.png':'a20c8a35e42004c904e1a06115a9657b170d8090ebe26e96592139e1c8a9e358','mu.png':'5af9de01b0475f0f9e7ed942d4196de6e6ee018a2f24a5162e3dcb833e5cd3d4','mv.png':'d95a38f3825323e8bc65bbe40bc0092c569bd8835ecf5ec7c15d2446bb2fb7c8','mw.png':'be1c170846c234e90ad8b4000ee3ad324d524d8b31e7701540a8cd69f0666db7','mx.png':'656fb035a56a50a6431312527b106f65c7e03bb8711778018c8dc466d1d445ee','my.png':'1e7866925f0e0d350f2c74aa8ac3542be6e90b3c2be3c7f6b1ba0b641b53de9d','mz.png':'a421c9817192c8297e62b03d45309aea3672c8f5574443bab798822f4e5815a1','na.png':'b8dfe39c1ebe4ba174840ba7170a160a48f2b334ee84ea4f39d894a6e54c19ec','nc.png':'34268f88af259368d197e0cdc5448ee6d292704f37794cf1a2e65ff8643f6161','ne.png':'d9bfbea18ec6b302dc3903f8b2e68e15354b6568a39c2f9e38b1c14f910ce225','nf.png':'28a73055985dd55360513b5d178b6b722ce9000c9ee367cbe61d8bb717928501','ng.png':'4c4996cf57a4843fde19bd8b0daf0bde0c471fbd41e0a64ecf45fbab2dfefdfd','ni.png':'8054835206a359ca1b9cae507439a088fb33834c8daabb3f336bf4004abc2aeb','nl.png':'1546928846ee0a8377fd30865d4c43cef501eba7d775d494b98d1ce699627a4a','no.png':'f8dc302371c809ebda3e9183c606264601f8dd851d2b1878fd25f0f6abe2988c','np.png':'1e5b552bdfe4c2663f4e287c49d8a57a561c97d497f56212aab6782e942b3240','nr.png':'58d723462b9d68ae1293bb40f72d4a3006fc0f4b0eb96ec08c30c6d07cbc8d69','nu.png':'7dfe8222c16cc1070beb9fa11b6c969ffc6f7482832288950270a125bb774e50','nz.png':'095ebba705ab72032d0c17ca3936f7012a404a778a23a685c2cf943f22d9880e','om.png':'59509c4182f08201f20fb0039ba9477dfa3b3028ae602056f86a9cc982f0ff9f','pa.png':'48fc49c3010bd1530dd86066a61d5a9addadbf31e021c928da9da0cfa0d165f3','pe.png':'aa9ecf69a7d07664c50371368d4b6ab9e1f7f2dc31e0ef3693d8ff2cbab7427a','pf.png':'8346bfd255be99c8bdea0e4f8d6039ac824d4a85c4a974b0cfec245eb9c58318','pg.png':'04cd8be0fbd25ccd8017fb3d9a0a2b511adc215a168dbfe671386ce6a783c802','ph.png':'609f7123d9d23ec401c90b88f677a19125ca24e2899ebe1f3c75598623fdd251','pk.png':'19851391a22a4eee0c6a3bc4b9dec8ec2ee15d0133a8f7c8844f599c261219fb','pl.png':'34f6a1822d880608e7124d2ea0e3da4cd9b3a3b3b7d18171b61031cedbe6e72f','pm.png':'f007111a5672954f4b499ef9bae12bd9e741b7084bbe3c55bea6fd651ee61a27','pn.png':'a02a747916b3a5ed5283b6261258906408ef112351512627db0f2dda57b686cc','pr.png':'4fdcbf2a4a9ca30c22451dca2582c65c473889f75c78d2e6e1253aae82ac1d1a','ps.png':'e53ff276a447b9962ce84b38926dd1f088d6db653f8e936b5c19bfb4584aa688','pt.png':'ba636f1cb6bfd323dac1fb079cd002b5d486ed5eff54f4c4744b81316b257e96','pw.png':'ef5cee4b6289acfae6721efa130076f096d6a3481acad71178016416b17b6b29','py.png':'bd60963b2eb84d58eb01e118a2d0ba5453c717e8564a8fdb4aa10dd6b6473044','qa.png':'140a569d8ed63a59005323a6e06b704a908741c17e0b46b191b2316e2a62e1f7','re.png':'79a39793efbf8217efbbc840e1b2041fe995363a5f12f0c01dd4d1462e5eb842','ro.png':'0f83abcca7f07368819e3268d42f161edabcee4b56329c67de93779c1fba3ec5','rs.png':'a00b9d05c78c62b3eaee82acb12c2d39cc8f63381ee3563b6b8fc6c285dd4efc','ru.png':'c6e9489e25e7854a58db93acc5a91b3cc023d33a70c4931dce8d2ef2868b5e94','rw.png':'9e0e80b9ec85c4066624ea17a501b0ceeed5353dc27cf956203ab8254263e381','sa.png':'8a82f9366b0218584e72ba24eefdbf0f9dd6030480219e39f13cf1e7fe87a03a','sb.png':'6d4a0283689892275b974704a1b87e65a67af641d8b7034a661b4dbb91bd8416','scotland.png':'500ffdc39a41504133171107588f13ad7a7ebce53fc28b423fa45e3e80f27ce9','sc.png':'ca20860642968fd26776098e80b113d8b9a1d48360837ed8ded94d65b0dc9abf','sd.png':'e0cbd1960cc662ea059c0438b92449a25b6753fada4734875545ba0f79098ce2','se.png':'dc67a89a0d57005dad961a1213206395e0dfd8c7825249a0611e140bf211e323','sg.png':'84684a25002cca288c03df18dc0b2636e38a36dfdcb3d1a7a654aad1009efb17','sh.png':'6a95c6905aa2fc09fe242e417d82b12350c048f606337e1d2cc31e38579c8b88','si.png':'a2eb02e5ee0cdfb2911e2ae65cb45e070e116cd9c471422e62c9710246fe7209','sj.png':'f8dc302371c809ebda3e9183c606264601f8dd851d2b1878fd25f0f6abe2988c','sk.png':'dfad70c1a7d2e9aca6c8e11a5a61b16e5f6ce8bf5a28d4b47c479189ace5ffba','sl.png':'0532248fc289611fe2255aa94cbed9de496f9fcd144eee6fcedd2a1eb25ee554','sm.png':'9510efe392a1a661b235c71faaed1f58730b42472caa0f73a7853b1e10d584d5','sn.png':'cbef42bf392f983769bebb6f52b15b2468b633ecdac03204b492fefb694c6d95','so.png':'c1ee2a03d7d92ed81609c610f6bb8b1c211e4da3018162dff14cee0d96c65451','sr.png':'f24fdccbff3e936cbebd5a2beebc30a44cdca6ad85e77ce733009ca88b64fc34','st.png':'356b2af9a06d0db9b05f04c528cf7ccfca73090b29148090ca227f53611d8fba','sv.png':'9722f682cdac58479490bd4ad3e2988aaf69fff9f73c4795f586fd6537cc97af','sy.png':'24c2811e92c20a88522cd9872020bdce2f882d6718962eac26f5fb4c97e14ded','sz.png':'3af4d71e471cbd7d856300a36ee6cde5fc4d29e647f90cb934b0e6f82ffdc1fb','tc.png':'fcac6aff645d8048d395b4a1e0f418be4d823c51525ecbec1d6622e72de9620a','td.png':'2a2e1bd51f95d45678decd51701d3542673f9263fac5bd8d09fe6c70daf69511','tf.png':'8c8d63683cc5ba2b8533f6a7db65cac7b137e5957d37df734e96634ccd0cf2e3','tg.png':'95a500c7fb39f20d5c2687e174626c8cad7969389437feb825257e6cce3cd833','th.png':'9301b5300fa18b50f774512c3549ded45bf41c30359d1824ced7cca0cc75e216','tj.png':'776630c76b77c04a84aa0edb87decb646643c53d519949df2113a5cac4592095','tk.png':'64d2bb4ebc19d7ce6b32a640ef6831c0f3587c54686e3780e5736108b24bcc12','tl.png':'ca5fb285fc6b36cd5d03290983b96d029b0d584a6c03725728a2435969df2636','tm.png':'5012ff744573ece2ed5e8f6aeb6de891bae03a21700141511173d0a9d35a4237','tn.png':'fbf8002c6785f2bc3a7b1074b1b08d6fa96033b3a58f6e362e90e76162064c83','to.png':'f045097a337487211f80bfeaa3391aac99a5b54950380bd32c3d1c96b512f0c8','tr.png':'292d592f7fa1df2fa653ecc1e03d5eb2ae68277c6df264f762aefb8218e23454','tt.png':'393ae78c5cdf66036d404f65822a90abc168672d0a1c5093e4259ce1606e7298','tv.png':'81770d0d4d6ee76a8286becd00d111ea1ffd3220267651f95f559898f76b8d58','tw.png':'e59c331045b010a83f46ad25c592cf3f5415271b612fc9db8d32cf9158447dc6','tz.png':'4bf0a8872442348835eb7cb88cad7ef7992ab7017c2777281493214413bc3d5f','ua.png':'9ae2f204178855c4fdb29ce75a0a1b2588fc3db3a7084d29715876bacd293508','ug.png':'42cd5a9bc8408d673b97fa04e528a194772f85c2f3aa756e1386045cdaa10538','uk.png':'5d72c5a8bef80fca6f99f476e15ec95ce2d5e5f65c6dab9ee8e56348be0d39fc','um.png':'7c655058691a6c837db9aac3c2f8662d8e06a6ebd3dd495cca6e691a67c1bf64','us.png':'36cce5cae3d2e0045b2b2b6cbffdad7a0aba3e99919cc219bbf0578efdc45585','uy.png':'9ab4ccd42c3869331626b86e9074502e47ad19db3253b3596f719bd850ff736e','uz.png':'a2870e6e9927c9ff0b80e6a58b95adb3463714f00733e9c3ddd3be1a2d5d17b5','va.png':'4ceb52d9a612b80c931d9530c273b1b608f32b9507e6b7009a48599eeb7f93e2','vc.png':'0bf42ce1f486108fa32afaba7976f0dea5dbbca2049b559f23d57a052124b6e2','ve.png':'6d04de1086b124d5843753e2bd55f137c2537bd47e0d5ea2c55ff3bc1da7293c','vg.png':'f3720add09557825a652d8998ac7bedf84239e5b9aecbdcffb3930383b7e4682','vi.png':'943fb60916b4286295f32e632fe5a046275e5cf84e87119a94f7f5e1b429e052','vn.png':'d05aa8078604f4560d99aacf12c80e400651e4ef9b0860b3ad478c2d8b08e36d','vu.png':'39779ad6848267e90357d3795bbb396deee7f20722f8e3d6c6be098a6f5f347e','wales.png':'a20ef40f442f089d0a5f5dcd089a76babd86f0fe3c243d9c8e50c6c0e4aef3ab','wf.png':'893ed4ccb23353f597bb7e9544ef8c376c896fc4f6fe56e4ca14aab70e49203e','ws.png':'7eb7d48fd72f83b5bcee0cc9bac9c24ad42c81927e8d336b6fd05fd9aefa0dcb','ye.png':'c2785bb08c181f8708b9a640ff8fe15d5ab5779af8095d11307542b6f03343a3','yt.png':'da7d65c048969b86d3815ed42134336609c9e8d5aead0a18194c025caf64c019','za.png':'48188165205cc507cd36c3465b00b2cd97c1cc315209b8f086f20af607055e49','zm.png':'794a2df87b0952ffd0fbcf18c9f61f713cff6cfafcc4b551745204d930fc1967','zw.png':'b546d55dd33c7049ef9bbfe4b665c785489b3470a04e6a2db4fda1fea403dc62'}
+		import flags_b64
+		self.FLAGS_B64 = flags_b64.flagsb64()
+		print "len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64))
 		self.COUNTRYNAMES = {
 			'BG':'Bulgaria','CA':'Canada','CH':'Swiss','DE':'Germany','FR':'France','HU':'Hungary','IS':'Iceland','LT':'Lithuania','MD':'Moldova','NL':'Netherlands','RO':'Romania','SE':'Sweden','UA':'Ukraine','UK':'United Kingdom','US':'U.S.A.',
 			}
+		self.FLAG_CACHE_PIXBUF = {}
+		self.ICON_CACHE_PIXBUF = {}
+		#self.IDLE_TIME = 0
 		self.systray_menu = False
 		self.WINDOW_QUIT_OPEN = False
 		self.WINDOW_ABOUT_OPEN = False
@@ -318,7 +324,7 @@ class Systray:
 		}
 
 	def preboot(self):
-		self.debug(text="def preboot()")
+		self.debug(1,"def preboot()")
 		self.self_vars()
 		if self.OS == "win32":
 				if self.win_pre1_check_app_dir():
@@ -337,7 +343,7 @@ class Systray:
 			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
 
 	def win_pre1_check_app_dir(self):
-		self.debug(text="def win_pre1_check_app_dir()")
+		self.debug(1,"def win_pre1_check_app_dir()")
 		os_appdata = os.getenv('APPDATA')
 		if os.path.exists("appdata"):
 			print "alternative folder found"
@@ -350,33 +356,33 @@ class Systray:
 			if self.DEBUG: print("win_pre1_check_app_dir %s not found, creating." % (self.app_dir))
 			os.mkdir(self.app_dir)
 		if os.path.exists(self.app_dir):
-			self.debug(text="win_pre1_check_app_dir self.app_dir=%s :True" % (self.app_dir))
+			self.debug(1,"win_pre1_check_app_dir self.app_dir=%s :True" % (self.app_dir))
 			return True
 		else:
 			self.errorquit(text = _("Could not create app_dir: %s") % (self.app_dir))
 
 	def list_profiles(self):
-		self.debug(text="def list_profiles()")
+		self.debug(1,"def list_profiles()")
 		self.profiles_unclean = os.listdir(self.app_dir)
 		self.PROFILES = list()
 		for profile in self.profiles_unclean:
 			if profile.isdigit():
 				self.PROFILES.append(profile)
 		self.PROFILES_COUNT = len(self.PROFILES)
-		self.debug(text="def list_profiles: profiles_count %s" % (self.PROFILES_COUNT))
+		self.debug(1,"def list_profiles: profiles_count %s" % (self.PROFILES_COUNT))
 		
 	def win_pre2_check_profiles_win(self):
-		self.debug(text="def win_pre2_check_profiles_win()")
+		self.debug(1,"def win_pre2_check_profiles_win()")
 		self.list_profiles()
 		if self.PROFILES_COUNT == 0:
-			self.debug(text="No profiles found")
+			self.debug(1,"No profiles found")
 			if self.USERID == False:
-				self.debug(text="spawn popup userid = %s" % (self.USERID))
-				self.debug(text="def win_pre2_check_profiles_win: L:308")
+				self.debug(1,"spawn popup userid = %s" % (self.USERID))
+				self.debug(1,"def win_pre2_check_profiles_win: L:308")
 				self.form_ask_userid()
-				self.debug(text="def win_pre2_check_profiles_win: L:309")
+				self.debug(1,"def win_pre2_check_profiles_win: L:309")
 				if not self.USERID == False and not self.APIKEY == False:
-					self.debug(text="def win_pre2_check_profiles_win: L:310")
+					self.debug(1,"def win_pre2_check_profiles_win: L:310")
 					return True
 		elif self.PROFILES_COUNT == 1 and self.PROFILES[0] > 1:
 			self.USERID = self.PROFILES[0]
@@ -387,7 +393,7 @@ class Systray:
 			return True
 
 	def win_pre3_load_profile_dir_vars(self):
-		self.debug(text="def win_pre3_load_profile_dir_vars()")
+		self.debug(1,"def win_pre3_load_profile_dir_vars()")
 		self.API_DIR = "%s\\%s" % (self.app_dir,self.USERID)
 		self.debug_log = "%s\\client_debug.log" % (self.API_DIR)
 		if os.path.isfile(self.debug_log):
@@ -453,69 +459,106 @@ class Systray:
 		if not os.path.isfile(self.WIN_TASKKILL_EXE):
 			self.errorquit(text=_("Error: '%s' not found!") % (self.WIN_TASKKILL_EXE))
 		
-		self.debug(text="win_pre3_load_profile_dir_vars loaded")
+		self.debug(1,"win_pre3_load_profile_dir_vars loaded")
 		return True
 
 	def load_icons(self):
-		# called from: def cb_icons_switcher_changed()
-
-		base64_data = base64.b64decode(self.base64_icons("app_icon"))
-		base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
-		self.app_icon = GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
-
+		self.debug(1,"def load_icons()")
+		# called from: 
+		"""
+			def win_pre3_load_profile_dir_vars()
+			def read_options_file()
+			def cb_icons_switcher_changed()
+		"""
+		
+		self.app_icon = self.decode_icon("app_icon")
 		self.ico_dir = "%s\\ico" % (self.bin_dir)
-
-		if self.ICONS_THEME == "standard":
-			self.ico_dir_theme = "%s\\ico\\standard" % (self.bin_dir)
-		elif self.ICONS_THEME == "classic":
-			self.ico_dir_theme = "%s\\ico\\classic" % (self.bin_dir)
-		elif self.ICONS_THEME == "classic2":
-			self.ico_dir_theme = "%s\\ico\\classic2" % (self.bin_dir)
-		elif self.ICONS_THEME == "shield_bluesync":
-			self.ico_dir_theme = "%s\\ico\\shield_bluesync" % (self.bin_dir)
-		elif self.ICONS_THEME == "experimental":
-			self.ico_dir_theme = "%s\\ico\\experimental" % (self.bin_dir)
-		elif self.ICONS_THEME == "private":
-			self.ico_dir_theme = "%s\\ico\\private" % (self.bin_dir)
-
 		if not os.path.isdir(self.ico_dir):
 			return False
-		if not os.path.isdir(self.ico_dir_theme):
-			return False
-
-		systray_icon_connected = "%s\\connected.ico" % (self.ico_dir_theme)
-		systray_icon_disconnected = "%s\\disconnect.ico" % (self.ico_dir_theme)
-		systray_icon_disconnected_traymenu = "%s\\disconnect_menu.ico" % (self.ico_dir_theme)
-		systray_icon_connect = "%s\\connect.ico" % (self.ico_dir_theme)
-		systray_icon_testing = "%s\\testing.ico" % (self.ico_dir_theme)
-		systray_icon_syncupdate1 = "%s\\sync_1.ico" % (self.ico_dir_theme)
-		systray_icon_syncupdate2 = "%s\\sync_2.ico" % (self.ico_dir_theme)
-		systray_icon_syncupdate3 = "%s\\sync_3.ico" % (self.ico_dir_theme)
 		
-		checkfiles = [systray_icon_connected,systray_icon_disconnected,systray_icon_disconnected_traymenu,systray_icon_connect,systray_icon_testing,systray_icon_syncupdate1,systray_icon_syncupdate2,systray_icon_syncupdate3]
-		for file in checkfiles:
-			if not os.path.isfile(file):
-				self.debug(text="def load_icons: file '%s' not found" %(file))
-				return False
-			
-		self.systray_icon_connected = systray_icon_connected
-		self.systray_icon_disconnected = systray_icon_disconnected
-		self.systray_icon_disconnected_traymenu = systray_icon_disconnected_traymenu
-		self.systray_icon_connect = systray_icon_connect
-		self.systray_icon_testing = systray_icon_testing
-		self.systray_icon_syncupdate1 = systray_icon_syncupdate1
-		self.systray_icon_syncupdate2 = systray_icon_syncupdate2
-		self.systray_icon_syncupdate3 = systray_icon_syncupdate3
+		if self.ICONS_THEME == "standard":
+			self.systray_icon_connected = self.app_icon
+			self.systray_icon_connect = self.decode_icon("connect")
+			self.systray_icon_testing = self.decode_icon("testing")
+			self.systray_icon_disconnected = self.decode_icon("disconnect1")
+			self.systray_icon_disconnected_traymenu = self.decode_icon("disconnect1_menu")
+			self.systray_icon_syncupdate1 = self.decode_icon("sync_2a")
+			self.systray_icon_syncupdate2 = self.decode_icon("sync_2b")
+			self.systray_icon_syncupdate3 = self.decode_icon("sync_2c")
+		
+		elif self.ICONS_THEME == "classic":
+			self.systray_icon_connected = self.decode_icon("connected_classic")
+			self.systray_icon_connect = self.decode_icon("connect")
+			self.systray_icon_testing = self.decode_icon("testing")
+			self.systray_icon_disconnected = self.decode_icon("disconnect1")
+			self.systray_icon_disconnected_traymenu = self.decode_icon("disconnect1_menu")
+			self.systray_icon_syncupdate1 = self.decode_icon("sync_1a")
+			self.systray_icon_syncupdate2 = self.decode_icon("sync_1b")
+			self.systray_icon_syncupdate3 = self.decode_icon("sync_1c")
+		
+		elif self.ICONS_THEME == "classic2":
+			self.systray_icon_connected = self.decode_icon("connected_classic")
+			self.systray_icon_connect = self.decode_icon("connect")
+			self.systray_icon_testing = self.decode_icon("testing")
+			self.systray_icon_disconnected = self.decode_icon("disconnect2")
+			self.systray_icon_disconnected_traymenu = self.decode_icon("disconnect1_menu")
+			self.systray_icon_syncupdate1 = self.decode_icon("sync_1a")
+			self.systray_icon_syncupdate2 = self.decode_icon("sync_1b")
+			self.systray_icon_syncupdate3 = self.decode_icon("sync_1c")
+		
+		elif self.ICONS_THEME == "shield_bluesync":
+			self.systray_icon_connected = self.app_icon
+			self.systray_icon_connect = self.decode_icon("connect")
+			self.systray_icon_testing = self.decode_icon("testing")
+			self.systray_icon_disconnected = self.decode_icon("disconnect1")
+			self.systray_icon_disconnected_traymenu = self.decode_icon("disconnect1_menu")
+			self.systray_icon_syncupdate1 = self.decode_icon("sync_1a")
+			self.systray_icon_syncupdate2 = self.decode_icon("sync_1b")
+			self.systray_icon_syncupdate3 = self.decode_icon("sync_1c")
+		
+		elif self.ICONS_THEME == "experimental":
+			self.systray_icon_connected = self.app_icon
+			self.systray_icon_connect = self.decode_icon("connect")
+			self.systray_icon_testing = self.decode_icon("testing")
+			self.systray_icon_disconnected = self.decode_icon("disconnect3")
+			self.systray_icon_disconnected_traymenu = self.decode_icon("disconnect3_menu")
+			self.systray_icon_syncupdate1 = self.decode_icon("sync_2a")
+			self.systray_icon_syncupdate2 = self.decode_icon("sync_2b")
+			self.systray_icon_syncupdate3 = self.decode_icon("sync_2c")
+		
+		elif self.ICONS_THEME == "private":
+			self.ico_dir_theme = "%s\\ico\\private" % (self.bin_dir)
+			if os.path.isdir(self.ico_dir_theme):
+				systray_icon_connected = "%s\\connected.ico" % (self.ico_dir_theme)
+				systray_icon_connect = "%s\\connect.ico" % (self.ico_dir_theme)
+				systray_icon_testing = "%s\\testing.ico" % (self.ico_dir_theme)
+				systray_icon_disconnected = "%s\\disconnect.ico" % (self.ico_dir_theme)
+				systray_icon_disconnected_traymenu = "%s\\disconnect_menu.ico" % (self.ico_dir_theme)
+				systray_icon_syncupdate1 = "%s\\sync_1.ico" % (self.ico_dir_theme)
+				systray_icon_syncupdate2 = "%s\\sync_2.ico" % (self.ico_dir_theme)
+				systray_icon_syncupdate3 = "%s\\sync_3.ico" % (self.ico_dir_theme)
+				checkfiles = [systray_icon_connected,systray_icon_connect,systray_icon_testing,systray_icon_disconnected,systray_icon_disconnected_traymenu,systray_icon_syncupdate1,systray_icon_syncupdate2,systray_icon_syncupdate3]
+				for file in checkfiles:
+					if not os.path.isfile(file):
+						self.debug(1,"def load_icons: file '%s' not found" %(file))
+						return False
+					self.systray_icon_connected = systray_icon_connected
+					self.systray_icon_connect = systray_icon_connect
+					self.systray_icon_testing = systray_icon_testing
+					self.systray_icon_disconnected = systray_icon_disconnected
+					self.systray_icon_disconnected_traymenu = systray_icon_disconnected_traymenu
+					self.systray_icon_syncupdate1 = systray_icon_syncupdate1
+					self.systray_icon_syncupdate2 = systray_icon_syncupdate2
+					self.systray_icon_syncupdate3 = systray_icon_syncupdate3
 		
 		self.systrayicon_from_before = False
-		
 		return True
 
 	def check_config_folders(self):
-		self.debug(text="def check_config_folders()")
+		self.debug(1,"def check_config_folders()")
 		try:
-			#self.debug(text="def check_config_folders userid = %s" % (self.USERID))
-			self.debug(text="def check_config_folders: userid found")
+			#self.debug(1,"def check_config_folders userid = %s" % (self.USERID))
+			self.debug(1,"def check_config_folders: userid found")
 			if not os.path.exists(self.API_DIR):
 				if self.DEBUG: print("api_dir %s not found, creating." % (self.API_DIR))
 				os.mkdir(self.API_DIR)
@@ -566,7 +609,7 @@ class Systray:
 			self.errorquit(text=_("Creating config Folders failed"))
 
 	def read_options_file(self):
-		self.debug(text="def read_options_file()")
+		self.debug(1,"def read_options_file()")
 		if os.path.isfile(self.opt_file):
 			try:
 				parser = SafeConfigParser()
@@ -591,16 +634,16 @@ class Systray:
 				
 				try:
 					APPLANG = parser.get('oVPN','applanguage')
-					self.debug(text="APPLANG = parser.get(oVPN,'%s') " % (APPLANG))
+					self.debug(1,"APPLANG = parser.get(oVPN,'%s') " % (APPLANG))
 					if APPLANG in self.INSTALLED_LANGUAGES:
-						self.debug(text="APPLANG '%s' in self.INSTALLED_LANGUAGES" % (APPLANG))
+						self.debug(1,"APPLANG '%s' in self.INSTALLED_LANGUAGES" % (APPLANG))
 						if self.init_localization(APPLANG) == True:
 							if self.APP_LANGUAGE == APPLANG:
-								self.debug(text="NEW self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
+								self.debug(1,"NEW self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
 					else:
-						self.debug(text="self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
+						self.debug(1,"self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
 				except:
-					self.debug(text="self.APP_LANGUAGE FAILED")
+					self.debug(1,"self.APP_LANGUAGE FAILED")
 				
 				try:
 					self.LAST_CFG_UPDATE = parser.get('oVPN','lastcfgupdate')
@@ -613,7 +656,7 @@ class Systray:
 					self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
 					if self.OVPN_FAV_SERVER == "False": 
 						self.OVPN_FAV_SERVER = False
-					self.debug(text="self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
+					self.debug(1,"self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 				except:
 					pass
 				
@@ -621,7 +664,7 @@ class Systray:
 					self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
 					if not self.OVPN_FAV_SERVER == False and self.OVPN_AUTO_CONNECT_ON_START == False:
 						self.OVPN_AUTO_CONNECT_ON_START = True
-					self.debug(text="self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
+					self.debug(1,"self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
 				except:
 					pass
 				
@@ -629,7 +672,7 @@ class Systray:
 					self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
 					if self.WIN_EXT_DEVICE == "False": 
 						self.WIN_EXT_DEVICE = False
-					self.debug(text="self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
+					self.debug(1,"self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
 				except:
 					pass
 				
@@ -637,7 +680,7 @@ class Systray:
 					self.WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
 					if self.WIN_TAP_DEVICE == "False": 
 						self.WIN_TAP_DEVICE = False
-					self.debug(text="self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
+					self.debug(1,"self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
 				except:
 					pass
 				
@@ -650,7 +693,7 @@ class Systray:
 				
 				try:
 					self.UPDATEOVPNONSTART = parser.getboolean('oVPN','updateovpnonstart')
-					self.debug(text="self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
+					self.debug(1,"self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
 				except:
 					pass
 				
@@ -672,56 +715,56 @@ class Systray:
 						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
 						self.VPN_CFG = self.VPN_CFGip64
 					
-					self.debug(text="self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
+					self.debug(1,"self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
 				except:
 					pass
 				
 				try:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
-					self.debug(text="self.WIN_RESET_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
+					self.debug(1,"self.WIN_RESET_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except:
 					pass
 				
 				try:
 					self.WIN_BACKUP_FIREWALL = parser.getboolean('oVPN','winbackupfirewall')
-					self.debug(text="self.WIN_BACKUP_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
+					self.debug(1,"self.WIN_BACKUP_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except:
 					pass
 				
 				try:
 					self.NO_WIN_FIREWALL = parser.getboolean('oVPN','nowinfirewall')
-					self.debug(text="self.NO_WIN_FIREWALL = '%s'" % (self.NO_WIN_FIREWALL))
+					self.debug(1,"self.NO_WIN_FIREWALL = '%s'" % (self.NO_WIN_FIREWALL))
 				except:
 					pass
 				
 				try:
 					self.WIN_DONT_ASK_FW_EXIT = parser.getboolean('oVPN','winnoaskfwonexit')
-					self.debug(text="self.WIN_DONT_ASK_FW_EXIT = '%s'" % (self.WIN_DONT_ASK_FW_EXIT))
+					self.debug(1,"self.WIN_DONT_ASK_FW_EXIT = '%s'" % (self.WIN_DONT_ASK_FW_EXIT))
 				except:
 					pass
 				
 				try:
 					self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = parser.getboolean('oVPN','winfwblockonexit')
-					self.debug(text="self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = '%s'" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
+					self.debug(1,"self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = '%s'" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
 				except:
 					pass
 
 				try:
 					self.WIN_DISABLE_EXT_IF_ON_DISCO = parser.getboolean('oVPN','windisableextifondisco')
-					self.debug(text="self.WIN_DISABLE_EXT_IF_ON_DISCO = '%s'" % (self.WIN_DISABLE_EXT_IF_ON_DISCO))
+					self.debug(1,"self.WIN_DISABLE_EXT_IF_ON_DISCO = '%s'" % (self.WIN_DISABLE_EXT_IF_ON_DISCO))
 				except:
 					pass
 				
 				
 				try:
 					self.TAP_BLOCKOUTBOUND = parser.getboolean('oVPN','wintapblockoutbound')
-					self.debug(text="self.TAP_BLOCKOUTBOUND = '%s'" % (self.TAP_BLOCKOUTBOUND))
+					self.debug(1,"self.TAP_BLOCKOUTBOUND = '%s'" % (self.TAP_BLOCKOUTBOUND))
 				except:
 					pass
 				
 				try:
 					self.NO_DNS_CHANGE = parser.getboolean('oVPN','nodnschange')
-					self.debug(text="self.NO_DNS_CHANGE = '%s'" % (self.NO_DNS_CHANGE))
+					self.debug(1,"self.NO_DNS_CHANGE = '%s'" % (self.NO_DNS_CHANGE))
 				except:
 					pass
 
@@ -729,19 +772,19 @@ class Systray:
 					self.LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
 					if self.LOAD_DATA_EVERY <= 60:
 						self.LOAD_DATA_EVERY = 66
-					self.debug(text="self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
+					self.debug(1,"self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
 				except:
 					pass
 					
 				try:
 					self.LOAD_ACCDATA = parser.getboolean('oVPN','loadaccinfo')
-					self.debug(text="self.LOAD_ACCDATA = '%s'" % (self.LOAD_ACCDATA))
+					self.debug(1,"self.LOAD_ACCDATA = '%s'" % (self.LOAD_ACCDATA))
 				except:
 					pass
 				
 				try:
 					self.LOAD_SRVDATA = parser.getboolean('oVPN','serverviewextend')
-					self.debug(text="self.LOAD_SRVDATA = '%s'" % (self.LOAD_SRVDATA))
+					self.debug(1,"self.LOAD_SRVDATA = '%s'" % (self.LOAD_SRVDATA))
 				except:
 					pass
 				
@@ -755,33 +798,33 @@ class Systray:
 						self.SRV_LIGHT_HEIGHT = SRV_LIGHT_HEIGHT
 						self.SRV_WIDTH = SRV_WIDTH
 						self.SRV_HEIGHT = SRV_HEIGHT
-						self.debug(text="self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
-						self.debug(text="self.SRV_WIDTH,self.SRV_HEIGHT Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
+						self.debug(1,"self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
+						self.debug(1,"self.SRV_WIDTH,self.SRV_HEIGHT Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
 				except:
 					pass
 				
 				try:
 					self.APP_THEME = parser.get('oVPN','theme')
-					self.debug(text="self.APP_THEME = '%s'" % (self.APP_THEME))
+					self.debug(1,"self.APP_THEME = '%s'" % (self.APP_THEME))
 				except:
 					pass
 				
 				try:
 					self.ICONS_THEME = parser.get('oVPN','icons')
 					self.load_icons()
-					self.debug(text="self.ICONS_THEME = '%s'" % (self.ICONS_THEME))
+					self.debug(1,"self.ICONS_THEME = '%s'" % (self.ICONS_THEME))
 				except:
 					pass
 				
 				try:
 					self.APP_FONT_SIZE = parser.get('oVPN','font')
-					self.debug(text="self.APP_FONT_SIZE = '%s'" % (self.APP_FONT_SIZE))
+					self.debug(1,"self.APP_FONT_SIZE = '%s'" % (self.APP_FONT_SIZE))
 				except:
 					pass
 				
 				try:
 					self.DISABLE_QUIT_ENTRY = parser.getboolean('oVPN','disablequitentry')
-					self.debug(text="self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
+					self.debug(1,"self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
 				except:
 					pass
 					
@@ -789,10 +832,10 @@ class Systray:
 				
 				try:
 					self.MYDNS = json.loads(parser.get('oVPN','mydns'))
-					self.debug(text="def read_options_file: len(self.MYDNS) == '%s'"%(len(self.MYDNS)))
-					self.debug(text="def read_options_file: self.MYDNS == '%s'"%(self.MYDNS))
+					self.debug(1,"def read_options_file: len(self.MYDNS) == '%s'"%(len(self.MYDNS)))
+					self.debug(1,"def read_options_file: self.MYDNS == '%s'"%(self.MYDNS))
 				except:
-					self.debug(text="def read_options_file: self.MYDNS = json.loads failed")
+					self.debug(1,"def read_options_file: self.MYDNS = json.loads failed")
 					self.MYDNS = {}
 				
 				return True
@@ -843,14 +886,14 @@ class Systray:
 				cfg.close()
 				return True
 			except:
-				self.debug(text="def read_options_file: create failed")
+				self.debug(1,"def read_options_file: create failed")
 
 	def write_options_file(self):
 		if self.isWRITING_OPTFILE == True:
-			self.debug(text="self.isWRITING_OPTFILE == True")
+			self.debug(1,"self.isWRITING_OPTFILE == True")
 			return False
 		self.isWRITING_OPTFILE = True
-		self.debug(text="def write_options_file()")
+		self.debug(1,"def write_options_file()")
 		try:
 			if not self.APIKEY == False:
 				if self.SAVE_APIKEY_INFILE == True:
@@ -898,11 +941,11 @@ class Systray:
 			self.isWRITING_OPTFILE = False
 			return True
 		except:
-			self.debug(text="def write_options_file: failed")
+			self.debug(1,"def write_options_file: failed")
 		self.isWRITING_OPTFILE = False
 
 	def read_interfaces(self):
-		self.debug(text="def read_interfaces()")
+		self.debug(1,"def read_interfaces()")
 		if self.OS == "win32":
 			if self.WIN_RESET_EXT_DEVICE == False:
 				if self.win_read_interfaces():
@@ -928,7 +971,7 @@ class Systray:
 								return True
 
 	def win_read_interfaces(self):
-		self.debug(text="def win_read_interfaces()")
+		self.debug(1,"def win_read_interfaces()")
 		self.win_detect_openvpn()
 		self.INTERFACES = list()
 		string = "netsh.exe interface show interface"
@@ -946,10 +989,9 @@ class Systray:
 		else:
 			self.errorquit(text=_("Error reading your Interfaces from netsh.exe. Contact support@ovpn.to with Error-ID:\nADAPTERS[1]=(%s)\n") % (ADAPTERS[1]))
 
-		text = "def win_read_interfaces: LANG = %s" % (LANG)
-		self.debug(text=text)
+		self.debug(1,"def win_read_interfaces: LANG = %s" % (LANG))
 		for line in ADAPTERS:
-			self.debug(text="%s"%(line))
+			self.debug(1,"%s"%(line))
 			interface = line.split()
 			try:
 				if LANG == "DK":
@@ -967,7 +1009,7 @@ class Systray:
 					for iface in interface:
 						if not nface == None:
 							nface = nface+" %s" % (iface)
-							self.debug(text="%s"%(nface))
+							self.debug(1,"%s"%(nface))
 						else:
 							nface = iface
 					interface = nface
@@ -977,45 +1019,45 @@ class Systray:
 			except:
 				pass
 		self.INTERFACES.pop(0)
-		self.debug(text="INTERFACES: %s"%(self.INTERFACES))
+		self.debug(1,"INTERFACES: %s"%(self.INTERFACES))
 		if len(self.INTERFACES)	< 2:
 			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
 		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
 		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		TAPADAPTERS = TAPADAPTERS.split('\r\n')
-		self.debug(text="TAP ADAPTERS bp = %s"%(TAPADAPTERS))
+		self.debug(1,"TAP ADAPTERS bp = %s"%(TAPADAPTERS))
 		TAPADAPTERS.pop(0)
-		self.debug(text="TAP ADAPTERS ap = %s"%(TAPADAPTERS))
+		self.debug(1,"TAP ADAPTERS ap = %s"%(TAPADAPTERS))
 		self.WIN_TAP_DEVS = list()
 		for line in TAPADAPTERS:
-			#self.debug(text="checking line = %s"%(line))
+			self.debug(10,"checking line = %s"%(line))
 			for INTERFACE in self.INTERFACES:
-				#if len(line) >= 1: self.debug(text="is IF: '%s' listed as TAP in line '%s'?"%(INTERFACE,line))
+				#if len(line) >= 1: self.debug(1,"is IF: '%s' listed as TAP in line '%s'?"%(INTERFACE,line))
 				if line.startswith("'%s' {"%(INTERFACE)) and len(line) >= 1:
-					self.debug(text="Found TAP ADAPTER: '%s'" % (INTERFACE))
+					self.debug(1,"Found TAP ADAPTER: '%s'" % (INTERFACE))
 					self.INTERFACES.remove(INTERFACE)
 					self.WIN_TAP_DEVS.append(INTERFACE)
 					break
 				""" do not remove! maybe need for debug in future """
 				#elif line.startswith("Available TAP-WIN32 adapters"):
-				#	#self.debug(text="ignoring tap line")
+				#	#self.debug(1,"ignoring tap line")
 				#	pass
 				#elif len(line) < 16:
-				#	#self.debug(text="ignoring line < 16")
+				#	#self.debug(1,"ignoring line < 16")
 				#	pass
 				#else:
-				#	#self.debug(text="ignoring else")
+				#	#self.debug(1,"ignoring else")
 				#	pass
-		self.debug(text="self.WIN_TAP_DEVS = '%s' len=%s" % (self.WIN_TAP_DEVS,len(self.WIN_TAP_DEVS)))
+		self.debug(1,"self.WIN_TAP_DEVS = '%s' len=%s" % (self.WIN_TAP_DEVS,len(self.WIN_TAP_DEVS)))
 		if self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:
-			self.debug(text="Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
+			self.debug(1,"Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
 		if len(self.WIN_TAP_DEVS) == 0:
 			self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
-			self.debug(text="Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
+			self.debug(1,"Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
 		else:
-			self.debug(text="self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
+			self.debug(1,"self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
@@ -1028,7 +1070,7 @@ class Systray:
 			combobox = Gtk.ComboBoxText.new()
 			combobox.pack_start(cell, True)
 			for INTERFACE in self.WIN_TAP_DEVS:
-				self.debug(text="add tap interface '%s' to combobox" % (INTERFACE))
+				self.debug(1,"add tap interface '%s' to combobox" % (INTERFACE))
 				combobox.append_text(INTERFACE)
 			combobox.connect('changed',self.cb_tap_interface_selector_changed)
 			dialogBox.pack_start(combobox,False,False,0)
@@ -1042,12 +1084,12 @@ class Systray:
 			for char in badchars:
 				if char in self.WIN_TAP_DEVICE:
 					self.errorquit(text=_("Invalid characters in '%s'") % char)
-			self.debug(text="Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
+			self.debug(1,"Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 			self.win_enable_tap_interface()
-			self.debug(text="remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
+			self.debug(1,"remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
 			if len(self.INTERFACES) > 1:
 				if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
-					self.debug(text="loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
+					self.debug(1,"loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
 					return True
 				else:
 					dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
@@ -1060,14 +1102,14 @@ class Systray:
 					dialogBox = dialogWindow.get_content_area()
 					combobox = Gtk.ComboBoxText.new()
 					for INTERFACE in self.INTERFACES:
-						self.debug(text="add interface %s to combobox" % (INTERFACE))
+						self.debug(1,"add interface %s to combobox" % (INTERFACE))
 						combobox.append_text(INTERFACE)
 					combobox.connect('changed',self.cb_interface_selector_changed)
 					dialogBox.pack_start(combobox,False,False,0)
 					dialogWindow.show_all()
-					self.debug(text="open interface selector")
+					self.debug(1,"open interface selector")
 					dialogWindow.run()
-					self.debug(text="close interface selector")
+					self.debug(1,"close interface selector")
 					dialogWindow.destroy()
 					if not self.WIN_EXT_DEVICE == False:
 						return True
@@ -1075,11 +1117,11 @@ class Systray:
 				self.errorquit(text=_("No Network Adapter found!"))
 			else:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
-				self.debug(text="External Interface = %s"%(self.WIN_EXT_DEVICE))
+				self.debug(1,"External Interface = %s"%(self.WIN_EXT_DEVICE))
 				return True
 
 	def select_userid(self):
-		self.debug(text="def select_userid()")
+		self.debug(1,"def select_userid()")
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
@@ -1091,21 +1133,22 @@ class Systray:
 		liststore = Gtk.ListStore(str)
 		combobox = Gtk.ComboBoxText.new()
 		for userid in self.PROFILES:
-			self.debug(text="add userid '%s' to combobox" % (userid))
+			self.debug(1,"add userid '%s' to combobox" % (userid))
 			combobox.append_text(userid)
 		combobox.connect('changed',self.cb_select_userid)
 		dialogBox.pack_start(combobox,False,False,0)
 		dialogWindow.show_all()
-		self.debug(text="open userid selector")
+		self.debug(1,"open userid selector")
 		dialogWindow.run()
-		self.debug(text="close userid interface selector")
+		self.debug(1,"close userid interface selector")
 		dialogWindow.destroy()
 		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.app_dir,self.USERID)):
 			return True
 
 
 	def on_right_click_mainwindow(self, treeview, event):
-		self.debug(text="def on_right_click_mainwindow()")
+		self.debug(1,"def on_right_click_mainwindow()")
+		#self.IDLE_TIME = 0
 		self.destroy_systray_menu()
 		# get selection, also when treeview is sorted by a row
 		servername = False
@@ -1120,13 +1163,13 @@ class Systray:
 			return False
 		if servername:
 			if event.button == 1:
-				self.debug(text="mainwindow left click (%s)" % (servername))
+				self.debug(1,"mainwindow left click (%s)" % (servername))
 			elif event.button == 3:
 				self.make_context_menu_servertab(servername)
-				self.debug(text="mainwindow right click (%s)" % (servername))
+				self.debug(1,"mainwindow right click (%s)" % (servername))
 
 	def make_context_menu_servertab(self,servername):
-		self.debug(text="def make_context_menu_servertab: %s" % (servername))
+		self.debug(1,"def make_context_menu_servertab: %s" % (servername))
 		context_menu_servertab = Gtk.Menu()
 		self.context_menu_servertab = context_menu_servertab
 		
@@ -1169,7 +1212,7 @@ class Systray:
 				extserverview.connect('button-release-event', self.cb_extserverview)
 				context_menu_servertab.append(extserverview)
 			except:
-				self.debug(text="def make_context_menu_servertab: extserverview failed")
+				self.debug(1,"def make_context_menu_servertab: extserverview failed")
 			
 			try:
 				if self.LOAD_SRVDATA == True:
@@ -1182,23 +1225,23 @@ class Systray:
 				extserverviewsize.connect('button-release-event', self.cb_extserverview_size)
 				context_menu_servertab.append(extserverviewsize)
 			except:
-				self.debug(text="def make_context_menu_servertab: extserverviewsize failed")
+				self.debug(1,"def make_context_menu_servertab: extserverviewsize failed")
 				
 			try:
 				loaddataevery = Gtk.MenuItem(_("Update every: %s seconds") %(self.LOAD_DATA_EVERY))
 				loaddataevery.connect('button-release-event', self.cb_set_loaddataevery)
 				context_menu_servertab.append(loaddataevery)
 			except:
-				self.debug(text="def make_context_menu_servertab: loaddataevery failed")
+				self.debug(1,"def make_context_menu_servertab: loaddataevery failed")
 
 		context_menu_servertab.show_all()
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
-		self.debug(text="def make_context_menu_servertab: return")
+		self.debug(1,"def make_context_menu_servertab: return")
 		return
 
 	def make_context_menu_servertab_d0wns_dnsmenu(self,servername):
 		try:
-			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
+			self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
 			if len(self.d0wns_DNS) == 0:
 				self.read_d0wns_dns()
 			
@@ -1208,43 +1251,43 @@ class Systray:
 			self.dnsmenu = dnsmenu
 			
 			try:
-				self.debug(text="mydns debug 1.1")
+				self.debug(1,"mydns debug 1.1")
 				pridns = self.MYDNS[servername]["primary"]["ip4"]
-				self.debug(text="mydns debug 1.2")
+				self.debug(1,"mydns debug 1.2")
 				priname = self.MYDNS[servername]["primary"]["dnsname"]
-				self.debug(text="mydns debug 1.3")
+				self.debug(1,"mydns debug 1.3")
 				string = "Primary DNS: %s (%s)" % (priname,pridns)
-				self.debug(text="mydns debug 1.4")
+				self.debug(1,"mydns debug 1.4")
 				pridnsm = Gtk.MenuItem(string)
-				self.debug(text="mydns debug 1.5")
+				self.debug(1,"mydns debug 1.5")
 				cbdata = {servername:{"primary":{"ip4":pridns,"dnsname":priname}}}
-				self.debug(text="mydns debug 1.6")
+				self.debug(1,"mydns debug 1.6")
 				pridnsm.connect('button-release-event',self.cb_del_dns,cbdata)
-				self.debug(text="mydns debug 1.7")
+				self.debug(1,"mydns debug 1.7")
 				self.context_menu_servertab.append(pridnsm)
-				self.debug(text="mydns debug 1.8")
+				self.debug(1,"mydns debug 1.8")
 			except:
-				self.debug(text="mydns debug 1.9")
+				self.debug(1,"mydns debug 1.9")
 				pridns = False
 			
 			try:
-				self.debug(text="mydns debug 2.1")
+				self.debug(1,"mydns debug 2.1")
 				secdns = self.MYDNS[servername]["secondary"]["ip4"]
-				self.debug(text="mydns debug 2.2")
+				self.debug(1,"mydns debug 2.2")
 				secname = self.MYDNS[servername]["secondary"]["dnsname"]
-				self.debug(text="mydns debug 2.3")
+				self.debug(1,"mydns debug 2.3")
 				string = "Secondary DNS: %s (%s)" % (secname,secdns)
-				self.debug(text="mydns debug 2.4")
+				self.debug(1,"mydns debug 2.4")
 				secdnsm = Gtk.MenuItem(string)
-				self.debug(text="mydns debug 2.5")
+				self.debug(1,"mydns debug 2.5")
 				cbdata = {servername:{"secondary":{"ip4":secdns,"dnsname":secname}}}
-				self.debug(text="mydns debug 2.6")
+				self.debug(1,"mydns debug 2.6")
 				secdnsm.connect('button-release-event',self.cb_del_dns,cbdata)
-				self.debug(text="mydns debug 2.7")
+				self.debug(1,"mydns debug 2.7")
 				self.context_menu_servertab.append(secdnsm)
-				self.debug(text="mydns debug 2.8")
+				self.debug(1,"mydns debug 2.8")
 			except:
-				self.debug(text="mydns debug 2.9")
+				self.debug(1,"mydns debug 2.9")
 				secdns = False
 			
 			for name,value in sorted(self.d0wns_DNS.iteritems()):
@@ -1257,16 +1300,8 @@ class Systray:
 					dnssubm = Gtk.ImageMenuItem(dnssubmtext)
 					dnssubm.set_submenu(dnssubmenu)
 					img = Gtk.Image()
-					imgfile = self.FLAG_IMG[countrycode]
-				except:
-					imgfile = '%s\\flags\\%s.png' % (self.ico_dir,countrycode)
-				
-				if not os.path.isfile(imgfile):
-					imgfile = '%s\\flags\\00.png' % (self.ico_dir)
-					self.FLAG_IMG[countrycode] = imgfile
-				
-				if os.path.isfile(imgfile):
-					img.set_from_file(imgfile)
+					imgfile = self.decode_flag(countrycode)
+					img.set_from_pixbuf(imgfile)
 					dnssubm.set_always_show_image(True)
 					dnssubm.set_image(img)
 					dnsmenu.append(dnssubm)
@@ -1290,13 +1325,16 @@ class Systray:
 						setsecdns = Gtk.MenuItem(_("Set Secondary DNS"))
 						setsecdns.connect('button-release-event',self.cb_set_dns,cbdata)
 					dnssubmenu.append(setsecdns)
+				except:
+					self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: dnsmenu.append(dnssubm) '%s' failed "%(countrycode))
+				
 			dnsm.show_all()
 			self.context_menu_servertab.append(dnsm)
 		except:
-			self.debug(text="def make_context_menu_servertab_d0wns_dnsmenu: failed!")
+			self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: failed!")
 
 	def systray_timer2(self):
-		#self.debug(text="def systray_timer2()")
+		self.debug(10,"def systray_timer2()")
 		self.systray_timer2_running = True
 		if self.stop_systray_timer2 == True:
 			self.systray_timer2_running = False
@@ -1313,7 +1351,7 @@ class Systray:
 			pass
 		
 		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
-			self.debug(text="def systray_timer2: UPDATE_SWITCH")
+			self.debug(1,"def systray_timer2: UPDATE_SWITCH")
 			
 			# Language changed
 			if self.LANG_FONT_CHANGE == True:
@@ -1337,7 +1375,7 @@ class Systray:
 					pass
 				self.LANG_FONT_CHANGE = False
 			
-			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+			if self.state_openvpn() == True:
 				self.switch_fw.set_sensitive(False)
 				self.switch_fwblockonexit.set_sensitive(False)
 				self.switch_fwdontaskonexit.set_sensitive(False)
@@ -1504,7 +1542,7 @@ class Systray:
 					systrayicon = self.systray_icon_syncupdate2
 				statusbar_text = systraytext
 				
-		elif self.STATE_OVPN == False and self.OVERWRITE_TRAYICON == False:
+		elif self.state_openvpn() == False:
 			systraytext = _("Disconnected! Have a nice and anonymous day!")
 			statusbar_text = systraytext
 			systrayicon = self.systray_icon_disconnected
@@ -1513,23 +1551,23 @@ class Systray:
 					self.INIT_FIRST_UPDATE = False
 					self.load_ovpn_server()
 					if len(self.OVPN_SERVER) == 0:
-						self.debug(text="zero server found, initiate first update")
+						self.debug(1,"zero server found, initiate first update")
 						self.check_remote_update()
 				elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
 					self.INIT_FIRST_UPDATE = False
 				elif self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
 					self.OVPN_AUTO_CONNECT_ON_START = False
-					self.debug(text="def systray_timer: self.OVPN_AUTO_CONNECT_ON_START: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
+					self.debug(1,"def systray_timer: self.OVPN_AUTO_CONNECT_ON_START: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 					self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
 				
 			except:
-				self.debug(text="def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
+				self.debug(1,"def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
 		elif self.inThread_jump_server_running == True and self.OVERWRITE_TRAYICON == True:
 			systraytext = _("Connecting to %s") % (self.OVPN_CALL_SRV)
 			systrayicon = self.systray_icon_connect
 			statusbar_text = systraytext
-			self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
-		elif self.STATE_OVPN == True:
+			self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
+		elif self.state_openvpn() == True:
 			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
 			self.OVPN_CONNECTEDseconds = connectedseconds
 			if self.OVPN_PING_STAT == -2:
@@ -1537,12 +1575,12 @@ class Systray:
 				systraytext = _("Testing connection to %s") % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_testing
 				statusbar_text = systraytext
-				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
+				self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
 			elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 3:
 				systraytext = _("Connection to %s unstable or failed!") % (self.OVPN_CONNECTEDto)
 				systrayicon = self.systray_icon_testing
 				statusbar_text = systraytext
-				self.debug(text="def systray_timer: cstate = '%s'" % (systraytext))
+				self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
 			elif self.OVPN_PING_STAT > 0:
 				try:
 					if self.OVPN_isTESTING == True:
@@ -1560,15 +1598,23 @@ class Systray:
 					#statusbar_text = systraytext
 					systrayicon = self.systray_icon_connected
 				except:
-					self.debug(text="def systray_timer: systraytext failed")
+					self.debug(1,"def systray_timer: systraytext failed")
 
 		try:
+			# traytext
 			if not self.systraytext_from_before == systraytext and not systraytext == False:
 				self.systraytext_from_before = systraytext
 				self.tray.set_tooltip_markup(systraytext)
+			
+			# trayicon
 			if not self.systrayicon_from_before == systrayicon:
 				self.systrayicon_from_before = systrayicon
-				self.tray.set_from_file(systrayicon)
+				if self.APP_THEME == "private":
+					self.tray.set_from_file(systrayicon)
+				else:
+					self.tray.set_from_pixbuf(systrayicon)
+			
+			# statusbar
 			if self.MAINWINDOW_OPEN == True:
 				if not self.statusbartext_from_before == statusbar_text:
 					self.set_statusbar_text(statusbar_text)
@@ -1582,17 +1628,40 @@ class Systray:
 				thread.daemon = True
 				thread.start()
 		except:
-			self.debug(text="def systray_timer2: thread target=self.load_remote_data failed")
-		#self.debug(text="def systray_timer2() return")
+			self.debug(1,"def systray_timer2: thread target=self.load_remote_data failed")
+
 		self.systray_timer2_running = False
+		
+		"""
+		if self.IDLE_TIME > 300:
+			
+			if len(self.FLAG_CACHE_PIXBUF) >= 1:
+				self.FLAG_CACHE_PIXBUF = {}
+				for entry in self.FLAG_CACHE_PIXBUF:
+					del entry
+					gc.collect()
+				self.debug(1,"def systray_timer2: CLEAR self.FLAG_CACHE_PIXBUF")
+			
+			if len(self.ICON_CACHE_PIXBUF) > 1:
+				self.ICON_CACHE_PIXBUF = {}
+				for entry in self.ICON_CACHE_PIXBUF:
+					del entry
+					gc.collect()
+				self.debug(1,"def systray_timer2: CLEAR self.ICON_CACHE_PIXBUF")
+		else:
+			self.IDLE_TIME += 0.5
+			#self.debug(1,"self.IDLE_TIME = %s" % (self.IDLE_TIME))
+		"""
+		
+		self.debug(19,"def systray_timer2() return")
 		return
 
 	def systray_timer(self):
-		#self.debug(text="def systray_timer()")
+		#self.debug(19,"def systray_timer()")
 		if self.stop_systray_timer == True:
 			return False
 		if self.systray_timer2_running == False:
-			#self.debug(text="def systray_timer: GLib.idle_add(self.systray_timer2)")
+			self.debug(19,"def systray_timer: GLib.idle_add(self.systray_timer2)")
 			GLib.idle_add(self.systray_timer2)
 		time.sleep(0.5)
 		thread = threading.Thread(target=self.systray_timer)
@@ -1601,14 +1670,16 @@ class Systray:
 		return
 
 	def on_right_click(self, widget, event, event_time):
-		self.debug(text="def on_right_click()")
+		self.debug(1,"def on_right_click()")
+		#self.IDLE_TIME = 0
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
 			self.make_systray_menu(event)
 
 	def on_left_click(self, widget):
-		self.debug(text="def on_left_click()")
+		self.debug(1,"def on_left_click()")
+		#self.IDLE_TIME = 0
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
@@ -1619,53 +1690,56 @@ class Systray:
 						event = Gtk.get_current_event_time()
 						self.show_mainwindow(widget, event)
 				except:
-					self.debug(text="def show_mainwindow() on_left_click failed")
+					self.debug(1,"def show_mainwindow() on_left_click failed")
 			else:
 				if self.mainwindow.get_property("visible") == False:
-					self.debug(text="def on_left_click: unhide Mainwindow")
+					self.debug(1,"def on_left_click: unhide Mainwindow")
 					self.MAINWINDOW_HIDE = False
 					self.mainwindow.show()
 				else:
-					self.debug(text="def on_left_click: hide Mainwindow")
+					self.debug(1,"def on_left_click: hide Mainwindow")
 					self.mainwindow.hide()
 					self.MAINWINDOW_HIDE = True
 					return True
 
 	def make_systray_menu(self, event):
-		self.debug(text="def make_systray_menu()")
+		self.debug(1,"def make_systray_menu()")
 		try:
 			self.systray_menu = Gtk.Menu()
-			self.MOUSE_IN_TRAY = time.time() + 3
+			if self.LOGLEVEL > 1:
+				self.MOUSE_IN_TRAY = time.time() + 30
+			else:
+				self.MOUSE_IN_TRAY = time.time() + 3
 			
 			try:
 				self.load_ovpn_server()
 			except:
-				self.debug(text="def make_systray_menu: self.load_ovpn_server() failed")
+				self.debug(1,"def make_systray_menu: self.load_ovpn_server() failed")
 			
 			try:
 				self.make_systray_server_menu()
 			except:
-				self.debug(text="def make_systray_menu: self.make_systray_server_menu() failed")
+				self.debug(1,"def make_systray_menu: self.make_systray_server_menu() failed")
 			
 			try:
 				self.make_systray_openvpn_menu()
 			except:
-				self.debug(text="def make_systray_menu: self.make_systray_openvpn_menu() failed")
+				self.debug(1,"def make_systray_menu: self.make_systray_openvpn_menu() failed")
 			
 			try:
 				self.make_systray_bottom_menu()
 			except:
-				self.debug(text="def make_systray_menu: self.make_systray_bottom_menu() failed")
+				self.debug(1,"def make_systray_menu: self.make_systray_bottom_menu() failed")
 			
 			self.systray_menu.connect('enter-notify-event', self.systray_notify_event_enter,"systray_menu")
 			self.systray_menu.show_all()
 			self.systray_menu.popup(None, None, None, event, 0, 0)
 		except:
 			self.destroy_systray_menu()
-			self.debug(text="def make_systray_menu: failed")
+			self.debug(1,"def make_systray_menu: failed")
 
 	def make_systray_server_menu(self):
-		self.debug(text="def make_systray_server_menu()")
+		self.debug(1,"def make_systray_server_menu()")
 		if len(self.OVPN_SERVER) > 0:
 			try:
 				countrycodefrombefore = 0
@@ -1692,28 +1766,18 @@ class Systray:
 							cgm = Gtk.ImageMenuItem(countryname)
 							img = Gtk.Image()
 							try:
-								try:
-									imgpath = self.FLAG_IMG[countrycode]
-									try:
-										if os.path.isfile(imgpath):
-											img.set_from_file(imgpath)
-											cgm.set_always_show_image(True)
-											cgm.set_image(img)
-											cgm.set_submenu(cgmenu)
-											self.systray_menu.append(cgm)
-										else:
-											self.debug(text="def make_systray_server_menu: imgpath '%s' not found" % (imgpath))
-									except:
-										self.debug(text="def make_systray_server_menu: if imgpath '%s' is file append to systray failed " % (imgpath))
-								except:
-									self.debug(text="def make_systray_server_menu: imgpath = self.FLAG_IMG[%s] failed" % (countrycode))
-									self.destroy_systray_menu()
+								imgfile = self.decode_flag(countrycode)
+								img.set_from_pixbuf(imgfile)
+								cgm.set_always_show_image(True)
+								cgm.set_image(img)
+								cgm.set_submenu(cgmenu)
+								self.systray_menu.append(cgm)
 							except:
-								self.debug(text="def make_systray_server_menu: failed self.FLAG_IMG[%s]" % (countrycode))
+								self.debug(1,"def make_systray_server_menu: countrycode = '%s' failed" % (countrycode))
 								self.destroy_systray_menu()
 						except:
 							self.destroy_systray_menu()
-							self.debug(text="def make_systray_server_menu: flagimg group1 failed")
+							self.debug(1,"def make_systray_server_menu: flagimg group1 failed")
 					
 					if self.OVPN_CONNECTEDto == servername:
 						textstring = servershort+_(" [ disconnect ]")
@@ -1724,51 +1788,42 @@ class Systray:
 						serveritem.connect('button-release-event', self.cb_jump_openvpn, servername)
 					
 					img = Gtk.Image()
-					imgpath = self.FLAG_IMG[countrycode]
-					if os.path.isfile(imgpath):
-						img.set_from_file(imgpath)
-						serveritem.set_always_show_image(True)
-						serveritem.set_image(img)
-						cgmenu.append(serveritem)
+					imgfile = self.decode_flag(countrycode)
+					img.set_from_pixbuf(imgfile)
+					serveritem.set_always_show_image(True)
+					serveritem.set_image(img)
+					cgmenu.append(serveritem)
+
 			except:
 				self.destroy_systray_menu()
-				self.debug(text="def make_systray_server_menu: failed")
+				self.debug(1,"def make_systray_server_menu: failed")
 
 	def make_systray_openvpn_menu(self):
-		self.debug(text="def make_systray_openvpn_menu()")
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		self.debug(1,"def make_systray_openvpn_menu()")
+		if self.state_openvpn() == True:
 			try:
 				sep = Gtk.SeparatorMenuItem()
 				servershort = self.OVPN_CONNECTEDto[:3]
 				textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
 				disconnect = Gtk.ImageMenuItem(textstring)
 				img = Gtk.Image()
-				img.set_from_file(self.systray_icon_disconnected_traymenu)
+				if self.APP_THEME == "private":
+					img.set_from_file(self.systray_icon_disconnected_traymenu)
+				else:
+					img.set_from_pixbuf(self.systray_icon_disconnected_traymenu)
 				disconnect.set_always_show_image(True)
 				disconnect.set_image(img)
 				self.systray_menu.append(sep)
 				self.systray_menu.append(disconnect)
 				disconnect.connect('button-release-event', self.cb_kill_openvpn)
 			except:
-				self.debug(text="def make_systray_openvpn_menu: failed")
+				self.debug(1,"def make_systray_openvpn_menu: failed")
 
 	def make_systray_bottom_menu(self):
-		self.debug(text="def make_systray_bottom_menu()")
-		try:
-			sep = Gtk.SeparatorMenuItem()
-			self.systray_menu.append(sep)
-			mainwindowentry = False
-			if self.MAINWINDOW_OPEN == True:
-				mainwindowentry = Gtk.MenuItem(_("Close Servers"))
-			else:
-				if len(self.OVPN_SERVER) > 0:
-					mainwindowentry = Gtk.MenuItem(_("Servers"))
-			if mainwindowentry:
-				self.systray_menu.append(mainwindowentry)
-				mainwindowentry.connect('button-release-event', self.show_mainwindow)
-				mainwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"mainwindowentry")
-		except:
-			self.debug(text="def make_systray_bottom_menu: mainwindowentry failed")
+		self.debug(1,"def make_systray_bottom_menu()")
+		
+		sep = Gtk.SeparatorMenuItem()
+		self.systray_menu.append(sep)
 		
 		try:
 			accwindowentry = False
@@ -1782,7 +1837,7 @@ class Systray:
 				accwindowentry.connect('button-release-event', self.show_accwindow)
 				accwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"accwindowentry")
 		except:
-			self.debug(text="def make_systray_bottom_menu: accwindowentry failed")
+			self.debug(1,"def make_systray_bottom_menu: accwindowentry failed")
 		
 		try:
 			if self.SETTINGSWINDOW_OPEN == True:
@@ -1793,9 +1848,9 @@ class Systray:
 			settwindowentry.connect('button-release-event', self.show_settingswindow)
 			settwindowentry.connect('leave-notify-event', self.systray_notify_event_leave,"settwindowentry")
 		except:
-			self.debug(text="def make_systray_bottom_menu: settwindowentry failed")
+			self.debug(1,"def make_systray_bottom_menu: settwindowentry failed")
 		
-		if self.DISABLE_QUIT_ENTRY == True and (self.STATE_OVPN == True or self.inThread_jump_server_running == True):
+		if self.DISABLE_QUIT_ENTRY == True and self.state_openvpn() == True:
 			pass
 		else:
 			try:
@@ -1806,46 +1861,46 @@ class Systray:
 				about.connect('button-release-event', self.show_about_dialog)
 				about.connect('leave-notify-event', self.systray_notify_event_leave,"about")
 			except:
-				self.debug(text="def make_systray_bottom_menu: about failed")
+				self.debug(1,"def make_systray_bottom_menu: about failed")
 			
 			# add quit item
 			quit = Gtk.MenuItem(_("Quit"))
-			if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+			if self.state_openvpn() == True:
 				quit.set_sensitive(False)
 			self.systray_menu.append(quit)
 			quit.connect('button-release-event', self.on_closing)
 			quit.connect('leave-notify-event', self.systray_notify_event_leave,"quit")
 
 	def systray_notify_event_leave(self, widget, event, data = None):
-		#self.debug(text="def systray_notify_event_leave() data = '%s'" % (data))
+		self.debug(10,"def systray_notify_event_leave() data = '%s'" % (data))
 		self.MOUSE_IN_TRAY = time.time() + 1
 
 	def systray_notify_event_enter(self, widget, event, data = None):
-		#self.debug(text="def systray_notify_event_enter() data = '%s'" % (data))
+		self.debug(10,"def systray_notify_event_enter() data = '%s'" % (data))
 		self.MOUSE_IN_TRAY = time.time() + 30
 
 	def check_hide_popup(self):
-		#self.debug(text="def check_hide_popup()")
+		self.debug(10,"def check_hide_popup()")
 		if self.MOUSE_IN_TRAY < time.time():
 			self.destroy_systray_menu()
 
 	def check_remote_update(self):
-		self.debug(text="def check_remote_update()")
+		self.debug(1,"def check_remote_update()")
 		if self.timer_check_certdl_running == False:
-			self.debug(text="def check_remote_update: check_inet_connection() == True")
+			self.debug(1,"def check_remote_update: check_inet_connection() == True")
 			try:
 				thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
 				thread_certdl.daemon = True
 				thread_certdl.start()
 				threadid_certdl = threading.currentThread()
-				self.debug(text="def check_remote_update threadid_certdl = %s" %(threadid_certdl))
+				self.debug(1,"def check_remote_update threadid_certdl = %s" %(threadid_certdl))
 				return True
 			except:
-				self.debug(text="starting thread_certdl failed")
+				self.debug(1,"starting thread_certdl failed")
 		return False
 
 	def inThread_timer_check_certdl(self):
-		self.debug(text="def inThread_timer_check_certdl()")
+		self.debug(1,"def inThread_timer_check_certdl()")
 		try:
 			self.timer_check_certdl_running = True
 			try:
@@ -1853,11 +1908,11 @@ class Systray:
 				if len(self.OVPN_SERVER) == 0:
 					self.reset_last_update()
 			except:
-				self.debug(text="def inThread_timer_check_certdl: self.load_ovpn_server() failed")
-			self.debug(text="def inThread_timer_check_certdl()")
+				self.debug(1,"def inThread_timer_check_certdl: self.load_ovpn_server() failed")
+			self.debug(1,"def inThread_timer_check_certdl()")
 			self.STATE_CERTDL = "lastupdate"
 			if self.API_REQUEST(API_ACTION = "lastupdate"):
-				self.debug(text="def inThread_timer_check_certdl: API_ACTION lastupdate")
+				self.debug(1,"def inThread_timer_check_certdl: API_ACTION lastupdate")
 				if self.check_last_server_update(self.curldata):
 					self.STATE_CERTDL = "getconfigs"
 					if self.API_REQUEST(API_ACTION = "getconfigs"):
@@ -1911,14 +1966,14 @@ class Systray:
 		return False
 
 	def update_mwls(self):
-		self.debug(text="def update_mwls()")
+		self.debug(1,"def update_mwls()")
 		liststore = self.serverliststore
 		debugupdate_mwls = False
 		t1 = time.time()
 		for row in liststore:
 			server = row[2]
 			if server in self.OVPN_SERVER:
-				if debugupdate_mwls: self.debug(text="def update_mwls: server '%s'" % (server))
+				if debugupdate_mwls: self.debug(1,"def update_mwls: server '%s'" % (server))
 				servershort = server[:3].upper()
 				if row[2] == server:
 					value = False
@@ -1940,72 +1995,65 @@ class Systray:
 							except:
 								servermtu = str(1500)
 							if cellnumber == 0:
-								statusimgpath = False
 								if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 									try:
 										serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
-										if serverstatus == "0":
-											statusimgpath = "%s\\bullet_red.png" % (self.ico_dir)
+										if server == self.OVPN_CONNECTEDto:
+											statusimg = self.decode_icon("shield_go")
+										elif server == self.OVPN_FAV_SERVER:
+											statusimg = self.decode_icon("star")
+										elif serverstatus == "0":
+											statusimg = self.decode_icon("bullet_red")
 										elif serverstatus == "1":
-											statusimgpath = "%s\\bullet_green.png" % (self.ico_dir)
+											statusimg = self.decode_icon("bullet_green")
 										elif serverstatus == "2":
-											statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+											statusimg = self.decode_icon("bullet_white")
 									except:
-										self.debug(text="def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
+										self.debug(1,"def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
 										break
-								if server == self.OVPN_CONNECTEDto:
-									statusimgpath = "%s\\shield_go.png" % (self.ico_dir)
-								elif server == self.OVPN_FAV_SERVER:
-									statusimgpath = "%s\\star.png" % (self.ico_dir)
-								
-								if statusimgpath == False or not os.path.isfile(statusimgpath):
-									if not statusimgpath == False:
-										self.debug("def update_mwls: statusimgpath '%s' not found for server %s" % (statusimgpath,server))
-									statusimgpath = "%s\\bullet_white.png" % (self.ico_dir)
+								else:
+									if server == self.OVPN_CONNECTEDto:
+										statusimg = self.decode_icon("shield_go")
+									elif server == self.OVPN_FAV_SERVER:
+										statusimg = self.decode_icon("star")
+									else:
+										statusimg = self.decode_icon("bullet_white")
 								try:
-									statusimg = GdkPixbuf.Pixbuf.new_from_file(statusimgpath)
 									liststore.set_value(iter,cellnumber,statusimg)
 									row_changed += 1
-									# *** fixme *** is always updating statusimg
-									#if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' statusimg" % (server))
 								except:
-									self.debug(text="self.serverliststore.append: failed '%s'" % (server))
+									self.debug(1,"self.serverliststore.append: statusimg '%s'" % (server))
 								
 							elif cellnumber == 1:
 								pass
-								#countrycode = server[:2].lower()
-								#countryimg = GdkPixbuf.Pixbuf.new_from_file(self.FLAG_IMG[countrycode])
-								#if not oldvalue == countryimg:
-								#liststore.set_value(iter,cellnumber,countryimg)
-								#	 *** fixme *** is always updating countryimg
-								#	if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' countryimg" % (server))
+							
 							elif cellnumber == 2:
 								pass
-								
+							
 							elif cellnumber == 3 and not row[cellnumber] == serverip4:
 								liststore.set_value(iter,cellnumber,serverip4)
 								row_changed += 1
-								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip4" % (server))
+								if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' serverip4" % (server))
 							
 							elif cellnumber == 5 and not row[cellnumber] == serverport:
 								liststore.set_value(iter,cellnumber,serverport)
 								row_changed += 1
-								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverport" % (server))
+								if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' serverport" % (server))
 							
 							elif cellnumber == 6 and not row[cellnumber] == serverproto:
 								liststore.set_value(iter,cellnumber,serverproto)
 								row_changed += 1
-								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverproto" % (server))
+								if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' serverproto" % (server))
 							
 							elif cellnumber == 7 and not row[cellnumber] == servermtu:
 								liststore.set_value(iter,cellnumber,servermtu)
 								row_changed += 1
-								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servermtu" % (server))
+								if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' servermtu" % (server))
 							
 							elif cellnumber == 8 and not row[cellnumber] == servercipher:
 								liststore.set_value(iter,cellnumber,servercipher)
 								row_changed += 1
-								if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' servercipher" % (server))
+								if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' servercipher" % (server))
 							elif cellnumber == 25:
 								pass
 							elif cellnumber == 26:
@@ -2033,114 +2081,114 @@ class Systray:
 									if cellnumber == 4 and not row[cellnumber] == serverip6:
 										liststore.set_value(iter,cellnumber,serverip6)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' serverip6" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' serverip6" % (server))
 										
 									elif cellnumber == 9 and not row[cellnumber] == live:
 										liststore.set_value(iter,cellnumber,live)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' live" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' live" % (server))
 									
 									elif cellnumber == 10 and not row[cellnumber] == uplink:
 										liststore.set_value(iter,cellnumber,uplink)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' uplink" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' uplink" % (server))
 									
 									elif cellnumber == 11 and not row[cellnumber] == vlanip4:
 										liststore.set_value(iter,cellnumber,vlanip4)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip4" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' vlanip4" % (server))
 									
 									elif cellnumber == 12 and not row[cellnumber] == vlanip6:
 										liststore.set_value(iter,cellnumber,vlanip6)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' vlanip6" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' vlanip6" % (server))
 									
 									elif cellnumber == 13 and not row[cellnumber] == cpuinfo:
 										liststore.set_value(iter,cellnumber,cpuinfo)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuinfo" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' cpuinfo" % (server))
 									
 									elif cellnumber == 14 and not row[cellnumber] == raminfo:
 										liststore.set_value(iter,cellnumber,raminfo)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' raminfo" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' raminfo" % (server))
 									
 									elif cellnumber == 15 and not row[cellnumber] == hddinfo:
 										liststore.set_value(iter,cellnumber,hddinfo)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' hddinfo" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' hddinfo" % (server))
 									
 									elif cellnumber == 16 and not row[cellnumber] == traffic:
 										liststore.set_value(iter,cellnumber,traffic)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' traffic" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' traffic" % (server))
 									
 									elif cellnumber == 17 and not row[cellnumber] == cpuload:
 										liststore.set_value(iter,cellnumber,cpuload)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuload" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' cpuload" % (server))
 									
 									elif cellnumber == 18 and not row[cellnumber] == cpuovpn:
 										liststore.set_value(iter,cellnumber,cpuovpn)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuovpn" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' cpuovpn" % (server))
 									
 									elif cellnumber == 19 and not row[cellnumber] == cpusshd:
 										liststore.set_value(iter,cellnumber,cpusshd)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusshd" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' cpusshd" % (server))
 									
 									elif cellnumber == 20 and not row[cellnumber] == cpusock:
 										liststore.set_value(iter,cellnumber,cpusock)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpusock" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' cpusock" % (server))
 									
 									elif cellnumber == 21 and not row[cellnumber] == cpuhttp:
 										liststore.set_value(iter,cellnumber,cpuhttp)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cpuhttp" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' cpuhttp" % (server))
 									
 									elif cellnumber == 22 and not row[cellnumber] == cputinc:
 										liststore.set_value(iter,cellnumber,cputinc)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' cputinc" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' cputinc" % (server))
 									
 									elif cellnumber == 23 and not row[cellnumber] == ping4:
 										liststore.set_value(iter,cellnumber,ping4)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping4" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' ping4" % (server))
 									
 									elif cellnumber == 24 and not row[cellnumber] == ping6:
 										liststore.set_value(iter,cellnumber,ping6)
 										row_changed += 1
-										if debugupdate_mwls: self.debug(text="def update_mwls: updated server '%s' ping6" % (server))
+										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' ping6" % (server))
 								
 								except:
 									pass
 									# we may fail silently for private servers
-									#self.debug(text="def update_mwls: extended values '%s' failed" % (server))
+									#self.debug(11,"def update_mwls: extended values '%s' failed" % (server))
 						except:
-							self.debug(text="def update_mwls: #0 failed ")
+							self.debug(1,"def update_mwls: #0 failed ")
 						cellnumber += 1
 						# end while cellnumber
 					if row_changed >= 1:
 						path = liststore.get_path(iter)
 						liststore.row_changed(path,iter)
-						#self.debug(text="def update_mwls: row_changed server '%s'" % (server))
-		self.debug(text="def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
+						self.debug(10,"def update_mwls: row_changed server '%s'" % (server))
+		self.debug(1,"def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
 		return
 
 	def call_redraw_mainwindow(self):
-		self.debug(text="def call_redraw_mainwindow()")
+		self.debug(1,"def call_redraw_mainwindow()")
 		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
 			self.statusbartext_from_before = False
 			try:
 				GLib.idle_add(self.update_mwls)
 			except:
-				self.debug(text="def call_redraw_mainwindow: try #1 failed")
+				self.debug(1,"def call_redraw_mainwindow: try #1 failed")
 
 	def show_mainwindow(self,widget,event):
-		self.debug(text="def show_mainwindow()")
+		self.debug(1,"def show_mainwindow()")
 		self.destroy_systray_menu()
 		self.reset_load_remote_timer()
 		self.statusbartext_from_before = False
@@ -2159,14 +2207,14 @@ class Systray:
 				return True
 			except:
 				self.MAINWINDOW_OPEN = False
-				self.debug(text="def show_mainwindow: mainwindow failed")
+				self.debug(1,"def show_mainwindow: mainwindow failed")
 				return False
 		else:
 			self.destroy_mainwindow()
 
 	def cell_sort(self, treemodel, iter1, iter2, user_data):
 		try:
-			self.debug(text="def cell_sort()")
+			self.debug(1,"def cell_sort()")
 			sort_column, _ = treemodel.get_sort_column_id()
 			iter1 = treemodel.get_value(iter1, sort_column)
 			iter2 = treemodel.get_value(iter2, sort_column)
@@ -2181,7 +2229,7 @@ class Systray:
 
 	def cell_sort_traffic(self, treemodel, iter1, iter2, user_data):
 		try:
-			self.debug(text="def cell_sort_traffic()")
+			self.debug(1,"def cell_sort_traffic()")
 			sort_column, _ = treemodel.get_sort_column_id()
 			data1 = treemodel.get_value(iter1, sort_column)
 			data2 = treemodel.get_value(iter2, sort_column)
@@ -2212,7 +2260,7 @@ class Systray:
 			pass
 
 	def mainwindow_ovpn_server(self):
-		self.debug(text="def mainwindow_ovpn_server: go")
+		self.debug(1,"def mainwindow_ovpn_server: go")
 		self.mainwindow_vbox = Gtk.VBox(False,1)
 		self.mainwindow.add(self.mainwindow_vbox)
 		
@@ -2222,39 +2270,39 @@ class Systray:
 			mode = "IPv4 + IPv6"
 		elif self.OVPN_CONFIGVERSION == "23x64":
 			mode = "IPv6 + IPv4"
-		self.debug(text="def mainwindow_ovpn_server: go0")
+		self.debug(1,"def mainwindow_ovpn_server: go0")
 		label = Gtk.Label(_("oVPN Server [ %s ]") % (mode))
 		
-		self.debug(text="def mainwindow_ovpn_server: go1")
+		self.debug(1,"def mainwindow_ovpn_server: go1")
 		try:
 			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,GdkPixbuf.Pixbuf)
-			self.debug(text="def mainwindow_ovpn_server: go2")
+			self.debug(1,"def mainwindow_ovpn_server: go2")
 		except:
-			self.debug(text="def mainwindow_ovpn_server: server-window failed")
+			self.debug(1,"def mainwindow_ovpn_server: server-window failed")
 		
-		self.debug(text="def mainwindow_ovpn_server: go3")
+		self.debug(1,"def mainwindow_ovpn_server: go3")
 		self.treeview = Gtk.TreeView(self.serverliststore)
 		self.treeview.connect("button-release-event",self.on_right_click_mainwindow)
 		self.scrolledwindow = Gtk.ScrolledWindow()
 		self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 		self.scrolledwindow.set_size_request(64,48)
-		self.debug(text="def mainwindow_ovpn_server: go4")
+		self.debug(1,"def mainwindow_ovpn_server: go4")
 		self.scrolledwindow.add(self.treeview)
 		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
 		
 		try:
-			self.debug(text="def fill_mainwindow_with_server: go2.1")
+			self.debug(1,"def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
 			self.treeview.append_column(column)
-			self.debug(text="def fill_mainwindow_with_server: go2.2")
+			self.debug(1,"def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=1)
 			column.set_fixed_width(30)
 			self.treeview.append_column(column)
-			self.debug(text="def fill_mainwindow_with_server: go2.3")
+			self.debug(1,"def fill_mainwindow_with_server: go2.3")
 		except:
-			self.debug(text="cell = Gtk.CellRendererPixbuf failed")
+			self.debug(1,"cell = Gtk.CellRendererPixbuf failed")
 		
 		## cell 0 == statusicon
 		## cell 1 == flagicon
@@ -2291,16 +2339,16 @@ class Systray:
 			column.set_visible(False)
 		self.treeview.append_column(column)
 		
-		self.debug(text="def fill_mainwindow_with_server: go2.4")
+		self.debug(1,"def fill_mainwindow_with_server: go2.4")
 		GLib.idle_add(self.fill_mainwindow_with_server)
 		GLib.idle_add(self.update_mwls)
-		self.debug(text="def fill_mainwindow_with_server: go2.5")
+		self.debug(1,"def fill_mainwindow_with_server: go2.5")
 		
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
 		self.mainwindow_vbox.show_all()
-		self.debug(text="def fill_mainwindow_with_server: go2.6")
+		self.debug(1,"def fill_mainwindow_with_server: go2.6")
 		
 		if self.LOAD_SRVDATA == True:
 			WIDTH = self.SRV_WIDTH
@@ -2317,8 +2365,8 @@ class Systray:
 			try:
 				countrycode = server[:2].lower()
 				servershort = server[:3].upper()
-				statusimg = GdkPixbuf.Pixbuf.new_from_file("%s\\bullet_white.png" % (self.ico_dir))
-				countryimg = GdkPixbuf.Pixbuf.new_from_file(self.FLAG_IMG[countrycode])
+				statusimg = self.decode_icon("bullet_white")
+				countryimg = self.decode_flag(countrycode)
 				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
 				serverport = self.OVPN_SERVER_INFO[servershort][1]
 				serverproto = self.OVPN_SERVER_INFO[servershort][2]
@@ -2329,29 +2377,29 @@ class Systray:
 					servermtu = 1500
 				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("-1"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str(servershort),countryimg])
 			except:
-				self.debug(text="def fill_mainwindow_with_server: server '%s' failed" % (server))
+				self.debug(1,"def fill_mainwindow_with_server: server '%s' failed" % (server))
 
 	def destroy_mainwindow(self):
-		self.debug(text="def destroy_mainwindow()")
+		self.debug(1,"def destroy_mainwindow()")
 		GLib.idle_add(self.mainwindow.destroy)
 		#self.mainwindow.destroy()
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
 		self.statusbar_text = False
-		self.debug(text="def destroy_mainwindow")
+		self.debug(1,"def destroy_mainwindow")
 
 	def call_redraw_accwindow(self):
-		self.debug(text="def call_redraw_accwindow()")
+		self.debug(1,"def call_redraw_accwindow()")
 		if self.ACCWINDOW_OPEN == True:
 			try:
 				self.accwindow.remove(self.accwindow_accinfo_vbox)
 				self.accwindow_accinfo()
-				self.debug(text="def call_redraw_accwindow: True")
+				self.debug(1,"def call_redraw_accwindow: True")
 			except:
-				self.debug(text="def call_redraw_accwindow: False")
+				self.debug(1,"def call_redraw_accwindow: False")
 
 	def show_accwindow(self,widget,event):
-		self.debug(text="def show_accwindow()")
+		self.debug(1,"def show_accwindow()")
 		self.destroy_systray_menu()
 		if self.ACCWINDOW_OPEN == False:
 			try:
@@ -2368,13 +2416,13 @@ class Systray:
 				return True
 			except:
 				self.ACCWINDOW_OPEN = False
-				self.debug(text="def show_accwindow: accwindow failed")
+				self.debug(1,"def show_accwindow: accwindow failed")
 				return False
 		else:
 			self.destroy_accwindow()
 
 	def accwindow_accinfo(self):
-		self.debug(text="def accwindow_accinfo()")
+		self.debug(1,"def accwindow_accinfo()")
 		self.accwindow_accinfo_vbox = Gtk.VBox(False,0)
 		self.accwindow.add(self.accwindow_accinfo_vbox)
 		if len(self.OVPN_ACC_DATA) == 0:
@@ -2389,7 +2437,7 @@ class Systray:
 			self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
 		elif len(self.OVPN_ACC_DATA) > 0:
 			try:
-				#self.debug(text="def accwindow_accinfo: try get values")
+				self.debug(10,"def accwindow_accinfo: try get values")
 				for key, value in sorted(self.OVPN_ACC_DATA.iteritems()):
 					#print key
 					value1 = False
@@ -2444,14 +2492,14 @@ class Systray:
 								entry.set_text(text)
 								self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
 							except:
-								self.debug(text="def accwindow_accinfo: coin '%s' failed" % (coin))
+								self.debug(1,"def accwindow_accinfo: coin '%s' failed" % (coin))
 						break
 					else:
 						head = key
 					if value1 == False:
 						value1 = value
 					text = "%s: %s" % (head,value1)
-					#self.debug(text="key [%s] = '%s' value = '%s'" % (key,head,value))
+					self.debug(10,"def accwindow_accinfo: key [%s] = '%s' value = '%s'" % (key,head,value))
 					try:
 						entry = Gtk.Entry()
 						entry.set_max_length(128)
@@ -2459,17 +2507,17 @@ class Systray:
 						entry.set_text(text)
 						self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
 					except:
-						self.debug(text="def accwindow_accinfo: accdata vbox.pack_start entry failed!")
+						self.debug(1,"def accwindow_accinfo: accdata vbox.pack_start entry failed!")
 			except:
-				self.debug(text="def accwindow_accinfo: self.OVPN_ACC_DATA failed")
+				self.debug(1,"def accwindow_accinfo: self.OVPN_ACC_DATA failed")
 		self.accwindow.show_all()
 		return
 
 	def destroy_accwindow(self):
-		self.debug(text="def destroy_accwindow()")
+		self.debug(1,"def destroy_accwindow()")
 		GLib.idle_add(self.accwindow.destroy)
 		self.ACCWINDOW_OPEN = False
-		self.debug(text="def destroy_accwindow")
+		self.debug(1,"def destroy_accwindow")
 
 	def show_settingswindow(self,widget,event):
 		self.destroy_systray_menu()
@@ -2493,7 +2541,7 @@ class Systray:
 				return True
 			except:
 				self.SETTINGSWINDOW_OPEN = False
-				self.debug(text="def show_settingswindow: settingswindow failed")
+				self.debug(1,"def show_settingswindow: settingswindow failed")
 				return False
 		else:
 			self.destroy_settingswindow()
@@ -2513,7 +2561,7 @@ class Systray:
 			self.settings_network_switch_disableextifondisco(self.nbpage0)
 			self.settingsnotebook.append_page(self.nbpage0, Gtk.Label(_(" Security ")))
 		except:
-			self.debug(text="def show_settingswindow: nbpage0 failed")
+			self.debug(1,"def show_settingswindow: nbpage0 failed")
 
 	def show_hide_options_window(self):
 		try:
@@ -2562,7 +2610,7 @@ class Systray:
 
 			self.settingsnotebook.append_page(self.nbpage1, Gtk.Label(_(" Options ")))
 		except:
-			self.debug(text="def show_settingswindow: nbpage1 failed")
+			self.debug(1,"def show_settingswindow: nbpage1 failed")
 
 	def show_hide_updates_window(self):
 		try:
@@ -2576,19 +2624,19 @@ class Systray:
 			self.settings_updates_button_apireset(self.nbpage2)
 			self.settingsnotebook.append_page(self.nbpage2, Gtk.Label(_(" Updates ")))
 		except:
-			self.debug(text="def show_settingswindow: nbpage2 failed")
+			self.debug(1,"def show_settingswindow: nbpage2 failed")
 
 	def show_hide_backup_window(self):
 		try:
 			self.load_firewall_backups()
-			if len(self.FIREWALL_BACKUPS) > 0 and self.NO_WIN_FIREWALL == False and self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+			if len(self.FIREWALL_BACKUPS) > 0 and self.NO_WIN_FIREWALL == False and self.state_openvpn() == False:
 				self.nbpage3 = Gtk.VBox(False,spacing=2)
 				self.nbpage3.set_border_width(8)
 				self.nbpage3.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
 				self.settings_firewall_switch_backuprestore(self.nbpage3)
 				self.settingsnotebook.append_page(self.nbpage3, Gtk.Label(_(" Backups ")))
 		except:
-			self.debug(text="def show_hide_backup_window: nbpage3 failed")
+			self.debug(1,"def show_hide_backup_window: nbpage3 failed")
 
 	def settings_firewall_switch_nofw(self,page):
 		try:
@@ -2604,13 +2652,13 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_nofw: failed")
+			self.debug(1,"def settings_firewall_switch_nofw: failed")
 
 	def cb_settings_firewall_switch_nofw(self,switch,gparam):
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		if self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_settings_firewall_switch_nofw()")
+		self.debug(1,"def cb_settings_firewall_switch_nofw()")
 		if switch.get_active():
 			self.NO_WIN_FIREWALL = False
 			self.WIN_DONT_ASK_FW_EXIT = True
@@ -2634,13 +2682,13 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_tapblockoutbound: failed")
+			self.debug(1,"def settings_firewall_switch_tapblockoutbound: failed")
 
 	def cb_settings_firewall_switch_tapblockoutbound(self,switch,gparam):
 		if self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True or self.win_firewall_tap_blockoutbound_running == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_settings_firewall_switch_tapblockoutbound()")
+		self.debug(1,"def cb_settings_firewall_switch_tapblockoutbound()")
 		if switch.get_active():
 			self.TAP_BLOCKOUTBOUND = True
 		else:
@@ -2665,13 +2713,13 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
+			self.debug(1,"def settings_firewall_switch_fwblockonexit: failed")
 
 	def cb_settings_firewall_switch_fwblockonexit(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_settings_firewall_switch_fwblockonexit()")
+		self.debug(1,"def cb_settings_firewall_switch_fwblockonexit()")
 		if switch.get_active():
 			self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
 		else:
@@ -2693,13 +2741,13 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_fwblockonexit: failed")
+			self.debug(1,"def settings_firewall_switch_fwblockonexit: failed")
 
 	def cb_settings_firewall_switch_fwdontaskonexit(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_settings_firewall_switch_fwdontaskonexit()")
+		self.debug(1,"def cb_settings_firewall_switch_fwdontaskonexit()")
 		if switch.get_active():
 			self.WIN_DONT_ASK_FW_EXIT = True
 		else:
@@ -2721,13 +2769,13 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_fwresetonconnect: failed")
+			self.debug(1,"def settings_firewall_switch_fwresetonconnect: failed")
 
 	def cb_settings_firewall_switch_fwresetonconnect(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_settings_firewall_switch_fwresetonconnect()")
+		self.debug(1,"def cb_settings_firewall_switch_fwresetonconnect()")
 		if switch.get_active():
 			self.WIN_RESET_FIREWALL = True
 			if not self.win_firewall_export_on_start():
@@ -2751,13 +2799,13 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_firewall_switch_fwbackupmode: failed")
+			self.debug(1,"def settings_firewall_switch_fwbackupmode: failed")
 
 	def cb_settings_firewall_switch_fwbackupmode(self,switch,gparam):
-		if self.STATE_OVPN == True or self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True:
+		if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_settings_firewall_switch_fwbackupmode()")
+		self.debug(1,"def cb_settings_firewall_switch_fwbackupmode()")
 		if switch.get_active():
 			self.WIN_BACKUP_FIREWALL = True
 			if not self.win_firewall_export_on_start():
@@ -2781,13 +2829,13 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_network_switch_nodns: failed")
+			self.debug(1,"def settings_network_switch_nodns: failed")
 
 	def cb_switch_nodns(self,switch,gparam):
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		if self.state_openvpn() == True:
 			self.UPDATE_SWITCH = True
 			return
-		self.debug(text="def cb_switch_nodns()")
+		self.debug(1,"def cb_switch_nodns()")
 		if switch.get_active():
 			self.NO_DNS_CHANGE = False
 			self.read_d0wns_dns()
@@ -2811,17 +2859,18 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_network_switch_disableextifondisco: failed")
+			self.debug(1,"def settings_network_switch_disableextifondisco: failed")
 
 	def cb_settings_network_switch_disableextifondisco(self,switch,gparam):
-		self.debug(text="def cb_settings_network_switch_disableextifondisco()")
+		self.debug(1,"def cb_settings_network_switch_disableextifondisco()")
 		if switch.get_active():
 			self.WIN_DISABLE_EXT_IF_ON_DISCO = True
-			if self.STATE_OVPN == False:
+			if self.state_openvpn() == False:
 				self.win_disable_ext_interface()
 		else:
 			self.WIN_DISABLE_EXT_IF_ON_DISCO = False
-			self.win_enable_ext_interface()
+			if self.state_openvpn() == False:
+				self.win_enable_ext_interface()
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
@@ -2849,10 +2898,10 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_switch_updateovpnonstart: failed")
+			self.debug(1,"def settings_options_switch_updateovpnonstart: failed")
 
 	def cb_switch_updateovpnonstart(self,switch,gparam):
-		self.debug(text="def cb_switch_updateovpnonstart()")
+		self.debug(1,"def cb_switch_updateovpnonstart()")
 		if switch.get_active():
 			self.UPDATEOVPNONSTART = True
 		else:
@@ -2874,10 +2923,10 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_switch_accinfo: failed")
+			self.debug(1,"def settings_options_switch_accinfo: failed")
 
 	def cb_switch_accinfo(self,switch,gparam):
-		self.debug(text="def cb_switch_accinfo()")
+		self.debug(1,"def cb_switch_accinfo()")
 		if switch.get_active():
 			self.LOAD_ACCDATA = True
 		else:
@@ -2908,10 +2957,10 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_switch_srvinfo: failed")
+			self.debug(1,"def settings_options_switch_srvinfo: failed")
 
 	def cb_switch_srvinfo(self,switch,gparam):
-		self.debug(text="def cb_switch_srvinfo()")
+		self.debug(1,"def cb_switch_srvinfo()")
 		if switch.get_active():
 			self.LOAD_SRVDATA = True
 		else:
@@ -2943,10 +2992,10 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_switch_debugmode: failed")
+			self.debug(1,"def settings_options_switch_debugmode: failed")
 
 	def cb_switch_debugmode(self,switch,gparam):
-		self.debug(text="def cb_switch_debugmode()")
+		self.debug(1,"def cb_switch_debugmode()")
 		if switch.get_active():
 			self.DEBUG = True
 			self.msgwarn(_("Logfile:\n'%s'") % (self.debug_log),_("Debug Mode Enabled"))
@@ -2995,7 +3044,7 @@ class Systray:
 
 	def settings_options_combobox_theme(self,page):
 		try:
-			self.debug(text="def settings_options_combobox_theme()")
+			self.debug(1,"def settings_options_combobox_theme()")
 			combobox_title = Gtk.Label(label=_("Change App Theme"))
 			combobox = Gtk.ComboBoxText.new()
 			for theme in self.INSTALLED_THEMES:
@@ -3012,10 +3061,10 @@ class Systray:
 			page.pack_start(combobox,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_combobox_theme: failed")
+			self.debug(1,"def settings_options_combobox_theme: failed")
 
 	def cb_theme_switcher_changed(self, combobox):
-		self.debug(text="def cb_theme_switcher_changed()")
+		self.debug(1,"def cb_theme_switcher_changed()")
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
@@ -3024,12 +3073,12 @@ class Systray:
 			get_settings.set_property("gtk-theme-name", self.APP_THEME)
 			self.write_options_file()
 			self.UPDATE_SWITCH = True
-			self.debug(text="def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
+			self.debug(1,"def cb_theme_switcher_changed: selected Theme = '%s'" % (self.APP_THEME))
 		return
 
 	def settings_options_combobox_icons(self,page):
 		try:
-			self.debug(text="def settings_options_combobox_icons()")
+			self.debug(1,"def settings_options_combobox_icons()")
 			combobox_title = Gtk.Label(label=_("Change App Icons"))
 			combobox = Gtk.ComboBoxText.new()
 			self.combobox_icons = combobox
@@ -3053,10 +3102,10 @@ class Systray:
 			page.pack_start(combobox,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_combobox_icons: failed")
+			self.debug(1,"def settings_options_combobox_icons: failed")
 
 	def cb_icons_switcher_changed(self, combobox):
-		self.debug(text="def cb_icons_switcher_changed()")
+		self.debug(1,"def cb_icons_switcher_changed()")
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
@@ -3064,16 +3113,17 @@ class Systray:
 			self.ICONS_THEME = combobox.get_active_text()
 			if self.load_icons():
 				self.write_options_file()
-				self.debug(text="def cb_icons_switcher_changed: selected Icons = '%s'" % (self.ICONS_THEME))
+				self.debug(1,"def cb_icons_switcher_changed: selected Icons = '%s'" % (self.ICONS_THEME))
+				self.ICON_CACHE_PIXBUF = {}
 			else:
-				self.debug(text="def cb_icons_switcher_changed: failed icon theme = '%s', revert to '%s'" % (self.ICONS_THEME,self.ICONS_THEME_frombefore))
+				self.debug(1,"def cb_icons_switcher_changed: failed icon theme = '%s', revert to '%s'" % (self.ICONS_THEME,self.ICONS_THEME_frombefore))
 				self.ICONS_THEME = self.ICONS_THEME_frombefore
 			self.UPDATE_SWITCH = True
 		return
 
 	def settings_options_combobox_fontsize(self,page):
 		try:
-			self.debug(text="def settings_options_combobox_fontsize()")
+			self.debug(1,"def settings_options_combobox_fontsize()")
 			combobox_title = Gtk.Label(label=_("Change App Font Size"))
 			combobox = Gtk.ComboBoxText.new()
 			for size in self.APP_FONT_SIZE_AVAIABLE:
@@ -3100,10 +3150,10 @@ class Systray:
 			page.pack_start(combobox,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_combobox_theme: failed")
+			self.debug(1,"def settings_options_combobox_theme: failed")
 
 	def cb_settings_options_combobox_fontsize(self, combobox):
-		self.debug(text="def cb_settings_options_combobox_fontsize()")
+		self.debug(1,"def cb_settings_options_combobox_fontsize()")
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
@@ -3113,13 +3163,13 @@ class Systray:
 			self.write_options_file()
 			self.UPDATE_SWITCH = True
 			self.LANG_FONT_CHANGE = True
-			self.debug(text="def cb_settings_options_combobox_fontsize: selected Size = '%s'" % (self.APP_FONT_SIZE))
+			self.debug(1,"def cb_settings_options_combobox_fontsize: selected Size = '%s'" % (self.APP_FONT_SIZE))
 		return
 
 	def settings_options_combobox_language(self,page):
 		try:
 			i=0; 
-			self.debug(text="def settings_options_combobox_theme()")
+			self.debug(1,"def settings_options_combobox_theme()")
 			combobox_title = Gtk.Label(label=_("Change App Language"))
 			combobox = Gtk.ComboBoxText.new()
 			for lang in self.INSTALLED_LANGUAGES:
@@ -3137,12 +3187,12 @@ class Systray:
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
-			self.debug(text="def settings_options_combobox_language()")
+			self.debug(1,"def settings_options_combobox_language()")
 		except:
-			self.debug(text="def settings_options_combobox_language: failed")
+			self.debug(1,"def settings_options_combobox_language: failed")
 			
 	def cb_settings_options_combobox_language(self, combobox):
-		self.debug(text="def cb_settings_options_combobox_language()")
+		self.debug(1,"def cb_settings_options_combobox_language()")
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
@@ -3151,7 +3201,7 @@ class Systray:
 			self.UPDATE_SWITCH = True
 			self.LANG_FONT_CHANGE = True
 			if self.init_localization(self.APP_LANGUAGE) == True:
-				self.debug(text="def cb_settings_options_combobox_language: selected lang = '%s'" % (self.APP_LANGUAGE))
+				self.debug(1,"def cb_settings_options_combobox_language: selected lang = '%s'" % (self.APP_LANGUAGE))
 		return
 
 	def settings_options_switch_disablequit(self,page):
@@ -3168,10 +3218,10 @@ class Systray:
 			page.pack_start(switch,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
 		except:
-			self.debug(text="def settings_options_switch_disablequit: failed")
+			self.debug(1,"def settings_options_switch_disablequit: failed")
 
 	def cb_settings_options_switch_disablequit(self,switch,gparam ):
-		self.debug(text="def cb_settings_options_switch_disablequit()")
+		self.debug(1,"def cb_settings_options_switch_disablequit()")
 		if switch.get_active():
 			self.DISABLE_QUIT_ENTRY = True
 		else:
@@ -3206,27 +3256,27 @@ class Systray:
 		GLib.idle_add(self.dialog_apikey)
 
 	def destroy_settingswindow(self):
-		self.debug(text="def destroy_settingswindow()")
+		self.debug(1,"def destroy_settingswindow()")
 		GLib.idle_add(self.settingswindow.destroy)
 		self.SETTINGSWINDOW_OPEN = False
-		self.debug(text="def destroy_settingswindow")
+		self.debug(1,"def destroy_settingswindow")
 
 	def cb_destroy_settingswindow(self,event):
-		self.debug(text="def cb_destroy_settingswindow")
+		self.debug(1,"def cb_destroy_settingswindow")
 		self.SETTINGSWINDOW_OPEN = False
 
 	def cb_destroy_mainwindow(self,event):
-		self.debug(text="def cb_destroy_mainwindow")
+		self.debug(1,"def cb_destroy_mainwindow")
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
 
 	def cb_destroy_accwindow(self,event):
-		self.debug(text="def cb_destroy_accwindow")
+		self.debug(1,"def cb_destroy_accwindow")
 		self.ACCWINDOW_OPEN = False
 
 	def cb_del_dns(self,widget,event,data):
 		if event.button == 1:
-			self.debug(text="def cb_del_dns()")
+			self.debug(1,"def cb_del_dns()")
 			self.destroy_context_menu_servertab()
 			print "def cb_del_dns: cbdata = '%s'" % (data)
 			for name,value in data.iteritems():
@@ -3248,16 +3298,16 @@ class Systray:
 					pass
 			self.write_options_file()
 			if self.OVPN_CONNECTEDto == name:
-				self.debug(text="def cb_set_dns: self.OVPN_CONNECTEDto = %s , name = %s" % (self.OVPN_CONNECTEDto,name))
+				self.debug(1,"def cb_set_dns: self.OVPN_CONNECTEDto = %s , name = %s" % (self.OVPN_CONNECTEDto,name))
 				self.win_netsh_set_dns_ovpn()
 			return True
 
 	def cb_set_dns(self,widget,event,data):
 		if event.button == 1:
-			self.debug(text="def cb_set_dns()")
+			self.debug(1,"def cb_set_dns()")
 			self.destroy_context_menu_servertab()
 			for name,value in data.iteritems():
-				self.debug(text="def cb_set_dns: name '%s' value: '%s'" % (name,value))
+				self.debug(1,"def cb_set_dns: name '%s' value: '%s'" % (name,value))
 				try:
 					newpridns = value["primary"]["ip4"]
 					if self.isValueIPv4(newpridns):
@@ -3266,7 +3316,7 @@ class Systray:
 							print 'try: if newpridns == self.MYDNS[name]["secondary"]["ip4"]'
 							if newpridns == self.MYDNS[name]["secondary"]["ip4"]:
 								self.MYDNS[name]["secondary"] = {}
-								self.debug(text='self.MYDNS[name]["secondary"] = {}')
+								self.debug('self.MYDNS[name]["secondary"] = {}')
 						except:
 							print "except1a"
 				except:
@@ -3291,51 +3341,51 @@ class Systray:
 					self.MYDNS[name] = value
 				self.write_options_file()
 				if self.OVPN_CONNECTEDto == name:
-					self.debug(text="def cb_set_dns: self.OVPN_CONNECTEDto = %s , name = %s" % (self.OVPN_CONNECTEDto,name))
+					self.debug(1,"def cb_set_dns: self.OVPN_CONNECTEDto = %s , name = %s" % (self.OVPN_CONNECTEDto,name))
 					self.win_netsh_set_dns_ovpn()
 					return True
 
 	def destroy_context_menu_servertab(self):
-		self.debug(text="def destroy_context_menu_servertab()")
+		self.debug(1,"def destroy_context_menu_servertab()")
 		try:
 			self.dnssubmenu.hide()
-			self.debug(text="def destroy_context_menu_servertab: 0x0001")
+			self.debug(1,"def destroy_context_menu_servertab: 0x0001")
 		except:
 			pass
 		try:
 			self.dnsmenu.hide()
-			self.debug(text="def destroy_context_menu_servertab: 0x0002")
+			self.debug(1,"def destroy_context_menu_servertab: 0x0002")
 		except:
 			pass
 		try:
 			self.context_menu_servertab.hide()
-			self.debug(text="def destroy_context_menu_servertab: 0x0003")
+			self.debug(1,"def destroy_context_menu_servertab: 0x0003")
 		except:
 			pass
 
 	def destroy_systray_menu(self):
-		#self.debug(text="def destroy_systray_menu()")
+		self.debug(2,"def destroy_systray_menu()")
 		try:
 			GLib.idle_add(self.systray_menu.destroy)
 			self.systray_menu = False
 			self.MOUSE_IN_TRAY = 0
-			self.debug(text = "def destroy_systray_menu: true")
+			self.debug(2,"def destroy_systray_menu: true")
 		except:
-			#self.debug(text = "def destroy_systray_menu: failed")
+			self.debug(1,"def destroy_systray_menu: failed")
 			self.systray_menu = False
 
 	def set_statusbar_text(self,text):
-		#self.debug(text="def set_statusbar_text()")
+		self.debug(9,"def set_statusbar_text()")
 		try:
 			if not self.statusbar_text == False:
 				GLib.idle_add(self.statusbar_text.set_label,text)
 		except:
-			self.debug(text="def set_statusbar_text: text = '%s' failed" % (text))
+			self.debug(1,"def set_statusbar_text: text = '%s' failed" % (text))
 
 	def cb_set_ovpn_favorite_server(self,widget,event,server):
 		if event.button == 1:
 			self.destroy_context_menu_servertab()
-			self.debug(text="def cb_set_ovpn_favorite_server()")
+			self.debug(1,"def cb_set_ovpn_favorite_server()")
 			try:
 				self.OVPN_FAV_SERVER = server
 				#self.OVPN_AUTO_CONNECT_ON_START = True
@@ -3343,12 +3393,12 @@ class Systray:
 				self.call_redraw_mainwindow()
 				return True
 			except:
-				self.debug(text="def cb_set_ovpn_favorite_server: failed")
+				self.debug(1,"def cb_set_ovpn_favorite_server: failed")
 
 	def cb_del_ovpn_favorite_server(self,widget,event,server):
 		if event.button == 1:
 			self.destroy_context_menu_servertab()
-			self.debug(text="def cb_del_ovpn_favorite_server()")
+			self.debug(1,"def cb_del_ovpn_favorite_server()")
 			try:
 				self.OVPN_FAV_SERVER = False
 				self.OVPN_AUTO_CONNECT_ON_START = False
@@ -3356,12 +3406,12 @@ class Systray:
 				self.call_redraw_mainwindow()
 				return True
 			except:
-				self.debug(text="def cb_del_ovpn_favorite_server: failed")
+				self.debug(1,"def cb_del_ovpn_favorite_server: failed")
 
 	def cb_reset_load_remote_timer(self,widget,event):
 		if event.keyval == Gdk.KEY_F5:
 			self.call_redraw_mainwindow()
-			self.debug(text="def cb_reset_load_remote_timer == F5")
+			self.debug(1,"def cb_reset_load_remote_timer == F5")
 			self.reset_load_remote_timer()
 		
 	def reset_load_remote_timer(self):
@@ -3369,15 +3419,15 @@ class Systray:
 		if self.LOAD_SRVDATA == True and self.MAINWINDOW_OPEN == True:
 			if self.LAST_OVPN_SRV_DATA_UPDATE > 0 and self.LAST_OVPN_SRV_DATA_UPDATE < time.time()-60:
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
-				self.debug(text="reset_load_remote_timer: SRV")
+				self.debug(1,"reset_load_remote_timer: SRV")
 		if self.LOAD_ACCDATA == True and self.ACCWINDOW_OPEN == True:
 			if self.LAST_OVPN_ACC_DATA_UPDATE > 0 and self.LAST_OVPN_ACC_DATA_UPDATE < time.time()-60:
 				self.LAST_OVPN_ACC_DATA_UPDATE = 0
-				self.debug(text="reset_load_remote_timer: ACC")
+				self.debug(1,"reset_load_remote_timer: ACC")
 
 	def cb_redraw_mainwindow_vbox(self,widget,event):
 		if event.button == 1:
-			self.debug(text="def cb_redraw_mainwindow_vbox()")
+			self.debug(1,"def cb_redraw_mainwindow_vbox()")
 			self.destroy_context_menu_servertab()
 			self.reset_load_remote_timer()
 
@@ -3385,54 +3435,54 @@ class Systray:
 		if event.button == 1:
 			self.destroy_context_menu_servertab()
 			self.destroy_systray_menu()
-			self.debug(text="def cb_kill_openvpn()")
+			self.debug(1,"def cb_kill_openvpn()")
 			self.OVPN_AUTO_CONNECT_ON_START = False
-			self.debug(text="def cb_kill_openvpn")
+			self.debug(1,"def cb_kill_openvpn")
 			killthread = threading.Thread(target=self.inThread_kill_openvpn)
 			killthread.daemon = True
 			killthread.start()
 
 	def inThread_kill_openvpn(self):
-		self.debug(text="def inThread_kill_openvpn()")
+		self.debug(1,"def inThread_kill_openvpn()")
 		self.kill_openvpn()
 
 	def cb_jump_openvpn(self,widget,event,server):
 		if (widget == 0 and event == 0) or event.button == 1:
 			self.OVPN_CALL_SRV = server
-			self.debug(text="def cb_jump_openvpn(%s)"%(server))
+			self.debug(1,"def cb_jump_openvpn(%s)"%(server))
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
-			self.debug(text="def cb_jump_openvpn: %s" % (server))
+			self.debug(1,"def cb_jump_openvpn: %s" % (server))
 			jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
 			jumpthread.daemon = True
 			jumpthread.start()
 
 	def inThread_jump_server(self,server):
-		self.debug(text="def inThread_jump_server()")
+		self.debug(1,"def inThread_jump_server()")
 		if self.inThread_jump_server_running == True:
-			self.debug(text="def inThread_jump_server: running ! return")
+			self.debug(1,"def inThread_jump_server: running ! return")
 			return
 		else:
 			self.inThread_jump_server_running = True
 			self.OVERWRITE_TRAYICON = True
 			self.UPDATE_SWITCH = True
-			self.debug(text="def inThread_jump_server: server %s" % (server))
-			if self.STATE_OVPN == True:
+			self.debug(1,"def inThread_jump_server: server %s" % (server))
+			if self.state_openvpn() == True:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
-				self.debug(text="def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
+				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
 				time.sleep(1)
 			self.call_openvpn(server)
-			self.debug(text="def inThread_jump_server: exit")
+			self.debug(1,"def inThread_jump_server: exit")
 
 	def kill_openvpn(self):
-		self.debug(text="def kill_openvpn()")
-		if self.STATE_OVPN == False:
+		self.debug(1,"def kill_openvpn()")
+		if self.state_openvpn() == False:
 			return False
 		if self.timer_check_certdl_running == True:
 			self.msgwarn(_("Update is running."),_("Please wait!"))
 			return False
-		self.debug(text="def kill_openvpn")
+		self.debug(1,"def kill_openvpn")
 		try:
 			self.del_ovpn_routes()
 		except:
@@ -3442,29 +3492,35 @@ class Systray:
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				string = '"%s" /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
 				exitcode = subprocess.check_call("%s" % (string),shell=True)
-				self.debug(text="def kill_openvpn: exitcode = %s" % (exitcode))
+				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
 		except:
-			self.debug(text="def kill_openvpn: failed!")
+			self.debug(1,"def kill_openvpn: failed!")
 			self.reset_ovpn_values_disconnected()
 
 	def call_openvpn(self,server):
-		self.debug(text="def call_openvpn()")
+		self.debug(1,"def call_openvpn()")
 		try:
 			thread_openvpn = threading.Thread(target=lambda server=server: self.openvpn(server))
 			thread_openvpn.start()
-			self.debug(text="def call_openvpn: thread_openvpn.start()")
+			self.debug(1,"def call_openvpn: thread_openvpn.start()")
 		except:
-			self.debug(text="def call_openvpn: thread self.openvpn(server) failed")
+			self.debug(1,"def call_openvpn: thread self.openvpn(server) failed")
 			return False
 		return True
 
+	def state_openvpn(self):
+		if self.STATE_OVPN == False and self.inThread_jump_server_running == False:
+			return False
+		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+			return True
+
 	def openvpn(self,server):
-		self.debug(text="def openvpn()")
+		self.debug(1,"def openvpn()")
 		while self.timer_check_certdl_running == True:
-			self.debug(text="def openvpn: sleep while timer_check_certdl_running")
+			self.debug(1,"def openvpn: sleep while timer_check_certdl_running")
 			time.sleep(1)
-		self.debug(text="def openvpn: server = '%s'" % (server))
-		if self.STATE_OVPN == False:
+		self.debug(1,"def openvpn: server = '%s'" % (server))
+		if self.state_openvpn() == False:
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
 			self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.VPN_CFG,self.ovpn_server_UPPER)
@@ -3481,7 +3537,7 @@ class Systray:
 								self.OVPN_CONNECTEDtoPort = port
 							#break
 						except:
-							self.debug(text="Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
+							self.debug(1,"Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
 							return False
 					if "proto " in line:
 						try:
@@ -3489,10 +3545,10 @@ class Systray:
 							if proto.lower()  == "tcp" or proto.lower() == "udp":
 								self.OVPN_CONNECTEDtoProtocol = proto
 						except:
-							self.debug(text="Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
+							self.debug(1,"Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
 							return False
 			else:
-				self.debug(text="Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
+				self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
 				return False
 			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.vpn_dir)
 			self.ovpn_server_dir = "%s\\%s" % (self.VPN_CFG,self.ovpn_server_LOWER)
@@ -3517,16 +3573,16 @@ class Systray:
 				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
 				thread_spawn_openvpn_process.start()
 				self.OVPN_THREADID = threading.currentThread()
-				self.debug(text="Started: oVPN %s on Thread: %s" % (server,self.OVPN_THREADID))
+				self.debug(1,"Started: oVPN %s on Thread: %s" % (server,self.OVPN_THREADID))
 			except:
-				self.debug(text="Error: Unable to start thread: oVPN %s " % (server))
+				self.debug(1,"Error: Unable to start thread: oVPN %s " % (server))
 				self.reset_ovpn_values_disconnected()
 				return False
 		else:
-			self.debug(text="def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
+			self.debug(1,"def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
 
 	def inThread_spawn_openvpn_process(self):
-		self.debug(text="def inThread_spawn_openvpn_process")
+		self.debug(1,"def inThread_spawn_openvpn_process")
 		exitcode = False
 		self.win_enable_tap_interface()
 		if not self.openvpn_check_files():
@@ -3547,7 +3603,7 @@ class Systray:
 		self.OVERWRITE_TRAYICON = False
 		self.STATE_OVPN = True
 		if self.timer_ovpn_ping_running == False:
-			self.debug("def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
+			self.debug(1,"def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
 			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 			pingthread.daemon = True
 			pingthread.start()
@@ -3560,7 +3616,7 @@ class Systray:
 		try:
 			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
 		except:
-			self.debug(text="def inThread_spawn_openvpn_process: exited")
+			self.debug(1,"def inThread_spawn_openvpn_process: exited")
 		self.win_disable_ext_interface()
 		self.reset_ovpn_values_disconnected()
 		self.call_redraw_mainwindow()
@@ -3570,9 +3626,9 @@ class Systray:
 		try:
 			self.win_firewall_modify_rule(option="delete")
 		except:
-			self.debug(text="def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
+			self.debug(1,"def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
 		self.win_clear_ipv6()
-		self.debug(text="def reset_ovpn_values_after()")
+		self.debug(1,"def reset_ovpn_values_after()")
 		self.STATE_OVPN = False
 		self.inThread_jump_server_running = False
 		self.OVPN_CONNECTEDto = False
@@ -3591,17 +3647,17 @@ class Systray:
 			pass
 
 	def inThread_timer_ovpn_ping(self):
-		#self.debug(text="def inThread_timer_ovpn_ping()")
+		self.debug(10,"def inThread_timer_ovpn_ping()")
 		if self.timer_ovpn_ping_running == False:
 			self.OVPN_PING_STAT = -2
 			self.timer_ovpn_ping_running = True
-			self.debug(text="def inThread_timer_ovpn_ping: start")
+			self.debug(1,"def inThread_timer_ovpn_ping: start")
 		
-		if self.STATE_OVPN == False:
+		if self.state_openvpn() == False:
 			self.OVPN_PING_STAT = -1
 			self.OVPN_PING = list()
 			self.timer_ovpn_ping_running = False
-			self.debug("def inThread_timer_ovpn_ping: leaving")
+			self.debug(1,"def inThread_timer_ovpn_ping: leaving")
 			return
 		
 		elif self.STATE_OVPN == True:
@@ -3627,14 +3683,14 @@ class Systray:
 								self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 							self.OVPN_PING_LAST = PING
 							self.OVPN_PING_DEAD_COUNT = 0
-							#self.debug(text="def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
+							self.debug(3,"def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
 						else:
 							self.set_ovpn_ping_dead()
 				except:
 					self.set_ovpn_ping_dead()
 			except:
 				self.set_ovpn_ping_dead()
-				self.debug(text="def inThread_timer_ovpn_ping: failed")
+				self.debug(1,"def inThread_timer_ovpn_ping: failed")
 			time.sleep(0.5)
 			try:
 				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
@@ -3642,7 +3698,7 @@ class Systray:
 				pingthread.start()
 				return True
 			except:
-				self.debug(text="rejoin def inThread_timer_ovpn_ping() failed")
+				self.debug(1,"rejoin def inThread_timer_ovpn_ping() failed")
 
 	def set_ovpn_ping_dead(self):
 		self.OVPN_PING_LAST = -2
@@ -3650,7 +3706,7 @@ class Systray:
 		self.OVPN_PING_DEAD_COUNT += 1
 
 	def get_ovpn_ping(self):
-		#self.debug(text="def get_ovpn_ping()")
+		self.debug(3,"def get_ovpn_ping()")
 		try:
 			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
 			for (family, socktype, proto, canon, sockaddr) in ai_list:
@@ -3663,16 +3719,16 @@ class Systray:
 					PING = (t2-t1)*1000
 					if PING > 3000:
 						PING = -2
-					#self.debug(text="def get_ovpn_ping: %s ms" % (PING))
+					self.debug(3,"def get_ovpn_ping: %s ms" % (PING))
 					return PING
 				except:
 					self.OVPN_PING_LAST = -2
 					return -2
 		except:
-			self.debug(text="def get_ovpn_ping: failed")
+			self.debug(1,"def get_ovpn_ping: failed")
 
 	def read_gateway_from_routes(self):
-		self.debug(text="def read_gateway_from_routes()")
+		self.debug(1,"def read_gateway_from_routes()")
 		try:
 			output = self.win_return_route_cmd('print')
 			for line in output:
@@ -3680,28 +3736,28 @@ class Systray:
 				try:
 					if split[0] == "0.0.0.0" and split[1] == "0.0.0.0":
 						self.GATEWAY_LOCAL = split[2]
-						self.debug(text="def read_gateway_from_routes: self.GATEWAY_LOCAL #1: %s" % (self.GATEWAY_LOCAL))
+						self.debug(1,"def read_gateway_from_routes: self.GATEWAY_LOCAL #1: %s" % (self.GATEWAY_LOCAL))
 						return True
 				except:
 					pass
-					#self.debug(text="def read_gateway_from_routes: #1 failed")
+					self.debug(8,"def read_gateway_from_routes: #1 failed")
 				try:
 					if self.OVPN_CONNECTEDtoIP in line:
-						self.debug(text="def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
+						self.debug(1,"def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
 						self.GATEWAY_LOCAL = line.split()[2]
-						self.debug(text="self.GATEWAY_LOCAL #2: %s" % (self.GATEWAY_LOCAL))
+						self.debug(1,"self.GATEWAY_LOCAL #2: %s" % (self.GATEWAY_LOCAL))
 						return True
 				except:
 					pass
-					#self.debug(text="def read_gateway_from_routes: #2 failed")
+					self.debug(8,"def read_gateway_from_routes: #2 failed")
 			if self.GATEWAY_LOCAL == False:
-				self.debug(text="def read_gateway_from_routes: failed")
+				self.debug(1,"def read_gateway_from_routes: failed")
 				return False
 		except:
-			self.debug(text="def read_gateway_from_routes: failed")
+			self.debug(1,"def read_gateway_from_routes: failed")
 
 	def del_ovpn_routes(self):
-		self.debug(text="def del_ovpn_routes()")
+		self.debug(1,"def del_ovpn_routes()")
 		try:
 			if self.read_gateway_from_routes():
 				if not self.GATEWAY_LOCAL == False:
@@ -3710,16 +3766,16 @@ class Systray:
 					self.ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
 					return self.win_join_route_cmd()
 		except:
-			self.debug(text="def del_ovpn_routes: failed")
+			self.debug(1,"def del_ovpn_routes: failed")
 
 	def win_clear_ipv6(self):
-		self.debug(text="def win_clear_ipv6()")
+		self.debug(1,"def win_clear_ipv6()")
 		self.win_clear_ipv6_dns()
 		self.win_clear_ipv6_addr()
 		self.win_clear_ipv6_routes()
 
 	def win_clear_ipv6_dns(self):
-		self.debug(text="def win_clear_ipv6_dns()")
+		self.debug(1,"def win_clear_ipv6_dns()")
 		try:
 			netshcmd = 'interface ipv6 show dnsservers "%s"' % (self.WIN_TAP_DEVICE)
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
@@ -3733,19 +3789,16 @@ class Systray:
 						string = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
 						try:
 							cmd = subprocess.check_output("%s" % (string),shell=True)
-							text = "def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,string)
-							self.debug(text=text)
+							self.debug(1,"def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,string))
 						except subprocess.CalledProcessError as e:
-							text = "def win_clear_ipv6_dns: %s %s failed '%s': %s" % (ipv6addr,self.WIN_TAP_DEVICE,string,e.output)
-							self.debug(text=text)
+							self.debug(1,"def win_clear_ipv6_dns: %s %s failed '%s': %s" % (ipv6addr,self.WIN_TAP_DEVICE,string,e.output))
 						except:
-							text = "def win_clear_ipv6_dns: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,string)
-							self.debug(text=text)
+							self.debug(1,"def win_clear_ipv6_dns: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,string))
 		except:
-			self.debug(text="def win_clear_ipv6_dns: failed")
+			self.debug(1,"def win_clear_ipv6_dns: failed")
 
 	def win_clear_ipv6_addr(self):
-		self.debug(text="def win_clear_ipv6_addr()")
+		self.debug(1,"def win_clear_ipv6_addr()")
 		try:
 			try:
 				netshcmd = 'interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
@@ -3753,7 +3806,7 @@ class Systray:
 				try:
 					for line in netsh_output:
 						if " fd48:8bea:68a5:" in line or " fe80:" in line:
-							self.debug(text="def win_clear_ipv6_addr: found: line = '%s'" % (line))
+							self.debug(1,"def win_clear_ipv6_addr: found: line = '%s'" % (line))
 							if not "%" in line:
 								ipv6addr = line.split()[1]
 								netshcmd = 'interface ipv6 delete address address="%s" interface="%s" store=active' % (ipv6addr,self.WIN_TAP_DEVICE)
@@ -3761,35 +3814,35 @@ class Systray:
 					if len(self.NETSH_CMDLIST) > 0:
 						self.win_join_netsh_cmd()
 				except:
-					self.debug(text="def win_clear_ipv6_addr: failed #2")
+					self.debug(1,"def win_clear_ipv6_addr: failed #2")
 			except:
-				self.debug(text="def win_clear_ipv6_addr: failed #1")
+				self.debug(1,"def win_clear_ipv6_addr: failed #1")
 		except:
-			self.debug(text="def win_clear_ipv6_addr: failed")
+			self.debug(1,"def win_clear_ipv6_addr: failed")
 
 	def win_clear_ipv6_routes(self):
-		self.debug(text="def win_clear_ipv6_routes()")
+		self.debug(1,"def win_clear_ipv6_routes()")
 		try:
 			netshcmd = 'interface ipv6 show route'
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
 			for line in netsh_output:
 				if " fd48:8bea:68a5:" in line or " fe80:" in line:
-					self.debug(text="def win_clear_ipv6_routes: found: line = '%s'" % (line))
+					self.debug(1,"def win_clear_ipv6_routes: found: line = '%s'" % (line))
 					ipv6 = line.split()[3]
 					output = self.win_return_route_cmd("DELETE %s" % (ipv6))
-					self.debug(text="def win_clear_ipv6_routes: %s %s" % (ipv6,output))
+					self.debug(1,"def win_clear_ipv6_routes: %s %s" % (ipv6,output))
 		except:
-			self.debug(text="def win_clear_ipv6_routes: failed")
+			self.debug(1,"def win_clear_ipv6_routes: failed")
 
 	def win_netsh_set_dns_ovpn(self):
-		self.debug(text="def win_netsh_set_dns_ovpn()")
+		self.debug(1,"def win_netsh_set_dns_ovpn()")
 		if self.NO_DNS_CHANGE == True:
-			self.debug(text="def win_netsh_set_dns_ovpn: self.NO_DNS_CHANGE")
+			self.debug(1,"def win_netsh_set_dns_ovpn: self.NO_DNS_CHANGE")
 			return True
 		if self.check_dns_is_whitelisted() == True:
 			return True
 		servername = self.OVPN_CONNECTEDto
-		self.debug(text="def win_netsh_set_dns_ovpn: servername = '%s'" % (servername))
+		self.debug(1,"def win_netsh_set_dns_ovpn: servername = '%s'" % (servername))
 		try:
 			pridns = self.MYDNS[servername]["primary"]["ip4"]
 			self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,pridns))
@@ -3799,9 +3852,9 @@ class Systray:
 				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,secdns))
 				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,secdns))
 			except:
-				self.debug(text="def win_netsh_set_dns_ovpn: secdns not found")
+				self.debug(1,"def win_netsh_set_dns_ovpn: secdns not found")
 		except:
-			self.debug(text="def win_netsh_set_dns_ovpn: pridns not found")
+			self.debug(1,"def win_netsh_set_dns_ovpn: pridns not found")
 			if len(self.NETSH_CMDLIST) == 0:
 				if self.GATEWAY_DNS1 == "127.0.0.1":
 					setdns = "127.0.0.1"
@@ -3813,10 +3866,10 @@ class Systray:
 			self.WIN_DNS_CHANGED = True
 			return True
 		else:
-			self.debug(text="def win_netsh_set_dns_ovpn: failed!")
+			self.debug(1,"def win_netsh_set_dns_ovpn: failed!")
 
 	def win_netsh_restore_dns_from_backup(self):
-		self.debug(text="def win_netsh_restore_dns_from_backup()")
+		self.debug(1,"def win_netsh_restore_dns_from_backup()")
 		try:
 			if self.NO_DNS_CHANGE == True:
 				return True
@@ -3828,24 +3881,24 @@ class Systray:
 				if self.WIN_EXT_DHCP == True:
 					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
 					if self.win_join_netsh_cmd():
-						self.debug(text="DNS restored to DHCP.")
+						self.debug(1,"DNS restored to DHCP.")
 						return True
 					else:
 						return False
 			except:
-				self.debug(text="def win_netsh_restore_dns_from_backup: restore DHCP on IF: '%s' failed " % (self.WIN_EXT_DEVICE))
+				self.debug(1,"def win_netsh_restore_dns_from_backup: restore DHCP on IF: '%s' failed " % (self.WIN_EXT_DEVICE))
 			
 			try:
 				if not self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4A:
 					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
 					if self.win_join_netsh_cmd():
-						self.debug(text="Primary DNS restored to: %s"%(self.GATEWAY_DNS1))
+						self.debug(1,"Primary DNS restored to: %s"%(self.GATEWAY_DNS1))
 						if self.GATEWAY_DNS2 == False:
 							return True
 						else:
 							self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
 							if self.win_join_netsh_cmd():
-								self.debug(text="Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
+								self.debug(1,"Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
 								return True
 							else:
 								self.msgwarn(_("Error: Restore Secondary DNS to %s failed.") % (self.GATEWAY_DNS2),_("Error: DNS restore 2nd"))
@@ -3856,17 +3909,17 @@ class Systray:
 				else:
 					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
 					if self.win_join_netsh_cmd():
-						self.debug(text="DNS restored to DHCP")
+						self.debug(1,"DNS restored to DHCP")
 						return True
 					else:
 						return False
 			except:
-				self.debug(text="def win_netsh_restore_dns_from_backup: Restore DNS failed")
+				self.debug(1,"def win_netsh_restore_dns_from_backup: Restore DNS failed")
 		except:
-			self.debug(text="def win_netsh_restore_dns_from_backup: failed")
+			self.debug(1,"def win_netsh_restore_dns_from_backup: failed")
 
 	def win_netsh_read_dns_to_backup(self):
-		self.debug(text="def win_netsh_read_dns_to_backup()")
+		self.debug(1,"def win_netsh_read_dns_to_backup()")
 		self.read_d0wns_dns()
 		
 		if self.NO_DNS_CHANGE == True:
@@ -3876,10 +3929,10 @@ class Systray:
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
 			search = '"%s"' % (self.WIN_EXT_DEVICE)
 			i, m1, m2, t = 0, 0, 0 ,0
-			self.debug(text="def win_netsh_read_dns_to_backup: search = %s" % (search))
+			self.debug(1,"def win_netsh_read_dns_to_backup: search = %s" % (search))
 			for line in netsh_output:
 				if search in line:
-					self.debug(text="found: %s in %s line %s" % (search,line,i))
+					self.debug(1,"found: %s in %s line %s" % (search,line,i))
 					m1=i+1
 				
 				if i == m1:
@@ -3892,22 +3945,22 @@ class Systray:
 							dns1 = line.strip().split(":")[1].lstrip()
 							if self.isValueIPv4(dns1):
 								self.GATEWAY_DNS1 = dns1
-								self.debug(text="1st DNS '%s' IF: %s backuped" % (dns1,search))
+								self.debug(1,"1st DNS '%s' IF: %s backuped" % (dns1,search))
 						except:
-							self.debug(text="def win_netsh_read_dns_to_backup: 1st DNS failed read on line '%s' search '%s'" % (line,search))
+							self.debug(1,"def win_netsh_read_dns_to_backup: 1st DNS failed read on line '%s' search '%s'" % (line,search))
 				
 				if i == m2:
 					try:
 						dns2 = line.strip()
 						if self.isValueIPv4(dns2):
 								self.GATEWAY_DNS2 = dns2
-								self.debug(text="2nd DNS '%s' IF: %s backuped" % (dns2,search))
+								self.debug(1,"2nd DNS '%s' IF: %s backuped" % (dns2,search))
 								break
 					except:
-						self.debug(text="def win_netsh_read_dns_to_backup: 2nd DNS failed read on line '%s' search '%s'" % (line,search))
+						self.debug(1,"def win_netsh_read_dns_to_backup: 2nd DNS failed read on line '%s' search '%s'" % (line,search))
 				
 				i+=1
-			self.debug(text="def win_netsh_read_dns_to_backup: self.GATEWAY_DNS1 = %s + self.GATEWAY_DNS2 = %s"%(self.GATEWAY_DNS1,self.GATEWAY_DNS2))
+			self.debug(1,"def win_netsh_read_dns_to_backup: self.GATEWAY_DNS1 = %s + self.GATEWAY_DNS2 = %s"%(self.GATEWAY_DNS1,self.GATEWAY_DNS2))
 			if not self.GATEWAY_DNS1 == False:
 				return True
 			else:
@@ -3917,7 +3970,7 @@ class Systray:
 			self.errorquit(text=_("def win_netsh_read_dns_to_backup: failed!"))
 
 	def hash_sha512_file(self,file):
-		self.debug(text="def hash_sha512_file()")
+		self.debug(1,"def hash_sha512_file()")
 		if os.path.isfile(file):
 			hasher = hashlib.sha512()
 			fp = open(file, 'rb')
@@ -3928,7 +3981,7 @@ class Systray:
 			return hasher.hexdigest()
 
 	def hash_sha256_file(self,file):
-		self.debug(text="def hash_sha256_file()")
+		self.debug(1,"def hash_sha256_file()")
 		if os.path.isfile(file):
 			hasher = hashlib.sha256()
 			fp = open(file, 'rb')
@@ -3939,7 +3992,7 @@ class Systray:
 			return hasher.hexdigest()
 
 	def load_ca_cert(self):
-		self.debug(text="def load_ca_cert()")
+		self.debug(1,"def load_ca_cert()")
 		if os.path.isfile(self.CA_FILE):
 			self.CA_FILE_HASH = self.hash_sha512_file(self.CA_FILE)
 			if self.CA_FILE_HASH == self.CA_FIXED_HASH:
@@ -3957,7 +4010,7 @@ class Systray:
 			return False
 
 	def win_firewall_start(self):
-		self.debug(text="def win_firewall_start()")
+		self.debug(1,"def win_firewall_start()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
 		if self.NO_DNS_CHANGE == False:
@@ -3981,7 +4034,7 @@ class Systray:
 
 	def win_firewall_tap_blockoutbound(self):
 		self.win_firewall_tap_blockoutbound_running = True
-		self.debug(text="def win_firewall_tap_blockoutbound()")
+		self.debug(1,"def win_firewall_tap_blockoutbound()")
 		try:
 			if self.NO_WIN_FIREWALL == True:
 				self.win_firewall_tap_blockoutbound_running = False
@@ -3994,13 +4047,13 @@ class Systray:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
 				self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")		
 			self.win_join_netsh_cmd()
-			self.debug(text="Block outbound on TAP!\n\nAllow Whitelist to Internal oVPN Services\n\n'%s'\n\nSee all Rules:\n Windows Firewall with Advanced Security\n --> Outgoing Rules" % (self.WHITELIST_PUBLIC_PROFILE))
+			self.debug(1,"Block outbound on TAP!\n\nAllow Whitelist to Internal oVPN Services\n\n'%s'\n\nSee all Rules:\n Windows Firewall with Advanced Security\n --> Outgoing Rules" % (self.WHITELIST_PUBLIC_PROFILE))
 		except:
-			self.debug(text="def win_firewall_tap_blockoutbound: failed!")
+			self.debug(1,"def win_firewall_tap_blockoutbound: failed!")
 		self.win_firewall_tap_blockoutbound_running = False
 
 	def win_firewall_allowout(self):
-		self.debug(text="def win_firewall_allowout()")
+		self.debug(1,"def win_firewall_allowout()")
 		if self.NO_WIN_FIREWALL == True:
 			return True	
 		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
@@ -4012,7 +4065,7 @@ class Systray:
 			return True
 
 	def win_firewall_block_on_exit(self):
-		self.debug(text="def win_firewall_block_on_exit()")
+		self.debug(1,"def win_firewall_block_on_exit()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
 		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
@@ -4022,9 +4075,9 @@ class Systray:
 		return self.win_join_netsh_cmd()
 
 	def win_firewall_whitelist_ovpn_on_tap(self,option):
-		self.debug(text="def win_firewall_whitelist_ovpn_on_tap()")
+		self.debug(1,"def win_firewall_whitelist_ovpn_on_tap()")
 		if self.NO_WIN_FIREWALL == True:
-			self.debug("def win_firewall_whitelist_ovpn_on_tap: self.NO_WIN_FIREWALL == True")
+			self.debug(1,"def win_firewall_whitelist_ovpn_on_tap: self.NO_WIN_FIREWALL == True")
 			return True
 		if option == "add":
 			actionstring = "action=allow"
@@ -4038,15 +4091,15 @@ class Systray:
 			rule_name = "(oVPN) Allow OUT on TAP: %s %s:%s %s" % (entry,ip,port,protocol)
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=public dir=out %s" % (option,rule_name,ip,port,protocol,actionstring)
 			self.NETSH_CMDLIST.append(rule_string)
-			self.debug(text="Whitelist: %s %s %s %s" % (entry,ip,port,protocol))
+			self.debug(1,"Whitelist: %s %s %s %s" % (entry,ip,port,protocol))
 		self.win_join_netsh_cmd()
 		return True
 
 	def win_firewall_add_rule_to_vcp(self,option):
-		self.debug(text="def win_firewall_add_rule_to_vcp()")
+		self.debug(1,"def win_firewall_add_rule_to_vcp()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
-		self.debug(text="def win_firewall_add_rule_to_vcp()")
+		self.debug(1,"def win_firewall_add_rule_to_vcp()")
 		if option == "add":
 			actionstring = "action=allow"
 		elif option == "delete":
@@ -4064,43 +4117,43 @@ class Systray:
 			return True
 
 	def win_firewall_export_on_start(self):
-		self.debug(text="def win_firewall_export_on_start()")
+		self.debug(1,"def win_firewall_export_on_start()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
 		if self.WIN_BACKUP_FIREWALL == False:
 			return True
-		self.debug(text="def win_firewall_export_on_start()")
+		self.debug(1,"def win_firewall_export_on_start()")
 		if os.path.isfile(self.pfw_bak):
 			os.remove(self.pfw_bak)
 		self.NETSH_CMDLIST.append('advfirewall export "%s"' % (self.pfw_bak))
 		return self.win_join_netsh_cmd()
 
 	def win_firewall_restore_on_exit(self):
-		self.debug(text="def win_firewall_restore_on_exit()")
+		self.debug(1,"def win_firewall_restore_on_exit()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
 		if self.WIN_BACKUP_FIREWALL == False:
 			return True
 		if self.WIN_FIREWALL_STARTED == True:
-			self.debug(text="def win_firewall_restore_on_exit()")
+			self.debug(1,"def win_firewall_restore_on_exit()")
 			self.NETSH_CMDLIST.append("advfirewall reset")
 			if os.path.isfile(self.pfw_bak):
 				self.NETSH_CMDLIST.append('advfirewall import "%s"' % (self.pfw_bak))
 			return self.win_join_netsh_cmd()
 
 	def win_enable_tap_interface(self):
-		self.debug(text="def win_enable_tap_interface()")
+		self.debug(1,"def win_enable_tap_interface()")
 		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_TAP_DEVICE))
 		return self.win_join_netsh_cmd()
 
 	def win_disable_ext_interface(self):
-		self.debug(text="def win_disable_ext_interface()")
+		self.debug(1,"def win_disable_ext_interface()")
 		if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
 			self.NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
 			return self.win_join_netsh_cmd()
 
 	def win_enable_ext_interface(self):
-		self.debug(text="def win_enable_ext_interface()")
+		self.debug(1,"def win_enable_ext_interface()")
 		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
 		self.win_join_netsh_cmd()
 
@@ -4112,11 +4165,11 @@ class Systray:
 			line1 = line.split(":")[-1].lstrip()
 			for entry in [ "pidgin","firefox","chrome","icq","skype","commander","github" ]:
 				if entry in line1.lower():
-					self.debug(text="def win_firewall_dumprules: '%s'" % (line1))
+					self.debug(1,"def win_firewall_dumprules: '%s'" % (line1))
 
 	def win_firewall_modify_rule(self,option):
 		try:
-			self.debug(text="def win_firewall_modify_rule()")
+			self.debug(1,"def win_firewall_modify_rule()")
 			if self.NO_WIN_FIREWALL == True:
 				return True
 			rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
@@ -4124,28 +4177,28 @@ class Systray:
 				rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
 			if option == "delete":
 				rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
-			#self.debug(text="def pfw: %s"%(rule_string))
+			#self.debug(1,"def pfw: %s"%(rule_string))
 			self.NETSH_CMDLIST.append(rule_string)
 			return self.win_join_netsh_cmd()
 		except:
-			self.debug(text="def win_firewall_modify_rule: option = '%s' failed" %(option))
+			self.debug(1,"def win_firewall_modify_rule: option = '%s' failed" %(option))
 
 	def win_return_netsh_cmd(self,cmd):
-		self.debug(text="def win_return_netsh_cmd()")
+		self.debug(1,"def win_return_netsh_cmd()")
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
 			try: 
 				read = subprocess.check_output('%s' % (netshcmd),shell=True)
 				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
-				self.debug(text="def win_return_netsh_cmd: output = '%s'" % (output))
+				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
 			except:
-				self.debug(text="def win_return_netsh_cmd: '%s' failed" % (netshcmd))
+				self.debug(1,"def win_return_netsh_cmd: '%s' failed" % (netshcmd))
 		else:
 			self.errorquit(text=_("Error: netsh.exe not found!"))
 
 	def win_join_netsh_cmd(self):
-		self.debug(text="def win_join_netsh_cmd()")
+		self.debug(1,"def win_join_netsh_cmd()")
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			i=0
 			for cmd in self.NETSH_CMDLIST:
@@ -4153,12 +4206,12 @@ class Systray:
 				try: 
 					exitcode = subprocess.call('%s' % (netshcmd),shell=True)
 					if exitcode == 0:
-						self.debug(text="netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
+						self.debug(1,"netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
 						i+=1
 					else:
-						self.debug(text="netshERROR: '%s': exitcode = %s" % (netshcmd,exitcode))
+						self.debug(1,"netshERROR: '%s': exitcode = %s" % (netshcmd,exitcode))
 				except:
-					self.debug(text="def win_join_netsh_cmd: '%s' failed" % (netshcmd))
+					self.debug(1,"def win_join_netsh_cmd: '%s' failed" % (netshcmd))
 			if len(self.NETSH_CMDLIST) == i:
 				self.NETSH_CMDLIST = list()
 				return True
@@ -4169,22 +4222,22 @@ class Systray:
 			self.errorquit(text=_("Error: netsh.exe not found!"))
 
 	def win_return_route_cmd(self,cmd):
-		self.debug(text="def win_return_route_cmd()")
+		self.debug(1,"def win_return_route_cmd()")
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
 			try: 
 				read = subprocess.check_output('%s' % (routecmd),shell=True)
 				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
-				#self.debug(text="def win_return_route_cmd: output = '%s'" % (output))
+				self.debug(5,"def win_return_route_cmd: output = '%s'" % (output))
 				return output
 			except:
-				self.debug(text="def win_return_route_cmd: '%s' failed" % (routecmd))
+				self.debug(1,"def win_return_route_cmd: '%s' failed" % (routecmd))
 				return False
 		else:
 			self.errorquit(text=_("Error: route.exe not found!"))
 
 	def win_join_route_cmd(self):
-		self.debug(text="def win_join_route_cmd()")
+		self.debug(1,"def win_join_route_cmd()")
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			i=0
 			for cmd in self.ROUTE_CMDLIST:
@@ -4192,12 +4245,12 @@ class Systray:
 				try: 
 					exitcode = subprocess.call('%s' % (routecmd),shell=True)
 					if exitcode == 0:
-						self.debug(text="routeOK: '%s': exitcode = %s" % (routecmd,exitcode))
+						self.debug(1,"routeOK: '%s': exitcode = %s" % (routecmd,exitcode))
 						i+=1
 					else:
-						self.debug(text="routeERROR: '%s': exitcode = %s" % (routecmd,exitcode))
+						self.debug(1,"routeERROR: '%s': exitcode = %s" % (routecmd,exitcode))
 				except:
-					self.debug(text="def win_join_route_cmd: '%s' failed" % (routecmd))
+					self.debug(1,"def win_join_route_cmd: '%s' failed" % (routecmd))
 			if len(self.ROUTE_CMDLIST) == i:
 				self.ROUTE_CMDLIST = list()
 				return True
@@ -4208,40 +4261,40 @@ class Systray:
 			self.errorquit(text=_("Error: route.exe not found!"))
 
 	def win_ipconfig_flushdns(self):
-		self.debug(text="def win_ipconfig_flushdns()")
+		self.debug(1,"def win_ipconfig_flushdns()")
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
 				cmdstring = '"%s" /flushdns' % (self.WIN_IPCONFIG_EXE)
 				exitcode = subprocess.call("%s" % (cmdstring),shell=True)
 				if exitcode == 0:
-					self.debug(text="%s: exitcode = %s" % (cmdstring,exitcode))
+					self.debug(1,"%s: exitcode = %s" % (cmdstring,exitcode))
 					return True
 				else:
-					self.debug(text="%s: exitcode = %s" % (cmdstring,exitcode))
+					self.debug(1,"%s: exitcode = %s" % (cmdstring,exitcode))
 			except:
-				self.debug(text="def win_join_ipconfig_cmd: '%s' failed" % (cmdstring))
+				self.debug(1,"def win_join_ipconfig_cmd: '%s' failed" % (cmdstring))
 		else:
 			self.errorquit(text=_("ipconfig.exe not found!"))
 
 	def win_ipconfig_displaydns(self):
-		self.debug(text="def win_ipconfig_displaydns()")
+		self.debug(1,"def win_ipconfig_displaydns()")
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
 				cmdstring = '"%s" /displaydns' % (self.WIN_IPCONFIG_EXE)
 				out = subprocess.check_output("%s" % (cmdstring),shell=True)
 				return out
 			except:
-				self.debug(text="def win_ipconfig_displaydns: failed" % (cmdstring))
+				self.debug(1,"def win_ipconfig_displaydns: failed" % (cmdstring))
 		else:
 			self.errorquit(text=_("ipconfig.exe not found!"))
 
 	def isValueIPv4(self,value):
-		#self.debug(text="def isValueIPv4()")
+		#self.debug(99,"def isValueIPv4()")
 		try:
 			if len(value.split('.')) == 4:
 				for n in value.split('.'):
 					if n.isdigit():
-						#self.debug(text="def isValueIPv4: n = %s"%(n))
+						self.debug(50,"def isValueIPv4: n = %s"%(n))
 						if not n >= 0 and not n <= 255:
 							return False
 				return True
@@ -4250,11 +4303,11 @@ class Systray:
 
 	# *** fixme ***
 	def isValueIPv6(self,value):
-		self.debug(text="def isValueIPv6()")
+		self.debug(1,"def isValueIPv6()")
 		return True
 
 	def form_ask_userid(self):
-		self.debug(text="def form_ask_userid()")
+		self.debug(1,"def form_ask_userid()")
 		try:
 			self.dialog_form_ask_userid.destroy()
 		except:
@@ -4303,22 +4356,22 @@ class Systray:
 			dialogWindow.connect("close", self.response_dialog_apilogin, None, None, None)
 			dialogWindow.run()
 		except:
-			self.debug(text="def form_ask_userid: Failed")
+			self.debug(1,"def form_ask_userid: Failed")
 
 	def response_dialog_apilogin(self, dialog, response_id, useridEntry, apikeyEntry, checkbox):
-		self.debug(text="response_dialog_apilogin()")
+		self.debug(1,"response_dialog_apilogin()")
 		if response_id == Gtk.ResponseType.CANCEL:
-			self.debug(text="def response_dialog_apilogin: response_id == Gtk.ResponseType.CANCEL")
+			self.debug(1,"def response_dialog_apilogin: response_id == Gtk.ResponseType.CANCEL")
 			dialog.destroy()
 			return
 		elif response_id == Gtk.ResponseType.OK:
-			self.debug(text="def response_dialog_apilogin: Gtk.ResponseType.OK self.USERID = '%s'"%(self.USERID))
+			self.debug(1,"def response_dialog_apilogin: Gtk.ResponseType.OK self.USERID = '%s'"%(self.USERID))
 			if self.USERID == False:
 				userid = useridEntry.get_text().rstrip()
 			else:
 				userid = self.USERID
 			apikey = apikeyEntry.get_text().rstrip()
-			self.debug(text="def response_dialog_apilogin: Gtk.ResponseType.OK userid = '%s'"%(userid))
+			self.debug(1,"def response_dialog_apilogin: Gtk.ResponseType.OK userid = '%s'"%(userid))
 			if userid.isdigit() and userid > 1 and (len(apikey) == 0 or (len(apikey) == 128 and apikey.isalnum())) and (self.USERID == False or self.USERID == userid):
 				dialog.destroy()
 				saveph = checkbox.get_active()
@@ -4327,7 +4380,7 @@ class Systray:
 				else:
 					self.SAVE_APIKEY_INFILE = False
 				if self.USERID == False:
-					self.debug(text="def response_dialog_apilogin: self.USERID == False")
+					self.debug(1,"def response_dialog_apilogin: self.USERID == False")
 					api_dir = "%s\\%s" % (self.app_dir,userid)
 					if not os.path.isdir(api_dir):
 						os.mkdir(api_dir)
@@ -4335,7 +4388,7 @@ class Systray:
 							self.API_DIR = api_dir
 							self.USERID = userid
 							self.APIKEY = apikey
-							self.debug(text="def response_dialog_apilogin: return True #1")
+							self.debug(1,"def response_dialog_apilogin: return True #1")
 							return True
 				elif not self.API_DIR == False and os.path.isdir(self.API_DIR):
 					if len(apikey) == 0:
@@ -4346,87 +4399,87 @@ class Systray:
 						self.APIKEY = False
 						return False
 					self.INIT_FIRST_UPDATE = True
-					self.debug(text="def response_dialog_apilogin: return True #2")
+					self.debug(1,"def response_dialog_apilogin: return True #2")
 					return True
 		elif dialog:
 			dialog.destroy()
 
 	def dialog_apikey(self):
-		self.debug(text="def dialog_apikey()")
+		self.debug(1,"def dialog_apikey()")
 		self.form_ask_userid()
 		if not self.APIKEY == False:
-			self.debug(text="def dialog_apikey: self.APIKEY '-NOT_FALSE-'")
+			self.debug(1,"def dialog_apikey: self.APIKEY '-NOT_FALSE-'")
 			self.UPDATE_SWITCH = True
 			
 	def cb_interface_selector_changed(self, combobox):
-		self.debug(text="def cb_interface_selector_changed()")
+		self.debug(1,"def cb_interface_selector_changed()")
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
 			self.WIN_EXT_DEVICE = model[index][0]
-			self.debug(text="def cb_interface_selector_changed: selected IF = '%s'" % (self.WIN_EXT_DEVICE))
+			self.debug(1,"def cb_interface_selector_changed: selected IF = '%s'" % (self.WIN_EXT_DEVICE))
 		return
 
 	def cb_select_userid(self, combobox):
-		self.debug(text="def cb_select_userid()")
+		self.debug(1,"def cb_select_userid()")
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1 and model[index][0].isdigit() and model[index][0] > 1:
 			self.USERID = model[index][0]
-			self.debug(text="def cb_select_userid: selected USERID = '%s'" % (self.USERID))
+			self.debug(1,"def cb_select_userid: selected USERID = '%s'" % (self.USERID))
 		return
 
 	def cb_tap_interface_selector_changed(self, combobox):
-		self.debug(text="def cb_tap_interface_selector_changed()")
+		self.debug(1,"def cb_tap_interface_selector_changed()")
 		model = combobox.get_model()
 		index = combobox.get_active()
 		if index > -1:
 			self.WIN_TAP_DEVICE = model[index][0]
-			self.debug(text="def cb_tap_interface_selector_changed: selected tap IF = '%s'" % (self.WIN_TAP_DEVICE))
+			self.debug(1,"def cb_tap_interface_selector_changed: selected tap IF = '%s'" % (self.WIN_TAP_DEVICE))
 		return
 
 	def check_last_server_update(self,remote_lastupdate):
-		self.debug(text="def check_last_server_update()")
+		self.debug(1,"def check_last_server_update()")
 		if self.LAST_CFG_UPDATE < remote_lastupdate:
 			self.remote_lastupdate = remote_lastupdate
-			self.debug(text="def check_last_server_update: requesting update")
+			self.debug(1,"def check_last_server_update: requesting update")
 			return True
 		else:
-			self.debug(text="def check_last_server_update: no update")
+			self.debug(1,"def check_last_server_update: no update")
 			return False
 
 	def write_last_update(self):
-		self.debug(text="def write_last_update()")
+		self.debug(1,"def write_last_update()")
 		self.LAST_CFG_UPDATE = self.remote_lastupdate
 		if self.write_options_file():
 			return True
 
 	def reset_last_update(self):
-		self.debug(text="def reset_last_update()")
+		self.debug(1,"def reset_last_update()")
 		self.LAST_CFG_UPDATE = 0
 		if self.write_options_file():
 			return True
 
 	def cb_check_normal_update(self):
-		self.debug(text="def cb_check_normal_update()")
+		self.debug(1,"def cb_check_normal_update()")
 		if self.check_inet_connection() == False:
 			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
 			return False
 		if self.check_remote_update():
-			self.debug(text="def cb_check_normal_update: self.check_remote_update() == True")
+			self.debug(1,"def cb_check_normal_update: self.check_remote_update() == True")
 			return True
 
 	def cb_force_update(self):
-		self.debug(text="def cb_force_update()")
+		self.debug(1,"def cb_force_update()")
 		if self.check_inet_connection() == False:
 			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
 			return False
 		if self.reset_last_update() == True:
-			self.debug(text="def cb_force_update: self.reset_last_update")
+			self.debug(1,"def cb_force_update: self.reset_last_update")
 			self.cb_check_normal_update()
 
 	def cb_resetextif(self):
-		self.debug(text="def cb_resetextif()")
+		self.debug(1,"def cb_resetextif()")
 		self.WIN_EXT_DEVICE = False
 		self.WIN_TAP_DEVICE = False
 		self.WIN_RESET_EXT_DEVICE = True
@@ -4435,7 +4488,7 @@ class Systray:
 
 	def cb_extserverview(self,widget,event):
 		if event.button == 1:
-			self.debug(text="def cb_extserverview()")
+			self.debug(1,"def cb_extserverview()")
 			reopen = False
 			if self.MAINWINDOW_OPEN == True:
 				reopen = True
@@ -4452,7 +4505,7 @@ class Systray:
 	
 	def cb_extserverview_size(self,widget,event):
 		if event.button == 1:
-			self.debug(text="def cb_extserverview_size()")
+			self.debug(1,"def cb_extserverview_size()")
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
@@ -4490,13 +4543,13 @@ class Systray:
 					if HEIGHT == "": HEIGHT = self.SRV_HEIGHT_DEFAULT;
 					self.SRV_WIDTH = WIDTH
 					self.SRV_HEIGHT = HEIGHT
-					self.debug(text="def cb_extserverview_size(): %sx%s" % (self.SRV_WIDTH,self.SRV_HEIGHT))
+					self.debug(1,"def cb_extserverview_size(): %sx%s" % (self.SRV_WIDTH,self.SRV_HEIGHT))
 				else:
 					if WIDTH == "": WIDTH = self.SRV_LIGHT_WIDTH_DEFAULT;
 					if HEIGHT == "": HEIGHT = self.SRV_LIGHT_HEIGHT_DEFAULT;
 					self.SRV_LIGHT_WIDTH = WIDTH
 					self.SRV_LIGHT_HEIGHT = HEIGHT
-					self.debug(text="def cb_extserverview_size(): %sx%s" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
+					self.debug(1,"def cb_extserverview_size(): %sx%s" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
 				self.write_options_file()
 				WIDTH = int(WIDTH)
 				HEIGHT = int(HEIGHT)
@@ -4507,7 +4560,7 @@ class Systray:
 
 	def cb_set_loaddataevery(self,widget,event):
 		if event.button == 1:
-			self.debug(text="def cb_set_loaddataevery()")
+			self.debug(1,"def cb_set_loaddataevery()")
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
@@ -4546,7 +4599,7 @@ class Systray:
 				return False
 
 	def cb_change_ipmode1(self):
-		self.debug(text="def cb_change_ipmode1()")
+		self.debug(1,"def cb_change_ipmode1()")
 		self.OVPN_CONFIGVERSION = "23x"
 		self.write_options_file()
 		self.read_options_file()
@@ -4558,7 +4611,7 @@ class Systray:
 		self.UPDATE_SWITCH = True
 
 	def cb_change_ipmode2(self):
-		self.debug(text="def cb_change_ipmode2()")
+		self.debug(1,"def cb_change_ipmode2()")
 		self.OVPN_CONFIGVERSION = "23x46"
 		self.write_options_file()
 		self.read_options_file()
@@ -4572,7 +4625,7 @@ class Systray:
 
 	# *** fixme: need isValueIPv6 first! ***
 	def cb_change_ipmode3(self):
-		self.debug(text="def cb_change_ipmode3()")
+		self.debug(1,"def cb_change_ipmode3()")
 		return True
 		self.OVPN_CONFIGVERSION = "23x64"
 		self.write_options_file()
@@ -4585,50 +4638,50 @@ class Systray:
 		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
 
 	def cb_restore_firewallbackup(self,file):
-		self.debug(text="def cb_restore_firewallbackup()")
+		self.debug(1,"def cb_restore_firewallbackup()")
 		fwbak = "%s\\%s" % (self.pfw_dir,file)
 		if os.path.isfile(fwbak):
-			self.debug(text="def cb_restore_firewallbackup: %s" % (fwbak))
+			self.debug(1,"def cb_restore_firewallbackup: %s" % (fwbak))
 			self.win_firewall_export_on_start()
 			self.NETSH_CMDLIST.append('advfirewall import "%s"' % (fwbak))
 			return self.win_join_netsh_cmd()
 
 	def delete_dir(self,path):
-		self.debug(text="def delete_dir()")
+		self.debug(1,"def delete_dir()")
 		if self.OS == "win32":
 			string = 'rmdir /S /Q "%s"' % (path)
-			self.debug(text="def delete_dir: %s" % (string))
+			self.debug(1,"def delete_dir: %s" % (string))
 			subprocess.check_output("%s" % (string),shell=True)
 
 	def extract_ovpn(self):
-		self.debug(text="def extract_ovpn()")
+		self.debug(1,"def extract_ovpn()")
 		try:
 			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):
 				z1file = zipfile.ZipFile(self.zip_cfg)
 				z2file = zipfile.ZipFile(self.zip_crt)
 				if os.path.isdir(self.VPN_CFG):
-					self.debug(text="def extract_ovpn: os.path.isdir(%s)"%(self.VPN_CFG))
+					self.debug(1,"def extract_ovpn: os.path.isdir(%s)"%(self.VPN_CFG))
 					self.delete_dir(self.VPN_CFG)
 				if not os.path.isdir(self.VPN_CFG):
 					try:
 						os.mkdir(self.VPN_CFG)
-						self.debug(text="def extract_ovpn: os.mkdir(%s)"%(self.VPN_CFG))
+						self.debug(1,"def extract_ovpn: os.mkdir(%s)"%(self.VPN_CFG))
 					except:
-						self.debug(text="def extract_ovpn: %s not found, create failed."%(self.VPN_CFG))
+						self.debug(1,"def extract_ovpn: %s not found, create failed."%(self.VPN_CFG))
 				try:
 					z1file.extractall(self.VPN_CFG)
 					z2file.extractall(self.VPN_CFG)
 					if self.write_last_update():
-						self.debug(text="Certificates and Configs extracted.")
+						self.debug(1,"Certificates and Configs extracted.")
 						return True
 				except:
-					self.debug(text="Error on extracting Certificates and Configs!")
+					self.debug(1,"Error on extracting Certificates and Configs!")
 					return False
 		except:
-			self.debug(text="def extract_ovpn: failed")
+			self.debug(1,"def extract_ovpn: failed")
 
 	def API_REQUEST(self,API_ACTION):
-		self.debug(text="def API_REQUEST()")
+		self.debug(1,"def API_REQUEST()")
 		if self.APIKEY == False:
 			self.msgwarn(_("No API-Key!"),_("Error: def API_REQUEST"))
 			return False
@@ -4648,8 +4701,8 @@ class Systray:
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
 		self.body = False
-		text = "def API_REQUEST: API_ACTION = %s" % (API_ACTION)
-		self.debug(text=text)
+		
+		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
 		
 		try:
 			r = requests.post(self.APIURL,data=values)
@@ -4664,11 +4717,10 @@ class Systray:
 				return False
 			
 			if self.body.isalnum() and len(self.body) <= 128:
-				self.debug("def API_REQUEST: self.body = %s"%(self.body))
+				self.debug(1,"def API_REQUEST: self.body = %s"%(self.body))
 		
 		except requests.exceptions.ConnectionError as e:
-			text = "def API_REQUEST: requests error on: %s = %s" % (API_ACTION,e)
-			self.debug(text=text)
+			self.debug(1,text = "def API_REQUEST: requests error on: %s = %s" % (API_ACTION,e))
 			return False
 		except:
 			self.msgwarn(_("API requests on: %s failed!") % (API_ACTION),_("Error: def API_REQUEST"))
@@ -4680,7 +4732,7 @@ class Systray:
 				self.curldata = self.body.split(":")
 				if self.curldata[0] == "AUTHOK":
 					self.curldata = self.curldata[1]
-					self.debug(text="def API_REQUEST: self.curldata = '%s'" % (self.curldata))
+					self.debug(1,"def API_REQUEST: self.curldata = '%s'" % (self.curldata))
 					return True
 			else:
 				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
@@ -4711,17 +4763,17 @@ class Systray:
 					return True
 
 	def check_inet_connection(self):
-		#self.debug(text="def check_inet_connection()")
+		self.debug(3,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
 		if not self.try_socket(DOMAIN,443) == True:
-			self.debug(text="def check_inet_connection: failed!")
+			self.debug(3,"def check_inet_connection: failed!")
 			self.LAST_CHECK_INET_FALSE = int(time.time())
 			return False
 		return True
 
 	def try_socket(self,host,port):
-		#self.debug(text="def try_socket()")
+		self.debug(3,"def try_socket()")
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(3)
@@ -4730,11 +4782,11 @@ class Systray:
 		except:
 			return False
 		if result == 0:
-			#self.debug(text="def try_socket: %s:%s True" % (host,port))
+			self.debug(3,"def try_socket: %s:%s True" % (host,port))
 			return True
 
 	def check_myip(self):
-		#self.debug(text="def check_myip()")
+		self.debug(3,"def check_myip()")
 		# *** fixme *** missing ipv6 support
 		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
@@ -4744,18 +4796,18 @@ class Systray:
 				r = requests.get(url,timeout=2)
 				rip = r.content.strip().split()[0]
 				if rip == self.OVPN_CONNECTEDtoIP:
-					self.debug(text="def check_myip: rip == self.OVPN_CONNECTEDtoIP")
+					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP")
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
 			except:
-				self.debug(text="def check_myip: False")
+				self.debug(1,"def check_myip: False")
 				return False
 		else:
-			self.debug(text="def check_myip: invalid self.OVPN_CONFIGVERSION")
+			self.debug(1,"def check_myip: invalid self.OVPN_CONFIGVERSION")
 			return False
 
 	def load_firewall_backups(self):
-		self.debug(text="def load_firewall_backups()")
+		self.debug(1,"def load_firewall_backups()")
 		try:
 			if os.path.exists(self.pfw_dir):
 				content = os.listdir(self.pfw_dir)
@@ -4765,13 +4817,13 @@ class Systray:
 						filepath = "%s\\%s" % (self.pfw_dir,file)
 						self.FIREWALL_BACKUPS.append(file)
 		except:
-			self.debug(text="def load_firewall_backups: failed")
+			self.debug(1,"def load_firewall_backups: failed")
 
 	def load_ovpn_server(self):
-		self.debug(text="def load_ovpn_server()")
+		self.debug(1,"def load_ovpn_server()")
 		try:
 			if os.path.exists(self.VPN_CFG):
-				self.debug(text="def load_ovpn_server: self.VPN_CFG = '%s'" % (self.VPN_CFG))
+				self.debug(1,"def load_ovpn_server: self.VPN_CFG = '%s'" % (self.VPN_CFG))
 				content = os.listdir(self.VPN_CFG)
 				self.OVPN_SERVER = list()
 				self.OVPN_SERVER_INFO = {}
@@ -4825,39 +4877,32 @@ class Systray:
 									except:
 										mtu = 1500
 										serverinfo.append(mtu)
-										self.debug(text="Could not read mtu from config: %s" % (self.ovpn_server_config_file))
+										self.debug(1,"Could not read mtu from config: %s" % (self.ovpn_server_config_file))
 							# end: for line in open(filepath)
 							self.OVPN_SERVER_INFO[servershort] = serverinfo
-						try:
-							flagicon = self.FLAG_IMG[countrycode]
-						except:
-							imgfile = '%s\\flags\\%s.png' % (self.ico_dir,countrycode)
-							if not os.path.isfile(imgfile):
-								imgfile = '%s\\flags\\00.png' % (self.ico_dir)
-							self.FLAG_IMG[countrycode] = imgfile
 						self.OVPN_SERVER.append(servername)
-						#self.debug(text="def load_ovpn_server: file = %s " % (file))
+						self.debug(5,"def load_ovpn_server: file = '%s' END" % (file))
 				# for end
 				self.OVPN_SERVER.sort()
 			else:
 				self.reset_last_update()
 		except:
-			self.debug(text="def load_ovpn_server: failed")
+			self.debug(1,"def load_ovpn_server: failed")
 
 	def load_remote_data(self):
 		if self.timer_load_remote_data_running == True:
 			return False
 		self.timer_load_remote_data_running = True
 		if self.APIKEY == False:
-			#self.debug(text="def load_remote_data: no api data")
+			self.debug(6,"def load_remote_data: no api data")
 			self.timer_load_remote_data_running = False
 			return False
-		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
-			#self.debug(text="def load_remote_data: waiting for ovpn connection")
+		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
+			self.debug(6,"def load_remote_data: waiting for ovpn connection")
 			self.timer_load_remote_data_running = False
 			return False
-		elif self.STATE_OVPN == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
-			#self.debug(text="def load_remote_data: high ping")
+		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
+			self.debug(6,"def load_remote_data: high ping")
 			self.timer_load_remote_data_running = False
 			return False
 		elif self.LOAD_SRVDATA == True and self.LOAD_ACCDATA == True:
@@ -4874,7 +4919,7 @@ class Systray:
 		self.timer_load_remote_data_running = False
 
 	def check_hash_dictdata(self,newdata,olddata):
-		self.debug(text="def check_hash_dictdata()")
+		self.debug(2,"def check_hash_dictdata()")
 		try:
 			texta = ""
 			textb = ""
@@ -4884,131 +4929,131 @@ class Systray:
 				textb = "%s %s %s" % (textb,key,value)
 			hasha = hashlib.sha256(texta).hexdigest()
 			hashb = hashlib.sha256(textb).hexdigest()
-			#self.debug(text="hasha newdata = '%s'" % (hasha))
-			#self.debug(text="hashb olddata = '%s'" % (hashb))
+			self.debug(9,"hasha newdata = '%s'" % (hasha))
+			self.debug(9,"hashb olddata = '%s'" % (hashb))
 			if hasha == hashb:
 				return True
 		except:
-			self.debug(text="def check_hash_dictdata: failed")
+			self.debug(1,"def check_hash_dictdata: failed")
 
 	def load_serverdata_from_remote(self):
 		updatein = self.LAST_OVPN_SRV_DATA_UPDATE + self.LOAD_DATA_EVERY
 		now = int(time.time())
-		#self.debug(text="def load_serverdata_from_remote: ?")
+		self.debug(46,"def load_serverdata_from_remote: ?")
 		if self.LOAD_SRVDATA == False:
-			#self.debug(text="def load_serverdata_from_remote: disabled")
+			self.debug(46,"def load_serverdata_from_remote: disabled")
 			return False
 		elif self.MAINWINDOW_OPEN == False:
-			#self.debug(text="def load_serverdata_from_remote: mainwindow not open")
+			self.debug(46,"def load_serverdata_from_remote: mainwindow not open")
 			return False
 		elif self.MAINWINDOW_HIDE == True:
-			#self.debug(text="def load_serverdata_from_remote: mainwindow is hide")
+			self.debug(46,"def load_serverdata_from_remote: mainwindow is hide")
 			return False
 		elif updatein > now:
 			diff = updatein - now
-			#self.debug(text="def load_serverdata_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
+			self.debug(46,"def load_serverdata_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
 			return False
 		elif self.check_inet_connection() == False:
 			self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time()) - self.LOAD_DATA_EVERY + 15
-			#self.debug(text="def load_serverdata_from_remote: no inet connection")
+			self.debug(46,"def load_serverdata_from_remote: no inet connection")
 			return False
 		try:
 			API_ACTION = "loadserverdata"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 			r = requests.post(self.APIURL,data=values,timeout=(3,3))
-			self.debug(text="def load_serverdata_from_remote: posted")
+			self.debug(1,"def load_serverdata_from_remote: posted")
 			try:
 				if not r.content == "AUTHERROR":
-					#self.debug(text="r.content = '%s'" % (r.content))
+					#self.debug(1,"r.content = '%s'" % (r.content))
 					OVPN_SRV_DATA = json.loads(r.content)
-					#self.debug(text="OVPN_SRV_DATA = '%s'" % (OVPN_SRV_DATA))
+					self.debug(9,"OVPN_SRV_DATA = '%s'" % (OVPN_SRV_DATA))
 					if len(OVPN_SRV_DATA) > 1:
 						if not self.check_hash_dictdata(OVPN_SRV_DATA,self.OVPN_SRV_DATA):
 							self.OVPN_SRV_DATA = OVPN_SRV_DATA
 							self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-							self.debug(text="def load_serverdata_from_remote: loaded, len = %s" % (len(self.OVPN_SRV_DATA)))
+							self.debug(1,"def load_serverdata_from_remote: loaded, len = %s" % (len(self.OVPN_SRV_DATA)))
 							return True
 						else:
 							self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-							self.debug(text="def load_serverdata_from_remote: loaded, hash match")
+							self.debug(1,"def load_serverdata_from_remote: loaded, hash match")
 							return False
 					else:
 						self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-						self.debug(text="def load_serverdata_from_remote: failed! len = %s"%(len(OVPN_SRV_DATA)))
+						self.debug(1,"def load_serverdata_from_remote: failed! len = %s"%(len(OVPN_SRV_DATA)))
 						return False
 				else:
 					self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-					self.debug(text="def load_serverdata_from_remote: AUTH ERROR")
+					self.debug(1,"def load_serverdata_from_remote: AUTH ERROR")
 					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),"Error!")
 					return False
 			except:
 				self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-				self.debug(text="def load_serverdata_from_remote: json decode error")
+				self.debug(1,"def load_serverdata_from_remote: json decode error")
 				return False
 		except:
 			self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-			self.debug(text="def load_serverdata_from_remote: api request failed")
+			self.debug(1,"def load_serverdata_from_remote: api request failed")
 			return False
 
 	def load_accinfo_from_remote(self):
 		updatein = self.LAST_OVPN_ACC_DATA_UPDATE + self.LOAD_DATA_EVERY
 		now = int(time.time())
-		#self.debug(text="def load_accinfo_from_remote: ?")
+		self.debug(46,"def load_accinfo_from_remote: ?")
 		if self.LOAD_ACCDATA == False:
-			#self.debug(text="def load_accinfo_from_remote: disabled")
+			self.debug(46,"def load_accinfo_from_remote: disabled")
 			return False
 		elif self.ACCWINDOW_OPEN == False:
-			#self.debug(text="def load_remote_data: mainwindow not open")
+			self.debug(46,"def load_remote_data: mainwindow not open")
 			return False
 		elif updatein > now:
 			diff = updatein - now
-			#self.debug(text="def load_accinfo_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
+			self.debug(46,"def load_accinfo_from_remote: time = %s update_in = %s (%s)" % (now,updatein,diff))
 			return False
 		elif self.check_inet_connection() == False:
 			self.LAST_OVPN_ACC_DATA_UPDATE = now - self.LOAD_DATA_EVERY + 15
-			#self.debug(text="def load_accinfo_from_remote: no inet connection")
+			self.debug(46,"def load_accinfo_from_remote: no inet connection")
 			return False
 		try:
 			API_ACTION = "accinfo"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 			r = requests.post(self.APIURL,data=values,timeout=(2,2))
-			self.debug(text="def load_accinfo_from_remote: posted")
+			self.debug(1,"def load_accinfo_from_remote: posted")
 			try:
 				if not r.content == "AUTHERROR":
-					#self.debug(text="r.content = '%s'" % (r.content))
+					#self.debug(1,"r.content = '%s'" % (r.content))
 					OVPN_ACC_DATA = json.loads(r.content)
-					#self.debug(text="OVPN_ACC_DATA = '%s'" % (OVPN_ACC_DATA))
+					self.debug(9,"OVPN_ACC_DATA = '%s'" % (OVPN_ACC_DATA))
 					if len(OVPN_ACC_DATA) > 1:
 						if not self.check_hash_dictdata(OVPN_ACC_DATA,self.OVPN_ACC_DATA):
 							self.OVPN_ACC_DATA = OVPN_ACC_DATA
 							self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
-							self.debug(text="def load_accinfo_from_remote: loaded, len = %s"%(len(self.OVPN_ACC_DATA)))
+							self.debug(1,"def load_accinfo_from_remote: loaded, len = %s"%(len(self.OVPN_ACC_DATA)))
 							self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
 							return True
 						else:
 							self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
-							self.debug(text="def load_accinfo_from_remote: loaded, hash match")
+							self.debug(1,"def load_accinfo_from_remote: loaded, hash match")
 							return False
 					else:
 						self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
-						self.debug(text="def load_accinfo_from_remote: failed! len = %s"%(len(OVPN_ACC_DATA)))
+						self.debug(1,"def load_accinfo_from_remote: failed! len = %s"%(len(OVPN_ACC_DATA)))
 						return False
 				else:
 					self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
-					self.debug(text="def load_accinfo_from_remote: AUTH ERROR")
+					self.debug(1,"def load_accinfo_from_remote: AUTH ERROR")
 					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),"Error: def load_accinfo_from_remote")
 					return False
 			except:
 				self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
-				self.debug(text="def load_accinfo_from_remote: json decode error")
+				self.debug(1,"def load_accinfo_from_remote: json decode error")
 				return False
 		except:
 			self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
-			self.debug(text="def load_accinfo_from_remote: api request failed")
+			self.debug(1,"def load_accinfo_from_remote: api request failed")
 			return False
 
 	def build_openvpn_dlurl(self):
-		self.debug(text="def build_openvpn_dlurl()")
+		self.debug(1,"def build_openvpn_dlurl()")
 		self.PLATFORM = self.os_platform()
 		if self.PLATFORM == "AMD64":
 			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-x86_64.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
@@ -5028,10 +5073,10 @@ class Systray:
 		return True
 
 	def upgrade_openvpn(self):
-		self.debug(text="def upgrade_openvpn()")
+		self.debug(1,"def upgrade_openvpn()")
 		if self.load_openvpnbin_from_remote():
 			if self.win_install_openvpn():
-				self.debug(text="def upgrade_openvpn: self.win_install_openvpn() = True")
+				self.debug(1,"def upgrade_openvpn: self.win_install_openvpn() = True")
 				return True
 		if self.verify_openvpnbin_dl():
 			self.errorquit(text=_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
@@ -5039,7 +5084,7 @@ class Systray:
 			self.errorquit(text=_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
 
 	def load_openvpnbin_from_remote(self):
-		self.debug(text="def load_openvpnbin_from_remote()")
+		self.debug(1,"def load_openvpnbin_from_remote()")
 		if not self.OPENVPN_DL_URL == False:
 			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 				return self.verify_openvpnbin_dl()
@@ -5056,17 +5101,17 @@ class Systray:
 				fp2.close()
 				return self.verify_openvpnbin_dl()
 			except:
-				self.debug(text="def load_openvpnbin_from_remote: failed")
+				self.debug(1,"def load_openvpnbin_from_remote: failed")
 				return False
 		else:
 			return False
 
 	def verify_openvpnbin_dl(self):
-		self.debug(text="def verify_openvpnbin_dl()")
+		self.debug(1,"def verify_openvpnbin_dl()")
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 			localhash = self.hash_sha512_file(self.OPENVPN_SAVE_BIN_TO)
 			if self.OPENVPN_FILEHASH == localhash:
-				self.debug(text="def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
+				self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
 				return True
 			else:
 				self.msgwarn(_("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'") % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),_("Error!"))
@@ -5079,36 +5124,36 @@ class Systray:
 			return False
 
 	def win_install_openvpn(self):
-		self.debug(text="def win_install_openvpn()")
+		self.debug(1,"def win_install_openvpn()")
 		if self.OPENVPN_SILENT_SETUP == True:
 			# silent install
 			installtodir = "%s\\runtime" % (self.vpn_dir)
 			options = "/S /SELECT_SHORTCUTS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
 			parameters = '%s /D=%s' % (options,installtodir)
 			netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,parameters)
-			self.debug(text="def win_install_openvpn: silent cmd =\n'%s'" % (netshcmd))
+			self.debug(1,"def win_install_openvpn: silent cmd =\n'%s'" % (netshcmd))
 			self.OPENVPN_DIR = installtodir
 		else:
 			# popup install
 			netshcmd = '"%s"' % (self.OPENVPN_SAVE_BIN_TO)
-		self.debug(text="def win_install_openvpn: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
+		self.debug(1,"def win_install_openvpn: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
 		try: 
 			exitcode = subprocess.call(netshcmd,shell=True)
 			if exitcode == 0:
 				if self.OPENVPN_SILENT_SETUP == True:
-					self.debug(text="def win_install_openvpn: silent OK!")
+					self.debug(1,"def win_install_openvpn: silent OK!")
 				else:
-					self.debug(text="def win_install_openvpn:\n\n'%s'\n\nexitcode = %s" % (netshcmd,exitcode))
+					self.debug(1,"def win_install_openvpn:\n\n'%s'\n\nexitcode = %s" % (netshcmd,exitcode))
 				return True
 			else:
-				self.debug(text="def win_install_openvpn: '%s' exitcode = %s" % (netshcmd,exitcode))
+				self.debug(1,"def win_install_openvpn: '%s' exitcode = %s" % (netshcmd,exitcode))
 				return False
 		except:
-			self.debug(text="def win_install_openvpn: '%s' failed" % (netshcmd))
+			self.debug(1,"def win_install_openvpn: '%s' failed" % (netshcmd))
 			return False
 
 	def win_select_openvpn(self):
-		self.debug(text="def win_select_openvpn()")
+		self.debug(1,"def win_select_openvpn()")
 		self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
 		dialogWindow = Gtk.FileChooserDialog(_("Select openvpn.exe or Cancel to install openVPN"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
@@ -5122,17 +5167,17 @@ class Systray:
 			if response == Gtk.ResponseType.OK:
 				dialogWindow.destroy()
 				self.OPENVPN_EXE = dialog.get_filename()
-				self.debug(text = "selected: %s" % (self.OPENVPN_EXE))
+				self.debug(1,"selected: %s" % (self.OPENVPN_EXE))
 				return True
 			else:
 				dialogWindow.destroy()
-				self.debug(text = "Closed, no files selected")
+				self.debug(1,"Closed, no files selected")
 				return False
 		except:
 			return False
 
 	def win_detect_openvpn(self):
-		self.debug(text="def win_detect_openvpn()")
+		self.debug(1,"def win_detect_openvpn()")
 		if self.OPENVPN_DIR == False:
 			os_programfiles = "PROGRAMFILES PROGRAMFILES(x86) PROGRAMW6432"
 			for getenv in os_programfiles.split():
@@ -5140,7 +5185,7 @@ class Systray:
 				OPENVPN_DIR = "%s\\OpenVPN\\bin" % (programfiles)
 				file = "%s\\openvpn.exe" % (OPENVPN_DIR)
 				if os.path.isfile(file):
-					self.debug(text="def win_detect_openvpn: %s" % (file))
+					self.debug(1,"def win_detect_openvpn: %s" % (file))
 					self.OPENVPN_EXE = file
 					self.OPENVPN_DIR = OPENVPN_DIR
 					break
@@ -5158,7 +5203,7 @@ class Systray:
 					self.win_detect_openvpn()
 		if not self.openvpn_check_files():
 			self.msgwarn(_("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']") % (self.OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE),_("Error!"))
-		self.debug(text = "def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
+		self.debug(1,"def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
 		try:
 			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
 		except:
@@ -5167,10 +5212,10 @@ class Systray:
 			self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
 			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
 			self.OVPN_LATESTBUILT = self.OVPN_LATEST_BUILT.split()
-			self.debug(text="self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATESTBUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATESTBUILT))
+			self.debug(1,"self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATESTBUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATESTBUILT))
 			if self.OVPN_VERSION >= self.OVPN_LATEST:
 				if self.OVPN_BUILT == self.OVPN_LATESTBUILT:
-					self.debug(text="self.OVPN_BUILT == self.OVPN_LATESTBUILT: True")
+					self.debug(1,"self.OVPN_BUILT == self.OVPN_LATESTBUILT: True")
 					return True
 				else:
 					built_mon = self.OVPN_BUILT[0]
@@ -5180,7 +5225,7 @@ class Systray:
 					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
 					built_month_int = int(string_built_time.tm_mon)
 					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
-					self.debug(text = "openvpn built_timestamp = %s self.OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATEST_BUILT_TIMESTAMP))
+					self.debug(1,"openvpn built_timestamp = %s self.OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATEST_BUILT_TIMESTAMP))
 					if built_timestamp > self.OVPN_LATEST_BUILT_TIMESTAMP:
 						self.CHECK_FILEHASHS = False
 						return True
@@ -5189,18 +5234,18 @@ class Systray:
 			self.errorquit(text=_("Could not find openVPN"))
 
 	def openvpn_check_files(self):
-		self.debug(text="def openvpn_check_files()")
+		self.debug(1,"def openvpn_check_files()")
 		try:
 			if self.CHECK_FILEHASHS == False:
 				return True
 			self.OPENVPN_DIR = self.OPENVPN_EXE.rsplit('\\', 1)[0]
-			self.debug(text="def openvpn_check_files: self.OPENVPN_DIR = '%s'" % (self.OPENVPN_DIR))
+			self.debug(1,"def openvpn_check_files: self.OPENVPN_DIR = '%s'" % (self.OPENVPN_DIR))
 			dir = self.OPENVPN_DIR
 			if os.path.exists(dir):
 				content = os.listdir(dir)
 				filename = self.openvpn_filename_exe()
 				hashs = self.OPENVPN_FILEHASHS[filename]
-				#self.debug(text="hashs = '%s'" % (hashs))
+				self.debug(2,"hashs = '%s'" % (hashs))
 				for file in content:
 					self.LAST_FAILED_CHECKFILE = file
 					if file.endswith('.exe') or file.endswith('.dll'):
@@ -5208,7 +5253,7 @@ class Systray:
 						hasha = self.hash_sha512_file(filepath)
 						hashb = hashs[file]
 						if hasha == hashb:
-							self.debug(text="def openvpn_check_files: hash '%s' OK!" % (file))
+							self.debug(1,"def openvpn_check_files: hash '%s' OK!" % (file))
 						else:
 							self.msgwarn(_("Invalid Hash: '%s'! is '%s' != '%s'") % (filepath,hasha,hashb),_("Error!"))
 							return False
@@ -5217,25 +5262,25 @@ class Systray:
 						return False
 				return True
 			else:
-				self.debug(text="Error: '%s' not found!" % (self.OPENVPN_DIR))
+				self.debug(1,"Error: '%s' not found!" % (self.OPENVPN_DIR))
 				return False
 		except:
-			self.debug(text="def openvpn_check_files: failed!")
+			self.debug(1,"def openvpn_check_files: failed!")
 			return False
 
 	def openvpn_filename_exe(self):
-		self.debug(text="def openvpn_filename_exe()")
+		self.debug(1,"def openvpn_filename_exe()")
 		if self.PLATFORM == "AMD64":
 			arch = "x86_64"
 		elif self.PLATFORM == "x86":
 			arch = "i686"
 		else:
 			self.errorquit(_("arch '%s' not supported!") % (self.PLATFORM))
-		self.debug("def openvpn_filename_exe: arch = '%s'" % (arch))
+		self.debug(1,"def openvpn_filename_exe: arch = '%s'" % (arch))
 		return "openvpn-install-%s-%s-%s.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,arch)
 
 	def os_platform(self):
-		self.debug(text="def os_platform()")
+		self.debug(1,"def os_platform()")
 		true_platform = os.environ['PROCESSOR_ARCHITECTURE']
 		try:
 			true_platform = os.environ["PROCESSOR_ARCHITEW6432"]
@@ -5245,17 +5290,17 @@ class Systray:
 		return true_platform
 
 	def check_dns_is_whitelisted(self):
-		self.debug(text="def check_dns_is_whitelisted()")
+		self.debug(1,"def check_dns_is_whitelisted()")
 		#if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4 or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
 		if self.GATEWAY_DNS1 == "127.0.0.1":
-			self.debug(text="def check_dns_is_whitelisted: True")
+			self.debug(1,"def check_dns_is_whitelisted: True")
 			return True
 		else:
-			self.debug(text="def check_dns_is_whitelisted: False")
+			self.debug(1,"def check_dns_is_whitelisted: False")
 			return False
 
 	def read_d0wns_dns(self):
-		self.debug(text="def read_d0wns_dns()")
+		self.debug(1,"def read_d0wns_dns()")
 		if self.NO_DNS_CHANGE == True:
 			return True
 		if not os.path.isfile(self.dns_d0wntxt):
@@ -5285,18 +5330,18 @@ class Systray:
 						if active == "1" and self.check_d0wns_names(name) == True and self.isValueIPv4(ip4) == True and self.check_d0wns_dnscountry(country) == True and self.check_d0wns_dnscryptfingerprint(dnscryptfingerprint) == True and self.check_d0wns_names(dnscryptcertname) == True and self.check_d0wns_dnscryptports(dnscryptports) == True:
 							self.d0wns_DNS[name].update({"ip4":ip4,"ip6":ip6,"country":country,"dnscryptfingerprint":dnscryptfingerprint,"dnscryptcertname":dnscryptcertname,"dnscryptports":dnscryptports,"dnscryptpubkey":dnscryptpubkey})
 						elif active == "0":
-							self.debug(text="def read_d0wns_dns: offline '%s'" % (name))
+							self.debug(1,"def read_d0wns_dns: offline '%s'" % (name))
 						else:
-							self.debug(text="def read_d0wns_dns: failed '%s'" % (data))
-				self.debug(text="def read_d0wns_dns: True len(self.d0wns_DNS) = %s" % (len(self.d0wns_DNS)))
+							self.debug(1,"def read_d0wns_dns: failed '%s'" % (data))
+				self.debug(1,"def read_d0wns_dns: True len(self.d0wns_DNS) = %s" % (len(self.d0wns_DNS)))
 				return True
 			except:
-				self.debug(text="def read_d0wns_dns: failed!")
+				self.debug(1,"def read_d0wns_dns: failed!")
 		else:
-			self.debug(text="def read_d0wns_dns: file '%s' not found" % (self.dns_d0wntxt))
+			self.debug(1,"def read_d0wns_dns: file '%s' not found" % (self.dns_d0wntxt))
 
 	def check_d0wns_dnscryptports(self,value):
-		#self.debug(text="def check_d0wns_dnscryptports()")
+		self.debug(59,"def check_d0wns_dnscryptports()")
 		try:
 			data = value.split()
 			for entry in data:
@@ -5304,14 +5349,14 @@ class Systray:
 				if entry > 0 and entry <= 65535:
 					return True
 				else:
-					self.debug(text="def check_d0wns_dnscryptports: failed value '%s'" % (value))
+					self.debug(1,"def check_d0wns_dnscryptports: failed value '%s'" % (value))
 					return False
 			return True
 		except:
 			return False
 
 	def check_d0wns_names(self,name):
-		#self.debug(text="def check_d0wns_names()")
+		self.debug(59,"def check_d0wns_names()")
 		try:
 			data = name.split('.')
 			#print "def check_d0wns_names: data = '%s' len(data)='%s'" % (data,len(data))
@@ -5322,41 +5367,41 @@ class Systray:
 				elif data[0] == "2" and data[1] == "dnscrypt-cert" and data[2].isalnum() and data[3].isalnum() and data[4].isalnum():
 					return True
 				else:
-					self.debug(text="def check_d0wns_names: name failed value '%s'" % (name))
+					self.debug(1,"def check_d0wns_names: name failed value '%s'" % (name))
 		except:
 			return False
 
 	def check_d0wns_dnscountry(self,value):
-		#self.debug(text="def check_d0wns_dnscountry()")
+		self.debug(59,"def check_d0wns_dnscountry()")
 		try:
 			if not value.isalnum():
 				data = value.split()
 				for entry in data:
 					if not entry.isalnum():
-						self.debug(text="def check_d0wns_dnscountry: '%s' failed" % (value))
+						self.debug(1,"def check_d0wns_dnscountry: '%s' failed" % (value))
 						return False
 			return True
 		except:
 			return False
 
 	def check_d0wns_dnscryptfingerprint(self,value):
-		#self.debug(text="def check_d0wns_dnscryptfingerprint()")
+		self.debug(59,"def check_d0wns_dnscryptfingerprint()")
 		try:
 			if len(value) == 79:
 				for toc in value.split(':'):
 					if not len(toc) == 4 or not toc.isalnum():
-						self.debug(text="def check_d0wns_dnscryptfingerprint: value = '%s' toc '%s'"%(value,toc))
+						self.debug(1,"def check_d0wns_dnscryptfingerprint: value = '%s' toc '%s'"%(value,toc))
 						return False
-				#self.debug(text="def check_d0wns_dnscryptfingerprint: True")
+				self.debug(59,"def check_d0wns_dnscryptfingerprint: True")
 				return True
 			else:
-				self.debug(text="def check_d0wns_dnscryptfingerprint: len value = %s" % (len(value)))
+				self.debug(1,"def check_d0wns_dnscryptfingerprint: len value = %s" % (len(value)))
 		except:
 			return False
 
 	def load_d0wns_dns_from_remote(self):
 		return
-		#self.debug(text="def load_d0wns_dns_from_remote()")
+		self.debug(1,"def load_d0wns_dns_from_remote()")
 		try:
 			if not os.path.isfile(self.dns_d0wntxt):
 				try:
@@ -5365,7 +5410,7 @@ class Systray:
 					fp = open(self.dns_d0wntxt,'wb')
 					fp.write(r.content)
 					fp.close()
-					self.debug(text="def load_d0wns_dns_from_remote: True")
+					self.debug(1,"def load_d0wns_dns_from_remote: True")
 					return True
 				except:
 					return False
@@ -5375,7 +5420,7 @@ class Systray:
 			return False
 
 	def show_about_dialog(self,widget,event):
-		self.debug(text="def show_about_dialog()")
+		self.debug(1,"def show_about_dialog()")
 		self.destroy_systray_menu()
 		if self.WINDOW_ABOUT_OPEN == True:
 			self.about_dialog.destroy()
@@ -5399,19 +5444,19 @@ class Systray:
 			response = self.about_dialog.run()
 			self.about_dialog.destroy()
 			if not response == None:
-				self.debug(text="def show_about_dialog: response = '%s'" % (response))
+				self.debug(1,"def show_about_dialog: response = '%s'" % (response))
 				self.WINDOW_ABOUT_OPEN = False
 		except:
-			self.debug(text="def show_about_dialog: failed")
+			self.debug(1,"def show_about_dialog: failed")
 
 	def on_closing(self,widget,event):
-		self.debug(text="def on_closing()")
+		self.debug(1,"def on_closing()")
 		self.destroy_systray_menu()
 		if self.WINDOW_QUIT_OPEN == True:
 			self.QUIT_DIALOG.destroy()
 			return False
 		self.WINDOW_QUIT_OPEN = True
-		if self.STATE_OVPN == True or self.inThread_jump_server_running == True:
+		if self.state_openvpn() == True:
 			return False
 		else:
 			try: 
@@ -5464,7 +5509,7 @@ class Systray:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
 			if self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True:
 				self.win_firewall_add_rule_to_vcp(option="delete")
-			self.debug(text="close app")
+			self.debug(1,"close app")
 			self.stop_systray_timer = True
 			self.stop_systray_timer2 = True
 			self.remove_lock()
@@ -5472,7 +5517,7 @@ class Systray:
 			sys.exit()
 
 	def ask_loadorunload_fw(self):
-		self.debug(text="def ask_loadorunload_fw()")
+		self.debug(1,"def ask_loadorunload_fw()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
 		try:
@@ -5482,22 +5527,22 @@ class Systray:
 					self.win_firewall_restore_on_exit()
 					self.win_firewall_block_on_exit()
 					self.win_netsh_restore_dns_from_backup()
-					self.debug(text="Firewall rules restored and block outbound!")
+					self.debug(1,"Firewall rules restored and block outbound!")
 					return True
 				elif self.WIN_BACKUP_FIREWALL == True and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_restore_on_exit()
 					self.win_netsh_restore_dns_from_backup()
-					self.debug(text="Firewall: rules restored!")
+					self.debug(1,"Firewall: rules restored!")
 					return True
 				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 					self.win_firewall_block_on_exit()
 					self.win_netsh_restore_dns_from_backup()
-					self.debug(text="Firewall: block outbound!")
+					self.debug(1,"Firewall: block outbound!")
 					return True
 				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_allowout()
 					self.win_netsh_restore_dns_from_backup()
-					self.debug(text="Firewall: allow outbound!")
+					self.debug(1,"Firewall: allow outbound!")
 					return True
 			else:
 				try:
@@ -5517,18 +5562,18 @@ class Systray:
 					else:
 						text = _("Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
 					dialog.set_markup(text)
-					self.debug(text="def ask_loadorunload_fw: text = '%s'" % (text))
+					self.debug(1,"def ask_loadorunload_fw: text = '%s'" % (text))
 					response = dialog.run()
-					self.debug(text="def ask_loadorunload_fw: dialog response = '%s'" % (response))
+					self.debug(1,"def ask_loadorunload_fw: dialog response = '%s'" % (response))
 					if response == Gtk.ResponseType.NO:
 						dialog.destroy()
-						self.debug(text="def ask_loadorunload_fw: dialog response = NO '%s'" % (response))
+						self.debug(1,"def ask_loadorunload_fw: dialog response = NO '%s'" % (response))
 						self.win_firewall_block_on_exit()
 						self.win_netsh_restore_dns_from_backup()
 						return True
 					elif response == Gtk.ResponseType.YES:
 						dialog.destroy()
-						self.debug(text="def ask_loadorunload_fw: dialog response = YES '%s'" % (response))
+						self.debug(1,"def ask_loadorunload_fw: dialog response = YES '%s'" % (response))
 						if self.WIN_BACKUP_FIREWALL == True:
 							self.win_firewall_restore_on_exit()
 						else:
@@ -5537,40 +5582,39 @@ class Systray:
 						return True
 					else:
 						dialog.destroy()
-						self.debug(text="def ask_loadorunload_fw: dialog response = ELSE '%s'" % (response))
+						self.debug(1,"def ask_loadorunload_fw: dialog response = ELSE '%s'" % (response))
 						return False
 				except:
-					self.debug(text="def ask_loadorunload_fw: dialog failed")
+					self.debug(1,"def ask_loadorunload_fw: dialog failed")
 					return False
 		except:
-			self.debug(text="def ask_loadorunload_fw: failed")
+			self.debug(1,"def ask_loadorunload_fw: failed")
 			return False
 
 	def remove_lock(self):
-		self.debug(text="def remove_lock()")
+		self.debug(1,"def remove_lock()")
 		try:
 			LOCKFILE = self.lock_file
 		except:
 			return True
 		if os.path.isfile(LOCKFILE):
 			self.LOCK.close()
-			self.debug(text="def remove_lock: self.LOCK.close()")
+			self.debug(1,"def remove_lock: self.LOCK.close()")
 			try:
 				os.remove(LOCKFILE)
-				self.debug(text="def remove_lock: os.remove(LOCKFILE)")
+				self.debug(1,"def remove_lock: os.remove(LOCKFILE)")
 				return True
 			except:
-				self.debug(text="def remove_lock: remove lock failed!")
+				self.debug(1,"def remove_lock: remove lock failed!")
 				return False
 		else:
-			self.debug(text="def remove_lock: lock not found!")
+			self.debug(1,"def remove_lock: lock not found!")
 			return False
 
 	def errorquit(self,text):
 		if self.DEBUG == False:
 			self.DEBUG = True
-		text = "errorquit: %s" % (text)
-		self.debug(text=text)
+		self.debug(1,"errorquit: %s" % (text))
 		try:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_position(Gtk.WindowPosition.CENTER)
@@ -5580,11 +5624,14 @@ class Systray:
 			message.run()
 			message.destroy()
 		except:
-			text = "%s failed" % (text)
-			self.debug(text=text)
+			self.debug(1,"%s failed" % (text))
 		sys.exit()
 
-	def debug(self,text):
+	def debug(self,level,text):
+		#if not level <= self.LOGLEVEL:
+		#	return False
+		if not level in self.LOGLEVELS:
+			return False
 		timefromboot = round(time.time() - self.BOOTTIME,3)
 		debugstringsht = False
 		debugstringsht1 = False
@@ -5607,13 +5654,13 @@ class Systray:
 			print("%s" % (debugstringsht))
 		self.DEBUGfrombefore = text
 		if not debugstringsht == False:
-			self.write_debug(debugstringsht,timefromboot)
+			self.write_debug(level,debugstringsht,timefromboot)
 		if not debugstringsht1 == False:
-			self.write_debug(debugstringsht1,timefromboot)
+			self.write_debug(level,debugstringsht1,timefromboot)
 		if not debugstringsht2 == False:
-			self.write_debug(debugstringsht2,timefromboot)
+			self.write_debug(level,debugstringsht2,timefromboot)
 
-	def write_debug(self,string,timefromboot):
+	def write_debug(self,level,string,timefromboot):
 		try:
 			if self.DEBUG == True and not self.debug_log == False:
 				localtime = time.asctime(time.localtime(time.time()))
@@ -5640,9 +5687,9 @@ class Systray:
 			else:
 				try:
 					loc = locale.getdefaultlocale()[0][0:2]
-					self.debug(text="def init_localization: OS LANGUAGE %s"% (loc))
+					self.debug(1,"def init_localization: OS LANGUAGE %s"% (loc))
 				except:
-					self.debug(text="def init_localization: locale.getdefaultlocale() failed")
+					self.debug(1,"def init_localization: locale.getdefaultlocale() failed")
 					loc = False
 			
 			filename1 = "%s\\locale\\%s\\ovpn_client.mo" % (os.getcwd(),loc)
@@ -5654,25 +5701,25 @@ class Systray:
 				filename = filename2
 			else:
 				filename = False
-			self.debug(text="def init_localization: filename = '%s'"% (filename))
+			self.debug(1,"def init_localization: filename = '%s'"% (filename))
 			translation = False
 			try:
 				if not filename == False:
 					translation = gettext.GNUTranslations(open(filename, "rb"))
 			except:
-				self.debug(text="def init_localization: %s not found, fallback to en"% (filename))
+				self.debug(1,"def init_localization: %s not found, fallback to en"% (filename))
 			if translation == False or filename == False:
 				translation = gettext.NullTranslations()
 			try:
 				translation.install()
 			except:
-				self.debug(text="def init_localization: translation.install() failed")
+				self.debug(1,"def init_localization: translation.install() failed")
 				return False
 			self.APP_LANGUAGE = loc
-			self.debug(text="def init_localization: return self.APP_LANGUAGE = '%s'"% (self.APP_LANGUAGE))
+			self.debug(1,"def init_localization: return self.APP_LANGUAGE = '%s'"% (self.APP_LANGUAGE))
 			return True
 		except:
-			self.debug(text="def init_localization: failed")
+			self.debug(1,"def init_localization: failed")
 
 	def msgwarn(self,text,title):
 		GLib.idle_add(self.msgwarn_glib,text,title)
@@ -5684,10 +5731,10 @@ class Systray:
 			pass
 		if self.DEBUG == False:
 			self.DEBUG = True
-		self.debug(text="def msgwarn: %s"% (text))
+		self.debug(1,"def msgwarn: %s"% (text))
 		try:
 			self.LAST_MSGWARN_WINDOW = int(time.time())
-			self.debug(text="def msgwarn: %s"% (text))
+			self.debug(1,"def msgwarn: %s"% (text))
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			self.msgwarn_window = dialogWindow
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
@@ -5698,157 +5745,177 @@ class Systray:
 			dialogWindow.run()
 			dialogWindow.destroy()
 		except:
-			self.debug(text="def msgwarn_glib: failed")
+			self.debug(1,"def msgwarn_glib: failed")
 
 	def statusicon_size_changed(widget, size):
-		self.debug(text="def statusicon_size_changed() size = '%s'" % (size))
+		self.debug(1,"def statusicon_size_changed() size = '%s'" % (size))
+
+	def decode_icon(self,icon):
+		#self.debug(49,"def decode_icon()")
+		try:
+			try:
+				imgpixbuf = self.ICON_CACHE_PIXBUF[icon]
+				if isinstance(imgpixbuf, GdkPixbuf.Pixbuf):
+					self.debug(49,"def decode_icon: isinstance self.ICON_CACHE_PIXBUF[%s]"%(icon))
+					return imgpixbuf
+			except:
+				try:
+					self.debug(49,"def decode_icon(%s)" % (icon))
+					base64_data = base64.b64decode(self.base64_icons(icon))
+					base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
+					imgpixbuf = GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
+					self.ICON_CACHE_PIXBUF[icon] = imgpixbuf
+					return imgpixbuf
+				except:
+					return False
+		except:
+			self.debug(1,"def decode_icon: '%s' failed"%(icon))
+		
+	def decode_flag(self,flag):
+		#self.debug(48,"def decode_flag()")
+		try:
+			try:
+				imgpixbuf = self.FLAG_CACHE_PIXBUF[flag]
+				if isinstance(imgpixbuf, GdkPixbuf.Pixbuf):
+					self.debug(48,"def decode_flag: isinstance self.FLAG_CACHE_PIXBUF[%s] return"%(flag))
+					return imgpixbuf
+			except:
+				try:
+					self.debug(48,"def decode_flag(%s)" % (flag))
+					flagfile = "%s.png" % (flag)
+					base64_flag = self.FLAGS_B64[flagfile]
+				except:
+					base64_flag = self.FLAGS_B64["00.png"]
+				base64_data = base64.b64decode(base64_flag)
+				base64_stream = Gio.MemoryInputStream.new_from_data(base64_data)
+				imgpixbuf = GdkPixbuf.Pixbuf.new_from_stream(base64_stream)
+				self.FLAG_CACHE_PIXBUF[flag] = imgpixbuf
+				return imgpixbuf
+		except:
+			self.debug(1,"def decode_flag: '%s' failed"%(flag))
 
 	def base64_icons(self, icon):
-		app =	"""
-					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
-					AQUYIQEda41jCy087AIGB/sOLz38FmiH/R14mP0ohKP9NJCu/UGeuv1NqsX9WrfR/WjE3f1zz+f9
-					ftvx/Ynl+P2S7vn9mfL5/ZTh5P1Zd3j8QkZG+lZ7fup6wsphS2NmAQMRFwEaZoZuCSg08gIGCPoP
-					NkX8F2uL/R96mv0qhqT9NpOv/UOfuv1PrMb9XLnS/WnF3f110ej9gNzy/Yvn+P2U7/n9m/P4/Zjo
-					6f1gg4P8QkZG+lR0ePF6wslsR1lbAQMNEQEZY4F1CSUw9wMHCfsPPEz8GG2N/SB8m/0siKb9N5Sw
-					/USgu/1Rrcf9XrrS/WrG3/110un9gd3z/Yzo+P2V8Pn9nPT5/Zvr7P1mjI38QkdH+lNxdPV6wcd0
-					RVNVAQEKDgEYX3x5CCIt+AIGCPsOLjn8G2N8/SN7mf0uiab9OZWx/UaivP1Srsj9X7vT/WzI3/12
-					0+n9gt/z/Y3p+P2V8Pn9mu/0/YrP0P1ZdXb8Q0dH+lJvcfd5v8V4Q1FSAQQQFQAYYHx8CSYy+AIF
-					B/kFCgv7DiMr/B1iePwuiKT9OpWw/UejvP1Tr8j9X7vT/WzI3/130+n9gt7y/Yzn9/2T7fb8g8XH
-					/FFlZfxCRkb7QkVG+VR0dvd6wMZ6RlZYABpPZAAda4laGVBmyxAuOvAHDhH6BwsM/BI1QPwsf5j9
-					OpSv/Ueiu/1Trsf9X7vT/W3I3v130uj9gdzw/Yrj8/2J2+P9WHl7/D9CQ/xCSkv6VHN272eeosl6
-					wchZZZqfACl0kgAhb5ERKHCONSZlfIsWOUbpCRAS+w0XG/saP0v9Jlhm/TJre/09e4v9RoaX/VCP
-					n/1WkqH9WI+c/VeGjv1Rc3f8P0pK/EBISfxdg4fpernBiXW6wDRys7oResPKAAwpNAAYU24BFkBh
-					BSJhdyMhWm6qDh8k9woMDfoOEhP8EhcY/BgeH/wcIyT9ISgp/SYtLv0rMDL8LjQ1/DM3OPw3Ojr7
-					OTs8+kteYfd3s7yoeLW/ImiSlgVqo6kBUHByACp3lQAjdZQAKHGLARlOXQsnbIR7GkBN7xIlKvoU
-					HyT9FR4g/RgeH/0bHyD9HyIj/SMnJ/0oLC39LDI0/TM7Pvw5Rkn8QFJW+lh/h+52u8d5VoWPCne+
-					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
-					SaXH/1Ov0f9dudn+ZsLi/m/L6/541PL+gNz3/ofi+f5wssD/O0JE/kBCQv07QkT8ZaS08WajskpH
-					bnkBAAAAAAAAAAAAAAAAAAAAAGOBkAQwep2YDDJE/AQFBf0GBwj9GzlH/RVnjP0VbpT9HXid/iWB
-					pf0vi679OpW4/UOfwP1NqMn+VrLS/mC82/1pxeT9cs7s/XvX9P2D3/n9ieT6/Yrh8P5MaW3+P0BB
-					/T9AQP1Pd4H8crnKlD5WWwQAAAAAAAAAAAAAAAAAAAAAYJOrGCRrjdAHFx/8BAUF/QsOD/0kWXH9
-					EmmP/Rhyl/0ge5/+KYSo/TKOsP08mLn9RqLC/VCszP5ZttT+Y8De/W3J5v110e79ftr1/Ybi+v2L
-					5/v9ku36/mujqf48Pz/9QkND/UFTV/xyusnNUn2GFwAAAAAAAAAAAAAAAAAAAABGhqQ7GVh27QMJ
-					DPwEBAX9FiAk/R9nhv0TbJH9G3aZ/SJ+of4siKr9NZGy/T+bu/1IpcT9Uq/N/l251v5mwt/9cMzo
-					/XjV8P2A3Pb9h+P6/Y7q+/2V8Pv+htHX/kBKS/1DRET9PURF/GusuexjnKc4AAAAAAAAAAAAAAAA
-					AAAAADN8nV8SR1/5AgQE/QQFBv0cMjz9F2mN/RZvk/0deJv9JYGj/i6Kq/04lLX9QZ29/Uunxv1V
-					sc/+X7zY/mnF4f1yzun9e9fx/YLf9/2K5vv9ke38/Zfy+/6V6e/+SmBh/UJDRP0+QUH9ZZym+W6u
-					uVsAAAAAAAAAAAAAAAAAAAAAK3ibgA05Tf0CAwP9BAUG/Ro9TP0Uao79GHGU/R97nf0ohKX/MY2u
-					/TuXtv1Fob/9T6vI/Vm10f9iv9r/a8ji/XTR6/192fL9heH4/Yzp+/2U8Pz9mfT7/5zz+P9WeHn9
-					QUJD/UFCQv1ejZX9dbrEfAAAAAAAAAAAAAAAAAAAAAAmdZmdCi09/gIDA/0EBQb+GUdb/hRsj/4Z
-					dJb+In2f/iuHp/40kK/+PZq4/kejwP5Rrcn+W7fS/mTA2/5uyuT+d9Ps/n/b8/6H4/n+jur8/pXx
-					/P6a9fz+n/f7/mONjv5AQUH+Q0ND/Vd/hP14wMqZAAAAAAAAAAAAAAAAAAAAACNylbYJJDD+AgMD
-					/QYICf4ZUWj+FW+R/hx2mP4kgKD+LYmo/zeTsf5AnLn+SaXC/lOwy/5dudT/Z8Pd/3DM5f551u3+
-					gd30/ojk+f6Q7Pz+l/P8/pz2/P+h+Pv/b6Gi/j9BQf5ERET9UXJ2/XzFzbMAAAAAAAAAAAAAAAAA
-					AAAAH26QywccJf4CAgL9BwsN/RlZcv0XcZP9Hnma/SaCov0vi6n+OZWy/UKeu/1LqMP9VbLM/V67
-					1P5nxN3+cc3l/XnW7v2C3/X9iub6/ZHt/P2Y9Pz9nvf8/qL5+/56s7T9PkFB/URFRf1NZ2r9fcbO
-					xwAAAAAAAAAAAAAAAAAAAAAdaorbBhYd/gIDA/0JDxL9GF96/RhylP0fe5v9J4Oi/TCMqv46lrP9
-					Q6C7/Uypw/1Ws839YLzV/mjF3f5yzub9e9jv/YPf9f2L5/r9ku78/Zn0/P2e9/z+o/r8/oPCw/0/
-					Q0P9REVF/UpfYf18xs3XAAAAAAAAAAAAAAAAAAAAABxnhucFEhf+AgIC/QoTF/0YY4D9GXOU/SB8
-					nP0phaP9Mo6s/jqXs/1Dn7v9TanE/Vi0zv1hvtb+acbe/nPP5/182O/9hOD2/Yzp+/2U8Pz9mvX8
-					/Z/4/P6j+fv+is7P/UBHR/1ERUX9SFlb/X3Fy+QAAAAAAAAAAAAAAAAAAAAAG2SC8AQOEv8CAgL+
-					Chgd/hhnhP4adJX+In2d/iqGpf4zj6z/O5i0/kWhvP5Pq8X+WLXN/mK+1v9rx9//dNDn/nzZ8P6G
-					4vf+jen6/pTw/P6b9vz+oPj8/6T5+v+S2Nn+Q0xM/kRFRf5GVVf+fMPK7QAAAAAAAAAAAAAAAAAA
-					AAAaYX/2AwwQ/gIDA/0HDhH9Gktd/SFxjf0jfp39LIel/TSQrf49mrX9RqO9/VCsxv1Zts79Yr7W
-					/mzI4P510ej9fdrw/Ybj9/2N6vv9lfH8/Zv2/P2g9/v+mOXm/myZmf1CSEj9REVF/UVTVP17wsj0
-					AAAAAAAAAAAAAAAAAAAAABlffPkDCg39AgID/QQFBf0HCgv9FCw1/SBshf0sh6T9NZCs/j6atf1H
-					o739Ua3H/Vq2zv1jv9f+bcng/nbS6P1+2vD9huL3/Y7q+/2V8Pz9mvT7/ZPa3P5Wa2v+P0JC/UJD
-					Q/1FRUX9RE9R/HvBx/YAAAAAAAAAAAAAAAAAAAAAHWqI+w4uO/0GDhL8BAUF/QYHCP0ICgr9EDE7
-					/iqBnP41kKz/Ppm0/keivP5QrMX+WrbN/mO/1/9syN//ddHn/n3Z7/6F4fX+jen5/pPu+v6W6/H+
-					V3Z3/j0+Pv5BQ0P9QEFB/UFKS/xUd3r8gcvR+AAAAAAAAAAAAAAAAAAAAAAmeZlvLHybqiZogesQ
-					KDH8BggI/QkKCv0KEhX9I2Z8/TWOqf4+mbP9R6O8/VGsxf1ats79ZL/X/m7J3/520ef9fdnv/YXg
-					9P2L5fb9jubx/Xm6v/07QkL+P0BA/j0/P/1NZ2n8ebzE6n7K0ah0uL5tAAAAAAAAAAAAAAAAAAAA
-					ACBphgI9eI4JOYShTStzjdwQJCv8CAkJ/QsMDP0SIif9GzlD/iNMV/0sXWv9Nmx7/T53hv1Efo7+
-					S4WU/k+Hlf1Qg5D9TnuF/UltdP1EXWH9PUpL/To8PP49Pj7+TWVp/IjS29qX3+dKaKCmCYHIzgIA
-					AAAAAAAAAAAAAAAAAAAAI3iZASZ4lwIcSFkEKHCKbyFWaPkJCwv9DAwN/Q4PD/0REhL+ExQU/hcY
-					GP4ZGxv+HB4e/iAiIv8jJSX/Jygo/iorK/4tLi7+MjIz/jU2Nv05Ojr9PD0+/j5AQf14srr4hc3X
-					bHSfpAOL3eYCfcbNAQAAAAAAAAAAAAAAAAAAAAA1iKcANniPAC5tgwEiW28rKGqB5QsSFPsKCwv8
-					DQ4O/REREf4UFRX9GBkZ/RscHP0eHx/9IiMj/iUmJv4pKir9LC0t/S8wMP0zMzT9NTY2/Tg4OP05
-					Ojr8QUtN+3/F0ONnn6gphsrTAXO0vQCV5e4AAAAAAAAAAAAAAAAAAAAAAAAAAAAvh6YAMX6YASVi
-					dxMwfZjKJFZn+x5CTv0cN0D9Gi41/hooLf4aJSj+GyMl/h0jJf4gJSf+Iygp/iYtLv4qMjT+Ljk8
-					/jRDR/47T1T9Q19l/UxweP1ekpv7e8fUyFeGjhGE0+EBk+v3AAAAAAAAAAAAAAAAAAAAAAAAAAAA
-					AAAAACVlfAA2iqcAMHaOBDWFoUQ5jalyPZGskkCSrK5DkqvHRZKp2keQpehIj6PzSo6h+UyOoP1P
-					kaP9VZip+VufsPJgprjoZq7A2Wu1x8ZvusuucLvLkW+3xnJpqrZDXIyVBG63xAB2ucIAAAAAAAAA
-					AAAAAAAA/+AH//+AAf//AAD//gAAf/wAAD/4AAAf+AAAH/AAAA/gAAAH4AAAB8AAAAPAAAADwAAA
-					A8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAAD
-					wAAAA8AAAAPwAAAP8AAAD/gAAB8=
-					"""
+		self.debug(1,"def base64_icons(%s)"%(icon))
+		# else/app_icons/app_icon.ico
+		app_icon_b64 = """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"""
+		
+		# else/app_icons/connect.ico
+		connect_b64 = """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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////////////////////4H//gAAf/wAAB/44AAP+eAAD/HAAAfzwAAD+YAAA/mAAAH8gAAB/AAAAf4AAAD/AAAAf4AAAX+AAAG/gAADn4AAA9/AAAPf4AAHn/AADz/4AAB//AAD//8A////////////////////////////8="""
+		
+		# else/app_icons/connected_classic.ico
+		connected_classic_b64 = """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"""
+		
+		# else/app_icons/testing.ico
+		testing_b64 = """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"""
+		
+		# else/app_icons/disconnect1.ico
+		disconnect1_b64 = """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"""
+		
+		# else/app_icons/disconnect1_menu.ico
+		disconnect1_menu_b64 = """AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABILAAASCwAAAAAAAAAAAAAAAAAAAAAAAG1tOQD///8ArqyUFLGvq1Kqp7OPpqS4rKemtamsq6+FoqKaRVhYSQ2jo5AAAAAAAAAAAAAAAAAAAAAAAKqnlAClonwEube4TZ2bx792dc/0Xl7V/1pZ2P9iYtn/enrb/qCg2u2vrr+rg4F7NwAAAAEZGBUAAAAAAKuonwC1sokEsK26cHl3ze85OdX/KSnX/y4u2P80NNn/Ozvb/0FB3P9NTd3/cnLc/56dwN2Fg4BOAAAAABIREQC9uNsAtrK4V3FvzPEjI9T/Hx/U/yMj1f8oKNb/LS3X/zMz2P85Odr/QEDb/0ZG3f9iYtv/mJa523BuZzSWk5EAyMSwHo6Lx8wsK9P/HBzT/yAg0/8qKtH/LS3S/zEx0/82NtT/OzvV/z8/1/8+Ptr/Q0Pd/21s1P+SkJyiBAMACby4v21tbNP6JibV/x8f0/87O9P/rq7Y/7W11v+ystL/r6/P/6+vzP+QkMz/OjrX/zs72v9GRtv/iIa653BtYjqvrceyamrc/0FB2v8oKNX/SUnW/9ra5P/j4+D/3Nza/9bW1P/S0s7/p6fM/zMz1f8yMtj/Nzfa/25tyPyHg4JzrKnM1HJy4P9fX9//RUXa/1VV2f/f3+n/5+fm/+Dg4P/a2tr/1tbU/6enzv8tLdP/KirW/y4u2P9bWsz/jImPkrGuztWCguP/cXHj/2Nj4P90dOD/5+fw/+3t7P/m5ub/4ODg/9zc2v+pqdH/KCjS/yMj1f8mJtb/VFPL/46KkZK7uc24lJTk/4KC5v91deP/h4fl/+/v9v/19fT/7u7u/+jo5//k5OH/r6/W/ygo0f8iItX/JSXW/2Fgx/yRjY1wyMXLdqmo4PySkun/hobn/5OT6P/o6Pf/6+v1/+bm8f/g4Oz/3Nzn/7Cw3P9DQ9f/Pj7a/0VF2v+LicPmkI2CNs/MxSXAvtrVoqLq/5aW6v+QkOj/k5Po/4qK5v9/f+P/dXXg/2xs3v9fX9z/SUnb/0ND2/9lZdb/pqO2nk1LLAb///8A2djcZMXE7PakpOz/mprq/4+P6P+EhOb/eHjk/2xs4v9hYeD/V1fe/05P3f9YWNn/nJrH2aypoi+6t7cA5uXiAOvr3gfp6fCAxsXr9amp6v+enuv/lZXq/4qK6P9+fuX/cnLj/2dn4f9xcNv/npzL3bazs0n///8Ab25vAAAAAADo5+AA7u7hB9vZ3FzFw9rNtbTg+amo5f+enub/lpbk/5SU3/+endbxsa/HrLq2sjQAAAAAko+GAAAAAAAAAAAAAAAAAMjGrQCGhQAA0M7FG8zKzGLFws6fv73Nur27zLS/vMeNwL27R7m1owzGw7oATkwrAAAAAAAAAAAA8A8AAMADAACAAQAAgAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAEAAIADAADAAwAA4A8AAA=="""
+		
+		# else/app_icons/disconnect2.ico
+		disconnect2_b64 = """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uP+1tbX/sbGx/6ysrP+oqKj/pqam/6SkpP+kpKT/oaGh/5ycnP+bm5v/mpqarYqKigSampoAj4+PAJGRkTGOjo7tiIiI/42Njf+Xl5f/n5+f/6ysrP+xsbH/s7Oz/7W1tf+3t7f/ubm5/7q6uv+8vLz/vb29/729vf+9vb3/vLy8/7u7u/+3t7f/srKy/6ysrP+oqKj/p6en/6ioqP+enp7/mJiY/5ycnP+bm5vPk5OTEpeXlwCPj48AkZGRRYyMjPiHh4f/jo6O/5iYmP+hoaH/rq6u/7S0tP+3t7f/vr6+/729vf+9vb3/vr6+/8DAwP/AwMD/wMDA/8DAwP+/v7//v7+//7y8vP+4uLj/sbGx/6ysrP+qqqr/rKys/6Ghof+ampr/mpqa/5mZmd+SkpIdk5OTAJCQkACQkJBKjIyM+omJif+VlZX/mZmZ/6Wlpf+xsbH/uLi4/7y8vP/AwMD/wcHB/8PDw//ExMT/xcXF/8TExP/Dw8P/wsLC/8LCwv/BwcH/wMDA/729vf+3t7f/sLCw/66urv+7u7v/tLS0/6mpqf+ioqL/oKCg4JOTkx6VlZUAlZWVAJaWlkWQkJD4jY2N/5iYmP+ioqL/qamp/7S0tP+8vLz/wcHB/8XFxf/Jycn/y8vL/8zMzP/MzMz/ysrK/8jIyP/Gxsb/xcXF/8TExP/Dw8P/wMDA/7y8vP+0tLT/tra2/8nJyf/Hx8f/vLy8/7Kysv+srKzempqaHZycnACYmJgAmpqaMZSUlO2QkJD/m5ub/6Wlpf+rq6v/uLi4/8HBwf/IyMj/zs7O/9PT0//W1tb/19fX/9bW1v/U1NT/09PT/83Nzf/Jycn/yMjI/8bGxv/Dw8P/v7+//7m5uf+3t7f/x8fH/8HBwf+/v7//wMDA/7q6us2ioqIRqKioAJ2dnQCenp4Yl5eX1pSUlP+cnJz/pqam/6+vr/+4uLj/w8PD/8/Pz//Y2Nj/3t7e/+Pj4//k5OT/4uLi/+Dg4P/g4OD/19fX/83Nzf/Ly8v/ycnJ/8bGxv/BwcH/vLy8/7a2tv/Dw8P/xsbG/7+/v//FxcX/vb29q4iIiASvr68ApKSkAKioqASbm5unmZmZ/5+fn/+lpaX/pqam/66urv++vr7/09PT/+Pj4//s7Oz/8/Pz//b29v/x8fH/6urq/+Pj4//Z2dn/0tLS/87O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"""
+
+		
+		# else/app_icons/disconnect3.ico
+		disconnect3_b64 = """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"""
+		
+		# else/app_icons/disconnect3_menu.ico
+		disconnect3_menu_b64 = """AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVdWViGSjY1gnZiYfqGamnyPjIxYJycnGgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd3R0KJ2WmbF4ebP7SVbF/zRP0P9DXdX/cIDV/6eqyvSysLCdOjo6GwAAAAAAAAAAAAAAAAAAAAAAAAAAjYeHTIJ7pPEaIMP/ABLT/wAd2f8BKt//FDvl/y5N6/9JXvH/f4Xk/8LAzOBoZ2czAAAAAAAAAAAAAAAAi4eHNHpzpfUFBcb/AAjK/wASzf8AHNP/ASna/xQ64P8tS+b/SVzs/2Ru9f93fO3/t7XD4T8+Ph0AAAAAHBwcApSMnM8NDMX/AADJ/25xzv+jqdb/pq3a/6mz3v+vuOH/tL3i/7vB5P9rdtX/VGTz/2Ry2/+opKSjAAAAApqVlUdVULX/AADO/wAAyP+nq9n/5Onn/+nt7P/u8fD/9Pb1//n6+f/8/Pz/doTS/zhT7f8wTuz/j5K69zk5OSGqoqKTTEvS/wwM0v8AAMn/nKHP/9Pa1//Y39z/3eTh/+Po5v/o7Ov/7fDv/2Z5zP8cQef/Fz3m/05hxf+NiYlkqaKluj8/4v89Pd7/ExPP/46Rv/+7wb//w8rH/8vSz//R2Nb/197b/9zj4P9WbcX/BjDh/wMt4P8jQMn/mJKSiqymrL87O+f/PT3h/z8/3P+ensT/ra6t/62vrv+ztrX/ur+9/8HIxf/J0M3/T2G+/wAh2v8AH9r/HzTH/5aPj4++trakQEDg/zk55P87O97/sLDW/87Ozv/BwcH/tbW1/6+vr/+ur6//s7W0/1Bct/8UJ9j/KDvc/2Rsyv+PiIhzvbi4Zmln2P80NOf/Nzfh/7e34P/d3d3/2NjY/9TU1P/Q0ND/zMzM/8jIyP9+g8j/TFXe/09X3/+Jhrj+bmtrNI+Ojg+uq8/vMjLn/zIy5v+Zmef/xMTm/8LC4/+/v9//vb3c/7u72f+5udf/bW3Q/0hJ2f9YWNX/mZGXyAAAAAMAAAAAyMbGaoGA3f8uLuj/MDDm/zMz4f81Nd3/Nzfb/zo62f88PNn/Pz/Z/0FB2f9HR9n/j4mv+X55eTwAAAAAAAAAAC0tLQDT0dOXgYDf/y8v5/8uLuf/MTHl/zMz4f81Nd//ODjd/zo63f9GRtr/jIe1/I2GhmUAAAAAAAAAAAAAAAAAAAAAMDAwAM3Ly2+urNTyZWTe/zc35P80NOj/Nzfm/0VF3v9xbsv/nZap4Y2Hh0sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmpiYFMG9vXDBu72wrKe6zamks8qup6emnpeXXk5NTQkAAAAAAAAAAAAAAAAAAAAA8A///+AH///AA///gAH//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//gAH//8AD///gB///8A///w=="""
+		
+		# else/app_icons/sync_1a.ico
+		sync_1a_b64 = """AAABAAEAICAAAAEAIACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAABILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGMyFgAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACMTioASSUQCS8YCyULBQMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUDgqAH1FJgJzOxpmSCYTiBQMCB0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/jkUApVwyMJRNI9FJJhK9FQ0IMAAAAAEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlVQvAJBVMw27aTmfr1sr/lEpEtwXDAZOAAAABwAAAAQAAAAFAAAABAAAAAEAAAAABgMCAAEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABkNiACrmM3YsluOvK5Xyv/ZTMW7h4PBooZDAVVHg8HXBgMBVwVCwRKDgcDOgIBACMAAAANAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAArmk1AKtiNzfEbTnTymsz/7tfKf+PSB79YzIV6mUyFuRqNRfxXzAU6lcsEuVFIxDRMBgMqRsNBm0IBAE5AAAAEgAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJBVLACiYzgNwnQ7os10Nv3DaCr/vGIn/7FcJf+pVyT/q1cl/6xYJf+rVyX/pVMj/5NLIP93PBr9VCsU7TQcDrgXDAZhAwAAIAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACNVyIAez4cA7lyM2PPfTbxynQs/8FsJ/+9aSb/vGcm/7xnJv+8Zib/vmUn/79mJ/++ZCj/u2In/7ZeJf+mViL/gkch/k0xHt4pGA2GCAMALwAAAAcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD0AAAC7fDw3zYMz1M+AK//IeCb/xHQl/8NzJf/CciX/w3Em/8RxJv/Hcyr/yHgy/8l7Ov/Jejr/z3s5/9V+PP/PfD//pGk8/2JFK+wvHxKNBAIAKQAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAtohLCduze5/ktHD/1pZB/82EKP/KgCT/yn8k/8p+Jf/KfCX/w3wr/cWHRvLRn2zn2KyA3NmrfuHgsIPr5rKA9eivef7jp2z/vYlU/2xSMOssIBF5AAAAFwAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADPsXYM48uan/HcrvDu0Zz/5bt3/9eaPP/Tjif/0ooj/86GIv+jfy3xfX1WkMqsmUTYup801LagPd/BqUXjw6hj6cemk+3In9PtwIv5w5lf/2pTLMoZDgRIAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANXJnQHTwZYY3MaUVurUoKvw26rp8NWb/+rCd//gp0P/1pYm/56BHvI1WB97AAAACtW1mQDYuqIA4cKnAP//rwDaxsMH6My1LOzPsX7uyZrWw51f92JKIZgHBgEaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA0r2KAN/KmgDp06IAzbmHEeDIjk3p05yo8t2q5fTanv/sxnX/w58+/VVuJ6sCIhQdAAAAAMilkADXtaUA2rqlAOLGsQDszK0A4cvHBuzUv0DrxpS+toxOz0g2FUAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADSvYsA9s5hAM61fA/cxo0+6tSZl/Hcot3x257+pLFv2z9eOUEAAAACAAAAAAAAAAAAAAAAAAAAAAAAAADly70A/8pvAO7LqDDSlVaSlV8pRgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADVxagA3MSKAOnSmADHrmwJ3MSIPOrRkI3GuHnEeHVERgAAAAFuORkAAAAAAAAAAAAAAAAAAAAAAAAAAADo1MoA4qhpAMV1QBW8Zi8PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA7KlYAKx9RABYQioAAAAAAAAAAAAAAAAAAAAAAM+3eADu1YoAxaNhBrKQWyGVaz0NXCsSEAEAARYAAAAJAAAAAQEAAAAAAAAAAAAAAAAAAAD///gAxXhCALllLwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADnnk4Bb00pEQsICBIAAAADAAAAAAAAAAAAAAAAAAAAAMSvhwDcvn0AwqVnANyQUAzFfzB1fVkWkh8WBU8AAAAhAAAACQAAAAEBAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPO7aQ7HmFeFX0cqaAAAABwAAAACCAYFAAAAAAAAAAAAAAAAAAAAAAAAAAAA4K56Cem2V4zYqCz4nHYW4GVMD6IqHQZbAgABJwAAAA0AAAADBwQBAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+9iNCOe7bZeuiEfZPi4XbgMCAyQAAAAIAAAAAQUDAgAAAAAAAAAAAAAAAAD///8A3757UOu7Re3gqiX/xJUc/JdyFuFgRw+qLSAHZQAAASsAAAAOAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADo37oA7sR6Pua8bdqdeTzoSjcbnSIZD1IFAwQhAAAADAAAAAQAAAABsWMiAP//eQDauZAl5rdbyuKnMv/cnSP/1Jsg/72MHP6WcBfpYkgPszQmCHEMCAI1AAAAEAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPTanQDProAJ8MuQh+a+e/yke0D7ak4m1kg0GqExIRJrJhgNTRsPBzQhEQc1GAwFKVc1Iz3DjEe73Js0/9aRJf/WkiP/05Ii/8yRIP+4hR3/lW0X7mJJFLkyJhNNAAABAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/ciwDewpkp8tSowem6gv/EjE3/o3A2/YdaKPR1Sh3hbEAW12c9E85sQBTLiU4c2LtxKfHPhCr/zoQl/86EJP/OhiT/zock/86JI//FiCP/pn4y8XNdM1QAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcmFoAGFDMQHpy6lF8M6q0emzg//aj1D/zXs2/71sJ/+yZyP/rmUh/7FoIv+7biT/xXQl/8d3Jv/GdyX/xngl/8d5Jf/KfCX/y38l/8KDM/6ogEOndVorFgAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAq4toALuZhwXdwapD7MmuweasgvvTgUr/w2wx/79nKf/AZyf/wWkn/8FqJ/+/aib/vmsm/75rJv+/bCb/wW8m/8VxJv/AdS3/rHtE0ohoQjHYtGEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA476eAHNwdALbvKks5r2kk96mhebSj2b8x3tM/8JuO//BajT/v2gw/7xmLv++aTD/u2ct/7tlJ//AaCf/wGkp/6xvPfGMaEVlUUIuAyQQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoJKKAP/bvQDPrJkN1a+ZRtapkI3ZooLKz5Jw48yKZOzHg1zzw39X88iJZOrJhl36wWs2/79iKP+yZTX8kWVIoGZOOhNlUTUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvKWYAN63oADfsZUAl4yGCLGUhCa/ln8/uI52U7OHbl+xhGpWvaGRYNitlNHPf1H/uGEv/5pjRNFyUkEweVxBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAClkYYAu52LAM6egwD/y5cA//unAP+qewDDys0M3rypoNePZv+lZD/wfVlEYA0aKAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACef24AknpsAJN5agCSdmUAcmNaAMbQzQPjwq9y1Jh29ZRkSZ9QPDMRZUs+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAegAAANm7qkXMn4WzimJLMat6YwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADO//8AuZqIF7uSey/FjG4EAQYHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//P////j////w////8H///+AD///AAH//wAA//4AAD/8AAA/+AAAH/gAAA/4AAAP+AB4B/8APgf/wD+H//A/z//8B//4fwH/+D8Af/gPAB/4AYAH/AAAB/4AAAf+AAAP/wAAH/+AAB//4AA///gAf///4H///+D////x////8f8="""
+		
+		# else/app_icons/sync_1b.ico
+		sync_1b_b64 = """AAABAAEAICAAAAEAIACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAABAAABILAAASCwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAEDAAACAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAACAcGARpINhVAlV8pRrxmLw+5ZS8AAAAAAAAAAAAAAAAAAAAAEDImE01zXTNUdVorFti0YQAkEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAABcZDgRIYkohmLaMTs/SlVaSxXVAFcV4QgAAAAAAAQAAAAAAAAMMCAI1YkkUuaZ+MvGogEOniGhCMVFCLgNlUTUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEAgApLCAReWpTLMrDnV/368aUvu7LqDDiqGkA///4AAAAAAAHBAEAAAAADjQmCHGVbRfuxYgj/8KDM/6se0TSjGhFZWZOOhN5XEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCAMALy8fEo1sUjDrw5lf/+7Jmtbs1L9A/8pvAOjUygAAAAAAAAAAAAAAAAMAAAErYkgPs7iFHf/OiSP/y38l/8B1Lf+sbz3xkWVIoHJSQTANGigBZUs+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgMAACApGA2GYkUr7L2JVP/twIv57M+xfuHLxwbly70AAAAAAAAAAAABAQEAAAAADS0gB2WWcBfpzJEg/86HJP/KfCX/xXEm/8BpKf+yZTX8mmNE0X1ZRGBQPDMRq3pjAAEGBwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASFwwGYU0xHt6kaTz/46ds/+3In9PozLUs7MytAAAAAAAAAAAAAAAAAAAAAAECAAEnYEcPqr2MHP7TkiL/zoYk/8d5Jf/Bbyb/wGgn/79iKP+4YS//pWQ/8JRkSZ+KYksxxYxuBAAAAAAAAAAAAAAAAAAAAAABAQAAAAAAAwgEATk0HA64gkch/s98P//or3n+6cemk9rGwwfixrEAAAAAAAAAAAABAAAAAAAACSodBluXchbh1Jsg/9aSI//OhCT/xngl/79sJv+7ZSf/wWs2/89/Uf/Xj2b/1Jh29cyfhbO7knsvAAAAAAAAAAAAAAAAAAAAAAYDAgAAAAANGw0GbVQrFO2mViL/1X48/+aygPXjw6hj//+vANq6pQAAAAAAAAAAAAAAAAEAAAAhZUwPosSVHPzcnSP/1pEl/86EJf/GdyX/vmsm/7tnLf/Jhl362K2U0d68qaDjwq9y2buqRbmaiBcAAAAAAAAAAAAAAAAAAAAAAAAAAAIBACMwGAypdzwa/bZeJf/Pezn/4LCD69/BqUXhwqcA17WlAAAAAAAAAAAAAAAACR8WBU+cdhbg4Kol/+KnMv/cmzT/z4Qq/8d3Jv++ayb/vmkw/8iJZOq9oZFgw8rNDMbQzQN6AAAAzv//AAAAAAAAAAAAAAAAAAAAAAAAAAABDgcDOkUjENGTSyD/u2In/8l6Ov/Zq37h1LagPdi6ogDIpZAAAAAAAG45GQABAAEWfVkWktioLPjru0Xt5rdbysOMR7u7cSnxxXQl/79qJv+8Zi7/w39X87GEalb/qnsAcmNaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQVCwRKVywS5aVTI/++ZCj/yXs6/9isgNzYup801bWZAAAAAAAAAAACAAAAAVwrEhDFfzB16bZXjN++e1DauZAlVzUjPYlOHNi7biT/wWon/79oMP/Hg1zzs4duX//7pwCSdmUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRgMBVxfMBTqq1cl/79mJ//IeDL/0Z9s58qsmUQAAAAKAiIUHT9eOUF4dURGlWs9DdyQUAzgrnoJ////AP//eQAYDAUpbEAUy7FoIv/BaSf/wWo0/8yKZOy4jnZT/8uXAJN5agAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAAAAAAAEHg8HXGo1F/GsWCX/vmUn/8dzKv/Fh0byfX1WkDVYH3tVbierpLFv28a4ecSykFshwqVnAAAAAAAAAAAAsWMiACERBzVnPRPOrmUh/8BnJ//Cbjv/z5Jw47+Wfz/OnoMAknpsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAcZDAVVZTIW5KtXJf+8Zib/xHEm/8N8K/2jfy3xnoEe8sOfPv3x257+6tGQjcWjYQbcvn0AAAAAAAAAAAAAAAABGw8HNGxAFteyZyP/v2cp/8d7TP/ZooLKsZSEJrudiwCef24AAAAAAAAAAAAAAAABCwUDDBQMCB0VDQgwFwwGTh4PBopjMhXqqVck/7xnJv/DcSb/ynwl/86GIv/Wlib/7MZ1//Hcot3cxIg87tWKAMSvhwAAAAAAAAAAAAAAAAQmGA1NdUod4b1sJ//DbDH/0o9m/NapkI2XjIYIpZGGAAAAAAAAAAAAAAAAAAAAAAAvGAslSCYTiEkmEr1RKRLcZTMW7o9IHv2xXCX/vGcm/8JyJf/KfiX/0ooj/+CnQ//02p7/6tSZl8eubAnPt3gAAAAAAAAAAAAFAwIAAAAADDEhEmuHWij0zXs2/9OBSv/epoXm1a+ZRt+xlQAAAAAAAAAAAAAAAAAAAAAAYzIWAEklEAlzOxpmlE0j0a9bK/65Xyv/u18p/7xiJ/+9aSb/w3Ml/8p/JP/Tjif/6sJ3//LdquXcxo0+6dKYAAAAAAAAAAAAAAAAAAAAAAEFAwQhSDQaoaNwNv3aj1D/5qyC++a9pJPPrJkN3regAAAAAAAAAAAAAAAAAAAAAAAAAAAAjE4qAH1FJgKlXDIwu2k5n8luOvLKazP/w2gq/8FsJ//EdCX/yoAk/9eaPP/w1Zv/6dOcqM61fA/cxIoAAAAAAAAAAAAIBgUAAAAACCIZD1JqTibWxIxN/+mzg//sya7B27ypLP/bvQC8pZgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUDgqAP+ORQCQVTMNrmM3YsRtOdPNdDb9ynQs/8h4Jv/NhCj/5bt3//DbqungyI5N9s5hANXFqAAAAAAAAAAAAAAAAAIDAgMkSjcbnaR7QPvpuoL/8M6q0d3BqkNzcHQCoJKKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJVULwBkNiACq2I3N8J0O6LPfTbxz4Ar/9aWQf/u0Zz/6tSgq825hxHSvYsAAAAAAAAAAAAAAAADAAAAHD4uF26deTzo5r57/PLUqMHpy6lFu5mHBeO+ngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACuaTUAomM4DblyM2PNgzPU5LRw//HcrvDcxpRW6dOiAAAAAAAAAAAAWEIqAAsICBJfRyporohH2ea8bdrwy5CH3sKZKWFDMQGri2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQVSwAez4cA7t8PDfbs3uf48uan9PBlhjfypoAAAAAAAAAAACsfUQAb00pEceYV4Xnu22X7sR6Ps+ugAn/3IsAcmFoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACNVyIAPQAAALaISwnPsXYM1cmdAdK9igAAAAAAAAAAAOypWADnnk4B87tpDvvYjQjo37oA9NqdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////////////////Hx///A8P//gOA//gHgH/4DwAf8A8AD+AeAAPgHgAD4DwAA8A8AA/APAA/wCAAP8AAID/AAeA/gAHAPAADwDwAA8B+AAeAfwAHgP/ADwD/4A4B//geA//8Hg///h4f///////////////////////////8="""
+		
+		# else/app_icons/sync_1c.ico
+		sync_1c_b64 = """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VbEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADJoYlfekczGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA///////v+H//7+Af/8fAD/+AAA//gAAH/wAAB/4AAAf+AAAH/gGAB/8BwA//4cAP//ngP///////////////////P//9/w///v+D//4/gP//AAB//wAAf/+AAP//4AH///gB////4////+f////n//////////////////////8="""
+		
+		# else/app_icons/sync_2a.ico
+		sync_2a_b64 = """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"""
+		
+		# else/app_icons/sync_2b.ico
+		sync_2b_b64 = """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"""
+		
+		# else/app_icons/sync_2c.ico
+		sync_2c_b64 = """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"""
+		
+		# else/app_icons/bullet_red.png
+		bullet_red_b64 = """iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAACxSURBVDjL7dItC8JQAIXh491HWbDvD1pEDIIKm1zDxqKi0WIULAZFYc1msF3ErEZlMC9Mhxx/gTAR28KpDxx4QRK/DCXwAbDg0oLMTShtQF0F5AlwvwHkqy+Zxxs+lwsmvs8DKrIw8DCh8njNLOxRtxrU4yF3MFRhIBFQ2XxG3W7yXq8xjULGsIsDFwF58zzq0YBpFPDc6XIKp/iFI4S7h5BbWGoFW03gyABVtyzxT8Ab8Xzei+tkcykAAAAASUVORK5CYII="""
+		
+		# else/app_icons/bullet_green.png
+		bullet_green_b64 = """iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAC5SURBVDjLY/j//z8DJZhh1ADsBjjsspIC4gb77ZZX7TdbXLVda9Zgs8xEihQDGmZfm/7/0KOD/3ff3/V/6plJ/y3mGjYQbYD9NsurBx4e+D/10tT/nWc6/i+5sui/+RS9q0QbYLfB/OrWO1v+d5/p+t96qvn/3Auz/pt0aRNvgPVyk4appyf+X3xl4f/ZF2b+n3Co579+mSrxXrCcZyhlMV2/wbRP56pRq+ZV3SLlBq1EOanRlEgjAwAXIuIDq5qm/AAAAABJRU5ErkJggg=="""
+		
+		# else/app_icons/bullet_white.png
+		bullet_white_b64 = """iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAABbSURBVCjPzdAxDoAgEERRzsFp95JbGI2ASA2SCOX3Ahtr8tuXTDIO959bCxRfpOitWS5vA+lMJg9JbKCTTmMQ1QS3ThqVQbBBlsbgpXLYE8lHCXrqLptf9km7Dzv+FwGTaznIAAAAAElFTkSuQmCC"""
+		
+		# else/app_icons/shield_go.png
+		shield_go_b64 = """iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAKZSURBVBgZpcFfaJV1HMfx9+/Zc9QtO0unOMdasEibGf65SLOCJWRX4p0gCCVddBVYF0FEF4Hsom668jIN6iJJvYgoRoOMeTBdEoORf2rqJseca8ftHM+e5/f8ft9P5+JcSJA3vV5OEv9HwiPc+/HlqbnRPeIRnCRq469KJiTtwjQo0+uS3lzVtx9JNG+eRaZvZfa9TBWLVpGpa+Dgb85JYuHnYa3s20+oTZGsXE/6xDZW9e6FjtWAoaJGdrdCNncZv3CVzv5h7k+e5KlDky6lRaZyVh1dWrP7c5ChWKdYvEBafhHnUvzc15S6trJi82FQZP7iJ1i0fbQktPQMn6tb8QBkFPOnKea/w7JbIAOE5X+RV7+ief0jkJEvTCOzCVpS2mQCDEUPVoAzbLmC6yhQzFDMUMhBkaRUJjSXNgK1lDZFAwnMo1jgkggsgytwyjl2tUotzzm+SViMWDSjJaFNJpCh6JE8kgcyoInIyUJB/7ohDp86AuZQtBItKW2KhllO0vk0sTHJBxcvgcbwFvAhsHHNMwz17qKePeDt2xf4tNR5n5aUNpl9tvT7F0e7h45g+W2CeV577g2ijGgRQ1QXZ3m+/yUafpm3Zs5NZ8eSFSltfQcm3p39ZsdR19FFefNBsnCaKOPW39cpLBCsoIgFS3md7U++QqNopr/cGM9SHqJo6xvTP9xLSt1kISPEwIbyAMEiUcadxRnWru7l8ux5zv85fsUHdjpJPOzGl1u3JKXy1Hu1u2SFx5snC57Bni3sHtzHxEyFsWujkz7wQnVEuZPEv/1x4tkNivZOkj724eObhpm/dGb6UH22Z8fA3u6fro396o091RF5Wpwk/suV44Nrow8fmw/vH2jcmYnWsW7ZYmluRIG2fwAIBqNZGcz/tQAAAABJRU5ErkJggg=="""
+		
+		# else/app_icons/star.png
+		star_b64 = """iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsSAAALEgHS3X78AAAC2klEQVR4nJWSW0iUeRjG3880yhrFhFJKnZrGcTSKcNkKi2ixli02KjMYGCeLDrb9JYoOynTSLFp2G92+Sic7GpUdtGI8plmBFJTTEnUxWXuwKIwK66JSoe/XhdXNGNTFe/O+z/PjhecRQPqbzOkyoFa3ZF3yxGfOniQhX9P1uwREV1rMm/9Kn70KeP715GjR3wVw/CShzd6JbrrOQlcV9Xvta+alyYBvBuhKi+m6735K5z7oLOPFnfx/ildJv18IIJPtov38g4S4ZkpYwWLN1HLAXsDjHdCxAzp2Q0cJjcWWTVucMjQrXcJmpUrIj0miASIXdw7PaKuYtO+Rb3bDy1ZHe++9VT1G+1oIrIYHayGwEQJujEARPX/nd7+4ujLwsCqj7nZ52t6qrdG/ypU/40p7b2RC2wLwzwf/AvBngH8R+B3Q5oTbLriVDTezodUF15z01DuMhsKYEtGVJDftGn6mu2UutM6Ea1OgJRWaJ8DlcdCQAnUpUDMefKngm8r7C3OMuq3DKnQlyZKVLqG6kpTGwsiTvb5Ug1o71NqhJgl8SXDJBtWJcM4KlRa6K+wfat1DD+tKbI4ZEiqAOD9BmgoiKqlO7DNUJcJ5K5wdC5UWODkG4/ho6txDjupKbAun9cX6JY7ceTKwOm/QOk5b4LQFTvWZODEGjo+GI2Yoj+fM+oHLV86RsKAeLPtFwq5vM5VwzAzHzHDUDEcS4FACHIyHsjjYP4qm/PCdWekSGgTIc0j4vaKoerxx4I3D8Jp5XRz79s2e2HfG/gT4ayQUx3LHbTq/bqEMCgJ4cmTY013R7UZpIl0e6/srG001B3K1xaW52tKWDRGNr3+3dht7LPy/OfLuHyskMgigKxnZWTjieWt+VHOZ0rJ1JdYtThm8zSXhuhKbV2nLbqyPuP4kL+qxrmREEKDkN4nUlaTpSmzbXRL+uaqATEkWrWiJDNGVJOtK0jw5Yvp8+wjKjWbfCEzj3wAAAABJRU5ErkJggg=="""
 
 		if icon == "app_icon":
-			return app
-
+			return app_icon_b64
+		
+		if icon == "connect":
+			return connect_b64
+		
+		if icon == "disconnect1":
+			return disconnect1_b64
+		
+		if icon == "disconnect2":
+			return disconnect2_b64
+		
+		if icon == "disconnect3":
+			return disconnect3_b64
+		
+		if icon == "disconnect1_menu":
+			return disconnect1_menu_b64
+		
+		if icon == "disconnect3_menu":
+			return disconnect3_menu_b64
+		
+		if icon == "testing":
+			return testing_b64
+		
+		if icon == "connected_classic":
+			return connected_classic_b64
+		
+		if icon == "sync_1a":
+			return sync_1a_b64
+		
+		if icon == "sync_1b":
+			return sync_1b_b64
+		
+		if icon == "sync_1c":
+			return sync_1c_b64
+		
+		if icon == "sync_2a":
+			return sync_2a_b64
+		
+		if icon == "sync_2b":
+			return sync_2b_b64
+		
+		if icon == "sync_2c":
+			return sync_2c_b64
+		
+		if icon == "bullet_red":
+			return bullet_red_b64
+		
+		if icon == "bullet_green":
+			return bullet_green_b64
+		
+		if icon == "bullet_white":
+			return bullet_white_b64
+		
+		if icon == "shield_go":
+			return shield_go_b64
+		
+		if icon == "star":
+			return star_b64
 def app():
 	Systray()
 	Gtk.main()
