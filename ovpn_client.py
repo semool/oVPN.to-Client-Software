@@ -1998,7 +1998,11 @@ class Systray:
 								if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 									try:
 										serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
-										if serverstatus == "0":
+										if server == self.OVPN_CONNECTEDto:
+											statusimg = self.decode_icon("shield_go")
+										elif server == self.OVPN_FAV_SERVER:
+											statusimg = self.decode_icon("star")
+										elif serverstatus == "0":
 											statusimg = self.decode_icon("bullet_red")
 										elif serverstatus == "1":
 											statusimg = self.decode_icon("bullet_green")
