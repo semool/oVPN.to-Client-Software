@@ -153,7 +153,7 @@ class Systray:
 		self.LANG_FONT_CHANGE = False
 		self.APP_FONT_SIZE = "9"
 		self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
-		self.APP_THEME = "ms-windows"
+		self.APP_THEME = "Adwaita"
 		self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Greybird" ]
 		self.ICONS_THEME = "standard"
 		self.ICONS_THEME_frombefore = self.ICONS_THEME
