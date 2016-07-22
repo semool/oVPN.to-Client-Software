@@ -2582,10 +2582,10 @@ class Systray:
 			self.settings_firewall_switch_nofw(self.nbpage0)
 			self.settings_firewall_switch_fwblockonexit(self.nbpage0)
 			self.settings_firewall_switch_fwdontaskonexit(self.nbpage0)
-			self.settings_firewall_switch_tapblockoutbound(self.nbpage0)
 			self.settings_firewall_switch_fwresetonconnect(self.nbpage0)
 			self.settings_firewall_switch_fwbackupmode(self.nbpage0)
 			self.settings_network_switch_nodns(self.nbpage0)
+			self.settings_firewall_switch_tapblockoutbound(self.nbpage0)
 			self.settings_network_switch_disableextifondisco(self.nbpage0)
 			self.settingsnotebook.append_page(self.nbpage0, Gtk.Label(_(" Security ")))
 		except:
