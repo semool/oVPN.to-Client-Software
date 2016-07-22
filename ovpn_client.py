@@ -130,6 +130,7 @@ class Systray:
 			if self.UPDATEOVPNONSTART == True:
 				if self.check_inet_connection() == True:
 					if self.APIKEY == False:
+						self.request_UPDATE = True
 						GLib.idle_add(self.dialog_apikey)
 					else:
 						self.check_remote_update()
@@ -270,6 +271,7 @@ class Systray:
 		self.OVPN_ACC_DATAfrombefore = False
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		self.UPDATEOVPNONSTART = False
+		self.request_UPDATE = True
 		self.APIKEY = False
 		self.LOAD_DATA_EVERY = 900
 		self.LOAD_ACCDATA = False
@@ -4458,6 +4460,9 @@ class Systray:
 			if self.request_LOAD_ACCDATA == True:
 				self.LOAD_ACCDATA = True
 				self.request_LOAD_ACCDATA = False
+			if self.request_UPDATE == True:
+				self.request_UPDATE = False
+				self.check_remote_update()
 		self.UPDATE_SWITCH = True
 			
 	def cb_interface_selector_changed(self, combobox):
