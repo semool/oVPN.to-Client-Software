@@ -15,6 +15,8 @@
 AppId={{991F58FC-8D40-4B45-B434-6A10AAC12FBA}
 AppName={#AppName}
 AppVersion={#AppString}
+AppMutex={#AppExeName},Global\{#AppExeName}
+SetupMutex={#AppDir},Global\{#AppDir}
 AppVerName={#AppName} {#AppString}
 AppPublisher={#AppPublisher}
 AppContact={#AppPublisher}
@@ -35,10 +37,14 @@ WizardImageStretch=no
 Compression=lzma2/max
 SolidCompression=yes
 UninstallDisplayIcon={app}\{#AppExeName}
+Uninstallable=not IsTaskSelected('portablemode')
 DisableDirPage=no
 LicenseFile=LICENSE
 LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=auto
+
+[Tasks]
+Name: portablemode; Description: "Portable Mode"
 
 [InstallDelete]
 Type: files; Name: "{userdesktop}\oVPN.to Client for Windows.lnk";
@@ -53,7 +59,7 @@ Type: files; Name: {app}\*.dll;
 Type: files; Name: {app}\*.pyd;
 Type: files; Name: {app}\*.zip;
 Type: files; Name: {app}\*.pem;
-Type: files; Name: {app}\ovpn_client.exe;
+Type: files; Name: {app}\{#AppExeName};
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

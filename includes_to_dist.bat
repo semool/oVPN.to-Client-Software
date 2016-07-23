@@ -7,6 +7,8 @@ xcopy /Y /E "%LOCALEDIR%" "%DISTDIR%\locale\"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
 
 ::copy /Y "%INCLUDESDIR%\crypt32_win%BITS%.dll" "%DISTDIR%\crypt32.dll"
+del "%DISTDIR%\CRYPT32.dll"
+del "%DISTDIR%\crypt32.dll"
 
 ::Delete unneded Language Files 
 for /f "delims=" %%i in ('dir /b "%LANGPATH%*.*"') do (

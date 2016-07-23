@@ -11,33 +11,38 @@ gtk_dlls = []
 tmp_dlls = []
 cdir = os.getcwd() 
 for dll in os.listdir(include_dll_path):
-    if dll.lower().endswith('.dll'):
-        gtk_dlls.append(os.path.join(include_dll_path, dll))
-        tmp_dlls.append(os.path.join(cdir, dll))
+	if dll.lower().endswith('.dll'):
+		gtk_dlls.append(os.path.join(include_dll_path, dll))
+		tmp_dlls.append(os.path.join(cdir, dll))
 
 for dll in gtk_dlls:
-    shutil.copy(dll, cdir)
+	shutil.copy(dll, cdir)
 
 setup_dict = dict(
-     windows=[
-     {
-    'script':'ovpn_client.py',
-    'icon_resources': [(1, 'else\\app_icons\\shield_exe.ico')],
-    'uac_info': "requireAdministrator",
-     }
-     ],
-    options={
-    'py2exe': {
-        'bundle_files' :3,
-        'compressed'   : False,
-        'unbuffered'   : False,
-        'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
-        'excludes'     : [ ],
-        'optimize'     : 2,
-        'packages'     : [ 'gi' ],
-        'dll_excludes' : [ 'tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
-    }}
-) 
+	version = "0.0.5.7",name = "oVPN.to Client for Windows",description = "oVPN.to Client",
+	windows=[
+		{
+			'script':'ovpn_client.py',
+			'icon_resources': [(1, 'else\\app_icons\\shield_exe.ico')],
+			'uac_info': "requireAdministrator",
+			'copyright': 'Copyright (C) 2016 oVPN.to',
+			'company_name': 'oVPN.to Anonymous Services'
+		}
+	],
+	options={
+		'py2exe': {
+		'bundle_files' :3,
+		'compressed'   : False,
+		'unbuffered'   : False,
+		'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
+		'excludes'     : [ ],
+		'optimize'     : 2,
+		'packages'     : [ 'gi' ],
+		'dll_excludes' : [ 'tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
+		}
+	}
+)
+
 
 setup(**setup_dict)
 setup(**setup_dict)
@@ -45,11 +50,11 @@ setup(**setup_dict)
 dest_dir = os.path.join(cdir, 'dist')
 
 if not os.path.exists(dest_dir):
-    os.makedirs(dest_dir)
+	os.makedirs(dest_dir)
 
 for dll in tmp_dlls:
-    shutil.copy(dll, dest_dir)
-    os.remove(dll)
+	shutil.copy(dll, dest_dir)
+	os.remove(dll)
 
-for d  in gtk_dirs_to_include:
-    shutil.copytree(os.path.join(site_dir, 'gnome', d), os.path.join(dest_dir, d))
+for d in gtk_dirs_to_include:
+	shutil.copytree(os.path.join(site_dir, 'gnome', d), os.path.join(dest_dir, d))
