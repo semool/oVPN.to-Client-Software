@@ -1586,7 +1586,7 @@ class Systray:
 				if len(self.OVPN_SERVER) == 0 and self.INIT_FIRST_UPDATE == True:
 					self.INIT_FIRST_UPDATE = False
 					self.load_ovpn_server()
-					if len(self.OVPN_SERVER) == 0:
+					if not self.APIKEY == False and len(self.OVPN_SERVER) == 0:
 						self.debug(1,"zero server found, initiate first update")
 						self.check_remote_update()
 				elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
@@ -4447,7 +4447,10 @@ class Systray:
 						if os.path.isdir(api_dir):
 							self.API_DIR = api_dir
 							self.USERID = userid
-							self.APIKEY = apikey
+							if len(apikey) == 0:
+								self.APIKEY = False
+							else:
+								self.APIKEY = apikey
 							self.debug(1,"def response_dialog_apilogin: return True #1")
 							return True
 				elif not self.API_DIR == False and os.path.isdir(self.API_DIR):
@@ -4843,7 +4846,7 @@ class Systray:
 					return True
 
 	def check_inet_connection(self):
-		self.debug(1,"def check_inet_connection()")
+		self.debug(7,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
 		if not self.try_socket(DOMAIN,443) == True:
@@ -4853,7 +4856,7 @@ class Systray:
 		return True
 
 	def try_socket(self,host,port):
-		self.debug(3,"def try_socket()")
+		self.debug(7,"def try_socket()")
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(3)
@@ -4862,7 +4865,7 @@ class Systray:
 		except:
 			return False
 		if result == 0:
-			self.debug(3,"def try_socket: %s:%s True" % (host,port))
+			self.debug(7,"def try_socket: %s:%s True" % (host,port))
 			return True
 
 	def check_myip(self):
