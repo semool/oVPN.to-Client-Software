@@ -30,11 +30,15 @@ AllowNoIcons=yes
 OutputDir=.
 OutputBaseFilename=ovpn_client_{#AppString}_setup
 SetupIconFile=else\app_icons\shield_exe.ico
+WizardSmallImageFile=else\app_icons\shield_exe.bmp
+WizardImageStretch=no
 Compression=lzma2/max
 SolidCompression=yes
 UninstallDisplayIcon={app}\{#AppExeName}
 DisableDirPage=no
 LicenseFile=LICENSE
+LanguageDetectionMethod=uilanguage
+ShowLanguageDialog=auto
 
 [InstallDelete]
 Type: files; Name: "{userdesktop}\oVPN.to Client for Windows.lnk";
