@@ -90,7 +90,7 @@ import json
 #import gc
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.7-gtk3"
+CLIENTVERSION="v0.5.8"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -165,7 +165,7 @@ class Systray:
 		self.INSTALLED_ICONS = [ "standard", "classic", "classic2", "shield_bluesync", "experimental", "private" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
-		self.DEBUG = True
+		self.DEBUG = False
 		self.DEBUGfrombefore = False
 		self.DEBUGcount = 0
 		self.debug_write_thread_running = False
@@ -862,40 +862,44 @@ class Systray:
 					pass
 		
 		else:
+			# We have no config file here at first start, set right values
 			self.VPN_CFG = self.VPN_CFGip4
+			self.init_localization(None)
+			#
 			try:
 				cfg = open(self.opt_file,'wb')
 				parser = SafeConfigParser()
 				parser.add_section('oVPN')
-				parser.set('oVPN','debugmode','False')
-				parser.set('oVPN','applanguage',self.APP_LANGUAGE)
-				parser.set('oVPN','passphrase','False')
-				parser.set('oVPN','lastcfgupdate','0')
-				parser.set('oVPN','autoconnect','False')
-				parser.set('oVPN','favserver','False')
-				parser.set('oVPN','winextdevice','False')
-				parser.set('oVPN','wintapdevice','False')
-				parser.set('oVPN','openvpnexe','False')
-				parser.set('oVPN','updateovpnonstart','False')
-				parser.set('oVPN','configversion','23x')
-				parser.set('oVPN','serverviewextend','False')
-				parser.set('oVPN','serverviewlightwidth','%s' % (self.SRV_LIGHT_WIDTH_DEFAULT))
-				parser.set('oVPN','serverviewlightheight','%s' % (self.SRV_LIGHT_HEIGHT_DEFAULT))
-				parser.set('oVPN','serverviewextendwidth','%s' % (self.SRV_WIDTH_DEFAULT))
-				parser.set('oVPN','serverviewextendheight','%s' % (self.SRV_HEIGHT_DEFAULT))
-				parser.set('oVPN','theme','ms-windows')
-				parser.set('oVPN','icons','standard')
-				parser.set('oVPN','winresetfirewall','False')
-				parser.set('oVPN','winbackupfirewall','False')
-				parser.set('oVPN','nowinfirewall','False')
-				parser.set('oVPN','nodnschange','False')
-				parser.set('oVPN','winnoaskfwonexit','False')
-				parser.set('oVPN','winfwblockonexit','True')
-				parser.set('oVPN','windisableextifondisco','False')
-				parser.set('oVPN','wintapblockoutbound','False')
-				parser.set('oVPN','loadaccinfo','False')
-				parser.set('oVPN','loaddataevery','900')
-				parser.set('oVPN','disablequitentry','True')
+				parser.set('oVPN','apikey','False')
+				parser.set('oVPN','debugmode','%s'%(self.DEBUG))
+				parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
+				parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
+				parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
+				parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
+				parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
+				parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
+				parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
+				parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
+				parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
+				parser.set('oVPN','serverviewextend','%s'%(self.LOAD_SRVDATA))
+				parser.set('oVPN','serverviewlightwidth','%s'%(self.SRV_LIGHT_WIDTH_DEFAULT))
+				parser.set('oVPN','serverviewlightheight','%s'%(self.SRV_LIGHT_HEIGHT_DEFAULT))
+				parser.set('oVPN','serverviewextendwidth','%s'%(self.SRV_WIDTH_DEFAULT))
+				parser.set('oVPN','serverviewextendheight','%s'%(self.SRV_HEIGHT_DEFAULT))
+				parser.set('oVPN','theme','%s'%(self.APP_THEME))
+				parser.set('oVPN','icons','%s'%(self.ICONS_THEME))
+				parser.set('oVPN','font','%s'%(self.APP_FONT_SIZE))
+				parser.set('oVPN','winresetfirewall','%s'%(self.WIN_RESET_FIREWALL))
+				parser.set('oVPN','winbackupfirewall','%s'%(self.WIN_BACKUP_FIREWALL))
+				parser.set('oVPN','nowinfirewall','%s'%(self.NO_WIN_FIREWALL))
+				parser.set('oVPN','nodnschange','%s'%(self.NO_DNS_CHANGE))
+				parser.set('oVPN','winnoaskfwonexit','%s'%(self.WIN_DONT_ASK_FW_EXIT))
+				parser.set('oVPN','winfwblockonexit','%s'%(self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
+				parser.set('oVPN','windisableextifondisco','%s'%(self.WIN_DISABLE_EXT_IF_ON_DISCO))
+				parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
+				parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
+				parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
+				parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 				parser.set('oVPN','mydns','False')
 				parser.write(cfg)
 				cfg.close()
@@ -5158,7 +5162,7 @@ class Systray:
 			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 				return self.verify_openvpnbin_dl()
 			else:
-				self.tray.set_tooltip_markup("%s - Downloading openVPN (1.8 MB)" % (CLIENT_STRING))
+				self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
 				self.debug(1,"Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
 				try:
 					ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
@@ -5170,7 +5174,7 @@ class Systray:
 					fp2 = open(self.OPENVPN_ASC_FILE, "wb")
 					fp2.write(r2.content)
 					fp2.close()
-					self.tray.set_tooltip_markup("%s - Verify openVPN" % (CLIENT_STRING))
+					self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
 					return self.verify_openvpnbin_dl()
 				except:
 					self.debug(1,"def load_openvpnbin_from_remote: failed")
@@ -5191,14 +5195,14 @@ class Systray:
 					os.remove(self.OPENVPN_SAVE_BIN_TO)
 				except:
 					self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error!"))
-				self.tray.set_tooltip_markup("%s - Verify openVPN failed" % (CLIENT_STRING))
+				self.tray.set_tooltip_markup(_("%s - Verify openVPN failed") % (CLIENT_STRING))
 				return False
 		else:
 			return False
 
 	def win_install_openvpn(self):
 		self.debug(1,"def win_install_openvpn()")
-		self.tray.set_tooltip_markup("%s - Install openVPN" % (CLIENT_STRING))
+		self.tray.set_tooltip_markup(_("%s - Install openVPN") % (CLIENT_STRING))
 		if self.OPENVPN_SILENT_SETUP == True:
 			# silent install
 			installtodir = "%s\\runtime" % (self.vpn_dir)
