@@ -6,8 +6,8 @@ call %SOURCEDIR%\set_dirs.bat %~1
 IF NOT DEFINED PYEXE (EXIT)
 
 set RELEASEDIR=%SOURCEDIR%\release
-set VERSION=%RELEASE%_win%BITS%
-set EXESTRING=ovpn_client_%VERSION%_setup.exe
+set VERSION=%RELEASE%-win%BITS%
+set EXESTRING="oVPN.to-Client-%VERSION%-setup.exe"
 
 echo build %EXESTRING% ?
 pause
@@ -23,8 +23,9 @@ if exist %EXESTRING% del %EXESTRING%
 call includes_to_dist.bat %~1
 
 echo Run inno_setup%BITS%.iss now
-%INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
+pause
 
+%INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
 rmdir /S/Q dist\ build\
 
 echo Compiled %EXESTRING%
