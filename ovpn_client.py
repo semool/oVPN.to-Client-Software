@@ -197,8 +197,10 @@ class Systray:
 		
 		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-i686.exe"
 		self.OVPN_WIN_SHA512_x86 = "b6c1e5d9dd80fd6515d9683044dae7cad13c4cb5ac5590be4116263b7cde25e0fef1163deb5a1f1ad646e5fdb84c286308fa8af288692b9c7d4e2b7dbff38bbe"
+		self.OVPN_WIN_F_SIZE_x86 = 1738368
 		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
 		self.OVPN_WIN_SHA512_x64 = "a59284b98e80c1cd43cfe2f0aee2ebb9d18ca44ffb7035b5a4bb4cb9c2860039943798d4bb8860e065a56be0284f5f23b74eba6a5e17f05df87303ea019c42a3"
+		self.OVPN_WIN_F_SIZE_x64 = 1837808
 		
 		self.timer_load_remote_data_running = False
 		self.timer_ovpn_ping_running = False
@@ -5141,9 +5143,11 @@ class Systray:
 		if self.PLATFORM == "AMD64":
 			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-x86_64.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
 			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x64
+			self.OPENVPN_FILESIZE = self.OVPN_WIN_F_SIZE_x64
 		elif self.PLATFORM == "x86":
 			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-i686.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
 			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x86
+			self.OPENVPN_FILESIZE = self.OVPN_WIN_F_SIZE_x86
 		else:
 			self.OPENVPN_DL_URL = False
 			self.msgwarn(_("Platform '%s' not supported") % (self.PLATFORM),_("Error!"))
@@ -5175,16 +5179,22 @@ class Systray:
 				self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
 				self.debug(1,"Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
 				try:
-					ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
+					
 					r1 = requests.get(self.OPENVPN_DL_URL)
-					r2 = requests.get(ascfiledl)
-					fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
-					fp1.write(r1.content)
-					fp1.close()
-					fp2 = open(self.OPENVPN_ASC_FILE, "wb")
-					fp2.write(r2.content)
-					fp2.close()
-					self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
+					if len(r1.content) == self.OPENVPN_FILESIZE:
+						fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
+						fp1.write(r1.content)
+						fp1.close()
+						ascfile = "%s.asc" % (self.OPENVPN_DL_URL)
+						if os.path.isfile(ascfile):
+							os.remove(ascfile)
+						r2 = requests.get(ascfile)
+						fp2 = open(self.OPENVPN_ASC_FILE, "wb")
+						fp2.write(r2.content)
+						fp2.close()
+						self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
+					else:
+						self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
 					return self.verify_openvpnbin_dl()
 				except:
 					self.debug(1,"def load_openvpnbin_from_remote: failed")
@@ -5428,19 +5438,17 @@ class Systray:
 	def d0wn_dns_entrys(self):
 		dnsdata = False
 		if self.DEVMODE == True:
-			""" *fixme* NOT atm!
 			if not os.path.isfile(self.dns_d0wntxt):
 				if not self.load_d0wns_dns_from_remote():
 					self.debug(1,"def d0wn_dns_entrys: self.load_d0wns_dns_from_remote() failed")
-			"""
 			if os.path.isfile(self.dns_d0wntxt):
 				self.debug(1,"self.d0wn_dns_entrys() DEVMODE")
 				fp = open(self.dns_d0wntxt,'rb')
 				dnsdata = fp.read().split('\r\n')
 				fp.close()
-		
+			else:
+				self.debug(1,"def d0wn_dns_entrys: self.dns_d0wntxt = '%s' not found"%(self.dns_d0wntxt))
 		return dnsdata
-
 
 	def check_d0wns_dnscryptports(self,value):
 		self.debug(59,"def check_d0wns_dnscryptports()")
@@ -5503,7 +5511,6 @@ class Systray:
 
 	def load_d0wns_dns_from_remote(self):
 		return False
-		""" *fixme* NOT atm!
 		if self.DEVMODE == True:
 			self.debug(1,"def load_d0wns_dns_from_remote()")
 			try:
@@ -5522,7 +5529,6 @@ class Systray:
 					return True
 			except:
 				return False
-		"""
 
 	def show_about_dialog(self,widget,event):
 		self.debug(1,"def show_about_dialog()")
