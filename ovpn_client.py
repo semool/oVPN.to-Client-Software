@@ -269,6 +269,7 @@ class Systray:
 		
 		import flags_b64
 		self.FLAGS_B64 = flags_b64.flagsb64()
+		print "len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64))
 		#self.COUNTRYNAMES under: def make_systray_server_menu, here is translation not active
 		self.FLAG_CACHE_PIXBUF = {}
 		self.ICON_CACHE_PIXBUF = {}
