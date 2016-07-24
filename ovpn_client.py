@@ -90,7 +90,7 @@ import json
 #import gc
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.7-gtk3"
+CLIENTVERSION="v0.5.8-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...

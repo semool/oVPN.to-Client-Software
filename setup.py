@@ -19,7 +19,7 @@ for dll in gtk_dlls:
 	shutil.copy(dll, cdir)
 
 setup_dict = dict(
-	version = "0.0.5.7",name = "oVPN.to Client for Windows",description = "oVPN.to Client",
+	version = "0.0.5.8",name = "oVPN.to Client for Windows",description = "oVPN.to Client",
 	windows=[
 		{
 			'script':'ovpn_client.py',
@@ -35,7 +35,7 @@ setup_dict = dict(
 		'compressed'   : False,
 		'unbuffered'   : False,
 		'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
-		'excludes'     : [ ],
+		'excludes'     : [  ],
 		'optimize'     : 2,
 		'packages'     : [ 'gi' ],
 		'dll_excludes' : [ 'crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
