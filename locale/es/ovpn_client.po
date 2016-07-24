@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-24 15:54+0200\n"
-"PO-Revision-Date: 2016-07-24 15:54+0200\n"
+"PO-Revision-Date: 2016-07-25 00:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -29,147 +29,147 @@ msgstr "No se puede conectar a %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Afghanistan"
-msgstr ""
+msgstr "Afganistán"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Albania"
-msgstr ""
+msgstr "Albania"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Algeria"
-msgstr ""
+msgstr "Argelia"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "American Samoa"
-msgstr ""
+msgstr "Samoa Americana"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Andorra"
-msgstr ""
+msgstr "Andorra"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Angola"
-msgstr ""
+msgstr "Angola"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Anguilla"
-msgstr ""
+msgstr "Anguila"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Antarctica"
-msgstr ""
+msgstr "Antártida"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Antigua and Barbuda"
-msgstr ""
+msgstr "Antigua y Barbuda"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Argentina"
-msgstr ""
+msgstr "Argentina"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Armenia"
-msgstr ""
+msgstr "Armenia"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Aruba"
-msgstr ""
+msgstr "Aruba"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Australia"
-msgstr ""
+msgstr "Australia"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Austria"
-msgstr ""
+msgstr "Austria"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Azerbaijan"
-msgstr ""
+msgstr "Azerbaiyán"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bahamas"
-msgstr ""
+msgstr "Bahamas"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bahrain"
-msgstr ""
+msgstr "Baréin"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bangladesh"
-msgstr ""
+msgstr "Bangladesh"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Barbados"
-msgstr ""
+msgstr "Barbados"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Belarus"
-msgstr ""
+msgstr "Bielorrusia"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Belgium"
-msgstr ""
+msgstr "Bélgica"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Belize"
-msgstr ""
+msgstr "Belice"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Benin"
-msgstr ""
+msgstr "Benín"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bermuda"
-msgstr ""
+msgstr "Bermuda"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bhutan"
-msgstr ""
+msgstr "Bután"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bolivarian Republic of Venezuela"
-msgstr ""
+msgstr "República Bolivariana de Venezuela"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bosnia and Herzegovina"
-msgstr ""
+msgstr "Bosnia y Herzegovina"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Botswana"
-msgstr ""
+msgstr "Botsuana"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bouvet Island"
-msgstr ""
+msgstr "Isla Bouvet"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Brazil"
-msgstr ""
+msgstr "Brasil"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "British Indian Ocean Territory"
-msgstr ""
+msgstr "Territorio Británico del Océano Índico"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "British Virgin Islands"
-msgstr ""
+msgstr "Islas Vírgenes Británicas"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Brunei Darussalam"
-msgstr ""
+msgstr "Brunéi Darussalam"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Bulgaria"
-msgstr ""
+msgstr "Bulgaria"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Burkina Faso"
-msgstr ""
+msgstr "Burkina Faso"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Burundi"
-msgstr ""
+msgstr "Burundi"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:274
 msgid "Cambodia"
