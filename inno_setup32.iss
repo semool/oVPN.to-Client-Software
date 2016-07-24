@@ -25,7 +25,7 @@ AppSupportURL=https://vcp.ovpn.to/?site=support
 AppUpdatesURL=https://board.ovpn.to/v4/index.php?thread/57314-ovpn-client-for-windows-beta-binary-releases/&action=firstNew
 AppReadmeFile={#AppURL}
 VersionInfoVersion={#AppVersion}
-AppCopyright=Copyright (C) 2010 - 2016 oVPN.to
+AppCopyright=Copyright (C) 2016 oVPN.to
 DefaultDirName={pf}\{#AppDir}
 DefaultGroupName={#AppName}
 AllowNoIcons=yes

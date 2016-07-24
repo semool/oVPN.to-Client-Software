@@ -31,14 +31,14 @@ setup_dict = dict(
 	],
 	options={
 		'py2exe': {
-		'bundle_files' :3,
+		'bundle_files' : 3,
 		'compressed'   : False,
 		'unbuffered'   : False,
 		'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
 		'excludes'     : [ ],
 		'optimize'     : 2,
 		'packages'     : [ 'gi' ],
-		'dll_excludes' : [ 'tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
+		'dll_excludes' : [ 'crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
 		}
 	}
 )

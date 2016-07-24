@@ -19,7 +19,7 @@ if exist %EXESTRING% del %EXESTRING%
 
 
 %PYEXE% setup.py py2exe
-
+pause
 call includes_to_dist.bat %~1
 
 echo Run inno_setup%BITS%.iss now?
