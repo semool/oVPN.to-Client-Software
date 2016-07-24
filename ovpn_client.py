@@ -90,7 +90,7 @@ import json
 #import gc
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.8"
+CLIENTVERSION="v0.5.7-gtk3"
 CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -144,9 +144,23 @@ class Systray:
 			sys.exit()
 
 	def self_vars(self):
+		if len(sys.argv) > 1:
+			if sys.argv[1] == "DEVMODE":
+				self.DEVMODE = True
+				self.DEBUG = True
+				print "DEVMODE=True"
+			else:
+				print "invalid args"
+				print sys.argv
+				print len(sys.argv)
+				sys.exit()
+		else:
+			self.DEVMODE = False
+			self.DEBUG = False
+			print "DEVMODE=False"
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		self.LOGLEVEL = 1
-		self.LOGLEVELS = [1,2,3,49]
+		self.LOGLEVELS = [0,1,2,3]
 		self.OS = sys.platform
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
@@ -165,7 +179,6 @@ class Systray:
 		self.INSTALLED_ICONS = [ "standard", "classic", "classic2", "shield_bluesync", "experimental", "private" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
-		self.DEBUG = False
 		self.DEBUGfrombefore = False
 		self.DEBUGcount = 0
 		self.debug_write_thread_running = False
@@ -184,8 +197,10 @@ class Systray:
 		
 		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-i686.exe"
 		self.OVPN_WIN_SHA512_x86 = "b6c1e5d9dd80fd6515d9683044dae7cad13c4cb5ac5590be4116263b7cde25e0fef1163deb5a1f1ad646e5fdb84c286308fa8af288692b9c7d4e2b7dbff38bbe"
+		self.OVPN_WIN_F_SIZE_x86 = 1738368
 		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
 		self.OVPN_WIN_SHA512_x64 = "a59284b98e80c1cd43cfe2f0aee2ebb9d18ca44ffb7035b5a4bb4cb9c2860039943798d4bb8860e065a56be0284f5f23b74eba6a5e17f05df87303ea019c42a3"
+		self.OVPN_WIN_F_SIZE_x64 = 1837808
 		
 		self.timer_load_remote_data_running = False
 		self.timer_ovpn_ping_running = False
@@ -248,15 +263,14 @@ class Systray:
 		self.OVPN_PING_EVERY = "15,30"
 		self.INTERFACES = False
 		
-		self.d0wns_DNS = {}
-		
+		self.d0wns_DNS = {'ns1.sg.dns.d0wn.biz': {'countrycode': 'sg', 'dnscryptcertname': '2.dnscrypt-cert.sg.d0wn.biz', 'country': 'Singapore', 'dnscryptpubkey': 'pubkey.sg.dnscrypt.d0wn.biz', 'ip6': '2400:6180:0:d0::38:d001', 'ip4': '128.199.248.105', 'dnscryptports': '54 443 1053 5353 27015', 'dnscryptfingerprint': 'D82B:2B76:1DA0:8470:B55B:820C:FAAB:9F32:D632:E9E0:5616:2CE7:7D21:E970:98FF:4A34'}, 'ns1.nl.dns.d0wn.biz': {'countrycode': 'nl', 'dnscryptcertname': '2.dnscrypt-cert.nl.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.nl.dnscrypt.d0wn.biz', 'ip6': '2a03:b0c0:0:1010::62:f001', 'ip4': '95.85.9.86', 'dnscryptports': '54 80 1053 5353 27015', 'dnscryptfingerprint': '7BE6:68FE:A505:FFA7:4C27:C2CA:F881:59DA:038C:5741:13AA:2556:A4D2:2D0B:B6F0:009E'}, 'ns1.de.dns.d0wn.biz': {'countrycode': 'de', 'dnscryptcertname': '2.dnscrypt-cert.de.d0wn.biz', 'country': 'Germany', 'dnscryptpubkey': 'pubkey.de.dnscrypt.d0wn.biz', 'ip6': '2001:1608:10:195:3:dead:beef:cafe', 'ip4': '82.211.31.248', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'D4A8:6FB5:AA0C:2B6B:8C13:8C29:7F69:F9C8:29C8:E157:F279:6FC7:7366:290F:2A80:0AD2'}, 'ns1.lv.dns.d0wn.biz': {'countrycode': 'lv', 'dnscryptcertname': '2.dnscrypt-cert.lv.d0wn.biz', 'country': 'Latvia', 'dnscryptpubkey': 'pubkey.lv.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '89.111.13.60', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '1B70:FB6F:2E47:1753:91EF:1084:ECD2:983A:9018:F3E3:DDF1:E563:E528:156A:664A:1AE8'}, 'ns1.lu.dns.d0wn.biz': {'countrycode': 'lu', 'dnscryptcertname': '2.dnscrypt-cert.lu.d0wn.biz', 'country': 'Luxembourg', 'dnscryptpubkey': 'pubkey.lu.dnscrypt.d0wn.biz', 'ip6': '2605:6400:30:fbb5:0:1ce:1ce:babe', 'ip4': '104.244.72.13', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '737B:B68B:7D3C:896F:260D:91C3:60A6:AD64:8CD3:1B22:4D5F:7089:490C:539F:2EC6:C309'}, 'ns1.dk.dns.d0wn.biz': {'countrycode': 'dk', 'dnscryptcertname': '2.dnscrypt-cert.dk.d0wn.biz', 'country': 'Denmark', 'dnscryptpubkey': 'pubkey.dk.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '77.66.108.93', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0838:C9CF:2292:2D4C:4DB7:4A5E:ED10:DD36:66DD:9551:7238:6387:B7A0:2FA0:885A:5F77'}, 'ns1.ua.dns.d0wn.biz': {'countrycode': 'ua', 'dnscryptcertname': '2.dnscrypt-cert.ua.d0wn.biz', 'country': 'Ukraine', 'dnscryptpubkey': 'pubkey.ua.dnscrypt.d0wn.biz', 'ip6': '2a02:27a8:0:2::556', 'ip4': '217.12.210.54', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '3B1E:D468:FFD3:F261:20DE:E7F1:6A74:E1D5:D59E:B40D:F3EA:99BC:0B05:70CC:292D:99BA'}, 'ns1.cz.dns.d0wn.biz': {'countrycode': 'cz', 'dnscryptcertname': '2.dnscrypt-cert.cz.d0wn.biz', 'country': 'Czech Republic', 'dnscryptpubkey': 'pubkey.cz.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '81.2.237.32', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '4BAE:D9CE:1A99:42B2:44D1:4454:0C8C:EC0E:D5D8:90CE:0D9B:D3E3:93CF:7ACC:CCE0:3794'}, 'ns1.au.dns.d0wn.biz': {'countrycode': 'au', 'dnscryptcertname': '2.dnscrypt-cert.au.d0wn.biz', 'country': 'Australia', 'dnscryptpubkey': 'pubkey.au.dnscrypt.d0wn.biz', 'ip6': '2402:9e80:1::1:e554', 'ip4': '27.100.36.191', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'A7D9:0F8E:9A98:1381:176A:3D25:36DE:E865:8538:9CD8:78BC:C3B5:A146:23F1:C2EF:58D8'}, 'ns2.sg.dns.d0wn.biz': {'countrycode': 'sg', 'dnscryptcertname': '2.dnscrypt-cert.sg2.d0wn.biz', 'country': 'Singapore', 'dnscryptpubkey': 'pubkey.sg2.dnscrypt.d0wn.biz', 'ip6': '2403:5680::1:200f', 'ip4': '210.16.120.139', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0F00:63C4:6EAF:29C3:29CD:E125:2033:6F0A:0C72:7CDD:F1F4:3D47:F95D:02BC:07F7:9FFC'}, 'ns1.bg.dns.d0wn.biz': {'countrycode': 'bg', 'dnscryptcertname': '2.dnscrypt-cert.bg.d0wn.biz', 'country': 'Bulgaria', 'dnscryptpubkey': 'pubkey.bg.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '217.12.203.133', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '423C:D823:B3EA:2015:F027:ECF1:5704:3EB7:764A:D02D:9447:56E6:51FD:D06F:E571:2FCC'}, 'ns1.us.dns.d0wn.biz': {'countrycode': 'us', 'dnscryptcertname': '2.dnscrypt-cert.us.d0wn.biz', 'country': 'United States of America', 'dnscryptpubkey': 'pubkey.us.dnscrypt.d0wn.biz', 'ip6': '2605:6400:10:59:0:b19:b00b:babe', 'ip4': '199.195.249.174', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '6741:6E7F:4744:194E:D725:91A2:1A62:A715:78F9:62CD:5263:84FC:DAA8:6C7E:4D9F:438B'}, 'ns1.ru.dns.d0wn.biz': {'countrycode': 'ru', 'dnscryptcertname': '2.dnscrypt-cert.ru.d0wn.biz', 'country': 'Russia', 'dnscryptpubkey': 'pubkey.ru.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '91.214.71.181', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0ECA:BC40:E0A1:335F:0221:4240:AB86:2919:D16A:2393:CCEB:4B40:9EB9:4F24:3077:ED99'}, 'ns1.tz.dns.d0wn.biz': {'countrycode': 'tz', 'dnscryptcertname': '2.dnscrypt-cert.tz.d0wn.biz', 'country': 'Tanzania', 'dnscryptpubkey': 'pubkey.tz.dnscrypt.d0wn.biz', 'ip6': '2c0f:fda8:5::2ed1:d2ec', 'ip4': '41.79.69.13', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'B79F:A025:1AF6:2125:DF3E:3B03:856D:4CB7:704E:45EB:B850:3A7B:C6AA:5510:D87D:087D'}, 'ns1.random.dns.d0wn.biz': {'countrycode': 'random', 'dnscryptcertname': '2.dnscrypt-cert.random.d0wn.biz', 'country': 'Moldova', 'dnscryptpubkey': 'pubkey.random.dnscrypt.d0wn.biz', 'ip6': '2a00:1dc0:cafe::c6af:c19d', 'ip4': '178.17.170.133', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'A420:867F:ED5C:024C:C86A:EECE:AA05:194B:017F:D2FF:9E72:385A:874F:8CE5:6832:ED2E'}, 'ns2.lv.dns.d0wn.biz': {'countrycode': 'lv', 'dnscryptcertname': '2.dnscrypt-cert.lv2.d0wn.biz', 'country': 'Latvia', 'dnscryptpubkey': 'pubkey.lv.dnscrypt.d0wn.biz', 'ip6': '2a02:7aa0:1201::f60e:2719', 'ip4': '185.86.151.28', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'B111:F80C:E3E0:1C36:CC73:0995:009E:6351:EF08:0503:309D:9417:7AA3:8C67:916D:0CDF'}, 'ns1.se.dns.d0wn.biz': {'countrycode': 'se', 'dnscryptcertname': '2.dnscrypt-cert.se.d0wn.biz', 'country': 'Sweden', 'dnscryptpubkey': 'pubkey.se.dnscrypt.d0wn.biz', 'ip6': '2a02:7aa0:1619::4f50:a69', 'ip4': '95.215.44.124', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '9D4F:762B:DD24:F77A:64B4:7E0F:F5C6:93FD:A02A:39E9:8FEC:0CEE:F252:3A5F:A403:C032'}, 'ns2.nl.dns.d0wn.biz': {'countrycode': 'nl', 'dnscryptcertname': '2.dnscrypt-cert.nl2.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.nl2.dnscrypt.d0wn.biz', 'ip6': '2a02:2ca0:64:22::2', 'ip4': '185.83.217.248', 'dnscryptports': '54 1053 5353 27015', 'dnscryptfingerprint': 'DFAA:B7D8:29E6:1F34:4FED:2610:4221:70C9:ADC7:7E9F:A65F:4A46:0BAE:A735:3186:3B99'}, 'ns1.cy.dns.d0wn.biz': {'countrycode': 'cy', 'dnscryptcertname': '2.dnscrypt-cert.cy.d0wn.biz', 'country': 'Cyprus', 'dnscryptpubkey': 'pubkey.cy.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '213.169.148.11', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '2144:4FE7:59C3:13B9:FABB:FC2A:F975:9F9C:CD9A:2ED7:0978:3A25:7347:4B83:8F86:EA2B'}, 'ns2.random.dns.d0wn.biz': {'countrycode': 'random', 'dnscryptcertname': '2.dnscrypt-cert.random2.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.random2.dnscrypt.d0wn.biz', 'ip6': '2a00:1ca8:a7::1e9', 'ip4': '185.14.29.140', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '9112:338E:7D0B:5E78:B792:9BB6:1B75:4888:AC94:65B5:B86B:B5DE:CCF3:E5B9:15A5:DC54'}, 'ns2.fr.dns.d0wn.biz': {'countrycode': 'fr', 'dnscryptcertname': '2.dnscrypt-cert.fr2.d0wn.biz', 'country': 'France', 'dnscryptpubkey': 'pubkey.fr2.dnscrypt.d0wn.biz', 'ip6': '2001:41D0:A:0028::1', 'ip4': '37.187.0.40', 'dnscryptports': '54 443 1053 5353 27015', 'dnscryptfingerprint': '25A7:DB7B:7835:55D5:7DA4:7C0C:57F8:9C5F:0220:3D09:67E3:585A:723E:E0D1:CB38:F767'}, 'ns1.uk.dns.d0wn.biz': {'countrycode': 'uk', 'dnscryptcertname': '2.dnscrypt-cert.uk.d0wn.biz', 'country': 'United Kingdom', 'dnscryptpubkey': 'pubkey.uk.dnscrypt.d0wn.biz', 'ip6': '2a04:92c7:7:7::14ae:460a', 'ip4': '185.121.25.85', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'FADB:BE63:7FCD:FE22:0DBE:D433:438C:5A1D:C267:1E96:4B67:1918:B15F:9121:77D7:5B2E'}, 'ns1.gr.dns.d0wn.biz': {'countrycode': 'gr', 'dnscryptcertname': '2.dnscrypt-cert.gr.d0wn.biz', 'country': 'Greece', 'dnscryptpubkey': 'pubkey.gr.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '85.25.105.193', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'D056:D3A4:9568:5AFE:4B0D:C688:7A75:41B2:7217:F0C9:75A5:A6C0:142D:363B:F992:9867'}, 'ns1.is.dns.d0wn.biz': {'countrycode': 'is', 'dnscryptcertname': '2.dnscrypt-cert.is.d0wn.biz', 'country': 'Iceland', 'dnscryptpubkey': 'pubkey.is.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '37.235.49.61', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '2B28:974E:073A:6B38:722A:5BE1:F7A0:250C:508F:A809:238F:8F3D:76D8:6098:20D7:B2D9'}, 'ns1.hk.dns.d0wn.biz': {'countrycode': 'hk', 'dnscryptcertname': '2.dnscrypt-cert.hk.d0wn.biz', 'country': 'Hong Kong', 'dnscryptpubkey': 'pubkey.hk.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '45.124.66.200', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '84ED:0DFF:7967:5DBD:2D93:65A2:A6AB:7F90:146F:A50B:048C:8C75:651B:AA55:7129:6740'}, 'ns1.it.dns.d0wn.biz': {'countrycode': 'it', 'dnscryptcertname': '2.dnscrypt-cert.it.d0wn.biz', 'country': 'Italy', 'dnscryptpubkey': 'pubkey.it.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '31.14.133.188', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'B8F4:76E3:1EA4:ADDB:3426:D870:2819:6989:91EE:0C5A:B789:C74E:D6D9:BFB6:6C29:1D5C'}, 'ns3.nl.dns.d0wn.biz': {'countrycode': 'nl', 'dnscryptcertname': '2.dnscrypt-cert.nl3.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.nl3.dnscrypt.d0wn.biz', 'ip6': '2a06:7240:5:601:dead:beef:e3e7:7a9d', 'ip4': '185.133.72.116', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '01FC:1AA9:F71F:F09E:55CE:0D04:9ACA:2B11:9536:319E:04A9:C3AE:77CB:127D:4C53:0651'}, 'ns1.md.dns.d0wn.biz': {'countrycode': 'md', 'dnscryptcertname': '2.dnscrypt-cert.md.d0wn.biz', 'country': 'Moldova', 'dnscryptpubkey': 'pubkey.md.dnscrypt.d0wn.biz', 'ip6': '2a00:1dc0:cafe::ad86:fa7e', 'ip4': '178.17.170.67', 'dnscryptports': '54 1053 5353 27015', 'dnscryptfingerprint': '3DB2:C4CB:39E2:6B82:FDDF:6D91:1A65:D164:F4F0:D237:8CDD:0C37:469F:24BA:B9A0:F9FF'}, 'ns2.us.dns.d0wn.biz': {'countrycode': 'us', 'dnscryptcertname': '2.dnscrypt-cert.us2.d0wn.biz', 'country': 'United States of America', 'dnscryptpubkey': 'pubkey.us.dnscrypt.d0wn.biz', 'ip6': '2605:6400:20:7d7:1:5ee:bad:c0de', 'ip4': '209.141.53.57', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'A22D:99C4:E2E9:CB94:67F0:E36A:619F:418B:466C:5786:C0B8:ACAA:B716:71F7:1F81:F5F8'}, 'ns1.ro.dns.d0wn.biz': {'countrycode': 'ro', 'dnscryptcertname': '2.dnscrypt-cert.ro.d0wn.biz', 'country': 'Romania', 'dnscryptpubkey': 'pubkey.ro.dnscrypt.d0wn.biz', 'ip6': '2a04:9dc0:c1:7::cb9:f785', 'ip4': '77.81.104.121', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'DA9E:6882:B0F8:335E:B5F4:A059:1B7D:EE6F:BD55:4451:93B4:13BF:AFFC:7D26:4527:CE1A'}, 'ns2.de.dns.d0wn.biz': {'countrycode': 'de', 'dnscryptcertname': '2.dnscrypt-cert.de2.d0wn.biz', 'country': 'Germany', 'dnscryptpubkey': 'pubkey.de2.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '185.137.15.105', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '8C62:691A:A7EA:69D3:8A25:86AA:2715:87F0:9B11:9159:0663:55FC:1CD0:61C5:C863:1940'}}
+		# update content of 'self.d0wns_DNS' in DEVMODE only: if 'self.d0wns_DNS = {}' with self.load_d0wns_dns() called from mainwindow rightclick and copy from debug.log
+		#self.d0wns_DNS = {}
 		
 		import flags_b64
 		self.FLAGS_B64 = flags_b64.flagsb64()
 		print "len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64))
-		self.COUNTRYNAMES = {
-			'BG':'Bulgaria','CA':'Canada','CH':'Swiss','DE':'Germany','FR':'France','HU':'Hungary','IS':'Iceland','LT':'Lithuania','MD':'Moldova','NL':'Netherlands','RO':'Romania','SE':'Sweden','UA':'Ukraine','UK':'United Kingdom','US':'U.S.A.',
-			}
+		self.COUNTRYNAMES = {'AF':'Afghanistan','AL':'Albania','DZ':'Algeria','AS':'American Samoa','AD':'Andorra','AO':'Angola','AI':'Anguilla','AQ':'Antarctica','AG':'Antigua and Barbuda','AR':'Argentina','AM':'Armenia','AW':'Aruba','AU':'Australia','AT':'Austria','AZ':'Azerbaijan','BS':'Bahamas','BH':'Bahrain','BD':'Bangladesh','BB':'Barbados','BY':'Belarus','BE':'Belgium','BZ':'Belize','BJ':'Benin','BM':'Bermuda','BT':'Bhutan','BO':'Plurinational State of Bolivia','BA':'Bosnia and Herzegovina','BW':'Botswana','BV':'Bouvet Island','BR':'Brazil','IO':'British Indian Ocean Territory','BN':'Brunei Darussalam','BG':'Bulgaria','BF':'Burkina Faso','BI':'Burundi','KH':'Cambodia','CM':'Cameroon','CA':'Canada','CV':'Cape Verde','KY':'Cayman Islands','CF':'Central African Republic','TD':'Chad','CL':'Chile','CN':'China','CX':'Christmas Island','CC':'Cocos (Keeling) Islands','CO':'Colombia','KM':'Comoros','CG':'Congo','CD':'the Democratic Republic of the Congo','CK':'Cook Islands','CR':'Costa Rica','HR':'Croatia','CU':'Cuba','CY':'Cyprus','CZ':'Czech Republic','DK':'Denmark','DJ':'Djibouti','DM':'Dominica','DO':'Dominican Republic','EC':'Ecuador','EG':'Egypt','SV':'El Salvador','GQ':'Equatorial Guinea','ER':'Eritrea','EE':'Estonia','ET':'Ethiopia','FK':'Falkland Islands (Malvinas)','FO':'Faroe Islands','FJ':'Fiji','FI':'Finland','FR':'France','GF':'French Guiana','PF':'French Polynesia','TF':'French Southern Territories','GA':'Gabon','GM':'Gambia','GE':'Georgia','DE':'Germany','GH':'Ghana','GI':'Gibraltar','GR':'Greece','GL':'Greenland','GD':'Grenada','GP':'Guadeloupe','GU':'Guam','GT':'Guatemala','GG':'Guernsey','GN':'Guinea','GW':'Guinea-Bissau','GY':'Guyana','HT':'Haiti','HM':'Heard Island and McDonald Islands','VA':'Holy See (Vatican City State)','HN':'Honduras','HK':'Hong Kong','HU':'Hungary','IS':'Iceland','IN':'India','ID':'Indonesia','IR':'Islamic Republic of Iran','IQ':'Iraq','IE':'Ireland','IM':'Isle of Man','IL':'Israel','IT':'Italy','JM':'Jamaica','JP':'Japan','JE':'Jersey','JO':'Jordan','KZ':'Kazakhstan','KE':'Kenya','KI':'Kiribati','KW':'Kuwait','KG':'Kyrgyzstan','LV':'Latvia','LB':'Lebanon','LS':'Lesotho','LR':'Liberia','LY':'Libyan Arab Jamahiriya','LI':'Liechtenstein','LT':'Lithuania','LU':'Luxembourg','MO':'Macao','MK':'Macedonia','MG':'Madagascar','MW':'Malawi','MY':'Malaysia','MV':'Maldives','ML':'Mali','MT':'Malta','MH':'Marshall Islands','MQ':'Martinique','MR':'Mauritania','MU':'Mauritius','YT':'Mayotte','MX':'Mexico','FM':'Federated States of Micronesia','MD':'Republic of Moldova','MC':'Monaco','MN':'Mongolia','ME':'Montenegro','MS':'Montserrat','MA':'Morocco','MZ':'Mozambique','MM':'Myanmar','NA':'Namibia','NR':'Nauru','NP':'Nepal','NL':'Netherlands','AN':'Netherlands Antilles','NC':'New Caledonia','NZ':'New Zealand','NI':'Nicaragua','NE':'Niger','NG':'Nigeria','NU':'Niue','NF':'Norfolk Island','MP':'Northern Mariana Islands','NO':'Norway','OM':'Oman','PK':'Pakistan','PW':'Palau','PS':'Occupied Palestinian Territory','PA':'Panama','PG':'Papua New Guinea','PY':'Paraguay','PE':'Peru','PH':'Philippines','PN':'Pitcairn','PL':'Poland','PT':'Portugal','PR':'Puerto Rico','QA':'Qatar','RE':'Reunion','RO':'Romania','RU':'Russian Federation','RW':'Rwanda','BL':'Saint Barthelemy','SH':'Saint Helena','KN':'Saint Kitts and Nevis','LC':'Saint Lucia','MF':'Saint Martin (French part)','PM':'Saint Pierre and Miquelon','VC':'Saint Vincent and the Grenadines','WS':'Samoa','SM':'San Marino','ST':'Sao Tome and Principe','SA':'Saudi Arabia','SN':'Senegal','RS':'Serbia','SC':'Seychelles','SL':'Sierra Leone','SG':'Singapore','SK':'Slovakia','SI':'Slovenia','SB':'Solomon Islands','SO':'Somalia','ZA':'South Africa','GS':'South Georgia and the South Sandwich Islands','ES':'Spain','LK':'Sri Lanka','SD':'Sudan','SR':'Suriname','SJ':'Svalbard and Jan Mayen','SZ':'Swaziland','SE':'Sweden','CH':'Switzerland','SY':'Syrian Arab Republic','TW':'Taiwan','TJ':'Tajikistan','TZ':'United Republic of Tanzania','TH':'Thailand','TL':'Timor-Leste','TG':'Togo','TK':'Tokelau','TO':'Tonga','TT':'Trinidad and Tobago','TN':'Tunisia','TR':'Turkey','TM':'Turkmenistan','TC':'Turks and Caicos Islands','TV':'Tuvalu','UG':'Uganda','UA':'Ukraine','AE':'United Arab Emirates','GB':'United Kingdom','US':'United States','UM':'United States Minor Outlying Islands','UY':'Uruguay','UZ':'Uzbekistan','VU':'Vanuatu','VE':'Bolivarian Republic of Venezuela','VN':'Viet Nam','VG':'British Virgin Islands','VI':'U.S. Virgin Islands','WF':'Wallis and Futuna','EH':'Western Sahara','YE':'Yemen','ZM':'Zambia','ZW':'Zimbabwe'}
 		self.FLAG_CACHE_PIXBUF = {}
 		self.ICON_CACHE_PIXBUF = {}
 		#self.IDLE_TIME = 0
@@ -354,23 +368,23 @@ class Systray:
 		os_appdata = os.getenv('APPDATA')
 		if os.path.exists("appdata"):
 			print "alternative folder found"
-			self.bin_dir = os.getcwd()
-			self.app_dir = "%s\\appdata\\ovpn" % (self.bin_dir)
+			self.BIN_DIR = os.getcwd()
+			self.APP_DIR = "%s\\appdata\\ovpn" % (self.BIN_DIR)
 		else:
-			self.app_dir = "%s\\ovpn" % (os_appdata)
-			self.bin_dir = "%s\\bin\\client\\dist" % (self.app_dir)
-		if not os.path.exists(self.app_dir):
-			if self.DEBUG: print("win_pre1_check_app_dir %s not found, creating." % (self.app_dir))
-			os.mkdir(self.app_dir)
-		if os.path.exists(self.app_dir):
-			self.debug(1,"win_pre1_check_app_dir self.app_dir=%s :True" % (self.app_dir))
+			self.APP_DIR = "%s\\ovpn" % (os_appdata)
+			self.BIN_DIR = "%s\\bin\\client\\dist" % (self.APP_DIR)
+		if not os.path.exists(self.APP_DIR):
+			if self.DEBUG: print("win_pre1_check_app_dir %s not found, creating." % (self.APP_DIR))
+			os.mkdir(self.APP_DIR)
+		if os.path.exists(self.APP_DIR):
+			self.debug(1,"win_pre1_check_app_dir self.APP_DIR=%s :True" % (self.APP_DIR))
 			return True
 		else:
-			self.errorquit(text = _("Could not create app_dir: %s") % (self.app_dir))
+			self.errorquit(text = _("Could not create app_dir: %s") % (self.APP_DIR))
 
 	def list_profiles(self):
 		self.debug(1,"def list_profiles()")
-		self.profiles_unclean = os.listdir(self.app_dir)
+		self.profiles_unclean = os.listdir(self.APP_DIR)
 		self.PROFILES = list()
 		for profile in self.profiles_unclean:
 			if profile.isdigit():
@@ -401,19 +415,19 @@ class Systray:
 
 	def win_pre3_load_profile_dir_vars(self):
 		self.debug(1,"def win_pre3_load_profile_dir_vars()")
-		self.API_DIR = "%s\\%s" % (self.app_dir,self.USERID)
+		self.API_DIR = "%s\\%s" % (self.APP_DIR,self.USERID)
 		self.debug_log = "%s\\client_debug.log" % (self.API_DIR)
 		if os.path.isfile(self.debug_log):
 			try:
 				os.remove(self.debug_log)
 			except:
 				pass
-		self.lock_file = "%s\\lock.file" % (self.app_dir)
+		self.lock_file = "%s\\lock.file" % (self.APP_DIR)
 		self.opt_file = "%s\\options.cfg" % (self.API_DIR)
 		self.api_cfg = "%s\\ovpnapi.conf" % (self.API_DIR)
 		if os.path.isfile(self.api_cfg):
 			os.remove(self.api_cfg)
-		self.vpn_dir = "%s\\openvpn" % (self.API_DIR)
+		self.VPN_DIR = "%s\\openvpn" % (self.API_DIR)
 		self.prx_dir = "%s\\proxy" % (self.API_DIR)
 		self.stu_dir = "%s\\stunnel" % (self.API_DIR)
 		self.pfw_dir = "%s\\pfw" % (self.API_DIR)
@@ -422,26 +436,24 @@ class Systray:
 		self.pfw_public_log = "%s\\pfw.public.%s.log" % (self.pfw_dir,self.BOOTTIME)
 		self.pfw_domain_log = "%s\\pfw.domain.%s.log" % (self.pfw_dir,self.BOOTTIME)
 		
-		self.VPN_CFG = "%s\\config" % (self.vpn_dir)
+		self.VPN_CFG = "%s\\config" % (self.VPN_DIR)
 		self.VPN_CFGip4 = "%s\\ip4" % (self.VPN_CFG)
 		self.VPN_CFGip46 = "%s\\ip46" % (self.VPN_CFG)
 		self.VPN_CFGip64 = "%s\\ip64" % (self.VPN_CFG)
 		
-		self.zip_cfg = "%s\\confs.zip" % (self.vpn_dir)
-		self.zip_crt = "%s\\certs.zip" % (self.vpn_dir)
-		self.api_upd = "%s\\lastupdate.txt" % (self.vpn_dir)
+		self.DNS_DIR =  "%s\\dns" % (self.BIN_DIR)
+		self.dns_d0wntxt =  "%s\\dns.txt" % (self.DNS_DIR)
+		
+		self.zip_cfg = "%s\\confs.zip" % (self.VPN_DIR)
+		self.zip_crt = "%s\\certs.zip" % (self.VPN_DIR)
+		self.api_upd = "%s\\lastupdate.txt" % (self.VPN_DIR)
 		if os.path.isfile(self.api_upd):
 			os.remove(self.api_upd)
 		
-		self.dns_dir =  "%s\\dns" % (self.API_DIR)
-		self.dns_d0wntxt =  "%s\\dns.txt" % (self.dns_dir)
-		#self.dns_ung =  "%s\\ungefiltert" % (self.dns_dir)
-		#self.dns_ung_alphaindex =  "%s\\alphaindex.txt" % (self.dns_ung)
-		
 		if self.load_icons() == False:
 			return False
-
-		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.bin_dir)
+		
+		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.BIN_DIR)
 		if not self.load_ca_cert():
 			return False
 		
@@ -530,7 +542,7 @@ class Systray:
 			self.systray_icon_syncupdate3 = self.decode_icon("sync_2c")
 		
 		elif self.ICONS_THEME == "private":
-			self.ico_dir_theme = "%s\\ico\\private" % (self.bin_dir)
+			self.ico_dir_theme = "%s\\ico\\private" % (self.BIN_DIR)
 			if os.path.isdir(self.ico_dir_theme):
 				systray_icon_connected = "%s\\connected.ico" % (self.ico_dir_theme)
 				systray_icon_connect = "%s\\connect.ico" % (self.ico_dir_theme)
@@ -584,9 +596,9 @@ class Systray:
 			if not os.path.isfile(self.lock_file):
 				self.LOCK = open(self.lock_file,'wb')
 				self.LOCK.write("%s" % (int(time.time())))
-			if not os.path.exists(self.vpn_dir):
-				if self.DEBUG: print("vpn_dir %s not found, creating." % (self.vpn_dir))
-				os.mkdir(self.vpn_dir)
+			if not os.path.exists(self.VPN_DIR):
+				if self.DEBUG: print("vpn_dir %s not found, creating." % (self.VPN_DIR))
+				os.mkdir(self.VPN_DIR)
 			if not os.path.exists(self.VPN_CFG):
 				if self.DEBUG: print("vpn_cfg %s not found, creating." % (self.VPN_CFG))
 				os.mkdir(self.VPN_CFG)
@@ -608,18 +620,13 @@ class Systray:
 			if not os.path.exists(self.pfw_dir):
 				if self.DEBUG: print("pfw_dir %s not found, creating." % (self.pfw_dir))
 				os.mkdir(self.pfw_dir)
-			if not os.path.exists(self.dns_dir):
-				if self.DEBUG: print("dns_dir %s not found, creating." % (self.dns_dir))
-				os.mkdir(self.dns_dir)
-			#if not os.path.exists(self.dns_ung):
-			#	os.mkdir(self.dns_ung)
 			if not self.build_openvpn_dlurl():
 				return False
-			if os.path.exists(self.API_DIR) and os.path.exists(self.vpn_dir) and os.path.exists(self.VPN_CFG) \
+			if os.path.exists(self.API_DIR) and os.path.exists(self.VPN_DIR) and os.path.exists(self.VPN_CFG) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
 				return True
 			else:
-				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.API_DIR,self.vpn_dir,self.prx_dir,self.stu_dir,self.pfw_dir))
+				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.API_DIR,self.VPN_DIR,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except:
 			self.errorquit(text=_("Creating config Folders failed"))
 
@@ -866,12 +873,11 @@ class Systray:
 			# We have no config file here at first start, set right values
 			self.VPN_CFG = self.VPN_CFGip4
 			self.init_localization(None)
-			#
 			try:
 				cfg = open(self.opt_file,'wb')
 				parser = SafeConfigParser()
 				parser.add_section('oVPN')
-				parser.set('oVPN','apikey','False')
+				parser.set('oVPN','apikey','%s'%(self.APIKEY))
 				parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 				parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 				parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
@@ -1171,7 +1177,7 @@ class Systray:
 		dialogWindow.run()
 		self.debug(1,"close userid interface selector")
 		dialogWindow.destroy()
-		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.app_dir,self.USERID)):
+		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.APP_DIR,self.USERID)):
 			return True
 
 
@@ -1271,8 +1277,9 @@ class Systray:
 	def make_context_menu_servertab_d0wns_dnsmenu(self,servername):
 		try:
 			self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
-			if len(self.d0wns_DNS) == 0:
-				self.read_d0wns_dns()
+			
+			if self.DEVMODE == True and len(self.d0wns_DNS) == 0:
+				self.load_d0wns_dns()
 			
 			dnsmenu = Gtk.Menu()
 			dnsm = Gtk.MenuItem(_("Change DNS"))
@@ -1579,7 +1586,7 @@ class Systray:
 				if len(self.OVPN_SERVER) == 0 and self.INIT_FIRST_UPDATE == True:
 					self.INIT_FIRST_UPDATE = False
 					self.load_ovpn_server()
-					if len(self.OVPN_SERVER) == 0:
+					if not self.APIKEY == False and len(self.OVPN_SERVER) == 0:
 						self.debug(1,"zero server found, initiate first update")
 						self.check_remote_update()
 				elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
@@ -2880,10 +2887,9 @@ class Systray:
 		self.debug(1,"def cb_switch_nodns()")
 		if switch.get_active():
 			self.NO_DNS_CHANGE = False
-			self.read_d0wns_dns()
 		else:
-			self.NO_DNS_CHANGE = True
 			self.win_netsh_restore_dns_from_backup()
+			self.NO_DNS_CHANGE = True
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
@@ -3051,6 +3057,7 @@ class Systray:
 	def cb_switch_debugmode(self,switch,gparam):
 		self.debug(1,"def cb_switch_debugmode()")
 		if switch.get_active():
+			self.DEBUG = True
 			self.msgwarn(_("Logfile:\n'%s'") % (self.debug_log),_("Debug Mode Enabled"))
 		else:
 			self.DEBUG = False
@@ -3603,7 +3610,7 @@ class Systray:
 			else:
 				self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
 				return False
-			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.vpn_dir)
+			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.VPN_DIR)
 			self.ovpn_server_dir = "%s\\%s" % (self.VPN_CFG,self.ovpn_server_LOWER)
 			self.ovpn_cert_ca = "%s\\%s.crt" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_tls_key = "%s\\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
@@ -3721,7 +3728,7 @@ class Systray:
 						if PING > 0 and PING < 1:
 							PING = round(PING,3)
 						elif PING > 1:
-							PING = int(PING)
+							PING = int(round(PING,0))
 						if PING > 0 and self.check_myip() == True:
 							randint = random.randint(15,30)
 							self.NEXT_PING_EXEC = int(time.time())+randint
@@ -3736,7 +3743,7 @@ class Systray:
 								self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
 							self.OVPN_PING_LAST = PING
 							self.OVPN_PING_DEAD_COUNT = 0
-							self.debug(3,"def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
+							self.debug(7,"def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
 						else:
 							self.set_ovpn_ping_dead()
 				except:
@@ -3759,7 +3766,7 @@ class Systray:
 		self.OVPN_PING_DEAD_COUNT += 1
 
 	def get_ovpn_ping(self):
-		self.debug(3,"def get_ovpn_ping()")
+		self.debug(7,"def get_ovpn_ping()")
 		try:
 			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
 			for (family, socktype, proto, canon, sockaddr) in ai_list:
@@ -3772,7 +3779,7 @@ class Systray:
 					PING = (t2-t1)*1000
 					if PING > 3000:
 						PING = -2
-					self.debug(3,"def get_ovpn_ping: %s ms" % (PING))
+					self.debug(7,"def get_ovpn_ping: %s ms" % (PING))
 					return PING
 				except:
 					self.OVPN_PING_LAST = -2
@@ -3894,6 +3901,7 @@ class Systray:
 			return True
 		if self.check_dns_is_whitelisted() == True:
 			return True
+		
 		servername = self.OVPN_CONNECTEDto
 		self.debug(1,"def win_netsh_set_dns_ovpn: servername = '%s'" % (servername))
 		try:
@@ -3973,7 +3981,6 @@ class Systray:
 
 	def win_netsh_read_dns_to_backup(self):
 		self.debug(1,"def win_netsh_read_dns_to_backup()")
-		self.read_d0wns_dns()
 		
 		if self.NO_DNS_CHANGE == True:
 			return True
@@ -4149,10 +4156,9 @@ class Systray:
 		return True
 
 	def win_firewall_add_rule_to_vcp(self,option):
-		self.debug(1,"def win_firewall_add_rule_to_vcp()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
-		self.debug(1,"def win_firewall_add_rule_to_vcp()")
+		self.debug(1,"def win_firewall_add_rule_to_vcp(%s)"%(option))
 		if option == "add":
 			actionstring = "action=allow"
 		elif option == "delete":
@@ -4435,13 +4441,16 @@ class Systray:
 					self.SAVE_APIKEY_INFILE = False
 				if self.USERID == False:
 					self.debug(1,"def response_dialog_apilogin: self.USERID == False")
-					api_dir = "%s\\%s" % (self.app_dir,userid)
+					api_dir = "%s\\%s" % (self.APP_DIR,userid)
 					if not os.path.isdir(api_dir):
 						os.mkdir(api_dir)
 						if os.path.isdir(api_dir):
 							self.API_DIR = api_dir
 							self.USERID = userid
-							self.APIKEY = apikey
+							if len(apikey) == 0:
+								self.APIKEY = False
+							else:
+								self.APIKEY = apikey
 							self.debug(1,"def response_dialog_apilogin: return True #1")
 							return True
 				elif not self.API_DIR == False and os.path.isdir(self.API_DIR):
@@ -4837,17 +4846,17 @@ class Systray:
 					return True
 
 	def check_inet_connection(self):
-		self.debug(3,"def check_inet_connection()")
+		self.debug(7,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
 		if not self.try_socket(DOMAIN,443) == True:
-			self.debug(3,"def check_inet_connection: failed!")
+			self.debug(1,"def check_inet_connection: failed!")
 			self.LAST_CHECK_INET_FALSE = int(time.time())
 			return False
 		return True
 
 	def try_socket(self,host,port):
-		self.debug(3,"def try_socket()")
+		self.debug(7,"def try_socket()")
 		try:
 			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			s.settimeout(3)
@@ -4856,11 +4865,11 @@ class Systray:
 		except:
 			return False
 		if result == 0:
-			self.debug(3,"def try_socket: %s:%s True" % (host,port))
+			self.debug(7,"def try_socket: %s:%s True" % (host,port))
 			return True
 
 	def check_myip(self):
-		self.debug(3,"def check_myip()")
+		self.debug(7,"def check_myip()")
 		# *** fixme *** missing ipv6 support
 		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
@@ -5132,16 +5141,18 @@ class Systray:
 		if self.PLATFORM == "AMD64":
 			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-x86_64.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
 			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x64
+			self.OPENVPN_FILESIZE = self.OVPN_WIN_F_SIZE_x64
 		elif self.PLATFORM == "x86":
 			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-i686.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
 			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x86
+			self.OPENVPN_FILESIZE = self.OVPN_WIN_F_SIZE_x86
 		else:
 			self.OPENVPN_DL_URL = False
 			self.msgwarn(_("Platform '%s' not supported") % (self.PLATFORM),_("Error!"))
 			return False
 		self.OPENVPN_DL_URL = "%s/%s" % (self.OPENVPN_REM_URL,self.OPENVPN_FILENAME)
 		self.OPENVPN_DL_URL_ALT = "%s/%s" % (self.OPENVPN_ALT_URL,self.OPENVPN_FILENAME)
-		self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.vpn_dir,self.OPENVPN_FILENAME)
+		self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.VPN_DIR,self.OPENVPN_FILENAME)
 		self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
 		#print "def build_openvpn_dlurl: PLATFORM=%s url='%s'" % (self.PLATFORM,self.OPENVPN_DL_URL)
 		return True
@@ -5166,16 +5177,22 @@ class Systray:
 				self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
 				self.debug(1,"Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
 				try:
-					ascfiledl = "%s.asc" % (self.OPENVPN_DL_URL)
+					
 					r1 = requests.get(self.OPENVPN_DL_URL)
-					r2 = requests.get(ascfiledl)
-					fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
-					fp1.write(r1.content)
-					fp1.close()
-					fp2 = open(self.OPENVPN_ASC_FILE, "wb")
-					fp2.write(r2.content)
-					fp2.close()
-					self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
+					if len(r1.content) == self.OPENVPN_FILESIZE:
+						fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
+						fp1.write(r1.content)
+						fp1.close()
+						ascfile = "%s.asc" % (self.OPENVPN_DL_URL)
+						if os.path.isfile(ascfile):
+							os.remove(ascfile)
+						r2 = requests.get(ascfile)
+						fp2 = open(self.OPENVPN_ASC_FILE, "wb")
+						fp2.write(r2.content)
+						fp2.close()
+						self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
+					else:
+						self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
 					return self.verify_openvpnbin_dl()
 				except:
 					self.debug(1,"def load_openvpnbin_from_remote: failed")
@@ -5206,7 +5223,7 @@ class Systray:
 		self.tray.set_tooltip_markup(_("%s - Install openVPN") % (CLIENT_STRING))
 		if self.OPENVPN_SILENT_SETUP == True:
 			# silent install
-			installtodir = "%s\\runtime" % (self.vpn_dir)
+			installtodir = "%s\\runtime" % (self.VPN_DIR)
 			options = "/S /SELECT_SHORTCUTS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
 			parameters = '%s /D=%s' % (options,installtodir)
 			netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,parameters)
@@ -5378,26 +5395,14 @@ class Systray:
 			self.debug(1,"def check_dns_is_whitelisted: False")
 			return False
 
-	def read_d0wns_dns(self):
-		self.debug(1,"def read_d0wns_dns()")
-		if self.NO_DNS_CHANGE == True:
-			return True
-
-		if not os.path.isfile(self.dns_d0wntxt):
-			self.load_d0wns_dns_from_remote()
-
-		if os.path.isfile(self.dns_d0wntxt):
-			self.debug(1,"def read_d0wns_dns: Use local file: %s" % (self.dns_d0wntxt))
-			fp = open(self.dns_d0wntxt,'r')
-			dnsdata = fp.read().split('\n')
-			fp.close()
-		else:
-			self.debug(1,"def read_d0wns_dns: Use embedded Entrys")
+	def load_d0wns_dns(self):
+		self.debug(1,"def load_d0wns_dns()")
+		try:
+			dnsdata = False
 			dnsdata = self.d0wn_dns_entrys()
-
-		if dnsdata:
-			try:
-				#print dnsdata
+			if not dnsdata == False and len(dnsdata) > 0:
+				#self.debug(76,"def load_d0wns_dns: len(dnsdata) = '%s'" % (len(dnsdata)))
+				#self.debug(76,"def load_d0wns_dns: len(dnsdata) = '%s', dnsdata='%s'" % (len(dnsdata),dnsdata))
 				self.d0wns_DNS = {}
 				for entry in dnsdata:
 					if len(entry) > 0:
@@ -5412,18 +5417,36 @@ class Systray:
 						#dnscryptvalidto = data[7]
 						dnscryptpubkey = data[8]
 						active = data[12]
+						if name.endswith("any.dns.d0wn.biz") or country.lower() == "anycast":
+							self.debug(1,"def load_d0wns_dns: for continue, name '%s' invalid"%(name))
+							continue
 						if active == "1" and self.check_d0wns_names(name) == True and self.isValueIPv4(ip4) == True and self.check_d0wns_dnscountry(country) == True and self.check_d0wns_dnscryptfingerprint(dnscryptfingerprint) == True and self.check_d0wns_names(dnscryptcertname) == True and self.check_d0wns_dnscryptports(dnscryptports) == True:
 							self.d0wns_DNS[name].update({"ip4":ip4,"ip6":ip6,"country":country,"dnscryptfingerprint":dnscryptfingerprint,"dnscryptcertname":dnscryptcertname,"dnscryptports":dnscryptports,"dnscryptpubkey":dnscryptpubkey})
 						elif active == "0":
-							self.debug(1,"def read_d0wns_dns: offline '%s'" % (name))
+							self.debug(1,"def load_d0wns_dns: offline '%s'" % (name))
 						else:
-							self.debug(1,"def read_d0wns_dns: failed '%s'" % (data))
-				self.debug(1,"def read_d0wns_dns: True len(self.d0wns_DNS) = %s" % (len(self.d0wns_DNS)))
+							self.debug(1,"def load_d0wns_dns: failed '%s'" % (data))
+				#self.debug(1,"def load_d0wns_dns: True len(self.d0wns_DNS) = %s" % (len(self.d0wns_DNS)))
+				self.debug(0,"def load_d0wns_dns: len(self.d0wns_DNS) = '%s'\n#\n#self.d0wns_DNS = %s\n#" % (len(self.d0wns_DNS),self.d0wns_DNS))
+				self.debug(1,"def load_d0wns_dns: len(self.d0wns_DNS)= '%s' content written to DEBUGLOG" % (len(self.d0wns_DNS)))
 				return True
-			except:
-				self.debug(1,"def read_d0wns_dns: failed!")
-		else:
-			self.debug(1,"def read_d0wns_dns: file '%s' not found" % (self.dns_d0wntxt))
+		except:
+			self.debug(1,"def load_d0wns_dns: failed")
+
+	def d0wn_dns_entrys(self):
+		dnsdata = False
+		if self.DEVMODE == True:
+			if not os.path.isfile(self.dns_d0wntxt):
+				if not self.load_d0wns_dns_from_remote():
+					self.debug(1,"def d0wn_dns_entrys: self.load_d0wns_dns_from_remote() failed")
+			if os.path.isfile(self.dns_d0wntxt):
+				self.debug(1,"self.d0wn_dns_entrys() DEVMODE")
+				fp = open(self.dns_d0wntxt,'rb')
+				dnsdata = fp.read().split('\r\n')
+				fp.close()
+			else:
+				self.debug(1,"def d0wn_dns_entrys: self.dns_d0wntxt = '%s' not found"%(self.dns_d0wntxt))
+		return dnsdata
 
 	def check_d0wns_dnscryptports(self,value):
 		self.debug(59,"def check_d0wns_dnscryptports()")
@@ -5485,24 +5508,25 @@ class Systray:
 			return False
 
 	def load_d0wns_dns_from_remote(self):
-		return
-		self.debug(1,"def load_d0wns_dns_from_remote()")
-		try:
-			if not os.path.isfile(self.dns_d0wntxt):
-				try:
-					url = "https://%s/files/dns/d0wns_dns.txt" % (DOMAIN)
-					r = requests.get(url)
-					fp = open(self.dns_d0wntxt,'wb')
-					fp.write(r.content)
-					fp.close()
-					self.debug(1,"def load_d0wns_dns_from_remote: True")
+		return False
+		if self.DEVMODE == True:
+			self.debug(1,"def load_d0wns_dns_from_remote()")
+			try:
+				if not os.path.isfile(self.dns_d0wntxt):
+					try:
+						url = "https://%s/files/dns/d0wns_dns.static.txt" % (DOMAIN)
+						r = requests.get(url)
+						fp = open(self.dns_d0wntxt,'wb')
+						fp.write(r.content)
+						fp.close()
+						self.debug(1,"def load_d0wns_dns_from_remote: True")
+						return True
+					except:
+						return False
+				else:
 					return True
-				except:
-					return False
-			else:
-				return True
-		except:
-			return False
+			except:
+				return False
 
 	def show_about_dialog(self,widget,event):
 		self.debug(1,"def show_about_dialog()")
@@ -5737,19 +5761,22 @@ class Systray:
 		if self.DEBUGcount > 0 and not self.DEBUGfrombefore == text:
 			debugstringsht1 = "(%s):(d1) %s (repeat: %s)" % (timefromboot, self.DEBUGfrombefore,self.DEBUGcount)
 			debugstringsht2 = "(%s):(d2) %s" % (timefromboot,text)
-			print(debugstringsht1)
-			print(debugstringsht2)
+			if level > 0:
+				print(debugstringsht1)
+				print(debugstringsht2)
 			self.DEBUGcount = 0
 		elif self.DEBUGcount >= 4096 and self.DEBUGfrombefore == text:
 			debugstringsht = "(%s):(d3) %s (repeated: %s e2)" % (timefromboot, self.DEBUGfrombefore,self.DEBUGcount)
-			print("%s" % (debugstringsht))
+			if level > 0:
+				print("%s" % (debugstringsht))
 			self.DEBUGcount = 0
 		elif self.DEBUGfrombefore == text:
 			self.DEBUGcount += 1
 			return
 		elif not self.DEBUGfrombefore == text:
 			debugstringsht = "(%s):(d4) %s"%(timefromboot,text)
-			print("%s" % (debugstringsht))
+			if level > 0:
+				print("%s" % (debugstringsht))
 		self.DEBUGfrombefore = text
 		if not debugstringsht == False:
 			self.write_debug(level,debugstringsht,timefromboot)
@@ -5762,7 +5789,7 @@ class Systray:
 		try:
 			if self.DEBUG == True and not self.debug_log == False:
 				localtime = time.asctime(time.localtime(time.time()))
-				debugstringlog = "%s (%s):(d5) %s"%(localtime,timefromboot,string)
+				debugstringlog = "%s (%s):(d5,%s) %s"%(localtime,timefromboot,level,string)
 				dbg = open(self.debug_log,'a')
 				dbg.write("%s\n" % (debugstringlog))
 				dbg.close()
@@ -6015,41 +6042,6 @@ class Systray:
 
 		if icon == "star":
 			return star_b64
-
-	def d0wn_dns_entrys(self):
-		dnslist = list()
-		dnslist.append("ns2.fr.dns.d0wn.biz,37.187.0.40,2001:41D0:A:0028::1,France,25A7:DB7B:7835:55D5:7DA4:7C0C:57F8:9C5F:0220:3D09:67E3:585A:723E:E0D1:CB38:F767,2.dnscrypt-cert.fr2.d0wn.biz,54 443 1053 5353 27015,2017-02-16,pubkey.fr2.dnscrypt.d0wn.biz,OVH,, ,1")
-		dnslist.append("ns1.sg.dns.d0wn.biz,128.199.248.105,2400:6180:0:d0::38:d001,Singapore,D82B:2B76:1DA0:8470:B55B:820C:FAAB:9F32:D632:E9E0:5616:2CE7:7D21:E970:98FF:4A34,2.dnscrypt-cert.sg.d0wn.biz,54 443 1053 5353 27015,2017-02-16,pubkey.sg.dnscrypt.d0wn.biz,Digitalocean,, ,1")
-		dnslist.append("ns1.nl.dns.d0wn.biz,95.85.9.86,2a03:b0c0:0:1010::62:f001,Netherlands,7BE6:68FE:A505:FFA7:4C27:C2CA:F881:59DA:038C:5741:13AA:2556:A4D2:2D0B:B6F0:009E,2.dnscrypt-cert.nl.d0wn.biz,54 80 1053 5353 27015,2017-02-16,pubkey.nl.dnscrypt.d0wn.biz,Digitalocean,, ,1")
-		dnslist.append("ns2.nl.dns.d0wn.biz,185.83.217.248,2a02:2ca0:64:22::2,Netherlands,DFAA:B7D8:29E6:1F34:4FED:2610:4221:70C9:ADC7:7E9F:A65F:4A46:0BAE:A735:3186:3B99,2.dnscrypt-cert.nl2.d0wn.biz,54 1053 5353 27015,2017-02-16,pubkey.nl2.dnscrypt.d0wn.biz,INIZ,, ,1")
-		dnslist.append("ns1.de.dns.d0wn.biz,82.211.31.248,2001:1608:10:195:3:dead:beef:cafe,Germany,D4A8:6FB5:AA0C:2B6B:8C13:8C29:7F69:F9C8:29C8:E157:F279:6FC7:7366:290F:2A80:0AD2,2.dnscrypt-cert.de.d0wn.biz,54 80 443 1053 5353 27015,2016-10-31,pubkey.de.dnscrypt.d0wn.biz,CrownCloud,, ,1")
-		dnslist.append("ns1.md.dns.d0wn.biz,178.17.170.67,2a00:1dc0:cafe::ad86:fa7e,Moldova,3DB2:C4CB:39E2:6B82:FDDF:6D91:1A65:D164:F4F0:D237:8CDD:0C37:469F:24BA:B9A0:F9FF,2.dnscrypt-cert.md.d0wn.biz,54 1053 5353 27015,2017-02-16,pubkey.md.dnscrypt.d0wn.biz,Hosteasy,, ,1")
-		dnslist.append("ns1.ru.dns.d0wn.biz,91.214.71.181,,Russia,0ECA:BC40:E0A1:335F:0221:4240:AB86:2919:D16A:2393:CCEB:4B40:9EB9:4F24:3077:ED99,2.dnscrypt-cert.ru.d0wn.biz,54 80 443 1053 5353 27015,2017-02-16,pubkey.ru.dnscrypt.d0wn.biz,Maxided,oVPN.to,https://ovpn.to ,1")
-		dnslist.append("ns1.ua.dns.d0wn.biz,217.12.210.54,2a02:27a8:0:2::556,Ukraine,3B1E:D468:FFD3:F261:20DE:E7F1:6A74:E1D5:D59E:B40D:F3EA:99BC:0B05:70CC:292D:99BA,2.dnscrypt-cert.ua.d0wn.biz,54 80 443 1053 5353 27015,2017-02-16,pubkey.ua.dnscrypt.d0wn.biz,Maxided,oVPN.to,https://ovpn.to ,1")
-		dnslist.append("ns1.bg.dns.d0wn.biz,217.12.203.133,,Bulgaria,423C:D823:B3EA:2015:F027:ECF1:5704:3EB7:764A:D02D:9447:56E6:51FD:D06F:E571:2FCC,2.dnscrypt-cert.bg.d0wn.biz,54 80 443 1053 5353 27015,2017-02-16,pubkey.bg.dnscrypt.d0wn.biz,Maxided,oVPN.to,https://ovpn.to ,1")
-		dnslist.append("ns1.dk.dns.d0wn.biz,77.66.108.93,,Denmark,0838:C9CF:2292:2D4C:4DB7:4A5E:ED10:DD36:66DD:9551:7238:6387:B7A0:2FA0:885A:5F77,2.dnscrypt-cert.dk.d0wn.biz,54 80 443 1053 5353 27015,2016-11-28,pubkey.dk.dnscrypt.d0wn.biz,Meebox,, ,1")
-		dnslist.append("ns1.cz.dns.d0wn.biz,81.2.237.32,,Czech Republic,4BAE:D9CE:1A99:42B2:44D1:4454:0C8C:EC0E:D5D8:90CE:0D9B:D3E3:93CF:7ACC:CCE0:3794,2.dnscrypt-cert.cz.d0wn.biz,54 80 443 5353 1053 27015,2016-10-22,pubkey.cz.dnscrypt.d0wn.biz,Aruba Networks,, ,1")
-		dnslist.append("ns1.it.dns.d0wn.biz,31.14.133.188,,Italy,B8F4:76E3:1EA4:ADDB:3426:D870:2819:6989:91EE:0C5A:B789:C74E:D6D9:BFB6:6C29:1D5C,2.dnscrypt-cert.it.d0wn.biz,54 80 443 5353 1053 27015,2016-10-22,pubkey.it.dnscrypt.d0wn.biz,Aruba Networks,, ,1")
-		dnslist.append("ns1.random.dns.d0wn.biz,178.17.170.133,2a00:1dc0:cafe::c6af:c19d,Moldova,A420:867F:ED5C:024C:C86A:EECE:AA05:194B:017F:D2FF:9E72:385A:874F:8CE5:6832:ED2E,2.dnscrypt-cert.random.d0wn.biz,54 80 443 5353 1053 27015,2017-02-16,pubkey.random.dnscrypt.d0wn.biz,Hosteasy,, ,1")
-		dnslist.append("ns2.random.dns.d0wn.biz,185.14.29.140,2a00:1ca8:a7::1e9,Netherlands,9112:338E:7D0B:5E78:B792:9BB6:1B75:4888:AC94:65B5:B86B:B5DE:CCF3:E5B9:15A5:DC54,2.dnscrypt-cert.random2.d0wn.biz,54 80 443 5353 1053 27015,2016-11-01,pubkey.random2.dnscrypt.d0wn.biz,ITL Group,, ,1")
-		dnslist.append("ns1.tz.dns.d0wn.biz,41.79.69.13,2c0f:fda8:5::2ed1:d2ec,Tanzania,B79F:A025:1AF6:2125:DF3E:3B03:856D:4CB7:704E:45EB:B850:3A7B:C6AA:5510:D87D:087D,2.dnscrypt-cert.tz.d0wn.biz,54 80 443 5353 1053 27015,2016-11-03,pubkey.tz.dnscrypt.d0wn.biz,aptus.co.tz,Aptus Solutions,http://www.aptus.co.tz,1")
-		dnslist.append("ns1.gr.dns.d0wn.biz,85.25.105.193,,Greece,D056:D3A4:9568:5AFE:4B0D:C688:7A75:41B2:7217:F0C9:75A5:A6C0:142D:363B:F992:9867,2.dnscrypt-cert.gr.d0wn.biz,54 80 443 5353 1053 27015,2016-11-03,pubkey.gr.dnscrypt.d0wn.biz,angellight.com,angellight Services Ltd,https://www.angellight.com ,1")
-		dnslist.append("ns1.lv.dns.d0wn.biz,89.111.13.60,,Latvia,1B70:FB6F:2E47:1753:91EF:1084:ECD2:983A:9018:F3E3:DDF1:E563:E528:156A:664A:1AE8,2.dnscrypt-cert.lv.d0wn.biz,54 80 443 5353 1053 27015,2016-11-10,pubkey.lv.dnscrypt.d0wn.biz,serveri.failiem.lv,Files.fm Ltd,http://serveri.failiem.lv ,1")
-		dnslist.append("ns1.ro.dns.d0wn.biz,77.81.104.121,2a04:9dc0:c1:7::cb9:f785,Romania,BE2A:D495:C195:D20E:A7D7:D1F6:5FE3:0B92:D423:684F:AF39:F8B5:F5E8:EE8F:C92F:4E80,2.dnscrypt-cert.ro.d0wn.biz,54 80 443 5353 1053 27015,2016-16-21,pubkey.ro.dnscrypt.d0wn.biz,virtono.com,, ,1")
-		dnslist.append("ns1.is.dns.d0wn.biz,37.235.49.61,,Iceland,2B28:974E:073A:6B38:722A:5BE1:F7A0:250C:508F:A809:238F:8F3D:76D8:6098:20D7:B2D9,2.dnscrypt-cert.is.d0wn.biz,54 80 443 5353 1053 27015,2017-04-26,pubkey.is.dnscrypt.d0wn.biz,Maxided,oVPN.to,https://ovpn.to,1")
-		dnslist.append("ns2.de.dns.d0wn.biz,185.137.15.105,,Germany,8C62:691A:A7EA:69D3:8A25:86AA:2715:87F0:9B11:9159:0663:55FC:1CD0:61C5:C863:1940,2.dnscrypt-cert.de2.d0wn.biz,54 80 443 1053 5353 27015,2017-05-09,pubkey.de2.dnscrypt.d0wn.biz,Maxided,oVPN.to,https://ovpn.to,1")
-		dnslist.append("ns1.se.dns.d0wn.biz,95.215.44.124,2a02:7aa0:1619::4f50:a69,Sweden,9D4F:762B:DD24:F77A:64B4:7E0F:F5C6:93FD:A02A:39E9:8FEC:0CEE:F252:3A5F:A403:C032,2.dnscrypt-cert.se.d0wn.biz,54 80 443 1053 5353 27015,2017-05-27,pubkey.se.dnscrypt.d0wn.biz,Yourserver.se,oVPN.to,https://ovpn.to,1")
-		dnslist.append("ns1.lu.dns.d0wn.biz,104.244.72.13,2605:6400:30:fbb5:0:1ce:1ce:babe,Luxembourg,737B:B68B:7D3C:896F:260D:91C3:60A6:AD64:8CD3:1B22:4D5F:7089:490C:539F:2EC6:C309,2.dnscrypt-cert.lu.d0wn.biz,54 80 443 1053 5353 27015,2017-05-28,pubkey.lu.dnscrypt.d0wn.biz,BuyVM,,,1")
-		dnslist.append("ns1.us.dns.d0wn.biz,199.195.249.174,2605:6400:10:59:0:b19:b00b:babe,United States of America,6741:6E7F:4744:194E:D725:91A2:1A62:A715:78F9:62CD:5263:84FC:DAA8:6C7E:4D9F:438B,2.dnscrypt-cert.us.d0wn.biz,54 80 443 1053 5353 27015,2017-05-28,pubkey.us.dnscrypt.d0wn.biz,BuyVM,,,1")
-		dnslist.append("ns2.lv.dns.d0wn.biz,185.86.151.28,2a02:7aa0:1201::f60e:2719,Latvia,B111:F80C:E3E0:1C36:CC73:0995:009E:6351:EF08:0503:309D:9417:7AA3:8C67:916D:0CDF,2.dnscrypt-cert.lv2.d0wn.biz,54 80 443 1053 5353 27015,2017-05-29,pubkey.lv.dnscrypt.d0wn.biz,Yourserver.se,oVPN.to,https://ovpn.to,1")
-		dnslist.append("ns2.us.dns.d0wn.biz,209.141.53.57,2605:6400:20:7d7:1:5ee:bad:c0de,United States of America,A22D:99C4:E2E9:CB94:67F0:E36A:619F:418B:466C:5786:C0B8:ACAA:B716:71F7:1F81:F5F8,2.dnscrypt-cert.us2.d0wn.biz,54 80 443 1053 5353 27015,2017-05-29,pubkey.us.dnscrypt.d0wn.biz,BuyVM,,,1")
-		dnslist.append("ns1.uk.dns.d0wn.biz,185.121.25.85,2a04:92c7:7:7::14ae:460a,United Kingdom,FADB:BE63:7FCD:FE22:0DBE:D433:438C:5A1D:C267:1E96:4B67:1918:B15F:9121:77D7:5B2E,2.dnscrypt-cert.uk.d0wn.biz,54 80 443 1053 5353 27015,2017-05-30,pubkey.uk.dnscrypt.d0wn.biz,DediStation,,,1")
-		dnslist.append("ns1.cy.dns.d0wn.biz,213.169.148.11,,Cyprus,2144:4FE7:59C3:13B9:FABB:FC2A:F975:9F9C:CD9A:2ED7:0978:3A25:7347:4B83:8F86:EA2B,2.dnscrypt-cert.cy.d0wn.biz,54 80 443 1053 5353 27015,2017-05-30,pubkey.cy.dnscrypt.d0wn.biz,PostCy DC,,,1")
-		dnslist.append("ns2.sg.dns.d0wn.biz,210.16.120.139,2403:5680::1:200f,Singapore,0F00:63C4:6EAF:29C3:29CD:E125:2033:6F0A:0C72:7CDD:F1F4:3D47:F95D:02BC:07F7:9FFC,2.dnscrypt-cert.sg2.d0wn.biz,54 80 443 1053 5353 27015,2017-05-31,pubkey.sg2.dnscrypt.d0wn.biz,HostUS,,,1")
-		dnslist.append("ns1.hk.dns.d0wn.biz,45.124.66.200,,Hong Kong,84ED:0DFF:7967:5DBD:2D93:65A2:A6AB:7F90:146F:A50B:048C:8C75:651B:AA55:7129:6740,2.dnscrypt-cert.hk.d0wn.biz,54 80 443 1053 5353 27015,2017-05-31,pubkey.hk.dnscrypt.d0wn.biz,HostUS,,,1")
-		dnslist.append("ns3.nl.dns.d0wn.biz,185.133.72.116,2a06:7240:5:601:dead:beef:e3e7:7a9d,Netherlands,01FC:1AA9:F71F:F09E:55CE:0D04:9ACA:2B11:9536:319E:04A9:C3AE:77CB:127D:4C53:0651,2.dnscrypt-cert.nl3.d0wn.biz,54 80 443 1053 5353 27015,2017-05-31,pubkey.nl3.dnscrypt.d0wn.biz,Hexodo,,,1")
-		dnslist.append("ns1.au.dns.d0wn.biz,27.100.36.191,2402:9e80:1::1:e554,Australia,A7D9:0F8E:9A98:1381:176A:3D25:36DE:E865:8538:9CD8:78BC:C3B5:A146:23F1:C2EF:58D8,2.dnscrypt-cert.au.d0wn.biz,54 80 443 1053 5353 27015,2017-05-31,pubkey.au.dnscrypt.d0wn.biz,HostUS,,,1")
-		return dnslist
 
 def app():
 	Systray()
