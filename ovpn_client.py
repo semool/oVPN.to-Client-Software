@@ -1983,8 +1983,8 @@ class Systray:
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 									if self.MAINWINDOW_OPEN == True:
 										if self.load_ovpn_server() == True:
-											self.mainwindow.remove(self.mainwindow_vbox)
-											self.mainwindow_ovpn_server()
+											GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
+											GLib.idle_add(self.mainwindow_ovpn_server)
 									return True
 								else:
 									self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
