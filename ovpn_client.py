@@ -54,12 +54,15 @@ if os.path.exists(gtkfile) and sys.platform == "win32":
 			pass
 
 		# Patching
-		with open(gtkfile,'r+b') as f:
-				f.seek(offset)
-				if not f.read(1) == pixel:
-					print "Patch TrayIcon Output Size to: %s pixel" % (pixeldez)
+		try:
+			with open(gtkfile,'r+b') as f:
 					f.seek(offset)
-					f.write(pixel)
+					if not f.read(1) == pixel:
+						print "Patch TrayIcon Output Size to: %s pixel" % (pixeldez)
+						f.seek(offset)
+						f.write(pixel)
+		except:
+			pass
 
 	else:
 		print "No compatible gtk-3-0.dll found"
