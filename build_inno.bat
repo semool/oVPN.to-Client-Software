@@ -5,6 +5,8 @@ call %SOURCEDIR%\set_dirs.bat %~1
 
 IF NOT DEFINED PYEXE (EXIT)
 
+del "%SOURCEDIR%\*.pyc"
+
 %PYEXE% release_version.py SET_VERSION_FILES
 
 call %SOURCEDIR%\set_version.bat
