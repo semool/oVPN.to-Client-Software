@@ -90,8 +90,38 @@ import json
 #import gc
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.7-gtk3"
-CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
+if len(sys.argv) > 1:
+	if sys.argv[1] == "DEVMODE":
+		DEVMODE = True
+		DEBUG = True
+		print "DEVMODE=True"
+	else:
+		print "invalid args"
+		print sys.argv
+		print len(sys.argv)
+		sys.exit()
+else:
+	DEVMODE = False
+	DEBUG = False
+	print "DEVMODE=False"
+
+print "import release_version"
+try:
+	import release_version
+	CLIENTVERSION = release_version.script_data()["CLIENTVERSION"]
+	CLIENT_STRING = release_version.script_data()["CLIENT_STRING"]
+	VCP_DOMAIN = release_version.org_data()["VCP_DOMAIN"]
+	API_DOMAIN = release_version.org_data()["API_DOMAIN"]
+	API_URL = "https://%s:%s/%s" % (API_DOMAIN,release_version.org_data()["API_PORT"],release_version.org_data()["API_POST"])
+	print CLIENTVERSION
+	print CLIENT_STRING
+	print API_URL
+	if DEVMODE == True:
+		time.sleep(15)
+except:
+	print "import release_version failed"
+	sys.exit()
+
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -106,10 +136,6 @@ Need Help?
 
 Join https://webirc.ovpn.to into Channel #help !
 """
-
-DOMAIN = "vcp.ovpn.to"
-PORT="443"
-API="xxxapi.php"
 
 class Systray:
 	def __init__(self):
@@ -135,7 +161,7 @@ class Systray:
 					else:
 						self.check_remote_update()
 				else:
-					self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Update failed!"))
+					self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Update failed!"))
 			thread = threading.Thread(target=self.systray_timer)
 			thread.daemon = True
 			thread.start()
@@ -144,21 +170,9 @@ class Systray:
 			sys.exit()
 
 	def self_vars(self):
-		if len(sys.argv) > 1:
-			if sys.argv[1] == "DEVMODE":
-				self.DEVMODE = True
-				self.DEBUG = True
-				print "DEVMODE=True"
-			else:
-				print "invalid args"
-				print sys.argv
-				print len(sys.argv)
-				sys.exit()
-		else:
-			self.DEVMODE = False
-			self.DEBUG = False
-			print "DEVMODE=False"
-		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
+		self.DEBUG = DEBUG
+		self.DEVMODE = DEVMODE
+		self.APIURL = API_URL
 		self.LOGLEVEL = 1
 		self.LOGLEVELS = [0,1,2,3]
 		self.OS = sys.platform
@@ -188,7 +202,7 @@ class Systray:
 		self.OVPN_LATEST_BUILT = "May 10 2016"
 		self.OVPN_LATEST_BUILT_TIMESTAMP = 1462831200
 		
-		self.OPENVPN_REM_URL = "https://%s/files/openvpn" % (DOMAIN)
+		self.OPENVPN_REM_URL = "https://%s/files/openvpn" % (VCP_DOMAIN)
 		self.OPENVPN_ALT_URL = "https://swupdate.openvpn.net/community/releases"
 		self.OPENVPN_VERSION = "2.3.11"
 		self.OPENVPN_BUILT_V = "I601"
@@ -4061,13 +4075,13 @@ class Systray:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
 					return True
 				except:
-					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #1"))
+					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #1"))
 					return False
 			else:
-				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
+				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (VCP_DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
 				return False
 		else:
-			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #3"))
+			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #3"))
 			return False
 
 	def win_firewall_start(self):
@@ -4164,7 +4178,7 @@ class Systray:
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
-		url = "https://%s" % (DOMAIN)
+		url = "https://%s" % (VCP_DOMAIN)
 		ips = ["178.17.170.116",self.GATEWAY_OVPN_IP4A]
 		port = 443
 		protocol = "tcp"
@@ -4536,7 +4550,7 @@ class Systray:
 	def cb_check_normal_update(self):
 		self.debug(1,"def cb_check_normal_update()")
 		if self.check_inet_connection() == False:
-			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
+			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed"))
 			return False
 		if self.check_remote_update():
 			self.debug(1,"def cb_check_normal_update: self.check_remote_update() == True")
@@ -4545,7 +4559,7 @@ class Systray:
 	def cb_force_update(self):
 		self.debug(1,"def cb_force_update()")
 		if self.check_inet_connection() == False:
-			self.msgwarn(_("Could not connect to %s") % (DOMAIN),_("Error: Update failed"))
+			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed"))
 			return False
 		if self.reset_last_update() == True:
 			self.debug(1,"def cb_force_update: self.reset_last_update")
@@ -4700,7 +4714,7 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv4+6"))
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
 			self.cb_check_normal_update()
 		if self.MAINWINDOW_OPEN == True:
 			self.mainwindow.remove(self.mainwindow_vbox)
@@ -4719,7 +4733,7 @@ class Systray:
 			self.cb_check_normal_update()
 		if self.MAINWINDOW_OPEN == True:
 			self.destroy_mainwindow()
-		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (DOMAIN),_("Switched to IPv6+4"))
+		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
 
 	def cb_restore_firewallbackup(self,file):
 		self.debug(1,"def cb_restore_firewallbackup()")
@@ -4850,7 +4864,7 @@ class Systray:
 		self.debug(7,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
-		if not self.try_socket(DOMAIN,443) == True:
+		if not self.try_socket(API_DOMAIN,443) == True:
 			self.debug(1,"def check_inet_connection: failed!")
 			self.LAST_CHECK_INET_FALSE = int(time.time())
 			return False
@@ -5516,7 +5530,7 @@ class Systray:
 			try:
 				if not os.path.isfile(self.dns_d0wntxt):
 					try:
-						url = "https://%s/files/dns/d0wns_dns.static.txt" % (DOMAIN)
+						url = "https://%s/files/dns/d0wns_dns.static.txt" % (VCP_DOMAIN)
 						r = requests.get(url)
 						fp = open(self.dns_d0wntxt,'wb')
 						fp.write(r.content)

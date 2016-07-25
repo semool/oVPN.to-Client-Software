@@ -1,6 +1,6 @@
 from distutils.core import setup
 import py2exe
-import sys, os, site, shutil
+import sys, os, site, shutil, time
 
 site_dir = site.getsitepackages()[1] 
 include_dll_path = os.path.join(site_dir, 'gnome')
@@ -18,15 +18,22 @@ for dll in os.listdir(include_dll_path):
 for dll in gtk_dlls:
 	shutil.copy(dll, cdir)
 
+import release_version
+print release_version.setup_data()
+print release_version.script_data()
+print "\nCHECK DATA, sleeping 10s!\n"
+time.sleep(10)
 setup_dict = dict(
-	version = "0.0.5.7",name = "oVPN.to Client for Windows",description = "oVPN.to Client",
+	version = release_version.setup_data()["version"],
+	name = release_version.setup_data()["name"],
+	description = release_version.setup_data()["description"],
 	windows=[
 		{
-			'script':'ovpn_client.py',
-			'icon_resources': [(1, 'else\\app_icons\\shield_exe.ico')],
-			'uac_info': "requireAdministrator",
-			'copyright': 'Copyright (C) 2016 oVPN.to',
-			'company_name': 'oVPN.to Anonymous Services'
+			"script":release_version.version_data()["SCRIPT"],
+			"icon_resources" : [(1, 'else\\app_icons\\shield_exe.ico')],
+			"uac_info" : release_version.setup_data()["uac_info"],
+			"copyright" : release_version.setup_data()["copyright"],
+			"company_name" : "%s %s" % (release_version.org_data()["ORG"],release_version.org_data()["ADD"]),
 		}
 	],
 	options={
@@ -35,7 +42,7 @@ setup_dict = dict(
 		'compressed'   : False,
 		'unbuffered'   : False,
 		'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
-		'excludes'     : [ ],
+		'excludes'     : [  ],
 		'optimize'     : 2,
 		'packages'     : [ 'gi' ],
 		'dll_excludes' : [ 'crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
