@@ -4,7 +4,6 @@ def version_data():
 	data = {
 			"VERSION" : "0.5.8",
 			"NAME":"%s Client" % (org_data()["ORG"]),
-			"SCRIPT" : "ovpn_client.py"
 		}
 	return data
 
@@ -37,6 +36,7 @@ def org_data():
 
 def setup_data():
 	data = { 
+			"script" : "ovpn_client.py",
 			"version" : "0.%s" % (version_data()["VERSION"]),
 			"name" : "%s for Windows" % (version_data()["NAME"]),
 			"description" : "Built: %d-%02d-%02d (%d)" % (build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]),

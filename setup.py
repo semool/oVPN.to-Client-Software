@@ -78,7 +78,6 @@ for dll in gtk_dlls:
 	shutil.copy(dll, cdir)
 
 print release_version.setup_data()
-print release_version.script_data()
 print "\nCHECK DATA, sleeping 10s!\n"
 time.sleep(10)
 setup_dict = dict(
@@ -88,7 +87,7 @@ setup_dict = dict(
 	data_files = [('Microsoft.VC90.CRT',['includes/'+crt+'/Microsoft.VC90.CRT.manifest','includes/'+crt+'/msvcp90.dll','includes/'+crt+'/msvcr90.dll']),],
 	windows=[
 		{
-			"script":release_version.version_data()["SCRIPT"],
+			"script":release_version.setup_data()["script"],
 			"icon_resources" : [(1, 'else\\app_icons\\shield_exe.ico')],
 			"copyright" : release_version.setup_data()["copyright"],
 			"company_name" : "%s %s" % (release_version.org_data()["ORG"],release_version.org_data()["ADD"]),
