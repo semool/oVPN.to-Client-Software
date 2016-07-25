@@ -12,10 +12,10 @@ set PY32EXE=%PY32%\python.exe
 set PY64EXE=%PY64%\python.exe
 set PY32GET=%PY32%\Tools\i18n
 set PY64GET=%PY64%\Tools\i18n
-IF "%~1" == "32" (set PYGET=%PY32GET%)
-IF "%~1" == "64" (set PYGET=%PY64GET%)
-IF "%~1" == "32" (set PYEXE=%PY32EXE%)
-IF "%~1" == "64" (set PYEXE=%PY64EXE%)
+IF "%BITS%" == "32" (set PYGET=%PY32GET%)
+IF "%BITS%" == "64" (set PYGET=%PY64GET%)
+IF "%BITS%" == "32" (set PYEXE=%PY32EXE%)
+IF "%BITS%" == "64" (set PYEXE=%PY64EXE%)
 IF NOT DEFINED PYEXE (echo "MISSING BITS" && PAUSE && EXIT)
 IF NOT EXIST %PYEXE% (echo PYEXE %PYEXE% NOT FOUND && PAUSE && EXIT)
 

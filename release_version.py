@@ -41,7 +41,6 @@ def setup_data():
 			"name" : "%s for Windows" % (version_data()["NAME"]),
 			"description" : "Built: %d-%02d-%02d (%d)" % (build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]),
 			"copyright" : "Copyright (C) %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
-			"uac_info" : "requireAdministrator"
 		}
 	return data
 
