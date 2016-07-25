@@ -31,7 +31,7 @@ setup_dict = dict(
 		{
 			"script":release_version.version_data()["SCRIPT"],
 			"icon_resources" : [(1, 'else\\app_icons\\shield_exe.ico')],
-			"uac_info" : "requireAdministrator",
+			"uac_info" : release_version.setup_data()["uac_info"],
 			"copyright" : release_version.setup_data()["copyright"],
 			"company_name" : "%s %s" % (release_version.org_data()["ORG"],release_version.org_data()["ADD"]),
 		}

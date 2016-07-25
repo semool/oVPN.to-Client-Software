@@ -1,12 +1,22 @@
-# -*- coding: utf-8 -*-
 print "join release_version.py"
+
+def version_data():
+	data = {
+			"VERSION" : "0.5.8",
+			"NAME":"%s Client" % (org_data()["ORG"]),
+			"SCRIPT" : "ovpn_client.py"
+		}
+	#print "release_version.version_data = '%s'" % (data)
+	return data
 
 def build_data():
 	from datetime import date
+	import time
 	data = {
 		"YEAR" : date.today().year,
 		"MONTH" : date.today().month,
-		"DAY" : date.today().day
+		"DAY" : date.today().day,
+		"STAMP" : int(time.time())
 	}
 	#print "release_version.build_data = '%s'" % (data)
 	return data
@@ -22,21 +32,13 @@ def org_data():
 	#print "release_version.org_data = '%s'" % (data)
 	return data
 
-def version_data():
-	data = {
-			"SCRIPT" : "ovpn_client.py",
-			"VERSION" : "0.5.8",
-			"NAME":"%s Client" % (org_data()["ORG"])
-		}
-	#print "release_version.version_data = '%s'" % (data)
-	return data
-
 def setup_data():
 	data = { 
 			"version" : "0.%s" % (version_data()["VERSION"]),
 			"name" : "%s for Windows" % (version_data()["NAME"]),
-			"description" : "Built (ISO): %d-%02d-%02d" % (build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"]),
+			"description" : "Built: %d-%02d-%02d (%d)" % (build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]),
 			"copyright" : "Copyright (C) %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
+			"uac_info" : "requireAdministrator"
 		}
 	#print "release_version.setup_data = '%s'" % (data)
 	return data
