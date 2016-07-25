@@ -13,9 +13,10 @@ def build_data():
 	import time
 	data = {
 		"YEAR" : date.today().year,
-		"MONTH" : date.today().month,
-		"DAY" : date.today().day,
-		"STAMP" : int(time.time())
+		# *fixme* oops! way too much dynamic: built date changes realtime in app!
+		#"MONTH" : date.today().month,
+		#"DAY" : date.today().day,
+		#"STAMP" : int(time.time())
 	}
 	return data
 
@@ -41,7 +42,9 @@ def setup_data():
 			"script" : "ovpn_client.py",
 			"version" : "0.%s" % (version_data()["VERSION"]),
 			"name" : "%s for Windows" % (version_data()["NAME"]),
-			"description" : "%s %s Built: %d-%02d-%02d (%d)" % (version_data()["NAME"],version_data()["VERSION"],build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]),
+			# *fixme* oops, we are too much dynamic, realtime :D
+			#"description" : "%s %s Built: %d-%02d-%02d (%d)" % (version_data()["NAME"],version_data()["VERSION"],build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]),
+			"description" : "%s %s" % (version_data()["NAME"],version_data()["VERSION"]),
 			"copyright" : "(C) 2010 - %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
 		}
 	return data
