@@ -4,3 +4,8 @@ if exist "%DISTDIR%\ovpn_client.exe" (signtool sign /v /a /sha1 "0775a45c76fad69
 if exist %EXESTRING% (signtool sign /v /a /sha1 "0775a45c76fad6989cbeb35c87e476642ccc172f" /t http://timestamp.verisign.com/scripts/timestamp.dll /fd SHA512 %EXESTRING% && pause)
 pause
 
+set cnt=0
+for %%v in (%DISTDIR%\*.dll) do (
+	signtool sign /v /a /sha1 "0775a45c76fad6989cbeb35c87e476642ccc172f" /t http://timestamp.verisign.com/scripts/timestamp.dll /fd SHA512 "%%v"
+	call set /a cnt=%%cnt%%+1
+	)

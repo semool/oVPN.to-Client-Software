@@ -27,6 +27,7 @@ if exist %EXESTRING% del %EXESTRING%
 
 %PYEXE% setup.py py2exe
 pause
+
 call sign.bat
 
 call includes_to_dist.bat %~1
@@ -36,9 +37,9 @@ pause
 
 %INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
 
-call sign.bat
-
 rmdir /S/Q dist\ build\
+
+call sign.bat
 
 echo Compiled %EXESTRING%
 pause
