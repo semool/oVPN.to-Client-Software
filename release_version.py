@@ -56,17 +56,19 @@ import sys, os
 if len(sys.argv) > 1:
 	if sys.argv[1] == "SET_VERSION_FILES":
 		
-		inno = { "file" : "set_version.txt", "content" : '#define Version "%s"' % (version_data()["VERSION"]) }
-		winb = { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) }
-		
-		def write_releasefile(file,data):
+		def write_releasefile(key,file,content):
 			if os.path.isfile(file):
 				fp = open(file, "wb")
-				fp.write(data)
+				fp.write(content)
 				fp.close()
-				print "written: data '%s' to file '%s'" % (data,file)
-				
-		write_releasefile(inno["file"],inno["content"])
-		write_releasefile(winb["file"],winb["content"])
+				print "%s written content '%s' to file '%s'" % (key,file,content)
+		
+		setrelease = {
+			"inno" : { "file" : "set_version.txt", "content" : '#define Version "%s"' % (version_data()["VERSION"]) },
+			"winb" : { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) },
+			}
+			
+		for key, value in setrelease.items():
+			write_releasefile(key,value["file"],value["content"])
 
 print "leave release_version.py"
