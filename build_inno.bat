@@ -34,6 +34,9 @@ echo Run inno_setup%BITS%.iss now?
 pause
 
 %INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
+
+call sign.bat
+
 rmdir /S/Q dist\ build\
 
 echo Compiled %EXESTRING%
