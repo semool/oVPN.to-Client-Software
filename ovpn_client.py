@@ -4840,7 +4840,7 @@ class Systray:
 					fp = open(self.zip_cfg, "wb")
 					fp.write(self.body)
 					fp.close()
-					return True	
+					return True
 				except:
 					return False
 			
@@ -5563,7 +5563,7 @@ class Systray:
 			self.about_dialog.set_transient_for(self.window)
 			self.about_dialog.set_destroy_with_parent (True)
 			self.about_dialog.set_name(release_version.org_data()["ORG"])
-			self.about_dialog.set_version(CLIENTVERSION)
+			self.about_dialog.set_version(release_version.setup_data()["description"])
 			self.about_dialog.set_copyright(release_version.setup_data()["copyright"])
 			self.about_dialog.set_comments((ABOUT_TEXT))
 			self.about_dialog.set_authors(["%s [ %s ]"%(release_version.org_data()["ORG"],release_version.org_data()["EMAIL"])])
