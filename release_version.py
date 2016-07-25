@@ -27,7 +27,13 @@ def org_data():
 			"ADD" : "Anonymous Services",
 			"SITE" : "https://oVPN.to",
 			"SUPPORT" : "https://vcp.ovpn.to/?site=support",
+			"CHAT_URL" : "https://webirc.ovpn.to",
+			"IRC_ADDR" : "irc://irc.ovpn.to:6697 (SSL)",
 			"UPDATES" : "https://board.ovpn.to/v4/index.php?thread/57314-ovpn-client-for-windows-beta-binary-releases/&action=firstNew",
+			"VCP_DOMAIN" : "vcp.ovpn.to",
+			"API_POST" : "xxxapi.php",
+			"API_DOMAIN" : "vcp.ovpn.to",
+			"API_PORT" : "443",
 		}
 	#print "release_version.org_data = '%s'" % (data)
 	return data
@@ -50,5 +56,11 @@ def script_data():
 		}
 	#print "release_version.script_data = '%s'" % (data)
 	return data
+
+print "version_data() = '%s'" % (version_data())
+print "build_data() = '%s'" % (build_data())
+print "org_data() = '%s'" % (org_data())
+print "setup_data() = '%s'" % (setup_data())
+print "script_data() = '%s'" % (script_data())
 
 print "leave release_version.py"
