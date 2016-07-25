@@ -5,7 +5,7 @@ call %SOURCEDIR%\set_dirs.bat %~1
 
 IF NOT DEFINED PYEXE (EXIT)
 
-del "%SOURCEDIR%\*.pyc"
+del "%SOURCEDIR%\*.pyo"
 
 %PYEXE% release_version.py SET_VERSION_FILES
 
@@ -25,7 +25,7 @@ if exist dist.7z del dist.7z
 if exist %EXESTRING% del %EXESTRING%
 
 
-%PYEXE% setup.py py2exe
+%PYEXE% -OO setup.py py2exe
 pause
 
 call includes_to_dist.bat %~1
