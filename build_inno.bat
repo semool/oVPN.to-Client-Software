@@ -1,9 +1,13 @@
 @echo off
 set SOURCEDIR=%~dp0.
-call %SOURCEDIR%\set_version.bat
+
 call %SOURCEDIR%\set_dirs.bat %~1
 
 IF NOT DEFINED PYEXE (EXIT)
+
+%PYEXE% release_version.py SET_VERSION_FILES
+
+call %SOURCEDIR%\set_version.bat
 
 set RELEASEDIR=%SOURCEDIR%\release
 set VERSION=v%RELEASE%-gtk3_win%BITS%

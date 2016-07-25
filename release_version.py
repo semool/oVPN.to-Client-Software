@@ -1,5 +1,6 @@
 print "join release_version.py"
 
+
 def version_data():
 	data = {
 			"VERSION" : "0.5.8",
@@ -49,5 +50,30 @@ print "version_data() = '%s'" % (version_data())
 print "build_data() = '%s'" % (build_data())
 print "org_data() = '%s'" % (org_data())
 print "setup_data() = '%s'" % (setup_data())
+
+
+import sys
+if len(sys.argv) > 1:
+	if sys.argv[1] == "SET_VERSION_FILES":
+		import os
+		VERSION = version_data()["VERSION"]
+		inno = { "file" : "set_version.txt", "content" : "#define Version" }
+		winb = { "file" : "set_version.bat", "content" : "set RELEASE=" }
+		
+		file = inno["file"]
+		data = '%s "%s"' % (inno["content"],VERSION)
+		if os.path.isfile(file):
+			fp = open(file, "wb")
+			fp.write(data)
+			fp.close()
+			print "written: inno data '%s' to file '%s'" % (data,file)
+		
+		file = winb["file"]
+		data = '%s%s' % (winb["content"],VERSION)
+		if os.path.isfile(file):
+			fp = open(file, "wb")
+			fp.write(data)
+			fp.close()
+			print "written: winb data '%s' to file '%s'" % (data,file)
 
 print "leave release_version.py"
