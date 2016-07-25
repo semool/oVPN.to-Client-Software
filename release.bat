@@ -15,12 +15,12 @@ IF "%BITS%" == "64" ( rd /S /Q "%DEVDIST%\includes\Microsoft.VC90.CRT_win32" 2>n
 
 copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
 del "%SOURCEDIR%\%EXESTRING%"
+del "%SOURCEDIR%\*.pyc"
 copy /Y "%SOURCEDIR%\ovpn_client.py" "%DEVDIST%\"
-copy /Y "%SOURCEDIR%\setup.py" "%DEVDIST%\"
+copy /Y "%SOURCEDIR%\*.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\*.bat" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\inno_setup%BITS%.iss" "%DEVDIST%\"
-copy /Y "%SOURCEDIR%\release_version.py" "%DEVDIST%\"
-copy /Y "%SOURCEDIR%\set_version.txt" "%DEVDIST%\"
+copy /Y "%SOURCEDIR%\inno.release" "%DEVDIST%\"
 
 set BUILDDEVFILE=%DEVSDIR%\build-dev-%VERSION%.7z
 IF EXIST %BUILDDEVFILE% (del %BUILDDEVFILE%)
