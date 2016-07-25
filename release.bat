@@ -10,6 +10,9 @@ mkdir %BINSDIR%
 
 xcopy /Y /E "%INCLUDESDIR%" "%DEVDIST%\includes\"
 xcopy /Y /E "%LOCALEDIR%" "%DEVDIST%\locale\"
+mkdir "%DEVDIST%\else\"
+mkdir "%DEVDIST%\else\app_icons"
+copy /Y "%SOURCEDIR%\else\app_icons\shield_exe*" "%DEVDIST%\else\app_icons"
 IF "%BITS%" == "32" ( rd /S /Q "%DEVDIST%\includes\Microsoft.VC90.CRT_win64" 2>nul )
 IF "%BITS%" == "64" ( rd /S /Q "%DEVDIST%\includes\Microsoft.VC90.CRT_win32" 2>nul )
 
