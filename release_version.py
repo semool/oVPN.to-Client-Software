@@ -6,7 +6,6 @@ def version_data():
 			"NAME":"%s Client" % (org_data()["ORG"]),
 			"SCRIPT" : "ovpn_client.py"
 		}
-	#print "release_version.version_data = '%s'" % (data)
 	return data
 
 def build_data():
@@ -18,7 +17,6 @@ def build_data():
 		"DAY" : date.today().day,
 		"STAMP" : int(time.time())
 	}
-	#print "release_version.build_data = '%s'" % (data)
 	return data
 
 def org_data():
@@ -35,7 +33,6 @@ def org_data():
 			"API_DOMAIN" : "vcp.ovpn.to",
 			"API_PORT" : "443",
 		}
-	#print "release_version.org_data = '%s'" % (data)
 	return data
 
 def setup_data():
@@ -46,7 +43,6 @@ def setup_data():
 			"copyright" : "Copyright (C) %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
 			"uac_info" : "requireAdministrator"
 		}
-	#print "release_version.setup_data = '%s'" % (data)
 	return data
 
 def script_data():
@@ -54,7 +50,6 @@ def script_data():
 			"CLIENTVERSION" : version_data()["VERSION"],
 			"CLIENT_STRING" : setup_data()["name"]
 		}
-	#print "release_version.script_data = '%s'" % (data)
 	return data
 
 print "version_data() = '%s'" % (version_data())
