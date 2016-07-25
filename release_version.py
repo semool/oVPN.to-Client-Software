@@ -45,17 +45,9 @@ def setup_data():
 		}
 	return data
 
-def script_data():
-	data = {
-			"CLIENTVERSION" : version_data()["VERSION"],
-			"CLIENT_STRING" : setup_data()["name"]
-		}
-	return data
-
 print "version_data() = '%s'" % (version_data())
 print "build_data() = '%s'" % (build_data())
 print "org_data() = '%s'" % (org_data())
 print "setup_data() = '%s'" % (setup_data())
-print "script_data() = '%s'" % (script_data())
 
 print "leave release_version.py"
