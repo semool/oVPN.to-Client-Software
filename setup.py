@@ -89,7 +89,7 @@ setup_dict = dict(
 		{
 			"script":release_version.setup_data()["script"],
 			"icon_resources" : [(1, 'else\\app_icons\\shield_exe.ico')],
-			"copyright" : release_version.setup_data()["copyright"],
+			"copyright" : "Copyright %s" % (release_version.setup_data()["copyright"]),
 			"company_name" : "%s %s" % (release_version.org_data()["ORG"],release_version.org_data()["ADD"]),
 			"other_resources" : [(24,1,manifest)],
 		}

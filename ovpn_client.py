@@ -5556,17 +5556,17 @@ class Systray:
 			except:
 				pass
 			self.about_dialog.set_logo(self.app_icon)
-			self.about_dialog.set_program_name("oVPN.to Client")
+			self.about_dialog.set_program_name(release_version.version_data()["NAME"])
 			# *** Dont work on Windows atm ***
-			#self.about_dialog.set_website("https://ovpn.to")
-			self.about_dialog.set_website_label("oVPN.to")
+			#self.about_dialog.set_website(release_version.org_data()["SITE"])
+			self.about_dialog.set_website_label(release_version.org_data()["ORG"])
 			self.about_dialog.set_transient_for(self.window)
 			self.about_dialog.set_destroy_with_parent (True)
-			self.about_dialog.set_name('oVPN.to')
+			self.about_dialog.set_name(release_version.org_data()["ORG"])
 			self.about_dialog.set_version(CLIENTVERSION)
-			self.about_dialog.set_copyright('(C) 2016 oVPN.to')
+			self.about_dialog.set_copyright(release_version.setup_data()["copyright"])
 			self.about_dialog.set_comments((ABOUT_TEXT))
-			self.about_dialog.set_authors(['oVPN.to [ support@ovpn.to ]'])
+			self.about_dialog.set_authors(["%s [ %s ]"%(release_version.org_data()["ORG"],release_version.org_data()["EMAIL"])])
 			response = self.about_dialog.run()
 			self.about_dialog.destroy()
 			if not response == None:

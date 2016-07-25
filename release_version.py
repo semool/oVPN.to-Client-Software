@@ -23,6 +23,7 @@ def org_data():
 			"ORG" : "oVPN.to",
 			"ADD" : "Anonymous Services",
 			"SITE" : "https://oVPN.to",
+			"EMAIL" : "support@ovpn.to",
 			"SUPPORT" : "https://vcp.ovpn.to/?site=support",
 			"CHAT_URL" : "https://webirc.ovpn.to",
 			"IRC_ADDR" : "irc://irc.ovpn.to:6697 (SSL)",
@@ -40,7 +41,7 @@ def setup_data():
 			"version" : "0.%s" % (version_data()["VERSION"]),
 			"name" : "%s for Windows" % (version_data()["NAME"]),
 			"description" : "Built: %d-%02d-%02d (%d)" % (build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]),
-			"copyright" : "Copyright (C) %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
+			"copyright" : "(C) 2010 - %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
 		}
 	return data
 
