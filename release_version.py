@@ -13,10 +13,9 @@ def build_data():
 	import time
 	data = {
 		"YEAR" : date.today().year,
-		# *fixme* oops! way too much dynamic: built date changes realtime in app!
-		#"MONTH" : date.today().month,
-		#"DAY" : date.today().day,
-		#"STAMP" : int(time.time())
+		"MONTH" : date.today().month,
+		"DAY" : date.today().day,
+		"STAMP" : int(time.time())
 	}
 	return data
 
@@ -65,10 +64,13 @@ if len(sys.argv) > 1:
 				fp.write(content)
 				fp.close()
 				print "%s written content '%s' to file '%s'" % (key,file,content)
+			else:
+				print "file '%s' not found" % (file)
 		
 		setrelease = {
 			"inno" : { "file" : "inno.release", "content" : '#define Version "%s"' % (version_data()["VERSION"]) },
 			"winb" : { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) },
+			"hard" : { "file" : "release_hard.py", "content" : 'def builtdate(): return "%s %s - built: %d-%02d-%02d (%d)"' % (version_data()["NAME"],version_data()["VERSION"],build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]) },
 			}
 			
 		for key, value in setrelease.items():

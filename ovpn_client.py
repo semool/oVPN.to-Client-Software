@@ -112,11 +112,21 @@ try:
 	print CLIENTVERSION
 	print CLIENT_STRING
 	print API_URL
+	
+	try:
+		import release_hard
+		BUILT_STRING = release_hard.builtdate()
+	except: 
+		BUILT_STRING = "(UNDEFINED)"
+	print BUILT_STRING
+
 	if DEVMODE == True:
+		print "DEVMODE sleep 15"
 		time.sleep(15)
 except:
 	print "import release_version failed"
 	sys.exit()
+
 
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -5563,7 +5573,7 @@ class Systray:
 			self.about_dialog.set_transient_for(self.window)
 			self.about_dialog.set_destroy_with_parent (True)
 			self.about_dialog.set_name(release_version.org_data()["ORG"])
-			self.about_dialog.set_version(release_version.setup_data()["description"])
+			self.about_dialog.set_version(BUILT_STRING)
 			self.about_dialog.set_copyright(release_version.setup_data()["copyright"])
 			self.about_dialog.set_comments((ABOUT_TEXT))
 			self.about_dialog.set_authors(["%s [ %s ]"%(release_version.org_data()["ORG"],release_version.org_data()["EMAIL"])])
