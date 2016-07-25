@@ -52,28 +52,21 @@ print "org_data() = '%s'" % (org_data())
 print "setup_data() = '%s'" % (setup_data())
 
 
-import sys
+import sys, os
 if len(sys.argv) > 1:
 	if sys.argv[1] == "SET_VERSION_FILES":
-		import os
-		VERSION = version_data()["VERSION"]
-		inno = { "file" : "set_version.txt", "content" : "#define Version" }
-		winb = { "file" : "set_version.bat", "content" : "set RELEASE=" }
 		
-		file = inno["file"]
-		data = '%s "%s"' % (inno["content"],VERSION)
-		if os.path.isfile(file):
-			fp = open(file, "wb")
-			fp.write(data)
-			fp.close()
-			print "written: inno data '%s' to file '%s'" % (data,file)
+		inno = { "file" : "set_version.txt", "content" : '#define Version "%s"' % (version_data()["VERSION"]) }
+		winb = { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) }
 		
-		file = winb["file"]
-		data = '%s%s' % (winb["content"],VERSION)
-		if os.path.isfile(file):
-			fp = open(file, "wb")
-			fp.write(data)
-			fp.close()
-			print "written: winb data '%s' to file '%s'" % (data,file)
+		def write_releasefile(file,data):
+			if os.path.isfile(file):
+				fp = open(file, "wb")
+				fp.write(data)
+				fp.close()
+				print "written: data '%s' to file '%s'" % (data,file)
+				
+		write_releasefile(inno["file"],inno["content"])
+		write_releasefile(winb["file"],winb["content"])
 
 print "leave release_version.py"
