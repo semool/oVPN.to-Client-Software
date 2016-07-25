@@ -7,7 +7,7 @@
 
 + open cmd.exe as admin:
 + C:\Python27\Scripts\pip.exe install --upgrade pip
-+ C:\Python27\Scripts\pip.exe install pycrypto
++ C:\Python27\Scripts\pip.exe install pycrypto (not needed atm)
 + C:\Python27\Scripts\pip.exe install requests
 
 
@@ -17,7 +17,7 @@
 
 + open cmd.exe as admin:
 + C:\Python27_64\Scripts\pip.exe install --upgrade pip
-+ C:\Python27_64\Scripts\pip.exe install pycrypto
++ C:\Python27_64\Scripts\pip.exe install pycrypto (not needed atm)
 + C:\Python27_64\Scripts\pip.exe install requests
 
 
