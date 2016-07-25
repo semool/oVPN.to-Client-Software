@@ -104,8 +104,8 @@ else:
 print "import release_version"
 try:
 	import release_version
-	CLIENTVERSION = "v%s-gtk3" % (release_version.version_data()["VERSION"])
-	CLIENT_STRING = "%s - %s" % (release_version.version_data()["NAME"],CLIENTVERSION)
+	CLIENTVERSION = "%s" % (release_version.version_data()["VERSION"])
+	CLIENT_STRING = "%s %s" % (release_version.version_data()["NAME"],CLIENTVERSION)
 	VCP_DOMAIN = release_version.org_data()["VCP_DOMAIN"]
 	API_DOMAIN = release_version.org_data()["API_DOMAIN"]
 	API_URL = "https://%s:%s/%s" % (API_DOMAIN,release_version.org_data()["API_PORT"],release_version.org_data()["API_POST"])
