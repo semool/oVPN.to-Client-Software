@@ -1,6 +1,65 @@
 from distutils.core import setup
 import py2exe
 import sys, os, site, shutil, time
+import platform
+import release_version
+
+appversion = release_version.setup_data()["version"]
+cpu = 'x86'
+crt = 'Microsoft.VC90.CRT_win32'
+if platform.architecture()[0] == '64bit':
+	cpu = 'amd64'
+	crt = 'Microsoft.VC90.CRT_win64'
+
+manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" manifestVersion="1.0">
+	<assemblyIdentity
+		version="{APPVERSION}"
+		processorArchitecture="{CPU}"
+		name="oVPN.to Client"
+		type="win32"
+	/>
+	<description>oVPN.to Client</description>
+	<asmv3:trustInfo xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+		<asmv3:security>
+			<asmv3:requestedPrivileges>
+				<asmv3:requestedExecutionLevel
+				level="requireAdministrator"
+				uiAccess="false" />
+			</asmv3:requestedPrivileges>
+		</asmv3:security>
+	</asmv3:trustInfo>
+	<asmv3:application>
+		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">'
+			<dpiAware>true</dpiAware>
+		</asmv3:windowsSettings>
+	</asmv3:application>
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity
+				type="win32"
+				name="Microsoft.Windows.Common-Controls"
+				version="6.0.0.0"
+				processorArchitecture="{CPU}"
+				publicKeyToken="6595b64144ccf1df"
+				language="*"
+			/>
+		</dependentAssembly>
+	</dependency>
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity
+				type="win32"
+				name="Microsoft.VC90.CRT"
+				version="9.0.30729.4940"
+				processorArchitecture="{CPU}"
+				publicKeyToken="1fc8b3b9a1e18e3b"
+				language="*"
+			/>
+		</dependentAssembly>
+	</dependency>
+</assembly>
+'''.format(APPVERSION=appversion, CPU=cpu)
 
 site_dir = site.getsitepackages()[1] 
 include_dll_path = os.path.join(site_dir, 'gnome')
@@ -18,7 +77,6 @@ for dll in os.listdir(include_dll_path):
 for dll in gtk_dlls:
 	shutil.copy(dll, cdir)
 
-import release_version
 print release_version.setup_data()
 print release_version.script_data()
 print "\nCHECK DATA, sleeping 10s!\n"
@@ -27,13 +85,14 @@ setup_dict = dict(
 	version = release_version.setup_data()["version"],
 	name = release_version.setup_data()["name"],
 	description = release_version.setup_data()["description"],
+	data_files = [('Microsoft.VC90.CRT',['includes/'+crt+'/Microsoft.VC90.CRT.manifest','includes/'+crt+'/msvcp90.dll','includes/'+crt+'/msvcr90.dll']),],
 	windows=[
 		{
 			"script":release_version.version_data()["SCRIPT"],
 			"icon_resources" : [(1, 'else\\app_icons\\shield_exe.ico')],
-			"uac_info" : release_version.setup_data()["uac_info"],
 			"copyright" : release_version.setup_data()["copyright"],
 			"company_name" : "%s %s" % (release_version.org_data()["ORG"],release_version.org_data()["ADD"]),
+			"other_resources" : [(24,1,manifest)],
 		}
 	],
 	options={

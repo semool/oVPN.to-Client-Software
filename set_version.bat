@@ -1,1 +1,1 @@
-set RELEASE=v0.5.8-gtk3
+set RELEASE=0.5.8

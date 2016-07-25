@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-import ctypes
-user32 = ctypes.windll.user32
-user32.SetProcessDPIAware()
-"""
+
 import os
 import sys
 from _winreg import *
@@ -141,6 +137,7 @@ class Systray:
 	def __init__(self):
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
+		self.tray.is_embedded()
 		traysize = self.tray.get_size()
 		self.debug(1,"TrayIcon Output Size: %s pixel" % (traysize))
 		self.tray.connect('size-changed', self.statusicon_size_changed)
@@ -5567,7 +5564,7 @@ class Systray:
 			self.about_dialog.set_destroy_with_parent (True)
 			self.about_dialog.set_name('oVPN.to')
 			self.about_dialog.set_version(CLIENTVERSION)
-			self.about_dialog.set_copyright('(C) 2010 - 2016 oVPN.to')
+			self.about_dialog.set_copyright('(C) 2016 oVPN.to')
 			self.about_dialog.set_comments((ABOUT_TEXT))
 			self.about_dialog.set_authors(['oVPN.to [ support@ovpn.to ]'])
 			response = self.about_dialog.run()
