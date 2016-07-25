@@ -27,6 +27,7 @@ if exist %EXESTRING% del %EXESTRING%
 
 %PYEXE% setup.py py2exe
 pause
+call sign.bat
 
 call includes_to_dist.bat %~1
 
