@@ -90,8 +90,39 @@ import json
 #import gc
 from ConfigParser import SafeConfigParser
 
-CLIENTVERSION="v0.5.8-gtk3"
-CLIENT_STRING="oVPN.to Client %s" % (CLIENTVERSION)
+if len(sys.argv) > 1:
+	if sys.argv[1] == "DEVMODE":
+		DEVMODE = True
+		DEBUG = True
+		print "DEVMODE=True"
+	else:
+		print "invalid args"
+		print sys.argv
+		print len(sys.argv)
+		sys.exit()
+else:
+	DEVMODE = False
+	DEBUG = False
+	print "DEVMODE=False"
+
+print "import release_version"
+try:
+	import release_version
+	print "imported release_version.py"
+	print "release_version.setup_data()"
+	print release_version.setup_data()
+	print "release_version.script_data()"
+	print release_version.script_data()
+	CLIENTVERSION = release_version.script_data()["CLIENTVERSION"]
+	CLIENT_STRING = release_version.script_data()["CLIENT_STRING"]
+	print CLIENTVERSION
+	print CLIENT_STRING
+	if DEVMODE == True:
+		time.sleep(15)
+except:
+	print "import release_version failed"
+	sys.exit()
+
 
 ABOUT_TEXT = """Credits and Cookies go to...
 + ... all our customers! We can not exist without you!
@@ -144,20 +175,8 @@ class Systray:
 			sys.exit()
 
 	def self_vars(self):
-		if len(sys.argv) > 1:
-			if sys.argv[1] == "DEVMODE":
-				self.DEVMODE = True
-				self.DEBUG = True
-				print "DEVMODE=True"
-			else:
-				print "invalid args"
-				print sys.argv
-				print len(sys.argv)
-				sys.exit()
-		else:
-			self.DEVMODE = False
-			self.DEBUG = False
-			print "DEVMODE=False"
+		self.DEBUG = DEBUG
+		self.DEVMODE = DEVMODE
 		self.APIURL = "https://%s:%s/%s" % (DOMAIN,PORT,API)
 		self.LOGLEVEL = 1
 		self.LOGLEVELS = [0,1,2,3]
