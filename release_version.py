@@ -64,7 +64,7 @@ if len(sys.argv) > 1:
 				print "%s written content '%s' to file '%s'" % (key,file,content)
 		
 		setrelease = {
-			"inno" : { "file" : "set_version.txt", "content" : '#define Version "%s"' % (version_data()["VERSION"]) },
+			"inno" : { "file" : "inno.release", "content" : '#define Version "%s"' % (version_data()["VERSION"]) },
 			"winb" : { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) },
 			}
 			
