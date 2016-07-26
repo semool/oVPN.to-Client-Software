@@ -17,7 +17,6 @@ set EXESTRING=ovpn_client_%VERSION%_setup.exe
 ::set EXESTRING="oVPN.to-Client-%VERSION%-setup.exe"
 
 echo build %EXESTRING% ?
-pause
 
 if exist dist rmdir /S/Q dist\
 if exist build rmdir /S/Q build\
@@ -26,9 +25,10 @@ if exist %EXESTRING% del %EXESTRING%
 
 
 %PYEXE% -OO setup.py py2exe
+echo py2exe compiled
 pause
 
-call sign.bat
+IF "%~2" == "SIGN" (call sign.bat)
 
 call includes_to_dist.bat %~1
 
@@ -39,9 +39,8 @@ pause
 
 rmdir /S/Q dist\ build\
 
-call sign.bat
-
 echo Compiled %EXESTRING%
+echo Close or hit to make release
 pause
 REM exit
 call release.bat

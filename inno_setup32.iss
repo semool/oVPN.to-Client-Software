@@ -11,6 +11,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+SignTool=signtool
 AppId={{991F58FC-8D40-4B45-B434-6A10AAC12FBA}
 AppName={#AppName}
 AppVersion=v{#Version}-gtk3_win32
@@ -45,9 +46,10 @@ DisableDirPage=no
 LicenseFile=LICENSE
 LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=auto
+SignedUninstaller=yes
 
 [Tasks]
-Name: portablemode; Description: "Portable Mode"
+Name: portablemode; Description: "Portable Mode"; Flags: unchecked
 
 [InstallDelete]
 Type: files; Name: "{userdesktop}\oVPN.to Client for Windows.lnk";
