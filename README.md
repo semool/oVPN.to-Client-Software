@@ -38,3 +38,19 @@
 + start poedit 1.8+
 + open file 'locale/de/ovpn_client.po'
 + catalog -> update from POT -> './messages.pot'
+
+## Self Signed Certificate
++ Download and install SDK for your OS 
++ [Microsoft Windows SDK for Windows 7](https://download.microsoft.com/download/A/6/A/A6AC035D-DA3F-4F0C-ADA4-37C8E5D34E3D/winsdk_web.exe) Select only: '.Net Development' -> 'Tools'
++ [Microsoft Windows SDK for Windows 8](https://go.microsoft.com/fwlink/p/?LinkId=226658)
++ [Microsoft Windows SDK for Windows 10](https://go.microsoft.com/fwlink/p/?LinkID=698771) Select only: 'Windows App Certification Kit'
++ [DigiCert Certificate Utility for Windows](https://www.digicert.com/util/DigiCertUtil.zip)
++ open cmd.exe as admin:
++ makecert.exe -n "CN=oVPN.to-Client, O=organizationName, OU=organizationalUnitName, L=localityName, S=stateOrProvinceName, C=countryName" -a sha512 -r -cy authority -pe -ss root -sr currentuser -len 4096 -h 3
++ makecert.exe -n "CN=oVPN.to-Client, L=localityName, S=stateOrProvinceName, C=countryName" -a sha512 -pe -ss my -sr currentuser -in "oVPN.to-Client" -is root -ir currentuser -len 4096 -eku 1.3.6.1.5.5.7.3.3
++ Open DigiCertUtil.exe and it shows your Certificate
++ Right click your Certificate and select "copy thumbprint to clipboard"
++ Edit sign.bat and replace the thumbprints with the one in clipboard
++ Open Inno Setup Compiler -> Tools -> Configure Sign Tools and click add
++ As name enter: signtool
++ As command enter: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /a /sha1 YourThumbprint /t http://timestamp.verisign.com/scripts/timestamp.dll /fd SHA512 $f
