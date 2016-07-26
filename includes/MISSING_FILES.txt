@@ -1,2 +1,0 @@
-crypt32_win32.dll
-crypt32_win64.dll
