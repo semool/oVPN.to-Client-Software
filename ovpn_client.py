@@ -1,94 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
 import sys
-from _winreg import *
-
-# Patching libgtk-3-0.dll for 16px or 32px TrayIcon Output
-# File Size win32 dll: 6453248
-# File Size win64 dll: 6675968
-
-bin_dir = os.getcwd()
-gtkfile = "%s\\libgtk-3-0.dll" % (bin_dir)
-
-if os.path.exists(gtkfile) and sys.platform == "win32":
-
-	# Check filesize to detect 32 or 64bit dll
-	offset = False
-	filesize = os.path.getsize(gtkfile)
-	if filesize == 6675968:
-		offset = 0x3D051
-		version = "win64"
-	if filesize == 6453248:
-		offset = 0x3E4E2
-		version = "win32"
-
-	if not offset == False:
-
-		print "Found: %s [%s]" % (gtkfile,version)
-
-		# Get Windows DPI Scaling Factor from Registry (96 = 100%, 120 = 125%)
-		# When reg key = False, use standard 16px output
-		pixel = "\x10"
-		pixeldez = "16"
-		RawKey = False
-		try:
-			Registry = ConnectRegistry(None, HKEY_CURRENT_USER)
-			RawKey = OpenKey(Registry, "Control Panel\Desktop")
-		except:
-			pass
-		try:
-			if not RawKey == False:
-				i = 0
-				while 1:
-					name, value, type = EnumValue(RawKey, i)
-					if name == "LogPixels":
-						if value > 96:
-							pixel = "\x20"
-							pixeldez = "32"
-						if value == 96:
-							pass
-						break
-					i += 1
-		except:
-			pass
-
-		# Patching
-		try:
-			with open(gtkfile,'r+b') as f:
-					f.seek(offset)
-					if not f.read(1) == pixel:
-						print "Patch TrayIcon Output Size to: %s pixel" % (pixeldez)
-						f.seek(offset)
-						f.write(pixel)
-		except:
-			pass
-
-	else:
-		print "No compatible gtk-3-0.dll found"
-
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
-
-from datetime import datetime as datetime
-import base64
-import gettext
-import locale
-import types
-import platform
-import hashlib
-import random
-import time
-import zipfile
-import subprocess
-import threading
-import socket
-import requests
-import json
-#import gc
-from ConfigParser import SafeConfigParser
-
 if len(sys.argv) > 1:
 	if sys.argv[1] == "DEVMODE":
 		DEVMODE = True
@@ -104,8 +16,21 @@ else:
 	DEBUG = False
 	print "DEVMODE=False"
 
-print "import release_version"
 try:
+	import patches
+	patches.gtk_trayicon_dpi()
+except:
+	pass
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
+from datetime import datetime as datetime
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json
+from ConfigParser import SafeConfigParser
+
+try:
+	print "import release_version"
 	import release_version
 	CLIENTVERSION = "%s" % (release_version.version_data()["VERSION"])
 	CLIENT_STRING = "%s %s" % (release_version.version_data()["NAME"],CLIENTVERSION)
@@ -129,7 +54,6 @@ try:
 except:
 	print "import release_version failed"
 	sys.exit()
-
 
 
 ABOUT_TEXT = """Credits and Cookies go to...
@@ -1027,18 +951,22 @@ class Systray:
 		string = "netsh.exe interface show interface"
 		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
 		ADAPTERS = ADAPTERS.split('\r\n')
-		LANG = "undef"
-
+		
+		LANG = False
 		# language read hint
-		if ADAPTERS[1].endswith("nsefladenavn"):
-			LANG = "DK"
-		elif ADAPTERS[1].endswith("Schnittstellenname"):
+		LANGS = [ "DE","DK","EN","FR" ]
+		if ADAPTERS[1].endswith("Schnittstellenname"):
 			LANG = "DE"
+		elif ADAPTERS[1].endswith("nsefladenavn"):
+			LANG = "DK"
 		elif ADAPTERS[1].endswith("Interface Name"):
 			LANG = "EN"
-		else:
-			self.errorquit(text=_("Error reading your Interfaces from netsh.exe. Contact support@ovpn.to with Error-ID:\nADAPTERS[1]=(%s)\n") % (ADAPTERS[1]))
-
+		elif ADAPTERS[1].endswith("Name interface"):
+			LANG = "FR"
+		
+		if LANG == False:
+			self.DEBUG = True
+			self.errorquit(text="Error reading your Interfaces failed\n cmd='%s' \n\nPlease contact support@ovpn.to\nor join https://webirc.ovpn.to into channel #help !\n\nError-ID:\nADAPTERS[1]=(%s)\n\nADAPTERS='%s'" % (string,ADAPTERS[1],ADAPTERS))
 		self.debug(1,"def win_read_interfaces: LANG = %s" % (LANG))
 		for line in ADAPTERS:
 			self.debug(1,"%s"%(line))
@@ -1049,7 +977,7 @@ class Systray:
 						interface = interface[5:]
 					elif interface[1].startswith("Afbrudt"):
 						interface = interface[3:]
-				elif LANG == "DE" or LANG == "EN":
+				elif LANG == "DE" or LANG == "EN" or LANG == "FR":
 					interface = interface[3:]
 				else:
 					interface = interface[3:]
