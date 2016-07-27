@@ -143,7 +143,6 @@ class HASH_DLLS:
 			if os.path.exists(dir):
 				notfound, verified, failed, missing  = 0, 0, 0, 0
 				verify_files_indir = self.list_files(dir)
-				len_verify_files_indir = len(verify_files_indir)
 				
 				try:
 					verify_files_store = self.HASHS_DB[key]
@@ -158,23 +157,23 @@ class HASH_DLLS:
 						filepath = "%s\\%s" % (dir,file)
 						if not filepath in verify_files_indir:
 							notfound +=1
-							print "def verify_files: file = '%s\\%s' NOTFOUND" % (dir,file)
+							print "def verify_files: file = '%s' FILE NOTFOUND" % (filepath)
 					
 					for file in verify_files_indir:
 						fileshort = file.split("\\")[-1]
 						if fileshort in self.HASHS_DB[key]:
 							hash = self.hash_sha512_file(file)
-							file = file.split("\\")[-1]
-							if self.HASHS_DB[key][file] == hash:
+							if self.HASHS_DB[key][fileshort] == hash:
 								verified += 1
-								print "def verify_files: file = '%s' hash = '%s' OK" % (file,hash)
+								#print "def verify_files: file = '%s' hash = '%s' HASH OK" % (file,hash)
 							else:
 								failed += 1
-								print "def verify_files: file = '%s' FAILED" % (file)
+								print "def verify_files: file = '%s' hash = '%s' HASH FAILED" % (file,hash)
 						else:
 							missing += 1
-							print "def verify_files: file = '%s' MISSING" % (file)
+							print "def verify_files: file = '%s' MISSING JSON" % (file)
 				print "def verify_files: key '%s' dir = '%s' filesindir = '%s' filesjson = '%s' missing = '%s' notfound = '%s' failed = '%s' verified = '%s'" % (key, dir, len(verify_files_indir), len(verify_files_store), missing, notfound, failed, verified)
+		return True
 
 def app():
 	HASH_DLLS()
