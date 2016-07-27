@@ -41,8 +41,6 @@ def setup_data():
 			"script" : "ovpn_client.py",
 			"version" : "0.%s" % (version_data()["VERSION"]),
 			"name" : "%s for Windows" % (version_data()["NAME"]),
-			# *fixme* oops, we are too much dynamic, realtime :D
-			#"description" : "%s %s Built: %d-%02d-%02d (%d)" % (version_data()["NAME"],version_data()["VERSION"],build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]),
 			"description" : "%s %s" % (version_data()["NAME"],version_data()["VERSION"]),
 			"copyright" : "(C) 2010 - %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
 		}
