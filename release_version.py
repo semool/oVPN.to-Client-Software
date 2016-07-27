@@ -3,7 +3,7 @@ print "join release_version.py"
 
 def version_data():
 	data = {
-			"VERSION" : "0.5.9",
+			"VERSION" : "0.6.0",
 			"NAME":"%s Client" % (org_data()["ORG"]),
 		}
 	return data

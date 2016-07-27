@@ -5,12 +5,17 @@ IF NOT DEFINED SIGNTOOL (echo "DO NOT RUN THIS FILE DIRECTLY" && PAUSE && EXIT)
 IF NOT EXIST %SIGNTOOL% (echo %SIGNTOOL% NOT FOUND && PAUSE && EXIT)
 
 IF EXIST "%DISTDIR%\ovpn_client.exe" (
-	%SIGNTOOL% sign /sha1 0775a45c76fad6989cbeb35c87e476642ccc172f /t http://timestamp.verisign.com/scripts/timestamp.dll /fd SHA512 "%DISTDIR%\ovpn_client.exe"
 	for %%v in (%DISTDIR%\*.dll) do (
-		IF NOT "%%v" == "%DISTDIR%\libgtk-3-0.dll" (
-			%SIGNTOOL% sign /sha1 0775a45c76fad6989cbeb35c87e476642ccc172f /t http://timestamp.verisign.com/scripts/timestamp.dll /fd SHA512 "%%v"
-		)
+		IF DEFINED SIGNTOOLCMD1 (%SIGNTOOLCMD1% "%%v")
+		IF DEFINED SIGNTOOLCMD2 (%SIGNTOOLCMD2% "%%v")
+		IF DEFINED SIGNTOOLCMD3 (%SIGNTOOLCMD3% "%%v")
+		IF DEFINED SIGNTOOLCMD4 (%SIGNTOOLCMD4% "%%v")
+		IF DEFINED SIGNTOOLVERI (
+			echo VERIFY: %%v
+			%SIGNTOOLVERI% "%%v"
+			)
+		::IF NOT "%%v" == "%DISTDIR%\libgtk-3-0.dll" (%SIGNTOOLCMD% "%%v")
 	)
 )
-echo SIGN complete
+echo SIGN_DLL complete
 pause

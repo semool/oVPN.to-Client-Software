@@ -11,7 +11,10 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-SignTool=signtool
+SignTool=signtool1
+SignTool=signtool2
+SignTool=signtool3
+SignTool=signtool4
 AppId={{991F58FC-8D40-4B45-B434-6A10AAC12FBA}
 AppName={#AppName}
 AppVersion=v{#Version}-gtk3_win32
