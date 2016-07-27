@@ -85,6 +85,7 @@ setup_dict = dict(
 	name = release_version.setup_data()["name"],
 	description = release_version.setup_data()["description"],
 	data_files = [('Microsoft.VC90.CRT',['includes/'+crt+'/Microsoft.VC90.CRT.manifest','includes/'+crt+'/msvcp90.dll','includes/'+crt+'/msvcr90.dll']),],
+	zipfile = 'ovpn_client.lib',
 	windows=[
 		{
 			"script":release_version.setup_data()["script"],
