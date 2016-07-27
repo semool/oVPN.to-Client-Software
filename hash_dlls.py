@@ -10,15 +10,23 @@ import types
 import hashlib
 import threading
 import subprocess
+import struct
 
-if len(sys.argv) > 1:
-	if sys.argv[1] == "32":
-		BITS = 32
-	elif sys.argv[1] == "64":
-		BITS = 64
-	else:
-		print "HASH_DLLS: missing bits"
-		sys.exit()
+SBITS = struct.calcsize("P") * 8
+
+if not SBITS == 32 and not SBITS == 64:
+	print "read bits from sys.argv[1]"
+	if len(sys.argv) > 1:
+		if sys.argv[1] == "32":
+			BITS = 32
+		elif sys.argv[1] == "64":
+			BITS = 64
+		else:
+			print "HASH_DLLS: missing bits"
+			sys.exit()
+else:
+	BITS = SBITS
+	print "read bits %s from struct" % (BITS)
 
 class HASH_DLLS:
 	def __init__(self):
@@ -121,7 +129,7 @@ class HASH_DLLS:
 						if os.path.isfile(file):
 							hash = self.hash_sha512_file(file)
 							if len(hash) == 128:
-								print "def hash_files: hashed file = '%s'" % (file)
+								print "def hash_files: hashed file = '%s' hash = '%s'" % (file,hash)
 								file = file.split("\\")[-1]
 								files[file] = hash
 							else:
@@ -159,7 +167,7 @@ class HASH_DLLS:
 							file = file.split("\\")[-1]
 							if self.HASHS_DB[key][file] == hash:
 								verified += 1
-								#print "def verify_files: file = '%s' OK" % (file)
+								print "def verify_files: file = '%s' hash = '%s' OK" % (file,hash)
 							else:
 								failed += 1
 								print "def verify_files: file = '%s' FAILED" % (file)
