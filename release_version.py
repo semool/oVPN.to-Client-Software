@@ -43,6 +43,8 @@ def setup_data():
 			"name" : "%s for Windows" % (version_data()["NAME"]),
 			"description" : "%s %s" % (version_data()["NAME"],version_data()["VERSION"]),
 			"copyright" : "(C) 2010 - %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
+			"DIST_DIR1" : "dist",
+			"DIST_DIR2" : "dist_check_bin",
 		}
 	return data
 

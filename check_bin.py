@@ -29,16 +29,20 @@ class CHECK_BIN:
 	def __init__(self):
 		if self.self_vars():
 			if self.verify_files(self.BIN_DIR):
-				print "hash check '%s' bits passed" % (BITS)
+				self.log("hash check '%s' bits passed" % (BITS))
+			else:
+				self.log("hash check failed")
 		else:
-			print "init failed"
-			sys.exit()
+			self.log("init failed")
+		self.log("def __init__: sys.exit()")
+		sys.exit()
 
 	def self_vars(self):
+		self.logfile = "check_bin.log"
 		self.HASHS_DB = HASHS_DB[BITS][MODE]
 		self.BIN_DIR = os.getcwd()
-		print "self.BIN_DIR = '%s'" % (self.BIN_DIR)
-		print "def self_vars: return True"
+		self.log("self.BIN_DIR = '%s'" % (self.BIN_DIR))
+		self.log("def self_vars: return True")
 		return True
 
 	def hash_sha512_file(self,file):
@@ -93,21 +97,19 @@ class CHECK_BIN:
 				else:
 					missing += 1
 					self.log("def verify_files: file = '%s\\%s' MISSING JSON" % (dir,file))
-			print "almost leave"
 			self.log("def verify_files: key '%s' dir = '%s' filesindir = '%s' filesjson = '%s' missing = '%s' notfound = '%s' failed = '%s' verified = '%s'" % (MODE, dir, len(verify_files_indir), len(verify_files_store), missing, notfound, failed, verified))
 			if missing == 0 and notfound == 0 and failed == 0 and verified == len(verify_files_store) and verified == len(verify_files_indir):
 				return True
 			else:
-				self.log("def verify_files: FAILED! EXIT!")
-				sys.exit()
+				self.log("def verify_files: FAILED!")
+				#sys.exit()
 		else:
 			self.log("no DLLs found in '%s'" % (dir))
 
 	def log(self,text):
 		print text
-		logfile = "check_bin.log"
 		data = "%s\n" % (text)
-		fp = open(logfile, "a")
+		fp = open(self.logfile, "a")
 		fp.write(data)
 		fp.close()
 

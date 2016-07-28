@@ -1,2 +1,0 @@
-check_bin.exe
-pause

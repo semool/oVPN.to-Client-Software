@@ -54,7 +54,10 @@ IF NOT EXIST %PYINSTALLER% (echo PYINSTALLER %PYINSTALLER% NOT FOUND && PAUSE &&
 set INCLUDESDIR=%SOURCEDIR%\includes
 set LOCALEDIR=%SOURCEDIR%\locale
 set DISTDIR=%SOURCEDIR%\dist
+set DISTDIR2=%SOURCEDIR%\dist_check_bin
+set WORKPATH=%SOURCEDIR%\build
 set LANGPATH=%SOURCEDIR%\dist\share\locale\
+set BINARY=%DISTDIR%\ovpn_client.exe
 
 echo dir vars loaded
 echo %SOURCEDIR%

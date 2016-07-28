@@ -61,6 +61,10 @@ manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </assembly>
 '''.format(APPVERSION=appversion, CPU=cpu)
 
+
+SOURCEDIR = os.getcwd()
+DIST_DIR = "%s\\%s" % (SOURCEDIR,release_version.setup_data()["DIST_DIR1"])
+
 site_dir = site.getsitepackages()[1] 
 include_dll_path = os.path.join(site_dir, 'gnome')
 
@@ -97,29 +101,28 @@ setup_dict = dict(
 	],
 	options={
 		'py2exe': {
+		'dist_dir': DIST_DIR,
 		'bundle_files' : 3,
+		'optimize'     : 2,
+		'skip_archive' : False,
 		'compressed'   : False,
 		'unbuffered'   : False,
 		'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
-		'excludes'     : [  ],
-		'optimize'     : 2,
+		'excludes'     : [ 'tcl','tcl8.5','tk8.5','win32pipe','win32wnet','_tkinter','Tkinter','Tk','_testcapi' ],
 		'packages'     : [ 'gi' ],
-		'dll_excludes' : [ 'crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
+		'dll_excludes' : [ 'pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
 		}
 	}
 )
 
 setup(**setup_dict)
-setup(**setup_dict)
 
-dest_dir = os.path.join(cdir, 'dist')
-
-if not os.path.exists(dest_dir):
-	os.makedirs(dest_dir)
+if not os.path.exists(DIST_DIR):
+	os.makedirs(DIST_DIR)
 
 for dll in tmp_dlls:
-	shutil.copy(dll, dest_dir)
+	shutil.copy(dll, DIST_DIR)
 	os.remove(dll)
 
 for d in gtk_dirs_to_include:
-	shutil.copytree(os.path.join(site_dir, 'gnome', d), os.path.join(dest_dir, d))
+	shutil.copytree(os.path.join(site_dir, 'gnome', d), os.path.join(DIST_DIR, d))
