@@ -24,18 +24,32 @@ set PY64EXE=%PY64%\python.exe
 set PY32GET=%PY32%\Tools\i18n
 set PY64GET=%PY64%\Tools\i18n
 
+set DLL32_S=%SOURCEDIR%\includes\DLL\32\signed
+set DLL32_U=%SOURCEDIR%\includes\DLL\32\unsigned
+
+set DLL64_S=%SOURCEDIR%\includes\DLL\64\signed
+set DLL64_U=%SOURCEDIR%\includes\DLL\64\unsigned
+
 IF "%BITS%" == "32" (
 	set PYEXE=%PY32EXE%
 	set PYGET=%PY32GET%
+	set DLLDIR_S=%DLL32_S%
+	set DLLDIR_U=%DLL32_U%
+	set PYINSTALLER=%PY32%\Scripts\pyinstaller.exe
 )
 
 IF "%BITS%" == "64" (
 	set PYEXE=%PY64EXE%
 	set PYGET=%PY64GET%
+	set DLLDIR_S=%DLL64_S%
+	set DLLDIR_U=%DLL64_U%
+	set PYINSTALLER=%PY64%\Scripts\pyinstaller.exe
 )
 
-IF NOT DEFINED PYEXE (echo "MISSING BITS" && PAUSE && EXIT)
+IF NOT DEFINED PYEXE (echo MISSING BITS && PAUSE && EXIT)
 IF NOT EXIST %PYEXE% (echo PYEXE %PYEXE% NOT FOUND && PAUSE && EXIT)
+IF NOT EXIST %PYINSTALLER% (echo PYINSTALLER %PYINSTALLER% NOT FOUND && PAUSE && EXIT)
+
 
 set INCLUDESDIR=%SOURCEDIR%\includes
 set LOCALEDIR=%SOURCEDIR%\locale
