@@ -8,7 +8,9 @@
 + open cmd.exe as admin:
 + C:\Python27\Scripts\pip.exe install --upgrade pip
 + C:\Python27\Scripts\pip.exe install pycrypto (not needed atm)
++ C:\Python27\Scripts\pip.exe install --upgrade pycrypto 
 + C:\Python27\Scripts\pip.exe install requests
++ C:\Python27\Scripts\pip.exe install --upgrade requests
 
 
 ## Setup 64 Bit Dev-Env:
@@ -18,8 +20,9 @@
 + open cmd.exe as admin:
 + C:\Python27_64\Scripts\pip.exe install --upgrade pip
 + C:\Python27_64\Scripts\pip.exe install pycrypto (not needed atm)
++ C:\Python27_64\Scripts\pip.exe install --upgrade pycrypto 
 + C:\Python27_64\Scripts\pip.exe install requests
-
++ C:\Python27_64\Scripts\pip.exe install --upgrade requests
 
 ## Basic Requirements:
 + [PyGObject 3.18.2 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev7-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
