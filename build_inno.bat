@@ -80,3 +80,4 @@ pause
 
 if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
+if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
