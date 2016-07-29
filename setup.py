@@ -73,17 +73,20 @@ gtk_dirs_to_include = ['etc\\fonts', 'lib\\gtk-3.0', 'lib\\girepository-1.0', 's
 gtk_dlls = []
 tmp_dlls = []
 cdir = os.getcwd() 
+tmpdir = cdir+"\\tmp"
+tmpdlldir = tmpdir+"\\dll"
+
+if not os.path.exists(tmpdlldir):
+	os.makedirs(tmpdlldir)
+
 for dll in os.listdir(include_dll_path):
 	if dll.lower().endswith('.dll'):
 		gtk_dlls.append(os.path.join(include_dll_path, dll))
-		tmp_dlls.append(os.path.join(cdir, dll))
+		tmp_dlls.append(os.path.join(tmpdlldir, dll))
 
 for dll in gtk_dlls:
-	shutil.copy(dll, cdir)
+	shutil.copy(dll, tmpdlldir)
 
-print release_version.setup_data()
-print "\nCHECK DATA, sleeping 10s!\n"
-time.sleep(10)
 setup_dict = dict(
 	version = release_version.setup_data()["version"],
 	name = release_version.setup_data()["name"],
@@ -107,8 +110,8 @@ setup_dict = dict(
 		'skip_archive' : False,
 		'compressed'   : False,
 		'unbuffered'   : False,
-		'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64' ],
-		'excludes'     : [ 'tcl','tcl8.5','tk8.5','win32pipe','win32wnet','_tkinter','Tkinter','Tk','_testcapi' ],
+		'includes'     : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64','zlib' ],
+		'excludes'     : release_version.setup_data()["py2exe_excludes"],
 		'packages'     : [ 'gi' ],
 		'dll_excludes' : [ 'pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
 		}

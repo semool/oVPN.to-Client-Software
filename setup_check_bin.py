@@ -65,9 +65,6 @@ BINARY = "%s\\check_bin.exe" % (DIST_DIR)
 
 SIGNTOOL="E:\\codesign\\bin_w10sdk\\signtool.exe"
 SIGNCERTSHA1="0775a45c76fad6989cbeb35c87e476642ccc172f"
-SIGN_SIZE=24500 # quad-sign with zipfile = None
-SIGN_SIZE=SIGN_SIZE-4 # quad-sign with zipfile = "check_bin.lib"
-#SIGN_SIZE=4612 # CMD1
 
 setup_dict = dict(
 	version = release_version.setup_data()["version"],
@@ -93,7 +90,7 @@ setup_dict = dict(
 		'compressed'   : True,
 		'unbuffered'   : False,
 		'includes'     : [ 'os','sys','time','hashlib','struct','subprocess','threading' ],
-		'excludes'     : [ ],
+		'excludes'     : release_version.setup_data()["py2exe_excludes"],
 		'packages'     : [ ],
 		'dll_excludes' : [ 'crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
 		}
@@ -109,11 +106,10 @@ def sign_py2exe(BINARY):
 		sys.exit()
 	
 	SIGNTOOLCMD1="%s sign /sha1 %s /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 %s" % (SIGNTOOL,SIGNCERTSHA1,BINARY)
-	SIGNTOOLCMD2="%s sign /as /sha1 %s /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 %s" % (SIGNTOOL,SIGNCERTSHA1,BINARY)
-	SIGNTOOLCMD3="%s sign /as /sha1 %s /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 %s" % (SIGNTOOL,SIGNCERTSHA1,BINARY)
+	#SIGNTOOLCMD2="%s sign /as /sha1 %s /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 %s" % (SIGNTOOL,SIGNCERTSHA1,BINARY)
+	#SIGNTOOLCMD3="%s sign /as /sha1 %s /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 %s" % (SIGNTOOL,SIGNCERTSHA1,BINARY)
 	SIGNTOOLCMD4="%s sign /as /sha1 %s /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 %s" % (SIGNTOOL,SIGNCERTSHA1,BINARY)
-	SIGNTOOLCMDS = [SIGNTOOLCMD1,SIGNTOOLCMD2,SIGNTOOLCMD3,SIGNTOOLCMD4]
-	#SIGNTOOLCMDS = [SIGNTOOLCMD1]
+	SIGNTOOLCMDS = [SIGNTOOLCMD1,SIGNTOOLCMD4]
 	for CMD in SIGNTOOLCMDS:
 		print CMD
 		subprocess.check_call(CMD)

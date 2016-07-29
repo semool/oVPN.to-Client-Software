@@ -2,13 +2,8 @@
 #
 # CHECK_BIN
 
-import os
-import sys
-import time
-import hashlib
-import struct
-import subprocess
-import threading
+import os, sys, time, hashlib, struct, subprocess, threading, zlib
+
 
 BITS = struct.calcsize("P") * 8
 
@@ -102,7 +97,6 @@ class CHECK_BIN:
 				return True
 			else:
 				self.log("def verify_files: FAILED!")
-				#sys.exit()
 		else:
 			self.log("no DLLs found in '%s'" % (dir))
 

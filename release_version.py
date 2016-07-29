@@ -45,6 +45,7 @@ def setup_data():
 			"copyright" : "(C) 2010 - %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
 			"DIST_DIR1" : "dist",
 			"DIST_DIR2" : "dist_check_bin",
+			"py2exe_excludes" : [ 'tcl','tcl8.5','tk8.5','win32pipe','win32wnet','_tkinter','Tkinter','Tk','_testcapi' ],
 		}
 	return data
 

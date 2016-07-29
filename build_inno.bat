@@ -17,17 +17,44 @@ set VERSION=v%RELEASE%-gtk3_win%BITS%
 set EXESTRING=ovpn_client_%VERSION%_setup.exe
 ::set EXESTRING="oVPN.to-Client-%VERSION%-setup.exe"
 
-echo cleanup before building
-if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
-if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
-if exist %EXESTRING% del %EXESTRING%
+echo cleanup
+IF EXIST %DISTDIR% rmdir /S/Q %DISTDIR%\
+IF EXIST %WORKPATH% rmdir /S/Q %WORKPATH%\
+IF EXIST %EXESTRING% del %EXESTRING%
+IF EXIST py2exe_error.log del py2exe_error.log
+IF EXIST py2exe.log del py2exe.log
 
-%PYEXE% -OO setup.py py2exe
-echo py2exe compiled, hit to call includes_to_dist.bat %~1
-pause
+echo py2exe compile: %BINARY%
+%PYEXE% -OO setup.py py2exe 1> py2exe.log 2> py2exe_error.log
+echo py2exe compiled with exitcode %errorlevel%: logfile: py2exe.log
+
+for %%F in (%SOURCEDIR%\py2exe*.log) do if %%~zF equ 0 del %%F
+IF EXIST py2exe_error.log (
+	echo errors in py2exe
+	notepad.exe py2exe_error.log
+	exit
+)
 
 call includes_to_dist.bat %~1
 echo includes_to_dist.bat completed
+
+pause
+
+set REPACK=0
+IF "%REPACK%" == "1" (
+	set UPX_BIN="E:\binaries\upx\upx.exe"	
+	cd %DISTDIR%
+	%EXE7Z% -aoa -tzip x ovpn_client.lib -oovpn_client_lib\
+	del ovpn_client.lib
+	cd ovpn_client_lib\
+	%EXE7Z% a -tzip -mx9 ..\ovpn_client.lib -r
+	cd..
+	rd ovpn_client_lib /s /q
+	::%UPX_BIN% --best *.*
+	cd %SOURCEDIR%
+)
+
+
 
 IF "%~2" == "SIGN" (
 	echo hit to SIGN files in %DISTDIR%
@@ -37,6 +64,7 @@ IF "%~2" == "SIGN" (
 	pause
 	call sign_exe.bat
 	)
+
 
 echo hit to compile: inno_setup%BITS%.iss
 pause
