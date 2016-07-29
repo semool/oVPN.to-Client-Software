@@ -11,6 +11,14 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
+SignTool=signtool1
+;SignTool=signtool2
+;SignTool=signtool3
+SignTool=signtool4
+SignedUninstaller=yes
+Compression=lzma2/max
+;Compression=bzip/9
+SolidCompression=yes
 AppId={{991F58FC-8D40-4B45-B434-6A10AAC12FBA}
 AppName={#AppName}
 AppVersion=v{#Version}-gtk3_win64
@@ -37,8 +45,6 @@ SetupIconFile=else\app_icons\shield_exe.ico
 WizardImageFile=else\app_icons\shield_exe_2.bmp
 WizardSmallImageFile=else\app_icons\shield_exe.bmp
 WizardImageStretch=no
-Compression=lzma2/max
-SolidCompression=yes
 UninstallDisplayIcon={app}\{#AppExeName}
 Uninstallable=not IsTaskSelected('portablemode')
 DisableDirPage=no
@@ -47,7 +53,7 @@ LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=auto
 
 [Tasks]
-Name: portablemode; Description: "Portable Mode"
+Name: portablemode; Description: "Portable Mode"; Flags: unchecked
 
 [InstallDelete]
 Type: files; Name: "{userdesktop}\oVPN.to Client for Windows.lnk";

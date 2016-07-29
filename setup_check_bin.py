@@ -92,13 +92,13 @@ setup_dict = dict(
 		'includes'     : [ 'os','sys','time','hashlib','struct','subprocess','threading' ],
 		'excludes'     : release_version.setup_data()["py2exe_excludes"],
 		'packages'     : [ ],
-		'dll_excludes' : [ 'crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
+		'dll_excludes' : [ 'pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
 		}
 	}
 )
 
 setup(**setup_dict)
-
+setup(**setup_dict)
 
 def sign_py2exe(BINARY):
 	if not os.path.isfile(SIGNTOOL):
