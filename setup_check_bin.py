@@ -87,7 +87,7 @@ setup_dict = dict(
 		'bundle_files' : 1,
 		'optimize'     : 2,
 		'skip_archive' : False,
-		'compressed'   : True,
+		'compressed'   : False,
 		'unbuffered'   : False,
 		'includes'     : [ 'os','sys','time','hashlib','struct','subprocess','threading' ],
 		'excludes'     : release_version.setup_data()["py2exe_excludes"],
