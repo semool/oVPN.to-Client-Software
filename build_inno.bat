@@ -37,23 +37,7 @@ IF EXIST py2exe_error.log (
 
 call includes_to_dist.bat %~1
 echo includes_to_dist.bat completed
-
 pause
-
-set REPACK=0
-IF "%REPACK%" == "1" (
-	set UPX_BIN="E:\binaries\upx\upx.exe"	
-	cd %DISTDIR%
-	%EXE7Z% -aoa -tzip x ovpn_client.lib -oovpn_client_lib\
-	del ovpn_client.lib
-	cd ovpn_client_lib\
-	%EXE7Z% a -tzip -mx9 ..\ovpn_client.lib -r
-	cd..
-	rd ovpn_client_lib /s /q
-	::%UPX_BIN% --best *.*
-	cd %SOURCEDIR%
-)
-
 
 
 IF "%~2" == "SIGN" (
