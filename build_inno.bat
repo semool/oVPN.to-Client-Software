@@ -35,6 +35,10 @@ IF EXIST py2exe_error.log (
 	exit
 )
 
+echo py2exe completed
+echo Close or hit to continue with includes_to_dist
+pause
+
 call includes_to_dist.bat %~1
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
@@ -48,16 +52,11 @@ IF "%~2" == "SIGN" (
 pause
 
 IF "%~2" == "SIGN" (
-	echo hit to SIGN files in %DISTDIR%
-	for %%v in (%DISTDIR%\*.exe) do (
-		echo sign?: %%v
-	)
-	pause
 	call sign_exe.bat
 	call sign_dll.bat
 	)
 
-echo hit to compile: inno_setup%BITS%.iss
+echo Close or hit to compile: inno_setup%BITS%.iss
 pause
 %INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
 

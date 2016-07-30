@@ -45,4 +45,3 @@ for %%v in ("%DISTDIR%\*.pyd") do (
 )
 
 echo SIGN_DLL complete
-pause
