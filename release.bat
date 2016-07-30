@@ -12,6 +12,8 @@ mkdir "%DEVDIST%\includes\"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DEVDIST%\includes\themes\"
 copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DEVDIST%\includes\"
 xcopy /Y /E "%INCLUDESDIR%\Microsoft.VC90.CRT_win%BITS%" "%DEVDIST%\includes\Microsoft.VC90.CRT_win%BITS%\"
+mkdir "%DEVDIST%\includes\libgtk3-tray32"
+copy /Y "%INCLUDESDIR%\libgtk3-tray32\libgtk-3-0-32_win%BITS%.dll" "%DEVDIST%\includes\libgtk3-tray32\libgtk-3-0-32_win%BITS%.dll
 xcopy /Y /E "%LOCALEDIR%" "%DEVDIST%\locale\"
 mkdir "%DEVDIST%\else\"
 mkdir "%DEVDIST%\else\app_icons"

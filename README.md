@@ -46,12 +46,6 @@
 + open file 'locale/de/ovpn_client.po'
 + catalog -> update from POT -> './messages.pot'
 
-### Inno Setup Sign Tools: "Tools" -> "Configure Sign Tools..." -> Add
-+ name: signtool1 [OK] command: "E:\codesign\bin_w10sdk\signtool.exe" sign /v /sha1 0775a45c76fad6989cbeb35c87e476642ccc172f /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 $f
-+ name: signtool2 [OK] command: "E:\codesign\bin_w10sdk\signtool.exe" sign /v /as /sha1 0775a45c76fad6989cbeb35c87e476642ccc172f /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 $f
-+ name: signtool3 [OK] command: "E:\codesign\bin_w10sdk\signtool.exe" sign /v /as /sha1 0775a45c76fad6989cbeb35c87e476642ccc172f /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 $f
-+ name: signtool4 [OK] command: "E:\codesign\bin_w10sdk\signtool.exe" sign /v /as /sha1 0775a45c76fad6989cbeb35c87e476642ccc172f /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f
-
 ## Self Signed Certificate
 + Download and install SDK for your OS 
 + [Microsoft Windows SDK for Windows 7](https://download.microsoft.com/download/A/6/A/A6AC035D-DA3F-4F0C-ADA4-37C8E5D34E3D/winsdk_web.exe) Select only: '.Net Development' -> 'Tools'
@@ -64,6 +58,9 @@
 + Open DigiCertUtil.exe and it shows your Certificate
 + Right click your Certificate and select "copy thumbprint to clipboard"
 + Edit sign.bat and replace the thumbprints with the one in clipboard
-+ Open Inno Setup Compiler -> Tools -> Configure Sign Tools and click add
-+ As name enter: signtool
-+ As command enter: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /a /sha1 YourThumbprint /t http://timestamp.verisign.com/scripts/timestamp.dll /fd SHA512 $f
+
+## Inno Setup Sign Tools: "Tools" -> "Configure Sign Tools..." -> Add
++ name: signtool1 [OK] command: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /sha1 YourThumbprint /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 $f
++ name: signtool2 [OK] command: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 $f
++ name: signtool3 [OK] command: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 $f
++ name: signtool4 [OK] command: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f
