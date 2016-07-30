@@ -31,26 +31,38 @@ def get_networkadapterlist_from_netsh():
 
 def get_networkadapterlist_from_guids(iface_guids):
 	iface_names = ['(unknown)' for i in range(len(iface_guids))]
+	mapguids = {}
 	reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
-	reg_key = OpenKey(reg, r'SYSTEM\CurrentControlSet\Control\Network\{4d36e972-e325-11ce-bfc1-08002be10318}')
+	key = OpenKey(reg, r'SYSTEM\CurrentControlSet\Control\Network\{4d36e972-e325-11ce-bfc1-08002be10318}')
 	for i in range(len(iface_guids)):
 		try:
-			reg_subkey = OpenKey(reg_key, iface_guids[i] + r'\Connection')
+			reg_subkey = OpenKey(key, iface_guids[i] + r'\Connection')
 			iface_name = QueryValueEx(reg_subkey, 'Name')[0]
 			iface_names[i] = iface_name
+			mapguids[iface_name] = '%s' % (iface_guids[i])
 		except:
 			pass
-	return iface_names
+	print "mapguids = '%s'" % (mapguids)
+	data = { "iface_names":iface_names,"mapguids":mapguids }
+	return data
+	#return iface_names
 
 def get_networkadapterlist():
 	newlist = []
-	list1 = get_networkadapterlist_from_guids(get_networkadapter_guids())
+	list1 = get_networkadapterlist_from_guids(get_networkadapter_guids())["iface_names"]
 	list2 = get_networkadapterlist_from_netsh()
 	for name in list1:
 		for line in list2:
 			if line.endswith(name):
 				newlist.append(name)
 	return newlist
+
+def get_networkadapter_guid(adaptername):
+	guids = get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"]
+	guid = guids[adaptername]
+	print "def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid)
+	return guid
+	#return get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"][adaptername]
 
 def get_tapadapters(OPENVPN_EXE,INTERFACES):
 	if os.path.isfile(OPENVPN_EXE):
@@ -67,7 +79,22 @@ def get_tapadapters(OPENVPN_EXE,INTERFACES):
 					break
 		return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
 
-
+def get_interface_infos_from_guid(guid):
+	print "winregs: def get_interface_infos_from_guid(%s)" % (guid)
+	"""
+	winregs.get_interface_infos_from_guid("{XXXXXXXX-YYYY-ZZZZ-AAAA-CCCCDDDDEEEE}")
+	return = {
+			'AddressType': 0, 'DefaultGateway': [u'192.168.1.1'], 'SubnetMask': [u'255.255.255.0'],
+			'NameServer': u'8.8.8.8,8.8.4.4', 'IPAddress': [u'192.168.1.123'], 
+			'DhcpServer': u'255.255.255.255', 'DhcpIPAddress': u'0.0.0.0'}, 'DhcpSubnetMask': u'255.0.0.0'
+	"""
+	values = { "AddressType":False, "DefaultGateway":False, "IPAddress":False, "SubnetMask":False, "NameServer":False, "DhcpIPAddress":False, "DhcpServer":False, "DhcpSubnetMask":False }
+	reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
+	key = OpenKey(reg, r'SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\%s' % (guid))
+	for keyname,value in values.items():
+		values[keyname] = QueryValueEx(key, keyname)[0]
+	print "get_interface_infos_from_guid: '%s'" % (values)
+	return values
 
 
 

@@ -4036,6 +4036,39 @@ class Systray:
 		
 		if self.NO_DNS_CHANGE == True:
 			return True
+		
+		self.WIN_EXT_DEVICE_GUID = winregs.get_networkadapter_guid(self.WIN_EXT_DEVICE)
+		self.debug(1,"win_netsh_read_dns_to_backup: self.WIN_EXT_DEVICE_GUID = '%s'" % (self.WIN_EXT_DEVICE_GUID))
+		self.WIN_EXT_DEVICE_DATA = winregs.get_interface_infos_from_guid(self.WIN_EXT_DEVICE_GUID)
+		
+		self.debug(1,"def win_netsh_read_dns_to_backup: self.WIN_EXT_DEVICE_DATA = '%s'" % (self.WIN_EXT_DEVICE_DATA))
+		
+		dns1 = self.WIN_EXT_DEVICE_DATA['NameServer'].split(",")[0]
+		if self.isValueIPv4(dns1):
+			self.debug(1,"def win_netsh_read_dns_to_backup: 1st DNS '%s' IF: '%s' backuped" % (dns1,self.WIN_EXT_DEVICE))
+			self.GATEWAY_DNS1 = dns1
+		else:
+			self.GATEWAY_DNS1 = False
+			
+		if not self.GATEWAY_DNS1 == False:
+			dns2 = self.WIN_EXT_DEVICE_DATA['NameServer'].split(",")[1]
+			if self.isValueIPv4(dns2):
+				self.debug(1,"def win_netsh_read_dns_to_backup: 2nd DNS '%s' IF: '%s' backuped" % (dns2,self.WIN_EXT_DEVICE))
+				self.GATEWAY_DNS2 = dns2
+				return True
+		
+		if not self.GATEWAY_DNS1 == False:
+			return True
+		else:
+			self.WIN_EXT_DHCP = True
+			return True
+
+	""" *fixme* delete me later
+	def win_netsh_read_dns_to_backup2(self):
+		self.debug(1,"def win_netsh_read_dns_to_backup()")
+		
+		if self.NO_DNS_CHANGE == True:
+			return True
 		try:
 			netshcmd = 'interface ipv4 show dns'
 			netsh_output = self.win_return_netsh_cmd(netshcmd)
@@ -4080,6 +4113,7 @@ class Systray:
 				return True
 		except:
 			self.errorquit(text=_("def win_netsh_read_dns_to_backup: failed!"))
+	"""
 
 	def hash_sha512_file(self,file):
 		self.debug(1,"def hash_sha512_file()")
