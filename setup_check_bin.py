@@ -84,7 +84,7 @@ setup_dict = dict(
 	options={
 		'py2exe': {
 		'dist_dir': DIST_DIR,
-		'bundle_files' : 1,
+		'bundle_files' : 3,
 		'optimize'     : 2,
 		'skip_archive' : False,
 		'compressed'   : False,
@@ -92,7 +92,7 @@ setup_dict = dict(
 		'includes'     : [ 'os','sys','time','hashlib','struct','subprocess','threading' ],
 		'excludes'     : release_version.setup_data()["py2exe_excludes"],
 		'packages'     : [ ],
-		'dll_excludes' : [ 'pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
+		'dll_excludes' : [ 'MSVCR100.dll','pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll']
 		}
 	}
 )
