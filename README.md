@@ -69,10 +69,13 @@ C:\Python27_64\Scripts\pip.exe install --upgrade netifaces
 + Edit sign.bat and replace the thumbprints with the one in clipboard
 
 ## Inno Setup Sign Tools: "Tools" -> "Configure Sign Tools..." -> Add
-+ name: signtool1 [OK] command: ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /sha1 YourThumbprint /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 $f```
-+ name: signtool2 [OK] command: ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 $f```
-+ name: signtool3 [OK] command: ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 $f```
-+ name: signtool4 [OK] command: ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f```
++ name: signtool1 [OK] command:
+```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /sha1 YourThumbprint /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 $f```
++ name: signtool2 [OK] command:
+```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 $f```
++ name: signtool3 [OK] command:
+```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 $f```
++ name: signtool4 [OK] command:```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f```
 
 ## Generate locales:
 + run generate_po.bat
