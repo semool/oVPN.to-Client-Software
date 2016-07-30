@@ -35,16 +35,12 @@
 
 ## Developer Imports: how to run or build from source
 + create a link (name: DEBUG32) to debug.bat: edit link, set target 'X:\????\ovpn-client\debug.bat 32' and run link as admin!
++ for Debug Mode with more debug messages add 'DEVMODE' to the link: 'X:\????\ovpn-client\debug.bat 32 DEVMODE'
 + create a link (name: BUILD32) to build_inno.bat: edit link, set target 'X:\????\ovpn-client\build_inno.bat 32' and run link normally!
++ to run in Sign Mode add 'SIGN' to the link: 'X:\????\ovpn-client\build_inno.bat 32 SIGN'
 + same for 64 bits and do NOT run any of the *.bat files directly!
 + edit 'set_dirs.bat' to your needs!
 + Update Version only in file: 'release_version.py'
-
-## Generate locales:
-+ run generate_po.bat
-+ start poedit 1.8+
-+ open file 'locale/de/ovpn_client.po'
-+ catalog -> update from POT -> './messages.pot'
 
 ## Self Signed Certificate
 + Download and install SDK for your OS 
@@ -64,3 +60,9 @@
 + name: signtool2 [OK] command: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 $f
 + name: signtool3 [OK] command: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 $f
 + name: signtool4 [OK] command: "Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f
+
+## Generate locales:
++ run generate_po.bat
++ start poedit 1.8+
++ open file 'locale/de/ovpn_client.po'
++ catalog -> update from POT -> './messages.pot'
