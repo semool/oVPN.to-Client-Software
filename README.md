@@ -1,27 +1,21 @@
 
 # oVPN.to Client Software for Windows
 
-## Setup 32 Bit Dev-Env:
+## Setup 32/64 Bit Dev-Env:
+### 32 Bit Downloads
 + [Python 2.7.12 win32](https://www.python.org/ftp/python/2.7.12/python-2.7.12.msi) (install to C:\Python27)!!!
 + [py2exe 0.6.9 win32](http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win32-py2.7.exe/download)
 
-+ open cmd.exe as admin:
-```
-C:\Python27\Scripts\pip.exe install --upgrade pip
-C:\Python27\Scripts\pip.exe install requests
-C:\Python27\Scripts\pip.exe install netifaces
-```
-
-
-## Setup 64 Bit Dev-Env:
+### 64 Bit Downloads
 + [Python 2.7.12 win64](https://www.python.org/ftp/python/2.7.12/python-2.7.12.amd64.msi) (install to C:\Python27_64) !!!
 + [py2exe 0.6.9 win64](http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win64-py2.7.amd64.exe/download)
 
+### 32 and 64 Bit
 + open cmd.exe as admin:
 ```
-C:\Python27_64\Scripts\pip.exe install --upgrade pip
-C:\Python27_64\Scripts\pip.exe install requests
-C:\Python27_64\Scripts\pip.exe install netifaces
+C:\Python27[_64]\Scripts\pip.exe install --upgrade pip
+C:\Python27[_64]\Scripts\pip.exe install requests
+C:\Python27[_64]\Scripts\pip.exe install netifaces
 ```
 
 ## Basic Requirements:
