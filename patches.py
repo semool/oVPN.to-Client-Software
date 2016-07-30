@@ -54,18 +54,18 @@ def gtk_trayicon_dpi():
 					
 			if not checkoffset == pixel:
 				Patch = True
+				if os.path.exists(gtkfile16) or os.path.exists(gtkfile32):
+					Patch = False
 				if pixel == "\x20":
 					if os.path.exists(gtkfile32):
 						print "Set TrayIcon Output Size to: %s pixel" % (pixeldez)
 						shutil.move(gtkfile, gtkfile16)
 						shutil.move(gtkfile32, gtkfile)
-						Patch = False
 				if pixel == "\x10":
 					if os.path.exists(gtkfile16):
 						print "Set TrayIcon Output Size to: %s pixel" % (pixeldez)
 						shutil.move(gtkfile, gtkfile32)
 						shutil.move(gtkfile16, gtkfile) 
-						Patch = False
 				if Patch == True:
 					with open(gtkfile,'r+b') as f:
 						print "Patch TrayIcon Output Size to: %s pixel" % (pixeldez)
