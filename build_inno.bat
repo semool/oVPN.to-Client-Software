@@ -47,6 +47,7 @@ IF "%~2" == "SIGN" (
 	)
 	pause
 	call sign_exe.bat
+	call sign_dll.bat
 	)
 
 
@@ -62,6 +63,7 @@ call release.bat
 echo release.bat finished, close or hit to cleanup
 pause
 
+if exist %SOURCEDIR%\py2exe.log del %SOURCEDIR%\py2exe.log
 if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\

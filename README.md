@@ -11,6 +11,8 @@
 + C:\Python27\Scripts\pip.exe install --upgrade pycrypto 
 + C:\Python27\Scripts\pip.exe install requests
 + C:\Python27\Scripts\pip.exe install --upgrade requests
++ C:\Python27\Scripts\pip.exe install netifaces
++ C:\Python27\Scripts\pip.exe install --upgrade netifaces
 
 
 ## Setup 64 Bit Dev-Env:
@@ -23,6 +25,8 @@
 + C:\Python27_64\Scripts\pip.exe install --upgrade pycrypto 
 + C:\Python27_64\Scripts\pip.exe install requests
 + C:\Python27_64\Scripts\pip.exe install --upgrade requests
++ C:\Python27_64\Scripts\pip.exe install netifaces
++ C:\Python27_64\Scripts\pip.exe install --upgrade netifaces
 
 ## Basic Requirements:
 + [PyGObject 3.18.2 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev7-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!

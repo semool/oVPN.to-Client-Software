@@ -31,7 +31,7 @@ else:
 class HASH_DLLS:
 	def __init__(self):
 		if self.self_vars():
-			if os.path.isfile(self.DLL_DBF_HASH_UNSIGNED):
+			if os.path.isfile(self.DLL_DBF_HASH_UNSIGNED) and os.path.isfile(self.DLL_DBF_HASH_SIGNED):
 				if self.load_hash_dbf():
 					if self.verify_files():
 						pass

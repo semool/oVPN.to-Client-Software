@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
-import sys
+import sys, shutil
 from _winreg import *
 
 def gtk_trayicon_dpi():
 	# Patching libgtk-3-0.dll for 16px or 32px TrayIcon Output
 	gtkfile = "%s\\libgtk-3-0.dll" % (os.getcwd())
+	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (os.getcwd())
+	gtkfile32 = "%s\\libgtk-3-0-32.dll" % (os.getcwd())
+
 	if os.path.exists(gtkfile) and sys.platform == "win32":
 		pixel = "\x10"
 		pixeldez = "16"
@@ -48,7 +51,23 @@ def gtk_trayicon_dpi():
 						checkoffset = f.read(1)
 						if checkoffset == "\x10" or checkoffset == "\x20":
 							offset = offset_two
-					if not checkoffset == pixel:
+					
+			if not checkoffset == pixel:
+				Patch = True
+				if os.path.exists(gtkfile16) or os.path.exists(gtkfile32):
+					Patch = False
+				if pixel == "\x20":
+					if os.path.exists(gtkfile32):
+						print "Set TrayIcon Output Size to: %s pixel" % (pixeldez)
+						shutil.move(gtkfile, gtkfile16)
+						shutil.move(gtkfile32, gtkfile)
+				if pixel == "\x10":
+					if os.path.exists(gtkfile16):
+						print "Set TrayIcon Output Size to: %s pixel" % (pixeldez)
+						shutil.move(gtkfile, gtkfile32)
+						shutil.move(gtkfile16, gtkfile) 
+				if Patch == True:
+					with open(gtkfile,'r+b') as f:
 						print "Patch TrayIcon Output Size to: %s pixel" % (pixeldez)
 						f.seek(offset)
 						f.write(pixel)
