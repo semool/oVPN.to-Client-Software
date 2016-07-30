@@ -11,6 +11,7 @@
 + C:\Python27\Scripts\pip.exe install --upgrade pycrypto 
 + C:\Python27\Scripts\pip.exe install requests
 + C:\Python27\Scripts\pip.exe install --upgrade requests
++ C:\Python27\Scripts\pip.exe install netifaces
 + C:\Python27\Scripts\pip.exe install --upgrade netifaces
 
 
@@ -24,6 +25,7 @@
 + C:\Python27_64\Scripts\pip.exe install --upgrade pycrypto 
 + C:\Python27_64\Scripts\pip.exe install requests
 + C:\Python27_64\Scripts\pip.exe install --upgrade requests
++ C:\Python27_64\Scripts\pip.exe install netifaces
 + C:\Python27_64\Scripts\pip.exe install --upgrade netifaces
 
 ## Basic Requirements:
