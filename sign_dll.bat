@@ -6,6 +6,9 @@ IF NOT EXIST %SIGNTOOL% (echo %SIGNTOOL% NOT FOUND && PAUSE && EXIT)
 
 for %%v in ("%DISTDIR%\*.dll") do (
 	for %%A in ("%%v") do (
+		IF NOT EXIST %DLLDIR_U%\%%~nxA (
+			copy /Y "%%v" "%DLLDIR_U%\"
+		)
 		IF NOT EXIST %DLLDIR_S%\%%~nxA (
 			IF DEFINED SIGNTOOLCMD1 (%SIGNTOOLCMD1% "%%v")
 			IF DEFINED SIGNTOOLCMD4 (%SIGNTOOLCMD4% "%%v")
@@ -26,6 +29,9 @@ for %%v in ("%DISTDIR%\*.dll") do (
 
 for %%v in ("%DISTDIR%\lib\gtk-3.0\3.0.0\theming-engines\*.dll") do (
 	for %%A in ("%%v") do (
+		IF NOT EXIST %DLLDIR_U%\%%~nxA (
+			copy /Y "%%v" "%DLLDIR_U%\"
+		)
 		IF NOT EXIST %DLLDIR_S%\%%~nxA (
 			IF DEFINED SIGNTOOLCMD1 (%SIGNTOOLCMD1% "%%v")
 			IF DEFINED SIGNTOOLCMD4 (%SIGNTOOLCMD4% "%%v")
@@ -46,6 +52,9 @@ for %%v in ("%DISTDIR%\lib\gtk-3.0\3.0.0\theming-engines\*.dll") do (
 
 for %%v in ("%DISTDIR%\*.pyd") do (
 	for %%A in ("%%v") do (
+		IF NOT EXIST %DLLDIR_U%\%%~nxA (
+			copy /Y "%%v" "%DLLDIR_U%\"
+		)
 		IF NOT EXIST %DLLDIR_S%\%%~nxA (
 			IF DEFINED SIGNTOOLCMD1 (%SIGNTOOLCMD1% "%%v")
 			IF DEFINED SIGNTOOLCMD4 (%SIGNTOOLCMD4% "%%v")
