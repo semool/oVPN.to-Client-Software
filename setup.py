@@ -72,8 +72,7 @@ gtk_dirs_to_include = ['etc\\fonts', 'lib\\gtk-3.0', 'lib\\girepository-1.0', 's
 
 gtk_dlls = []
 tmp_dlls = []
-cdir = os.getcwd() 
-tmpdir = cdir+"\\tmp"
+tmpdir = SOURCEDIR+"\\tmp"
 tmpdlldir = tmpdir+"\\dll"
 
 if not os.path.exists(tmpdlldir):

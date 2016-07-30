@@ -36,9 +36,16 @@ IF EXIST py2exe_error.log (
 )
 
 call includes_to_dist.bat %~1
+if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
+if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
+if exist %SOURCEDIR%\py2exe.log del %SOURCEDIR%\py2exe.log
 echo includes_to_dist.bat completed
+IF "%~2" == "SIGN" (
+	echo Close or hit to continue with Sign
+) else (
+	echo Close or hit to continue with compile
+)
 pause
-
 
 IF "%~2" == "SIGN" (
 	echo hit to SIGN files in %DISTDIR%
@@ -49,7 +56,6 @@ IF "%~2" == "SIGN" (
 	call sign_exe.bat
 	call sign_dll.bat
 	)
-
 
 echo hit to compile: inno_setup%BITS%.iss
 pause
@@ -63,7 +69,4 @@ call release.bat
 echo release.bat finished, close or hit to cleanup
 pause
 
-if exist %SOURCEDIR%\py2exe.log del %SOURCEDIR%\py2exe.log
 if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
-if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
-if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
