@@ -26,8 +26,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
-import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, zlib
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json
 from ConfigParser import SafeConfigParser
+import winregs 
+
 
 try:
 	print "import release_version"
@@ -945,7 +947,6 @@ class Systray:
 								return True
 
 	def win_read_interfaces(self):
-		import winregs 
 		self.debug(1,"def win_read_interfaces()")
 		self.win_detect_openvpn()
 		self.INTERFACES = winregs.get_networkadapterlist()
@@ -963,7 +964,7 @@ class Systray:
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 		else:
-			self.debug(1,"self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
+			self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 			self.win_select_tapadapter()
 		if self.WIN_TAP_DEVICE == False:
 			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
@@ -972,20 +973,20 @@ class Systray:
 			for char in badchars:
 				if char in self.WIN_TAP_DEVICE:
 					self.errorquit(text=_("Invalid characters in '%s'") % char)
-			self.debug(1,"Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
+			self.debug(1,"def win_read_interfaces: Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 			self.win_enable_tap_interface()
-			self.debug(1,"remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
+			self.debug(1,"def win_read_interfaces: remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
 			if len(self.INTERFACES) > 1:
 				if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
-					self.debug(1,"loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
+					self.debug(1,"def win_read_interfaces: loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
 					return True
 				else:
-					return self.win_select_networtadapter()
+					return self.win_select_networkadapter()
 			elif len(self.INTERFACES) < 1:
 				self.errorquit(text=_("No Network Adapter found!"))
 			else:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
-				self.debug(1,"External Interface = %s"%(self.WIN_EXT_DEVICE))
+				self.debug(1,"def win_read_interfaces: External Interface = %s"%(self.WIN_EXT_DEVICE))
 				return True
 
 	def win_select_tapadapter(self):
@@ -1012,7 +1013,7 @@ class Systray:
 		dialogWindow.run()
 		dialogWindow.destroy()
 
-	def win_select_networtadapter(self):
+	def win_select_networkadapter(self):
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)

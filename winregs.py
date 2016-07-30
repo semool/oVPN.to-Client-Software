@@ -40,8 +40,6 @@ def get_networkadapterlist_from_guids(iface_guids):
 			iface_names[i] = iface_name
 		except:
 			pass
-	for name in iface_names:
-		print name
 	return iface_names
 
 def get_networkadapterlist():
