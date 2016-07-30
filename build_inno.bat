@@ -47,6 +47,7 @@ IF "%~2" == "SIGN" (
 	)
 	pause
 	call sign_exe.bat
+	call sign_dll.bat
 	)
 
 
