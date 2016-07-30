@@ -46,9 +46,9 @@ C:\Python27_64\Scripts\pip.exe install --upgrade netifaces
 
 ### Build Mode
 + create a link (name: BUILD32) to build_inno.bat: edit link, set target:
-```'X:\????\ovpn-client\build_inno.bat 32``` and run link normally!
++ ```'X:\????\ovpn-client\build_inno.bat 32``` and run link normally!
 + to run in Sign Mode set target:
-```X:\????\ovpn-client\build_inno.bat 32 SIGN```
++ ```X:\????\ovpn-client\build_inno.bat 32 SIGN```
 + same for 64 bits and do NOT run any of the *.bat files directly!
 + edit ```set_dirs.bat``` to your needs!
 + Update Version only in file: ```release_version.py```
@@ -60,22 +60,21 @@ C:\Python27_64\Scripts\pip.exe install --upgrade netifaces
 + [Microsoft Windows SDK for Windows 10](https://go.microsoft.com/fwlink/p/?LinkID=698771) Select only: 'Windows App Certification Kit'
 + [DigiCert Certificate Utility for Windows](https://www.digicert.com/util/DigiCertUtil.zip)
 + open cmd.exe as admin:
-
-```makecert.exe -n "CN=oVPN.to-Client, O=organizationName, OU=organizationalUnitName, L=localityName, S=stateOrProvinceName, C=countryName" -a sha512 -r -cy authority -pe -ss root -sr currentuser -len 4096 -h 3```
-
-```makecert.exe -n "CN=oVPN.to-Client, L=localityName, S=stateOrProvinceName, C=countryName" -a sha512 -pe -ss my -sr currentuser -in "oVPN.to-Client" -is root -ir currentuser -len 4096 -eku 1.3.6.1.5.5.7.3.3```
++ ```makecert.exe -n "CN=oVPN.to-Client, O=organizationName, OU=organizationalUnitName, L=localityName, S=stateOrProvinceName, C=countryName" -a sha512 -r -cy authority -pe -ss root -sr currentuser -len 4096 -h 3```
++ ```makecert.exe -n "CN=oVPN.to-Client, L=localityName, S=stateOrProvinceName, C=countryName" -a sha512 -pe -ss my -sr currentuser -in "oVPN.to-Client" -is root -ir currentuser -len 4096 -eku 1.3.6.1.5.5.7.3.3```
 + Open DigiCertUtil.exe and it shows your Certificate
 + Right click your Certificate and select "copy thumbprint to clipboard"
 + Edit sign.bat and replace the thumbprints with the one in clipboard
 
 ## Inno Setup Sign Tools: "Tools" -> "Configure Sign Tools..." -> Add
 + name: signtool1 [OK] command:
-```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /sha1 YourThumbprint /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 $f```
-+ name: signtool2 [OK] command:
-```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 $f```
++ ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /sha1 YourThumbprint /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 $f```
++ + name: signtool2 [OK] command:
++ ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha256 /td sha256 /tr http://timestamp.comodoca.com/?td=sha256 $f```
 + name: signtool3 [OK] command:
-```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 $f```
-+ name: signtool4 [OK] command:```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f```
++ ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha384 /td sha384 /tr http://timestamp.comodoca.com/?td=sha384 $f```
++ name: signtool4 [OK] command:
++ ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f```
 
 ## Generate locales:
 + run generate_po.bat
