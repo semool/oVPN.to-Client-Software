@@ -8,12 +8,8 @@
 + open cmd.exe as admin:
 ```
 C:\Python27\Scripts\pip.exe install --upgrade pip
-C:\Python27\Scripts\pip.exe install pycrypto (not needed atm)
-C:\Python27\Scripts\pip.exe install --upgrade pycrypto 
 C:\Python27\Scripts\pip.exe install requests
-C:\Python27\Scripts\pip.exe install --upgrade requests
 C:\Python27\Scripts\pip.exe install netifaces
-C:\Python27\Scripts\pip.exe install --upgrade netifaces
 ```
 
 
@@ -24,12 +20,8 @@ C:\Python27\Scripts\pip.exe install --upgrade netifaces
 + open cmd.exe as admin:
 ```
 C:\Python27_64\Scripts\pip.exe install --upgrade pip
-C:\Python27_64\Scripts\pip.exe install pycrypto (not needed atm)
-C:\Python27_64\Scripts\pip.exe install --upgrade pycrypto 
 C:\Python27_64\Scripts\pip.exe install requests
-C:\Python27_64\Scripts\pip.exe install --upgrade requests
 C:\Python27_64\Scripts\pip.exe install netifaces
-C:\Python27_64\Scripts\pip.exe install --upgrade netifaces
 ```
 
 ## Basic Requirements:
