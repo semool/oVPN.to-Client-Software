@@ -945,6 +945,101 @@ class Systray:
 								return True
 
 	def win_read_interfaces(self):
+		import winregs 
+		self.debug(1,"def win_read_interfaces()")
+		self.win_detect_openvpn()
+		self.INTERFACES = winregs.get_networkadapterlist()
+		if len(self.INTERFACES) < 2:
+			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
+		newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
+		self.INTERFACES = newdata["INTERFACES"]
+		self.WIN_TAP_DEVS = newdata["TAP_DEVS"]
+		self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
+		self.debug(1,"def win_read_interfaces: self.INTERFACES = '%s'"%(self.INTERFACES))
+		#if self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:
+		#	self.debug(1,"Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
+		if len(self.WIN_TAP_DEVS) == 0:
+			self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
+		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
+			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
+		else:
+			self.debug(1,"self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
+			self.win_select_tapadapter()
+		if self.WIN_TAP_DEVICE == False:
+			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
+		else:
+			badchars = ["%","&","$"]
+			for char in badchars:
+				if char in self.WIN_TAP_DEVICE:
+					self.errorquit(text=_("Invalid characters in '%s'") % char)
+			self.debug(1,"Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
+			self.win_enable_tap_interface()
+			self.debug(1,"remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
+			if len(self.INTERFACES) > 1:
+				if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
+					self.debug(1,"loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
+					return True
+				else:
+					return self.win_select_networtadapter()
+			elif len(self.INTERFACES) < 1:
+				self.errorquit(text=_("No Network Adapter found!"))
+			else:
+				self.WIN_EXT_DEVICE = self.INTERFACES[0]
+				self.debug(1,"External Interface = %s"%(self.WIN_EXT_DEVICE))
+				return True
+
+	def win_select_tapadapter(self):
+		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+		dialogWindow.set_transient_for(self.window)
+		try:
+			dialogWindow.set_icon(self.app_icon)
+		except:
+			pass
+		text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
+		dialogWindow.set_title(text)
+		dialogWindow.set_markup(text)
+		dialogBox = dialogWindow.get_content_area()
+		liststore = Gtk.ListStore(str)
+		combobox = Gtk.ComboBoxText.new()
+		combobox.pack_start(cell, True)
+		for INTERFACE in self.WIN_TAP_DEVS:
+			self.debug(1,"add tap interface '%s' to combobox" % (INTERFACE))
+			combobox.append_text(INTERFACE)
+		combobox.connect('changed',self.cb_tap_interface_selector_changed)
+		dialogBox.pack_start(combobox,False,False,0)
+		dialogWindow.show_all()
+		dialogWindow.run()
+		dialogWindow.destroy()
+
+	def win_select_networtadapter(self):
+		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+		dialogWindow.set_transient_for(self.window)
+		try:
+			dialogWindow.set_icon(self.app_icon)
+		except:
+			pass
+		text = _("Choose your External Network Adapter!")
+		dialogWindow.set_title(text)
+		dialogWindow.set_markup(text)
+		dialogBox = dialogWindow.get_content_area()
+		combobox = Gtk.ComboBoxText.new()
+		for INTERFACE in self.INTERFACES:
+			self.debug(1,"add interface %s to combobox" % (INTERFACE))
+			combobox.append_text(INTERFACE)
+		combobox.connect('changed',self.cb_interface_selector_changed)
+		dialogBox.pack_start(combobox,False,False,0)
+		dialogWindow.show_all()
+		self.debug(1,"open interface selector")
+		dialogWindow.run()
+		self.debug(1,"close interface selector")
+		dialogWindow.destroy()
+		if not self.WIN_EXT_DEVICE == False:
+			return True
+
+	""" *fixme* delete me later
+	def win_read_interfaces_old(self):
 		self.debug(1,"def win_read_interfaces()")
 		self.win_detect_openvpn()
 		self.INTERFACES = list()
@@ -1016,7 +1111,9 @@ class Systray:
 					self.INTERFACES.remove(INTERFACE)
 					self.WIN_TAP_DEVS.append(INTERFACE)
 					break
-				""" do not remove! maybe need for debug in future """
+				
+				# do not remove! maybe need for debug in future
+				
 				#elif line.startswith("Available TAP-WIN32 adapters"):
 				#	#self.debug(1,"ignoring tap line")
 				#	pass
@@ -1029,8 +1126,8 @@ class Systray:
 		self.debug(1,"self.WIN_TAP_DEVS = '%s' len=%s" % (self.WIN_TAP_DEVS,len(self.WIN_TAP_DEVS)))
 		if self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:
 			self.debug(1,"Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
-		if len(self.WIN_TAP_DEVS) == 0:
-			self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
+		#if len(self.WIN_TAP_DEVS) == 0:
+		#	self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 			self.debug(1,"Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
@@ -1103,6 +1200,7 @@ class Systray:
 				self.WIN_EXT_DEVICE = self.INTERFACES[0]
 				self.debug(1,"External Interface = %s"%(self.WIN_EXT_DEVICE))
 				return True
+	"""
 
 	def select_userid(self):
 		self.debug(1,"def select_userid()")
