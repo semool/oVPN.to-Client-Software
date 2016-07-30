@@ -5,8 +5,8 @@ call %SOURCEDIR%\set_dirs.bat %~1
 
 IF NOT DEFINED PYEXE (EXIT)
 
-del "%SOURCEDIR%\*.pyc"
-del "%SOURCEDIR%\*.pyo"
+del "%SOURCEDIR%\*.pyc" 2> nul
+del "%SOURCEDIR%\*.pyo" 2> nul
 
 %PYEXE% release_version.py SET_VERSION_FILES
 
@@ -43,6 +43,8 @@ call includes_to_dist.bat %~1
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
 if exist %SOURCEDIR%\py2exe.log del %SOURCEDIR%\py2exe.log
+del "%SOURCEDIR%\*.pyc" 2> nul
+del "%SOURCEDIR%\*.pyo" 2> nul
 echo includes_to_dist.bat completed
 IF "%~2" == "SIGN" (
 	echo Close or hit to continue with Sign
