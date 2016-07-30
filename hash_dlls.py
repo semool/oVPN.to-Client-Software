@@ -113,7 +113,7 @@ class HASH_DLLS:
 		files = []
 		content = os.listdir(dir)
 		for file in content:
-			if file.endswith('.dll'):
+			if file.endswith('.dll') or file.endswith('.pyd'):
 				filepath = "%s\\%s" % (dir,file)
 				files.append(filepath)
 		return files
