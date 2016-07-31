@@ -6,9 +6,11 @@ import release_version
 
 appversion = release_version.setup_data()["version"]
 cpu = 'x86'
+inno = 'win32'
 crt = 'Microsoft.VC90.CRT_win32'
 if platform.architecture()[0] == '64bit':
 	cpu = 'amd64'
+	inno = 'win64'
 	crt = 'Microsoft.VC90.CRT_win64'
 
 manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -129,3 +131,108 @@ for dll in tmp_dlls:
 
 for d in gtk_dirs_to_include:
 	shutil.copytree(os.path.join(site_dir, 'gnome', d), os.path.join(DIST_DIR, d))
+
+innoscript = "%s\\inno_setup.iss" % (SOURCEDIR)
+ind = open(innoscript, "w")
+print >> ind, ';!!!DONT EDIT THIS FILE MANUALLY, IT WILL BE OVERWRITTEN IN NEXT BUILD RUN!!!'
+print >> ind, '#define AppExeName "ovpn_client.exe"'
+print >> ind, '#define Version "%s"' % release_version.version_data()["VERSION"]
+print >> ind, '#define AppName "%s"' % release_version.version_data()["NAME"]
+print >> ind, '#define AppDir "%s"' % release_version.version_data()["NAME"]
+print >> ind, '#define AppPublisher "%s %s"' % (release_version.org_data()["ORG"],release_version.org_data()["ADD"])
+print >> ind, '#define AppURL "%s"' % release_version.org_data()["SITE"]
+print >> ind, '[Setup]'
+print >> ind, 'AppVersion=v{#Version}-gtk3_%s' % inno
+print >> ind, 'AppVerName={#AppName} v{#Version}-gtk3_%s' % inno
+print >> ind, 'AppSupportURL=%s' % release_version.org_data()["SUPPORT"]
+print >> ind, 'AppUpdatesURL=%s' % release_version.org_data()["UPDATES"]
+print >> ind, 'AppCopyright=Copyright %s'  % release_version.setup_data()["copyright"]
+print >> ind, 'OutputBaseFilename=ovpn_client_v{#Version}-gtk3_%s_setup' % inno
+if release_version.version_data()["SIGN"] == True:
+	print >> ind, 'SignTool=signtool1'
+	#print >> ind, 'SignTool=signtool2'
+	#print >> ind, 'SignTool=signtool3'
+	print >> ind, 'SignTool=signtool4'
+if inno == "win32":
+	print >> ind, 'DefaultDirName={pf}\{#AppDir}'
+else:
+	print >> ind, 'DefaultDirName={pf64}\{#AppDir}'
+print >> ind, 'SignedUninstaller=yes'
+print >> ind, 'Compression=lzma2/max'
+print >> ind, 'SolidCompression=yes'
+print >> ind, 'AppId={{991F58FC-8D40-4B45-B434-6A10AAC12FBA}'
+print >> ind, 'AppName={#AppName}'
+print >> ind, 'AppMutex={#AppExeName},Global\{#AppExeName}'
+print >> ind, 'SetupMutex={#AppDir},Global\{#AppDir}'
+print >> ind, 'AppPublisher={#AppPublisher}'
+print >> ind, 'AppContact={#AppPublisher}'
+print >> ind, 'AppPublisherURL={#AppURL}'
+print >> ind, 'AppReadmeFile={#AppURL}'
+print >> ind, 'VersionInfoVersion=0.{#Version}'
+print >> ind, 'DefaultGroupName={#AppName}'
+print >> ind, 'AllowNoIcons=yes'
+print >> ind, 'OutputDir=.'
+print >> ind, 'SetupIconFile=else\\app_icons\shield_exe.ico'
+print >> ind, 'WizardImageFile=else\\app_icons\shield_exe_2.bmp'
+print >> ind, 'WizardSmallImageFile=else\\app_icons\shield_exe.bmp'
+print >> ind, 'WizardImageStretch=no'
+print >> ind, 'UninstallDisplayIcon={app}\{#AppExeName}'
+print >> ind, "Uninstallable=not IsTaskSelected('portablemode')"
+print >> ind, 'DisableDirPage=no'
+print >> ind, 'LicenseFile=LICENSE'
+print >> ind, 'LanguageDetectionMethod=uilanguage'
+print >> ind, 'ShowLanguageDialog=auto'
+print >> ind, '[Tasks]'
+print >> ind, 'Name: portablemode; Description: "Portable Mode"; Flags: unchecked'
+print >> ind, '[InstallDelete]'
+print >> ind, 'Type: files; Name: "{userdesktop}\oVPN.to Client.lnk";'
+print >> ind, 'Type: files; Name: "{commondesktop}\oVPN.to Client.lnk";'
+print >> ind, 'Type: filesandordirs; Name: {app}\dns\;'
+print >> ind, 'Type: filesandordirs; Name: {app}\etc\;'
+print >> ind, 'Type: filesandordirs; Name: {app}\lib\;'
+print >> ind, 'Type: filesandordirs; Name: {app}\locale\;'
+print >> ind, 'Type: filesandordirs; Name: {app}\share\;'
+print >> ind, 'Type: filesandordirs; Name: {app}\ico\;'
+print >> ind, 'Type: filesandordirs; Name: {app}\Microsoft.VC90.CRT\;'
+print >> ind, 'Type: files; Name: {app}\*.dll;'
+print >> ind, 'Type: files; Name: {app}\*.pyd;'
+print >> ind, 'Type: files; Name: {app}\*.zip;'
+print >> ind, 'Type: files; Name: {app}\*.pem;'
+print >> ind, 'Type: files; Name: {app}\{#AppExeName};'
+print >> ind, '[Languages]'
+print >> ind, 'Name: "english"; MessagesFile: "compiler:Default.isl"'
+print >> ind, 'Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"'
+print >> ind, 'Name: "catalan"; MessagesFile: "compiler:Languages\Catalan.isl"'
+print >> ind, 'Name: "corsican"; MessagesFile: "compiler:Languages\Corsican.isl"'
+print >> ind, 'Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"'
+print >> ind, 'Name: "danish"; MessagesFile: "compiler:Languages\Danish.isl"'
+print >> ind, 'Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"'
+print >> ind, 'Name: "finnish"; MessagesFile: "compiler:Languages\Finnish.isl"'
+print >> ind, 'Name: "french"; MessagesFile: "compiler:Languages\French.isl"'
+print >> ind, 'Name: "german"; MessagesFile: "compiler:Languages\German.isl"'
+print >> ind, 'Name: "greek"; MessagesFile: "compiler:Languages\Greek.isl"'
+print >> ind, 'Name: "hebrew"; MessagesFile: "compiler:Languages\Hebrew.isl"'
+print >> ind, 'Name: "hungarian"; MessagesFile: "compiler:Languages\Hungarian.isl"'
+print >> ind, 'Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"'
+print >> ind, 'Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"'
+print >> ind, 'Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"'
+print >> ind, 'Name: "polish"; MessagesFile: "compiler:Languages\Polish.isl"'
+print >> ind, 'Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"'
+print >> ind, 'Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"'
+print >> ind, 'Name: "scottishgaelic"; MessagesFile: "compiler:Languages\ScottishGaelic.isl"'
+print >> ind, 'Name: "serbiancyrillic"; MessagesFile: "compiler:Languages\SerbianCyrillic.isl"'
+print >> ind, 'Name: "serbianlatin"; MessagesFile: "compiler:Languages\SerbianLatin.isl"'
+print >> ind, 'Name: "slovenian"; MessagesFile: "compiler:Languages\Slovenian.isl"'
+print >> ind, 'Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"'
+print >> ind, 'Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"'
+print >> ind, 'Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"'
+print >> ind, '[Tasks]'
+print >> ind, 'Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked'
+print >> ind, '[Files]'
+print >> ind, 'Source: "dist\*.*"; DestDir: "{app}"; Flags:replacesameversion recursesubdirs'
+print >> ind, '[Icons]'
+print >> ind, 'Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"'
+print >> ind, 'Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"'
+print >> ind, 'Name: "{commondesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon'
+print >> ind, '[Registry]'
+print >> ind, 'Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#AppExeName}"; ValueData: "~ HIGHDPIAWARE"; Flags: noerror uninsdeletevalue'

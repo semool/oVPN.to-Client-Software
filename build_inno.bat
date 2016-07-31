@@ -23,6 +23,7 @@ IF EXIST %WORKPATH% rmdir /S/Q %WORKPATH%\
 IF EXIST %EXESTRING% del %EXESTRING%
 IF EXIST py2exe_error.log del py2exe_error.log
 IF EXIST py2exe.log del py2exe.log
+IF EXIST inno_setup.iss del inno_setup.iss
 
 echo py2exe compile: %BINARY%
 %PYEXE% -OO setup.py py2exe 1> py2exe.log 2> py2exe_error.log
@@ -49,7 +50,7 @@ echo includes_to_dist.bat completed
 IF "%~2" == "SIGN" (
 	echo Close or hit to continue with Sign
 ) else (
-	echo Close or hit to continue with compile
+	echo Close or hit to continue with compile: inno_setup.iss
 )
 pause
 
@@ -58,9 +59,11 @@ IF "%~2" == "SIGN" (
 	call sign_dll.bat
 	)
 
-echo Close or hit to compile: inno_setup%BITS%.iss
-pause
-%INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
+IF "%~2" == "SIGN" (
+	echo Close or hit to compile: inno_setup.iss
+	pause
+)
+%INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup.iss"
 
 echo Inno Setup %EXESTRING%
 echo Close or hit to make release
@@ -71,3 +74,4 @@ echo release.bat finished, close or hit to cleanup
 pause
 
 if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
+IF EXIST inno_setup.iss del inno_setup.iss
