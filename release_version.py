@@ -4,7 +4,8 @@ print "join release_version.py"
 def version_data():
 	data = {
 			"VERSION" : "0.6.0",
-			"NAME":"%s Client" % (org_data()["ORG"]),
+			"SIGN" : True,
+			"NAME" : "%s Client" % (org_data()["ORG"]),
 		}
 	return data
 
@@ -69,7 +70,6 @@ if len(sys.argv) > 1:
 				print "file '%s' not found" % (file)
 		
 		setrelease = {
-			"inno" : { "file" : "inno.release", "content" : '#define Version "%s"' % (version_data()["VERSION"]) },
 			"winb" : { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) },
 			"hard" : { "file" : "release_hard.py", "content" : 'def builtdate(): return "%s %s - built: %d-%02d-%02d (%d)"' % (version_data()["NAME"],version_data()["VERSION"],build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]) },
 			}

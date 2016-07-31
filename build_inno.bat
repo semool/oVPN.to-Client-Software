@@ -5,8 +5,8 @@ call %SOURCEDIR%\set_dirs.bat %~1
 
 IF NOT DEFINED PYEXE (EXIT)
 
-del "%SOURCEDIR%\*.pyc"
-del "%SOURCEDIR%\*.pyo"
+del "%SOURCEDIR%\*.pyc" 2> nul
+del "%SOURCEDIR%\*.pyo" 2> nul
 
 %PYEXE% release_version.py SET_VERSION_FILES
 
@@ -23,6 +23,7 @@ IF EXIST %WORKPATH% rmdir /S/Q %WORKPATH%\
 IF EXIST %EXESTRING% del %EXESTRING%
 IF EXIST py2exe_error.log del py2exe_error.log
 IF EXIST py2exe.log del py2exe.log
+IF EXIST inno_setup.iss del inno_setup.iss
 
 echo py2exe compile: %BINARY%
 %PYEXE% -OO setup.py py2exe 1> py2exe.log 2> py2exe_error.log
@@ -35,25 +36,34 @@ IF EXIST py2exe_error.log (
 	exit
 )
 
-call includes_to_dist.bat %~1
-echo includes_to_dist.bat completed
+echo py2exe completed
+echo Close or hit to continue with includes_to_dist
 pause
 
+call includes_to_dist.bat %~1
+if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
+if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
+if exist %SOURCEDIR%\py2exe.log del %SOURCEDIR%\py2exe.log
+del "%SOURCEDIR%\*.pyc" 2> nul
+del "%SOURCEDIR%\*.pyo" 2> nul
+echo includes_to_dist.bat completed
+IF "%~2" == "SIGN" (
+	echo Close or hit to continue with Sign
+) else (
+	echo Close or hit to continue with compile: inno_setup.iss
+)
+pause
 
 IF "%~2" == "SIGN" (
-	echo hit to SIGN files in %DISTDIR%
-	for %%v in (%DISTDIR%\*.exe) do (
-		echo sign?: %%v
-	)
-	pause
 	call sign_exe.bat
 	call sign_dll.bat
 	)
 
-
-echo hit to compile: inno_setup%BITS%.iss
-pause
-%INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup%BITS%.iss"
+IF "%~2" == "SIGN" (
+	echo Close or hit to compile: inno_setup.iss
+	pause
+)
+%INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup.iss"
 
 echo Inno Setup %EXESTRING%
 echo Close or hit to make release
@@ -63,7 +73,5 @@ call release.bat
 echo release.bat finished, close or hit to cleanup
 pause
 
-if exist %SOURCEDIR%\py2exe.log del %SOURCEDIR%\py2exe.log
 if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
-if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
-if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
+IF EXIST inno_setup.iss del inno_setup.iss
