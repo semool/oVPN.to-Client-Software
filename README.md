@@ -37,7 +37,8 @@ C:\Python27[_64]\Scripts\pip.exe install netifaces
 + ```X:\????\ovpn-client\build_inno.bat 32 SIGN```
 + same for 64 bits and do NOT run any of the *.bat files directly!
 + edit ```set_dirs.bat``` to your needs!
-+ Update Version only in file: ```release_version.py```
++ Update VERSION only in file: ```release_version.py```
++ Set SIGN in ```release_version.py``` to False for unsigned inno compile
 
 ## Self Signed Certificate
 + Download and install SDK for your OS 
