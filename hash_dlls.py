@@ -88,10 +88,16 @@ class HASH_DLLS:
 	def write_hash_dbf(self):
 		for key,file in self.DLL_HASH_DBS.items():
 			try:
+				tmpfile = "%s.tmp" % (file)
 				if len(self.HASHS_DB[key]) > 0:
-					fp = open(file, "wb")
+					fp = open(tmpfile, "wb")
 					fp.write(json.dumps(self.HASHS_DB[key], ensure_ascii=True))
 					fp.close()
+					with open(file, "wt") as fout:
+						with open(tmpfile, "rt") as fin:
+							for line in fin:
+								fout.write(line.replace(',', ',\n'))
+					os.remove(tmpfile)
 					print "def write_hash_dbf: write key '%s', file = '%s' OK" % (key,file)
 			except:
 				print "def write_hash_dbf: write key '%s', file = '%s' failed!" % (key,file)
