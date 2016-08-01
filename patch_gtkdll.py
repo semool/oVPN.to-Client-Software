@@ -6,9 +6,7 @@ BITS = struct.calcsize("P") * 8
 def patch_gtkdll():
 	unsigned_dir = "includes\\DLL\\%s\\unsigned" % (BITS)
 	gtkfile = "%s\\libgtk-3-0.dll" % (unsigned_dir)
-	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (unsigned_dir)
 	gtkfile32 = "%s\\libgtk-3-0-32.dll" % (unsigned_dir)
-	gtkfile16tmp = "%s.tmp" % (gtkfile16)
 	gtkfile32tmp = "%s.tmp" % (gtkfile32)
 	if os.path.exists(gtkfile):
 		if BITS == 32:
