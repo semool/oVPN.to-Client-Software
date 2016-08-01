@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-07-24 15:54+0200\n"
-"PO-Revision-Date: 2016-07-25 00:54+0200\n"
+"PO-Revision-Date: 2016-08-01 03:55+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1175,15 +1175,15 @@ msgstr "Cambiar DNS"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1296
 msgid "Primary DNS: %s (%s)"
-msgstr ""
+msgstr "DNS primario: %s (%s)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1316
 msgid "Secondary DNS: %s (%s)"
-msgstr ""
+msgstr "DNS secundario: %s (%s)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1348
 msgid "Primary DNS '%s' @ %s"
-msgstr ""
+msgstr "DNS principal '%s' @ %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1352
 msgid "Set Primary DNS"
@@ -1191,7 +1191,7 @@ msgstr "Establezca DNS Primario"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1358
 msgid "Secondary DNS '%s' @ %s"
-msgstr ""
+msgstr "DNS secundario '%s' @ %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1362
 msgid "Set Secondary DNS"
@@ -1200,7 +1200,7 @@ msgstr "Establezca DNS Secundario"
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1525
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3082
 msgid "Current: IPv4 Entry Server with Exit to IPv4 (standard)"
-msgstr ""
+msgstr "Corriente: IPv4 servidor de entrada con salida a IPv4 (estándar)"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1526
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3083
@@ -1210,7 +1210,7 @@ msgstr "Selección: Servidor entrante con salida a IPv4 + IPv6"
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1528
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3086
 msgid "Current: IPv4 Entry Server with Exits to IPv4 + IPv6"
-msgstr ""
+msgstr "Corriente: Servidor de entrada IPv4 con salidas a IPv4 + IPv6"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:1529
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3087
@@ -1477,15 +1477,15 @@ msgstr "Cambiar tema de la App"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3145
 msgid "Change App Icons"
-msgstr ""
+msgstr "Cambiar los iconos de aplicación"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3190
 msgid "Change App Font Size"
-msgstr ""
+msgstr "Cambiar el tamaño del tipo de letra"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3236
 msgid "Change App Language"
-msgstr ""
+msgstr "Cambiar idioma"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3272
 msgid "Disable About and Quit on Connection (default: ON)"
@@ -1631,7 +1631,7 @@ msgstr "Clave API:"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4410
 msgid "Save Passphrase in File?"
-msgstr ""
+msgstr "¿Guardar contraseña en archivo?"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4539
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:4548
