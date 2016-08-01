@@ -90,7 +90,7 @@ class HASH_DLLS:
 			try:
 				if len(self.HASHS_DB[key]) > 0:
 					fp = open(file, "wb")
-					fp.write(json.dumps(self.HASHS_DB[key], ensure_ascii=False))
+					fp.write(json.dumps(self.HASHS_DB[key], ensure_ascii=True))
 					fp.close()
 					print "def write_hash_dbf: write key '%s', file = '%s' OK" % (key,file)
 			except:
@@ -119,7 +119,7 @@ class HASH_DLLS:
 		return files
 
 	def hash_files(self):
-		for key,dir in self.DLL_DIRS.items():
+		for key,dir in sorted(self.DLL_DIRS.items()):
 			if os.path.exists(dir):
 				files = {}
 				hash_files = self.list_files(dir)
