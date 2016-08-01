@@ -1,5 +1,6 @@
 
 import os, shutil, struct
+from _winreg import *
 BITS = struct.calcsize("P") * 8
 
 
@@ -36,7 +37,7 @@ def patch_gtkdll():
 					print "write pixel to file '%s'"  % (gtkfile32tmp)
 					f2.seek(offset)
 					f2.write(pixel_32)
-			f2.close()
+				f2.close()
 			shutil.move(gtkfile32tmp, gtkfile32)
 			print "move tmp file to '%s'"  % (gtkfile32)
 		except:
@@ -45,4 +46,43 @@ def patch_gtkdll():
 	else:
 		print "gtkfile '%s' not found" % (gtkfile)
 
-patch_gtkdll()
+def select_gtkdll():
+	gtkfile = "%s\\libgtk-3-0.dll" % (os.getcwd())
+	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (os.getcwd())
+	gtkfile32 = "%s\\libgtk-3-0-32.dll" % (os.getcwd())
+	try:
+		Registry = ConnectRegistry(None, HKEY_CURRENT_USER)
+		RawKey = OpenKey(Registry, "Control Panel\Desktop")
+	except:
+		pass
+	try:
+		pixel = False
+		if not RawKey == False:
+			i = 0
+			while 1:
+				name, value, type = EnumValue(RawKey, i)
+				if name == "LogPixels":
+					if value > 96:
+						pixel = 32
+					if value == 96:
+						pixel = 16
+					break
+				i += 1
+		
+		if not pixel == False:
+			if pixel == 32 and not os.path.isfile(gtkfile16):
+				if os.path.isfile(gtkfile):
+					shutil.copyfile(gtkfile, gtkfile16)
+				if os.path.isfile(gtkfile32):
+					shutil.copyfile(gtkfile32, gtkfile)
+					return True
+			elif pixel == 16 and os.path.isfile(gtkfile16):
+				shutil.copyfile(gtkfile16, gtkfile)
+				return True
+	except:
+		print "select_gtkdll failed"
+
+
+#patch_gtkdll()
+
+select_gtkdll()
