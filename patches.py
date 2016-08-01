@@ -1,9 +1,55 @@
 # -*- coding: utf-8 -*-
 import os
-import sys, shutil
+import sys, shutil, struct
 from _winreg import *
 
+BITS = struct.calcsize("P") * 8
+
+def select_gtkdll():
+	gtkfile = "%s\\libgtk-3-0.dll" % (os.getcwd())
+	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (os.getcwd())
+	gtkfile32 = "%s\\libgtk-3-0-32.dll" % (os.getcwd())
+	try:
+		Registry = ConnectRegistry(None, HKEY_CURRENT_USER)
+		RawKey = OpenKey(Registry, "Control Panel\Desktop")
+	except:
+		pass
+	try:
+		pixel = False
+		if not RawKey == False:
+			i = 0
+			while 1:
+				name, value, type = EnumValue(RawKey, i)
+				if name == "LogPixels":
+					if value > 96:
+						pixel = 32
+					if value == 96:
+						pixel = 16
+					break
+				i += 1
+		
+		if not pixel == False:
+			print "pixel = '%s'" % (pixel)
+			if pixel == 32 and not os.path.isfile(gtkfile16):
+				print "pixel is 32 and no gtkfile16 found"
+				if os.path.isfile(gtkfile):
+					print "backup gtkfile to gtkfile16"
+					shutil.copyfile(gtkfile, gtkfile16)
+				if os.path.isfile(gtkfile32):
+					print "found pre-patched gtkfile32, copy to gtkfile"
+					shutil.copyfile(gtkfile32, gtkfile)
+			elif pixel == 16 and os.path.isfile(gtkfile16):
+				print "pixel is 16 and gtkfile16 exists, restore gtkfile16 to gtkfile"
+				shutil.copyfile(gtkfile16, gtkfile)
+		else:
+			if os.path.isfile(gtkfile16):
+				print "pixel is False and gtkfile16 exists, restore gtkfile16 to gtkfile"
+				shutil.copyfile(gtkfile16, gtkfile)
+	except:
+		print "select_gtkdll failed"
+
 def gtk_trayicon_dpi():
+	return
 	# Patching libgtk-3-0.dll for 16px or 32px TrayIcon Output
 	gtkfile = "%s\\libgtk-3-0.dll" % (os.getcwd())
 	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (os.getcwd())
@@ -76,3 +122,6 @@ def gtk_trayicon_dpi():
 	else:
 		return False
 	return True
+	
+	
+
