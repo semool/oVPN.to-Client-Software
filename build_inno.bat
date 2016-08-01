@@ -45,7 +45,7 @@ pause
 call includes_to_dist.bat %~1
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
-if exist %SOURCEDIR%\%PY2EXE_LOG% del %SOURCEDIR%\%PY2EXE_LOG%
+IF EXIST %PY2EXE_LOG% del %PY2EXE_LOG%
 del "%SOURCEDIR%\*.pyc" 2> nul
 del "%SOURCEDIR%\*.pyo" 2> nul
 echo includes_to_dist.bat completed
