@@ -19,7 +19,7 @@ C:\Python27[_64]\Scripts\pip.exe install netifaces
 ```
 
 ## Basic Requirements:
-+ [PyGObject 3.18.2 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev7-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
++ [PyGObject 3.18.2rev8 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev8-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
 + [Inno Setup 5.5.9](http://www.jrsoftware.org/download.php/is.exe)
 
@@ -51,7 +51,7 @@ C:\Python27[_64]\Scripts\pip.exe install netifaces
 + ```makecert.exe -n "CN=oVPN.to-Client, L=localityName, S=stateOrProvinceName, C=countryName" -a sha512 -pe -ss my -sr currentuser -in "oVPN.to-Client" -is root -ir currentuser -len 4096 -eku 1.3.6.1.5.5.7.3.3```
 + Open DigiCertUtil.exe and it shows your Certificate
 + Right click your Certificate and select "copy thumbprint to clipboard"
-+ Edit sign.bat and replace the thumbprints with the one in clipboard
++ Edit ```set_dirs.bat``` and replace the ```SIGNCERTSHA1``` with the one in clipboard
 
 ## Inno Setup Sign Tools: "Tools" -> "Configure Sign Tools..." -> Add
 + name: signtool1 [OK] command:
