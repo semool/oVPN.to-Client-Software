@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys, time, subprocess
+import os, sys, time, subprocess, netifaces
 from _winreg import *
 
 def get_uninstall_progs():
@@ -20,7 +20,6 @@ def get_uninstall_progs():
 """ NETWORK ADAPTER """
 
 def get_networkadapter_guids():
-	import netifaces
 	return netifaces.interfaces()
 
 def get_networkadapterlist_from_netsh():
@@ -73,7 +72,7 @@ def get_tapadapters(OPENVPN_EXE,INTERFACES):
 		TAP_DEVS = list()
 		for line in TAPADAPTERS:
 			for INTERFACE in INTERFACES:
-				if line.startswith("'%s' {"%(INTERFACE)) and len(line) >= 1:
+				if line.startswith("'%s' {"%(INTERFACE)):
 					INTERFACES.remove(INTERFACE)
 					TAP_DEVS.append(INTERFACE)
 					break
@@ -92,7 +91,10 @@ def get_interface_infos_from_guid(guid):
 	reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
 	key = OpenKey(reg, r'SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\%s' % (guid))
 	for keyname,value in values.items():
-		values[keyname] = QueryValueEx(key, keyname)[0]
+		try:
+			values[keyname] = QueryValueEx(key, keyname)[0]
+		except:
+			pass
 	print "get_interface_infos_from_guid: '%s'" % (values)
 	return values
 
