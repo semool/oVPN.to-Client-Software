@@ -2,6 +2,7 @@ from distutils.core import setup
 import py2exe
 import sys, os, site, shutil, time
 import platform
+import struct
 import release_version
 
 appversion = release_version.setup_data()["version"]
@@ -63,9 +64,10 @@ manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </assembly>
 '''.format(APPVERSION=appversion, CPU=cpu)
 
-
+BITS = struct.calcsize("P") * 8
 SOURCEDIR = os.getcwd()
 DIST_DIR = "%s\\%s" % (SOURCEDIR,release_version.setup_data()["DIST_DIR1"])
+BUILD_DIR = "%s\\build%s" % (SOURCEDIR,BITS)
 
 site_dir = site.getsitepackages()[1] 
 include_dll_path = os.path.join(site_dir, 'gnome')
@@ -104,6 +106,7 @@ setup_dict = dict(
 		}
 	],
 	options={
+		'build': {'build_base': BUILD_DIR },
 		'py2exe': {
 		'dist_dir': DIST_DIR,
 		'bundle_files' : 3,
@@ -229,7 +232,7 @@ print >> ind, 'Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.is
 print >> ind, '[Tasks]'
 print >> ind, 'Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked'
 print >> ind, '[Files]'
-print >> ind, 'Source: "dist\*.*"; DestDir: "{app}"; Flags:replacesameversion recursesubdirs'
+print >> ind, 'Source: "%s\*.*"; DestDir: "{app}"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
 print >> ind, '[Icons]'
 print >> ind, 'Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"'
 print >> ind, 'Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"'

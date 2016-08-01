@@ -21,18 +21,20 @@ echo cleanup
 IF EXIST %DISTDIR% rmdir /S/Q %DISTDIR%\
 IF EXIST %WORKPATH% rmdir /S/Q %WORKPATH%\
 IF EXIST %EXESTRING% del %EXESTRING%
-IF EXIST py2exe_error.log del py2exe_error.log
-IF EXIST py2exe.log del py2exe.log
+IF EXIST %PY2EXE_ERR% del %PY2EXE_ERR%
+IF EXIST %PY2EXE_LOG% del %PY2EXE_LOG%
 IF EXIST inno_setup.iss del inno_setup.iss
 
-echo py2exe compile: %BINARY%
-%PYEXE% -OO setup.py py2exe 1> py2exe.log 2> py2exe_error.log
-echo py2exe compiled with exitcode %errorlevel%: logfile: py2exe.log
+echo hit to compile py2exe: %BINARY%
+pause
+echo compiling...
+%PYEXE% -OO setup.py py2exe 1> %PY2EXE_LOG% 2> %PY2EXE_ERR%
+echo py2exe compiled with exitcode %errorlevel%: logfile: %PY2EXE_LOG%
 
 for %%F in (%SOURCEDIR%\py2exe*.log) do if %%~zF equ 0 del %%F
-IF EXIST py2exe_error.log (
+IF EXIST %PY2EXE_ERR% (
 	echo errors in py2exe
-	notepad.exe py2exe_error.log
+	notepad.exe %PY2EXE_ERR%
 	exit
 )
 
@@ -43,7 +45,7 @@ pause
 call includes_to_dist.bat %~1
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
-if exist %SOURCEDIR%\py2exe.log del %SOURCEDIR%\py2exe.log
+if exist %SOURCEDIR%\%PY2EXE_LOG% del %SOURCEDIR%\%PY2EXE_LOG%
 del "%SOURCEDIR%\*.pyc" 2> nul
 del "%SOURCEDIR%\*.pyo" 2> nul
 echo includes_to_dist.bat completed

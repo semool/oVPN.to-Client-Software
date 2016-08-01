@@ -1,5 +1,7 @@
 print "join release_version.py"
 
+import struct
+BITS = struct.calcsize("P") * 8
 
 def version_data():
 	data = {
@@ -44,10 +46,10 @@ def setup_data():
 			"name" : "%s for Windows" % (version_data()["NAME"]),
 			"description" : "%s %s" % (version_data()["NAME"],version_data()["VERSION"]),
 			"copyright" : "(C) 2010 - %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
-			"DIST_DIR1" : "dist",
-			"DIST_DIR2" : "dist_check_bin",
+			"DIST_DIR1" : "dist%s"%(BITS),
+			"DIST_DIR2" : "dist_check_bin%s"%(BITS),
 			"py2exe_excludes" : [ 'tcl','tcl8.5','tk8.5','win32pipe','win32wnet','_tkinter','Tkinter','Tk','_testcapi' ],
-			"py2exe_includes" : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64','zlib' ]
+			"py2exe_includes" : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64','zlib' ],
 			"dll_excludes" : [ 'libgstreamer-1.0-0.dll','MSVCR100.dll','pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll'],
 		}
 	return data
@@ -60,6 +62,7 @@ print "setup_data() = '%s'" % (setup_data())
 
 import sys, os
 if len(sys.argv) > 1:
+	
 	if sys.argv[1] == "SET_VERSION_FILES":
 		
 		def write_releasefile(key,file,content):
@@ -73,7 +76,7 @@ if len(sys.argv) > 1:
 		
 		setrelease = {
 			"winb" : { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) },
-			"hard" : { "file" : "release_hard.py", "content" : 'def builtdate(): return "%s %s - built: %d-%02d-%02d (%d)"' % (version_data()["NAME"],version_data()["VERSION"],build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"]) },
+			"hard" : { "file" : "release_hard%s.py" % (BITS), "content" : 'def builtdate(): return "%s %s - built: %d-%02d-%02d (%d) %s BITS"' % (version_data()["NAME"],version_data()["VERSION"],build_data()["YEAR"],build_data()["MONTH"],build_data()["DAY"],build_data()["STAMP"],BITS) },
 			}
 			
 		for key, value in setrelease.items():
