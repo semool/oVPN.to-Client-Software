@@ -240,6 +240,7 @@ class Systray:
 		self.OVPN_ACC_DATA = {}
 		self.OVPN_ACC_DATAfrombefore = False
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
+		self.LAST_OVPN_SERVER_RELOAD = 0
 		self.UPDATEOVPNONSTART = False
 		self.request_UPDATE = True
 		self.APIKEY = False
@@ -2038,8 +2039,9 @@ class Systray:
 								if self.extract_ovpn():
 									self.timer_check_certdl_running = False
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
-									if self.MAINWINDOW_OPEN == True:
-										if self.load_ovpn_server() == True:
+									self.OVPN_SERVER = list()
+									if self.load_ovpn_server() == True:
+										if self.MAINWINDOW_OPEN == True:
 											GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
 											GLib.idle_add(self.mainwindow_ovpn_server)
 									return True
@@ -4996,6 +4998,10 @@ class Systray:
 
 	def load_ovpn_server(self):
 		self.debug(1,"def load_ovpn_server()")
+		if self.LAST_OVPN_SERVER_RELOAD > time.time()-86400:
+			return
+		if len(self.OVPN_SERVER) > 0:
+			return
 		try:
 			if os.path.exists(self.VPN_CFG):
 				self.debug(1,"def load_ovpn_server: self.VPN_CFG = '%s'" % (self.VPN_CFG))
@@ -5059,6 +5065,7 @@ class Systray:
 						self.debug(5,"def load_ovpn_server: file = '%s' END" % (file))
 				# for end
 				self.OVPN_SERVER.sort()
+				self.LAST_OVPN_SERVER_RELOAD = time.time()
 				return True
 			else:
 				self.reset_last_update()
