@@ -4055,19 +4055,28 @@ class Systray:
 		
 		self.debug(1,"def win_netsh_read_dns_to_backup: self.WIN_EXT_DEVICE_DATA = '%s'" % (self.WIN_EXT_DEVICE_DATA))
 		
-		dns1 = self.WIN_EXT_DEVICE_DATA['NameServer'].split(",")[0]
-		if self.isValueIPv4(dns1):
-			self.debug(1,"def win_netsh_read_dns_to_backup: 1st DNS '%s' IF: '%s' backuped" % (dns1,self.WIN_EXT_DEVICE))
-			self.GATEWAY_DNS1 = dns1
-		else:
-			self.GATEWAY_DNS1 = False
+		try:
+			dns1 = self.WIN_EXT_DEVICE_DATA['NameServer'].split(",")[0]
+			if self.isValueIPv4(dns1):
+				self.debug(1,"def win_netsh_read_dns_to_backup: 1st DNS '%s' IF: '%s' backuped" % (dns1,self.WIN_EXT_DEVICE))
+				self.GATEWAY_DNS1 = dns1
+			else:
+				self.GATEWAY_DNS1 = False
 			
-		if not self.GATEWAY_DNS1 == False:
-			dns2 = self.WIN_EXT_DEVICE_DATA['NameServer'].split(",")[1]
-			if self.isValueIPv4(dns2):
-				self.debug(1,"def win_netsh_read_dns_to_backup: 2nd DNS '%s' IF: '%s' backuped" % (dns2,self.WIN_EXT_DEVICE))
-				self.GATEWAY_DNS2 = dns2
-				return True
+			if not self.GATEWAY_DNS1 == False:
+				try:
+						dns2 = self.WIN_EXT_DEVICE_DATA['NameServer'].split(",")[1]
+						if self.isValueIPv4(dns2):
+							self.debug(1,"def win_netsh_read_dns_to_backup: 2nd DNS '%s' IF: '%s' backuped" % (dns2,self.WIN_EXT_DEVICE))
+							self.GATEWAY_DNS2 = dns2
+							return True
+				except:
+					self.GATEWAY_DNS2 = False
+			else:
+				self.GATEWAY_DNS2 = False
+		except:
+			self.GATEWAY_DNS1 = False
+			self.GATEWAY_DNS2 = False
 		
 		if not self.GATEWAY_DNS1 == False:
 			return True
