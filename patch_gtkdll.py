@@ -3,13 +3,6 @@ import os, shutil, struct
 from _winreg import *
 BITS = struct.calcsize("P") * 8
 
-if BITS == 32:
-	offset = 0x3E4E2 # win32
-if BITS == 64:
-	offset = 0x3D051 # win64
-
-pixel_16 = "\x10"
-pixel_32 = "\x20"
 
 def patch_gtkdll():
 	unsigned_dir = "includes\\DLL\\%s\\unsigned" % (BITS)
@@ -17,7 +10,14 @@ def patch_gtkdll():
 	gtkfile32 = "%s\\libgtk-3-0-32.dll" % (unsigned_dir)
 	gtkfile32tmp = "%s.tmp" % (gtkfile32)
 	if os.path.exists(gtkfile):
-
+		
+		if BITS == 32:
+			offset = 0x3E4E2 # win32
+		if BITS == 64:
+			offset = 0x3D051 # win64
+		
+		pixel_16 = "\x10"
+		pixel_32 = "\x20"
 		
 		if os.path.exists(gtkfile32):
 			print "delete alread patched file '%s' before patching" % (gtkfile32)
