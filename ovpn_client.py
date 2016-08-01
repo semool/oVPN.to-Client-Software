@@ -3081,7 +3081,6 @@ class Systray:
 		if self.MAINWINDOW_OPEN == True:
 			reopen = True
 		if self.LOAD_SRVDATA == True:
-			self.LOAD_SRVDATA = True
 			self.LAST_OVPN_SRV_DATA_UPDATE = 0
 			self.OVPN_SRV_DATA = {}
 		self.write_options_file()
@@ -4663,6 +4662,7 @@ class Systray:
 			self.write_options_file()
 			if reopen == True:
 				GLib.idle_add(self.mainwindow_ovpn_server)
+		self.UPDATE_SWITCH = True
 	
 	def cb_extserverview_size(self,widget,event):
 		if event.button == 1:
