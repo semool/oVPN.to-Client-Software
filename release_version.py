@@ -47,6 +47,8 @@ def setup_data():
 			"DIST_DIR1" : "dist",
 			"DIST_DIR2" : "dist_check_bin",
 			"py2exe_excludes" : [ 'tcl','tcl8.5','tk8.5','win32pipe','win32wnet','_tkinter','Tkinter','Tk','_testcapi' ],
+			"py2exe_includes" : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','_winreg','base64','zlib' ]
+			"dll_excludes" : [ 'libgstreamer-1.0-0.dll','MSVCR100.dll','pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll'],
 		}
 	return data
 
