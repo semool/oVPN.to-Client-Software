@@ -1621,7 +1621,7 @@ class Systray:
 					systraytext = _("Requesting Certificates...")
 					systrayicon = self.systray_icon_syncupdate1
 				elif self.STATE_CERTDL == "wait":
-						systraytext = _("Please wait... Certificates requested from backend! (%s)") % (self.API_COUNTER)
+						systraytext = _("Please wait... Certificates requested from backend! (%s)") % (int(round(self.API_COUNTDOWN,0)))
 						if not self.OVERWRITE_TRAYICON == False:
 							systrayicon = self.OVERWRITE_TRAYICON
 						elif self.STATUS_ICON_BLINK%2==0:
@@ -2015,23 +2015,24 @@ class Systray:
 						if self.API_REQUEST(API_ACTION = "requestcerts"):
 							self.STATUS_ICON_BLINK = 0
 							self.STATE_CERTDL = "wait"
-							self.API_COUNTER = 120
+							self.API_COUNTDOWN = 180
 							LAST_requestcerts = 0
 							while not self.body == "ready":
-								if self.API_COUNTER <= 0:
+								if self.API_COUNTDOWN <= 0:
 									self.timer_check_certdl_running = False
 									self.msgwarn(_("Update took too long...aborted!\nPlease retry in few minutes..."),_("Error: Update Timeout"))
 									return False
-								time.sleep(0.5)
-								if LAST_requestcerts > 6:
+								sleep = 0.5
+								time.sleep(sleep)
+								if LAST_requestcerts > 16:
 									self.OVERWRITE_TRAYICON = self.systray_icon_syncupdate3
 									self.API_REQUEST(API_ACTION = "requestcerts")
 									self.OVERWRITE_TRAYICON = False
 									LAST_requestcerts = 0
 								else:
-									LAST_requestcerts += 1
+									LAST_requestcerts += sleep
 								self.STATUS_ICON_BLINK += 1
-								self.API_COUNTER -= 1
+								self.API_COUNTDOWN -= sleep
 							# final step to download certs
 							self.STATE_CERTDL = "getcerts"
 							if self.API_REQUEST(API_ACTION = "getcerts"):
