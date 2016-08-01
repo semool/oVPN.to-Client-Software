@@ -28,16 +28,14 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
-import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json
 from ConfigParser import SafeConfigParser
 # .py files imports
 import winregs
 import icons_b64
+import release_version
 
 try:
-	BITS = struct.calcsize("P") * 8
-	print "import release_version"
-	import release_version
 	CLIENTVERSION = "%s" % (release_version.version_data()["VERSION"])
 	CLIENT_STRING = "%s %s" % (release_version.version_data()["NAME"],CLIENTVERSION)
 	VCP_DOMAIN = release_version.org_data()["VCP_DOMAIN"]
