@@ -16,22 +16,24 @@ else:
 	DEBUG = False
 	print "DEVMODE=False"
 
+"""
 try:
 	import patches
 	patches.gtk_trayicon_dpi()
 except:
 	pass
+"""
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
-import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct
 from ConfigParser import SafeConfigParser
 import winregs 
 
-
 try:
+	BITS = struct.calcsize("P") * 8
 	print "import release_version"
 	import release_version
 	CLIENTVERSION = "%s" % (release_version.version_data()["VERSION"])
@@ -44,8 +46,12 @@ try:
 	print API_URL
 	
 	try:
-		import release_hard
-		BUILT_STRING = release_hard.builtdate()
+		if BITS == 32:
+			import release_hard32
+			BUILT_STRING = release_hard32.builtdate()
+		if BITS == 64:
+			import release_hard64
+			BUILT_STRING = release_hard64.builtdate()
 	except: 
 		BUILT_STRING = "(UNDEFINED)"
 	print BUILT_STRING
