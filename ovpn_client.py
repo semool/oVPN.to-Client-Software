@@ -28,7 +28,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
-import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct
 from ConfigParser import SafeConfigParser
 # .py files imports
 import winregs
@@ -36,6 +36,7 @@ import icons_b64
 import release_version
 
 try:
+	
 	CLIENTVERSION = "%s" % (release_version.version_data()["VERSION"])
 	CLIENT_STRING = "%s %s" % (release_version.version_data()["NAME"],CLIENTVERSION)
 	VCP_DOMAIN = release_version.org_data()["VCP_DOMAIN"]
@@ -46,12 +47,15 @@ try:
 	print API_URL
 	
 	try:
+		BITS = struct.calcsize("P") * 8
 		if BITS == 32:
 			import release_hard32
 			BUILT_STRING = release_hard32.builtdate()
-		if BITS == 64:
+		elif BITS == 64:
 			import release_hard64
 			BUILT_STRING = release_hard64.builtdate()
+		else:
+			sys.exit()
 	except: 
 		BUILT_STRING = "(UNDEFINED)"
 	print BUILT_STRING
