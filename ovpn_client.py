@@ -240,7 +240,7 @@ class Systray:
 		self.OVPN_ACC_DATA = {}
 		self.OVPN_ACC_DATAfrombefore = False
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
-		self.LAST_OVPN_SERVER_RELOAD = 0
+		#self.LAST_OVPN_SERVER_RELOAD = 0
 		self.UPDATEOVPNONSTART = False
 		self.request_UPDATE = True
 		self.APIKEY = False
@@ -4998,8 +4998,9 @@ class Systray:
 
 	def load_ovpn_server(self):
 		self.debug(1,"def load_ovpn_server()")
-		if self.LAST_OVPN_SERVER_RELOAD > time.time()-86400:
-			return
+		# *fixme* useless?
+		#if self.LAST_OVPN_SERVER_RELOAD > time.time()-86400:
+		#	return
 		if len(self.OVPN_SERVER) > 0:
 			return
 		try:
@@ -5065,7 +5066,8 @@ class Systray:
 						self.debug(5,"def load_ovpn_server: file = '%s' END" % (file))
 				# for end
 				self.OVPN_SERVER.sort()
-				self.LAST_OVPN_SERVER_RELOAD = time.time()
+				#*fixme* useless?
+				#self.LAST_OVPN_SERVER_RELOAD = time.time()
 				return True
 			else:
 				self.reset_last_update()
