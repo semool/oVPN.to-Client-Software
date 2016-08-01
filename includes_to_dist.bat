@@ -6,7 +6,6 @@ IF NOT DEFINED BITS (EXIT)
 copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
 xcopy /Y /E "%LOCALEDIR%" "%DISTDIR%\locale\"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
-copy /Y "%INCLUDESDIR%\libgtk3-tray32\libgtk-3-0-32_win%BITS%.dll" "%DISTDIR%\libgtk-3-0-32.dll"
 
 ::Delete unneded Language Files 
 for /f "delims=" %%i in ('dir /b "%LANGPATH%*.*"') do (
