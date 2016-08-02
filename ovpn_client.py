@@ -16,14 +16,11 @@ else:
 	DEBUG = False
 	print "DEVMODE=False"
 
-
 try:
 	import patches
-	#patches.gtk_trayicon_dpi()
 	patches.select_gtkdll()
 except:
 	sys.exit()
-
 
 import gi
 gi.require_version('Gtk', '3.0')

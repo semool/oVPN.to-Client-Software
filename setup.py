@@ -5,11 +5,12 @@ import platform
 import struct
 import release_version
 
+BITS = struct.calcsize("P") * 8
 appversion = release_version.setup_data()["version"]
 cpu = 'x86'
 inno = 'win32'
 crt = 'Microsoft.VC90.CRT_win32'
-if platform.architecture()[0] == '64bit':
+if BITS == 64:
 	cpu = 'amd64'
 	inno = 'win64'
 	crt = 'Microsoft.VC90.CRT_win64'
@@ -34,7 +35,7 @@ manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 	</asmv3:trustInfo>
 	<asmv3:application>
 		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">'
-			<dpiAware>true</dpiAware>
+			<dpiAware>true/PM</dpiAware>
 		</asmv3:windowsSettings>
 	</asmv3:application>
 	<dependency>
@@ -64,7 +65,6 @@ manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </assembly>
 '''.format(APPVERSION=appversion, CPU=cpu)
 
-BITS = struct.calcsize("P") * 8
 SOURCEDIR = os.getcwd()
 DIST_DIR = "%s\\%s" % (SOURCEDIR,release_version.setup_data()["DIST_DIR1"])
 BUILD_DIR = "%s\\build%s" % (SOURCEDIR,BITS)
