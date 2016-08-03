@@ -674,6 +674,11 @@ class Systray:
 				
 				try:
 					self.AUTOSTART = parser.getboolean('oVPN','autostart')
+					if self.AUTOSTART == True:
+						try:
+							schedule_task.set_task()
+						except:
+							pass
 					self.debug(1,"def read_options_file: self.AUTOSTART = '%s'" % (self.AUTOSTART))
 				except:
 					pass
