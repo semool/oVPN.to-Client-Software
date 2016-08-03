@@ -32,6 +32,7 @@ from ConfigParser import SafeConfigParser
 import debug
 import winregs
 import icons_b64
+import schedule_task
 import release_version
 
 def CDEBUG(level,text,istrue,bindir):
@@ -249,6 +250,7 @@ class Systray:
 		self.OVPN_ACC_DATAfrombefore = False
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		#self.LAST_OVPN_SERVER_RELOAD = 0
+		self.AUTOSTART = False
 		self.UPDATEOVPNONSTART = False
 		self.request_UPDATE = True
 		self.APIKEY = False
@@ -671,6 +673,12 @@ class Systray:
 					pass
 				
 				try:
+					self.AUTOSTART = parser.getboolean('oVPN','autostart')
+					self.debug(1,"def read_options_file: self.AUTOSTART = '%s'" % (self.AUTOSTART))
+				except:
+					pass
+				
+				try:
 					self.UPDATEOVPNONSTART = parser.getboolean('oVPN','updateovpnonstart')
 					self.debug(1,"def read_options_file: self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
 				except:
@@ -851,6 +859,7 @@ class Systray:
 				parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 				parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
 				parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
+				parser.set('oVPN','autostart','%s'%(self.AUTOSTART))
 				parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 				parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
 				parser.set('oVPN','serverviewextend','%s'%(self.LOAD_SRVDATA))
@@ -906,6 +915,7 @@ class Systray:
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
 			parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
+			parser.set('oVPN','autostart','%s'%(self.AUTOSTART))
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
 			parser.set('oVPN','serverviewextend','%s'%(self.LOAD_SRVDATA))
@@ -1405,6 +1415,12 @@ class Systray:
 				self.switch_disableextifondisco.set_active(True)
 			else:
 				self.switch_disableextifondisco.set_active(False)
+			
+			# settings_options_switch_autostart
+			if self.AUTOSTART == True:
+				self.switch_autostart.set_active(True)
+			else:
+				self.switch_autostart.set_active(False)
 			
 			# settings_options_switch_updateovpnonstart
 			if self.UPDATEOVPNONSTART == True:
@@ -2543,6 +2559,7 @@ class Systray:
 			self.nbpage1 = Gtk.VBox(False,spacing=2)
 			self.nbpage1.set_border_width(8)
 			self.nbpage1.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_switch_autostart(self.nbpage1)
 			self.settings_options_switch_updateovpnonstart(self.nbpage1)
 			self.settings_options_switch_accinfo(self.nbpage1)
 			self.settings_options_switch_srvinfo(self.nbpage1)
@@ -2880,6 +2897,33 @@ class Systray:
 			self.UPDATEOVPNONSTART = True
 		else:
 			self.UPDATEOVPNONSTART = False
+		self.write_options_file()
+		self.UPDATE_SWITCH = True
+
+	def settings_options_switch_autostart(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_autostart = switch
+			checkbox_title = Gtk.Label(label=_("Client autostart (default: OFF)"))
+			if self.AUTOSTART == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_switch_autostart)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(1,"def settings_options_switch_autostart: failed")
+
+	def cb_switch_autostart(self,switch,gparam):
+		self.debug(1,"def cb_switch_autostart()")
+		if switch.get_active():
+			self.AUTOSTART = True
+			schedule_task.set_task()
+		else:
+			self.AUTOSTART = False
+			schedule_task.delete_task()
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
