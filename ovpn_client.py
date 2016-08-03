@@ -128,11 +128,12 @@ class Systray:
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
 		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]
-		self.MAINWINDOW_SHOWCELLS = [ 3, 4, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]
+		self.MAINWINDOW_SHOWCELLS = self.MAINWINDOW_ALLOWCELLHIDE
 		self.MAINWINDOW_CELLINDEX = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher",
 									9:"Mbps", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 
 									16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 
 									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR" }
+		self.HIDECELLSWINDOW_OPEN = False
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.APP_LANGUAGE = "en"
@@ -756,8 +757,9 @@ class Systray:
 					
 				try:
 					MAINWINDOW_SHOWCELLS = json.loads(parser.get('oVPN','mainwindowshowcells'))
-					self.MAINWINDOW_SHOWCELLS = MAINWINDOW_SHOWCELLS
-					self.debug(1,"def read_options_file: self.MAINWINDOW_SHOWCELLS = '%s'" % (self.MAINWINDOW_SHOWCELLS))
+					if len(MAINWINDOW_SHOWCELLS) > 0:
+						self.MAINWINDOW_SHOWCELLS = MAINWINDOW_SHOWCELLS
+						self.debug(1,"def read_options_file: self.MAINWINDOW_SHOWCELLS = '%s'" % (self.MAINWINDOW_SHOWCELLS))
 				except:
 					pass
 					
@@ -1170,6 +1172,13 @@ class Systray:
 				context_menu_servertab.append(loaddataevery)
 			except:
 				self.debug(1,"def make_context_menu_servertab: loaddataevery failed")
+				
+			try:
+				hidecells = Gtk.MenuItem(_("Hide unwanted cells"))
+				hidecells.connect('button-release-event', self.cb_hide_cells)
+				context_menu_servertab.append(hidecells)
+			except:
+				self.debug(1,"def make_context_menu_servertab: hidecells failed")
 
 		context_menu_servertab.show_all()
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
@@ -2145,10 +2154,7 @@ class Systray:
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
-				try:
-					self.mainwindow.set_icon(self.app_icon)
-				except:
-					pass
+				self.mainwindow.set_icon(self.app_icon)
 				self.mainwindow_ovpn_server()
 				self.mainwindow.show_all()
 				self.MAINWINDOW_OPEN = True
@@ -2299,6 +2305,7 @@ class Systray:
 		column.set_fixed_width(30)
 		if self.LOAD_SRVDATA == False:
 			column.set_visible(False)
+		
 		self.treeview.append_column(column)
 		
 		self.debug(1,"def fill_mainwindow_with_server: go2.4")
@@ -3247,6 +3254,10 @@ class Systray:
 		self.debug(1,"def cb_destroy_mainwindow")
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
+		
+	def cb_destroy_hidecellswindow(self,event):
+		self.debug(1,"def cb_destroy_hidecellswindow")
+		self.HIDECELLSWINDOW_OPEN = False
 
 	def cb_destroy_accwindow(self,event):
 		self.debug(1,"def cb_destroy_accwindow")
@@ -4553,10 +4564,7 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon(self.app_icon)
-			except:
-				pass
+			dialogWindow.set_icon(self.app_icon)
 			text = _("Load Data every X seconds")
 			dialogWindow.set_title(text)
 			dialogWindow.set_markup(text)
@@ -4588,7 +4596,56 @@ class Systray:
 				self.write_options_file()
 				return True
 			else:
+				dialogWindow.destroy()
 				return False
+
+	def cb_hide_cells(self,widget,event):
+		self.debug(1,"def cb_hide_cells()")
+		try:
+			if self.HIDECELLSWINDOW_OPEN == False:
+				self.HIDECELLSWINDOW_OPEN = True
+				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+				dialogWindow.connect("destroy",self.cb_destroy_hidecellswindow)
+				dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+				dialogWindow.set_size_request(100,720)
+				dialogWindow.set_transient_for(self.window)
+				dialogWindow.set_icon(self.app_icon)
+				text = _("Hide unwanted cells")
+				dialogWindow.set_title(text)
+				scrolledwindow = Gtk.ScrolledWindow()
+				scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+				dialogWindow.vbox.pack_start(scrolledwindow, True, True, 0)
+				grid = Gtk.Grid()
+				scrolledwindow.add(grid)
+				i = 0
+				for cellid in self.MAINWINDOW_ALLOWCELLHIDE:
+					cellname = self.MAINWINDOW_CELLINDEX[cellid]
+					print cellname
+					button = Gtk.ToggleButton(label=cellname)
+					if cellid in self.MAINWINDOW_SHOWCELLS:
+						button.set_active(True)
+					else:
+						button.set_active(False)
+					button.connect("toggled",self.cb_hide_cells2,cellid)
+					grid.attach(button,0,i,1,1)
+					i += 1
+				dialogWindow.show_all()
+				response = dialogWindow.run()
+				dialogWindow.destroy()
+		except:
+			self.debug(1,"def cb_hide_cells: failed")
+			self.HIDECELLSWINDOW_OPEN = False
+
+	def cb_hide_cells2(self,button,cellid):
+		self.debug(1,"def cb_hide_cells2() cellid = '%s'"%(cellid))
+		if cellid in self.MAINWINDOW_ALLOWCELLHIDE:
+			if cellid in self.MAINWINDOW_SHOWCELLS:
+				self.MAINWINDOW_SHOWCELLS.remove(cellid)
+				self.debug(1,"def cb_hide_cells2: remove cellid = '%s'"%(cellid))
+			else:
+				self.MAINWINDOW_SHOWCELLS.append(cellid)
+				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
+			self.write_options_file()
 
 	def cb_change_ipmode1(self):
 		self.debug(1,"def cb_change_ipmode1()")
