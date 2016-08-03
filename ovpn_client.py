@@ -121,8 +121,7 @@ class Systray:
 		self.DEBUG = DEBUG
 		self.DEVMODE = DEVMODE
 		self.APIURL = API_URL
-		self.LOGLEVEL = 1
-		self.LOGLEVELS = [0,1,2,3]
+		self.MOUSELEVEL = False
 		self.OS = sys.platform
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
@@ -141,9 +140,6 @@ class Systray:
 		self.INSTALLED_ICONS = [ "standard", "classic", "classic2", "shield_bluesync", "experimental", "private" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
-		#DEBUGfrombefore = False
-		#DEBUGcount = 0
-		#self.BOOTTIME = time.time()
 		self.DEBUG_LOGFILE = False
 		self.OVPN_LATEST = 2311
 		self.OVPN_LATEST_BUILT = "May 10 2016"
@@ -1633,7 +1629,7 @@ class Systray:
 		self.debug(1,"def make_systray_menu()")
 		try:
 			self.systray_menu = Gtk.Menu()
-			if self.LOGLEVEL > 1:
+			if self.MOUSELEVEL == True:
 				self.MOUSE_IN_TRAY = time.time() + 30
 			else:
 				self.MOUSE_IN_TRAY = time.time() + 3
