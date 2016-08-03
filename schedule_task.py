@@ -5,6 +5,7 @@ import datetime
 def set_task():
 	SOURCEDIR = os.getcwd()
 	DATE = datetime.datetime.now()
+	USERNAME = os.getenv('username')
 
 	XMLFILE = "%s\\autostart.xml" % (SOURCEDIR)
 	ind = open(XMLFILE, "w")
@@ -18,12 +19,13 @@ def set_task():
 	print >> ind, '  <Triggers>'
 	print >> ind, '    <LogonTrigger>'
 	print >> ind, '      <Enabled>true</Enabled>'
+	print >> ind, '      <UserId>%s</UserId>' % USERNAME
 	print >> ind, '      <Delay>PT30S</Delay>'
 	print >> ind, '    </LogonTrigger>'
 	print >> ind, '  </Triggers>'
 	print >> ind, '  <Principals>'
 	print >> ind, '    <Principal id="Author">'
-	print >> ind, '      <UserId>%s</UserId>' % os.getenv('username')
+	print >> ind, '      <UserId>%s</UserId>' % USERNAME
 	print >> ind, '      <LogonType>InteractiveToken</LogonType>'
 	print >> ind, '      <RunLevel>HighestAvailable</RunLevel>'
 	print >> ind, '    </Principal>'
