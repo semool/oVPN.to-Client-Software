@@ -29,9 +29,13 @@ from datetime import datetime as datetime
 import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct
 from ConfigParser import SafeConfigParser
 # .py files imports
+import debug
 import winregs
 import icons_b64
 import release_version
+
+def CDEBUG(level,text,istrue,bindir):
+	debug.debug(level,text,istrue,bindir)
 
 try:
 	
@@ -137,11 +141,10 @@ class Systray:
 		self.INSTALLED_ICONS = [ "standard", "classic", "classic2", "shield_bluesync", "experimental", "private" ]
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
-		self.DEBUGfrombefore = False
-		self.DEBUGcount = 0
-		self.debug_write_thread_running = False
-		self.BOOTTIME = time.time()
-		self.debug_log = False
+		#DEBUGfrombefore = False
+		#DEBUGcount = 0
+		#self.BOOTTIME = time.time()
+		self.DEBUG_LOGFILE = False
 		self.OVPN_LATEST = 2311
 		self.OVPN_LATEST_BUILT = "May 10 2016"
 		self.OVPN_LATEST_BUILT_TIMESTAMP = 1462831200
@@ -333,7 +336,7 @@ class Systray:
 			self.APP_DIR = "%s\\ovpn" % (os_appdata)
 			self.BIN_DIR = "%s\\bin\\client\\dist" % (self.APP_DIR)
 		if not os.path.exists(self.APP_DIR):
-			if self.DEBUG: print("win_pre1_check_app_dir %s not found, creating." % (self.APP_DIR))
+			self.debug(1,"win_pre1_check_app_dir %s not found, creating." % (self.APP_DIR))
 			os.mkdir(self.APP_DIR)
 		if os.path.exists(self.APP_DIR):
 			self.debug(1,"win_pre1_check_app_dir self.APP_DIR=%s :True" % (self.APP_DIR))
@@ -371,14 +374,14 @@ class Systray:
 			if not self.select_userid() == True:
 				self.errorquit(text=_("Select User-ID failed!"))
 			return True
-
+	
 	def win_pre3_load_profile_dir_vars(self):
 		self.debug(1,"def win_pre3_load_profile_dir_vars()")
 		self.API_DIR = "%s\\%s" % (self.APP_DIR,self.USERID)
-		self.debug_log = "%s\\client_debug.log" % (self.API_DIR)
-		if os.path.isfile(self.debug_log):
+		self.DEBUG_LOGFILE = "%s\\client_debug.log" % (self.BIN_DIR)
+		if os.path.isfile(self.DEBUG_LOGFILE):
 			try:
-				os.remove(self.debug_log)
+				os.remove(self.DEBUG_LOGFILE)
 			except:
 				pass
 		self.lock_file = "%s\\lock.file" % (self.APP_DIR)
@@ -390,10 +393,10 @@ class Systray:
 		self.prx_dir = "%s\\proxy" % (self.API_DIR)
 		self.stu_dir = "%s\\stunnel" % (self.API_DIR)
 		self.pfw_dir = "%s\\pfw" % (self.API_DIR)
-		self.pfw_bak = "%s\\pfw.%s.bak.wfw" % (self.pfw_dir,self.BOOTTIME)
-		self.pfw_private_log = "%s\\pfw.private.%s.log" % (self.pfw_dir,self.BOOTTIME)
-		self.pfw_public_log = "%s\\pfw.public.%s.log" % (self.pfw_dir,self.BOOTTIME)
-		self.pfw_domain_log = "%s\\pfw.domain.%s.log" % (self.pfw_dir,self.BOOTTIME)
+		self.pfw_bak = "%s\\pfw.%s.bak.wfw" % (self.pfw_dir,int(time.time()))
+		#self.pfw_private_log = "%s\\pfw.private.%s.log" % (self.pfw_dir,self.BOOTTIME)
+		#self.pfw_public_log = "%s\\pfw.public.%s.log" % (self.pfw_dir,self.BOOTTIME)
+		#self.pfw_domain_log = "%s\\pfw.domain.%s.log" % (self.pfw_dir,self.BOOTTIME)
 		
 		self.VPN_CFG = "%s\\config" % (self.VPN_DIR)
 		self.VPN_CFGip4 = "%s\\ip4" % (self.VPN_CFG)
@@ -545,7 +548,7 @@ class Systray:
 			#self.debug(1,"def check_config_folders userid = %s" % (self.USERID))
 			self.debug(1,"def check_config_folders: userid found")
 			if not os.path.exists(self.API_DIR):
-				if self.DEBUG: print("api_dir %s not found, creating." % (self.API_DIR))
+				self.debug(1,"api_dir %s not found, creating." % (self.API_DIR))
 				os.mkdir(self.API_DIR)
 			if os.path.isfile(self.lock_file):
 				try:
@@ -556,28 +559,20 @@ class Systray:
 				self.LOCK = open(self.lock_file,'wb')
 				self.LOCK.write("%s" % (int(time.time())))
 			if not os.path.exists(self.VPN_DIR):
-				if self.DEBUG: print("vpn_dir %s not found, creating." % (self.VPN_DIR))
 				os.mkdir(self.VPN_DIR)
 			if not os.path.exists(self.VPN_CFG):
-				if self.DEBUG: print("vpn_cfg %s not found, creating." % (self.VPN_CFG))
 				os.mkdir(self.VPN_CFG)
 			if not os.path.exists(self.VPN_CFGip4):
-				if self.DEBUG: print("vpn_cfgip4 %s not found, creating." % (self.VPN_CFGip4))
 				os.mkdir(self.VPN_CFGip4)
 			if not os.path.exists(self.VPN_CFGip46):
-				if self.DEBUG: print("vpn_cfgip46 %s not found, creating." % (self.VPN_CFGip46))
 				os.mkdir(self.VPN_CFGip46)
 			if not os.path.exists(self.VPN_CFGip64):
-				if self.DEBUG: print("vpn_cfgip64 %s not found, creating." % (self.VPN_CFGip64))
 				os.mkdir(self.VPN_CFGip64)
 			if not os.path.exists(self.prx_dir):
-				if self.DEBUG: print("prx_dir %s not found, creating." % (self.prx_dir))
 				os.mkdir(self.prx_dir)
 			if not os.path.exists(self.stu_dir):
-				if self.DEBUG: print("stu_dir %s not found, creating." % (self.stu_dir))
 				os.mkdir(self.stu_dir)
 			if not os.path.exists(self.pfw_dir):
-				if self.DEBUG: print("pfw_dir %s not found, creating." % (self.pfw_dir))
 				os.mkdir(self.pfw_dir)
 			if not self.build_openvpn_dlurl():
 				return False
@@ -1047,170 +1042,6 @@ class Systray:
 		dialogWindow.destroy()
 		if not self.WIN_EXT_DEVICE == False:
 			return True
-
-	""" *fixme* delete me later
-	def win_read_interfaces_old(self):
-		self.debug(1,"def win_read_interfaces()")
-		self.win_detect_openvpn()
-		self.INTERFACES = list()
-		string = "netsh.exe interface show interface"
-		ADAPTERS = subprocess.check_output("%s" % (string),shell=True)
-		ADAPTERS = ADAPTERS.split('\r\n')
-		
-		LANG = False
-		# language read hint
-		LANGS = [ "DE","DK","EN","FR" ]
-		if ADAPTERS[1].endswith("Schnittstellenname"):
-			LANG = "DE"
-		elif ADAPTERS[1].endswith("nsefladenavn"):
-			LANG = "DK"
-		elif ADAPTERS[1].endswith("Interface Name"):
-			LANG = "EN"
-		elif ADAPTERS[1].endswith("Name interface"):
-			LANG = "FR"
-		
-		if LANG == False:
-			self.DEBUG = True
-			self.errorquit(text="Error reading your Interfaces failed\n cmd='%s' \n\nPlease contact support@ovpn.to\nor join https://webirc.ovpn.to into channel #help !\n\nError-ID:\nADAPTERS[1]=(%s)\n\nADAPTERS='%s'" % (string,ADAPTERS[1],ADAPTERS))
-		self.debug(1,"def win_read_interfaces: LANG = %s" % (LANG))
-		for line in ADAPTERS:
-			self.debug(1,"%s"%(line))
-			interface = line.split()
-			try:
-				if LANG == "DK":
-					if interface[1].startswith("Forbindelsen"):
-						interface = interface[5:]
-					elif interface[1].startswith("Afbrudt"):
-						interface = interface[3:]
-				elif LANG == "DE" or LANG == "EN" or LANG == "FR":
-					interface = interface[3:]
-				else:
-					interface = interface[3:]
-				ilen = len(interface)
-				if ilen > 1:
-					nface = None
-					for iface in interface:
-						if not nface == None:
-							nface = nface+" %s" % (iface)
-							self.debug(1,"%s"%(nface))
-						else:
-							nface = iface
-					interface = nface
-				else:
-					interface = interface[0]
-				self.INTERFACES.append(interface)
-			except:
-				pass
-		self.INTERFACES.pop(0)
-		self.debug(1,"INTERFACES: %s"%(self.INTERFACES))
-		if len(self.INTERFACES)	< 2:
-			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
-		string = '"%s" --show-adapters' % (self.OPENVPN_EXE)
-		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
-		TAPADAPTERS = TAPADAPTERS.split('\r\n')
-		self.debug(1,"TAP ADAPTERS bp = %s"%(TAPADAPTERS))
-		TAPADAPTERS.pop(0)
-		self.debug(1,"TAP ADAPTERS ap = %s"%(TAPADAPTERS))
-		self.WIN_TAP_DEVS = list()
-		for line in TAPADAPTERS:
-			self.debug(10,"checking line = %s"%(line))
-			for INTERFACE in self.INTERFACES:
-				#if len(line) >= 1: self.debug(1,"is IF: '%s' listed as TAP in line '%s'?"%(INTERFACE,line))
-				if line.startswith("'%s' {"%(INTERFACE)) and len(line) >= 1:
-					self.debug(1,"Found TAP ADAPTER: '%s'" % (INTERFACE))
-					self.INTERFACES.remove(INTERFACE)
-					self.WIN_TAP_DEVS.append(INTERFACE)
-					break
-				
-				# do not remove! maybe need for debug in future
-				
-				#elif line.startswith("Available TAP-WIN32 adapters"):
-				#	#self.debug(1,"ignoring tap line")
-				#	pass
-				#elif len(line) < 16:
-				#	#self.debug(1,"ignoring line < 16")
-				#	pass
-				#else:
-				#	#self.debug(1,"ignoring else")
-				#	pass
-		self.debug(1,"self.WIN_TAP_DEVS = '%s' len=%s" % (self.WIN_TAP_DEVS,len(self.WIN_TAP_DEVS)))
-		if self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:
-			self.debug(1,"Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
-		#if len(self.WIN_TAP_DEVS) == 0:
-		#	self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
-		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
-			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
-			self.debug(1,"Selected self.WIN_TAP_DEVICE = %s" % (self.WIN_TAP_DEVICE))
-		else:
-			self.debug(1,"self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
-			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-			dialogWindow.set_transient_for(self.window)
-			try:
-				dialogWindow.set_icon(self.app_icon)
-			except:
-				pass
-			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
-			dialogWindow.set_title(text)
-			dialogWindow.set_markup(text)
-			dialogBox = dialogWindow.get_content_area()
-			liststore = Gtk.ListStore(str)
-			combobox = Gtk.ComboBoxText.new()
-			combobox.pack_start(cell, True)
-			for INTERFACE in self.WIN_TAP_DEVS:
-				self.debug(1,"add tap interface '%s' to combobox" % (INTERFACE))
-				combobox.append_text(INTERFACE)
-			combobox.connect('changed',self.cb_tap_interface_selector_changed)
-			dialogBox.pack_start(combobox,False,False,0)
-			dialogWindow.show_all()
-			dialogWindow.run()
-			dialogWindow.destroy()
-		if self.WIN_TAP_DEVICE == False:
-			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
-		else:
-			badchars = ["%","&","$"]
-			for char in badchars:
-				if char in self.WIN_TAP_DEVICE:
-					self.errorquit(text=_("Invalid characters in '%s'") % char)
-			self.debug(1,"Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
-			self.win_enable_tap_interface()
-			self.debug(1,"remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
-			if len(self.INTERFACES) > 1:
-				if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
-					self.debug(1,"loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
-					return True
-				else:
-					dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-					dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-					dialogWindow.set_transient_for(self.window)
-					try:
-						dialogWindow.set_icon(self.app_icon)
-					except:
-						pass
-					text = _("Choose your External Network Adapter!")
-					dialogWindow.set_title(text)
-					dialogWindow.set_markup(text)
-					dialogBox = dialogWindow.get_content_area()
-					combobox = Gtk.ComboBoxText.new()
-					for INTERFACE in self.INTERFACES:
-						self.debug(1,"add interface %s to combobox" % (INTERFACE))
-						combobox.append_text(INTERFACE)
-					combobox.connect('changed',self.cb_interface_selector_changed)
-					dialogBox.pack_start(combobox,False,False,0)
-					dialogWindow.show_all()
-					self.debug(1,"open interface selector")
-					dialogWindow.run()
-					self.debug(1,"close interface selector")
-					dialogWindow.destroy()
-					if not self.WIN_EXT_DEVICE == False:
-						return True
-			elif len(self.INTERFACES) < 1:
-				self.errorquit(text=_("No Network Adapter found!"))
-			else:
-				self.WIN_EXT_DEVICE = self.INTERFACES[0]
-				self.debug(1,"External Interface = %s"%(self.WIN_EXT_DEVICE))
-				return True
-	"""
 
 	def select_userid(self):
 		self.debug(1,"def select_userid()")
@@ -3120,11 +2951,11 @@ class Systray:
 		self.debug(1,"def cb_switch_debugmode()")
 		if switch.get_active():
 			self.DEBUG = True
-			self.msgwarn(_("Logfile:\n'%s'") % (self.debug_log),_("Debug Mode Enabled"))
+			self.msgwarn(_("Logfile:\n'%s'") % (self.DEBUG_LOGFILE),_("Debug Mode Enabled"))
 		else:
 			self.DEBUG = False
-			if os.path.isfile(self.debug_log):
-				os.remove(self.debug_log)
+			if os.path.isfile(self.DEBUG_LOGFILE):
+				os.remove(self.DEBUG_LOGFILE)
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 
@@ -5812,53 +5643,6 @@ class Systray:
 			self.debug(1,"%s failed" % (text))
 		sys.exit()
 
-	def debug(self,level,text):
-		#if not level <= self.LOGLEVEL:
-		#	return False
-		if not level in self.LOGLEVELS:
-			return False
-		timefromboot = round(time.time() - self.BOOTTIME,3)
-		debugstringsht = False
-		debugstringsht1 = False
-		debugstringsht2 = False
-		if self.DEBUGcount > 0 and not self.DEBUGfrombefore == text:
-			debugstringsht1 = "(%s):(d1) %s (repeat: %s)" % (timefromboot, self.DEBUGfrombefore,self.DEBUGcount)
-			debugstringsht2 = "(%s):(d2) %s" % (timefromboot,text)
-			if level > 0:
-				print(debugstringsht1)
-				print(debugstringsht2)
-			self.DEBUGcount = 0
-		elif self.DEBUGcount >= 4096 and self.DEBUGfrombefore == text:
-			debugstringsht = "(%s):(d3) %s (repeated: %s e2)" % (timefromboot, self.DEBUGfrombefore,self.DEBUGcount)
-			if level > 0:
-				print("%s" % (debugstringsht))
-			self.DEBUGcount = 0
-		elif self.DEBUGfrombefore == text:
-			self.DEBUGcount += 1
-			return
-		elif not self.DEBUGfrombefore == text:
-			debugstringsht = "(%s):(d4) %s"%(timefromboot,text)
-			if level > 0:
-				print("%s" % (debugstringsht))
-		self.DEBUGfrombefore = text
-		if not debugstringsht == False:
-			self.write_debug(level,debugstringsht,timefromboot)
-		if not debugstringsht1 == False:
-			self.write_debug(level,debugstringsht1,timefromboot)
-		if not debugstringsht2 == False:
-			self.write_debug(level,debugstringsht2,timefromboot)
-
-	def write_debug(self,level,string,timefromboot):
-		try:
-			if self.DEBUG == True and not self.debug_log == False:
-				localtime = time.asctime(time.localtime(time.time()))
-				debugstringlog = "%s (%s):(d5,%s) %s"%(localtime,timefromboot,level,string)
-				dbg = open(self.debug_log,'a')
-				dbg.write("%s\n" % (debugstringlog))
-				dbg.close()
-		except:
-			print("def write_debug: write to %s failed"%(self.debug_log))
-
 	def init_theme(self):
 		get_settings = Gtk.Settings.get_default()
 		get_settings.set_property("gtk-theme-name", self.APP_THEME)
@@ -5987,6 +5771,18 @@ class Systray:
 		self.debug(1,"def base64_icons(%s)"%(icon))
 		return icons_b64.base64_icons(icon)
 
+	def debug(self,level,text):
+		try:
+			istrue = self.DEBUG
+		except:
+			istrue = False
+		
+		try:
+			bindir = self.BIN_DIR
+		except:
+			bindir = False
+		CDEBUG(level,text,istrue,bindir)
+		return
 
 def app():
 	Systray()
