@@ -60,19 +60,19 @@ def set_task():
 
 	if os.path.exists(XMLFILE):
 		string = 'schtasks.exe /Create /XML "%s" /TN "%s"' % (XMLFILE,release_version.version_data()["NAME"])
-		print string
 		try:
-			cmd = subprocess.call("%s" % (string),shell=True)
+			cmd = subprocess.check_call("%s" % (string),shell=True)
+			print "def cb_switch_autostart: enable Ok"
 		except:
-			pass
+			print "def cb_switch_autostart: enable failed"
 		os.remove(XMLFILE)
 		return True
 
 def delete_task():
 	string = 'schtasks.exe /Delete /TN "%s" /f' % (release_version.version_data()["NAME"])
-	print string
 	try:
-		cmd = subprocess.call("%s" % (string),shell=True)
+		cmd = subprocess.check_call("%s" % (string),shell=True)
+		print "def cb_switch_autostart: disable Ok"
 	except:
-		pass
+		print "def cb_switch_autostart: disable failed"
 	return True
