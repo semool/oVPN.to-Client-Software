@@ -127,6 +127,12 @@ class Systray:
 		self.SAVE_APIKEY_INFILE = False
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
+		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]
+		self.MAINWINDOW_SHOWCELLS = [ 3, 4, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]
+		self.MAINWINDOW_CELLINDEX = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher",
+									9:"Mbps", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 
+									16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 
+									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR" }
 		self.SETTINGSWINDOW_OPEN = False
 		self.ENABLE_MAINWINDOW_SORTING = True
 		self.APP_LANGUAGE = "en"
@@ -608,14 +614,14 @@ class Systray:
 					APPLANG = parser.get('oVPN','applanguage')
 					self.debug(1,"APPLANG = parser.get(oVPN,'%s') " % (APPLANG))
 					if APPLANG in self.INSTALLED_LANGUAGES:
-						self.debug(1,"APPLANG '%s' in self.INSTALLED_LANGUAGES" % (APPLANG))
+						self.debug(1,"def read_options_file: APPLANG '%s' in self.INSTALLED_LANGUAGES" % (APPLANG))
 						if self.init_localization(APPLANG) == True:
 							if self.APP_LANGUAGE == APPLANG:
 								self.debug(1,"NEW self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
 					else:
-						self.debug(1,"self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
+						self.debug(1,"def read_options_file: self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
 				except:
-					self.debug(1,"self.APP_LANGUAGE FAILED")
+					self.debug(1,"def read_options_file: self.APP_LANGUAGE FAILED")
 				
 				try:
 					self.LAST_CFG_UPDATE = parser.get('oVPN','lastcfgupdate')
@@ -628,7 +634,7 @@ class Systray:
 					self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
 					if self.OVPN_FAV_SERVER == "False": 
 						self.OVPN_FAV_SERVER = False
-					self.debug(1,"self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
+					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 				except:
 					pass
 				
@@ -636,7 +642,7 @@ class Systray:
 					self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
 					if not self.OVPN_FAV_SERVER == False and self.OVPN_AUTO_CONNECT_ON_START == False:
 						self.OVPN_AUTO_CONNECT_ON_START = True
-					self.debug(1,"self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
+					self.debug(1,"def read_options_file: self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
 				except:
 					pass
 				
@@ -644,7 +650,7 @@ class Systray:
 					self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
 					if self.WIN_EXT_DEVICE == "False": 
 						self.WIN_EXT_DEVICE = False
-					self.debug(1,"self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
+					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
 				except:
 					pass
 				
@@ -652,7 +658,7 @@ class Systray:
 					self.WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
 					if self.WIN_TAP_DEVICE == "False": 
 						self.WIN_TAP_DEVICE = False
-					self.debug(1,"self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
+					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
 				except:
 					pass
 				
@@ -665,7 +671,7 @@ class Systray:
 				
 				try:
 					self.UPDATEOVPNONSTART = parser.getboolean('oVPN','updateovpnonstart')
-					self.debug(1,"self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
+					self.debug(1,"def read_options_file: self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
 				except:
 					pass
 				
@@ -687,56 +693,56 @@ class Systray:
 						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
 						self.VPN_CFG = self.VPN_CFGip64
 					
-					self.debug(1,"self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
+					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
 				except:
 					pass
 				
 				try:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
-					self.debug(1,"self.WIN_RESET_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
+					self.debug(1,"def read_options_file: self.WIN_RESET_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except:
 					pass
 				
 				try:
 					self.WIN_BACKUP_FIREWALL = parser.getboolean('oVPN','winbackupfirewall')
-					self.debug(1,"self.WIN_BACKUP_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
+					self.debug(1,"def read_options_file: self.WIN_BACKUP_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except:
 					pass
 				
 				try:
 					self.NO_WIN_FIREWALL = parser.getboolean('oVPN','nowinfirewall')
-					self.debug(1,"self.NO_WIN_FIREWALL = '%s'" % (self.NO_WIN_FIREWALL))
+					self.debug(1,"def read_options_file: self.NO_WIN_FIREWALL = '%s'" % (self.NO_WIN_FIREWALL))
 				except:
 					pass
 				
 				try:
 					self.WIN_DONT_ASK_FW_EXIT = parser.getboolean('oVPN','winnoaskfwonexit')
-					self.debug(1,"self.WIN_DONT_ASK_FW_EXIT = '%s'" % (self.WIN_DONT_ASK_FW_EXIT))
+					self.debug(1,"def read_options_file: self.WIN_DONT_ASK_FW_EXIT = '%s'" % (self.WIN_DONT_ASK_FW_EXIT))
 				except:
 					pass
 				
 				try:
 					self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = parser.getboolean('oVPN','winfwblockonexit')
-					self.debug(1,"self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = '%s'" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
+					self.debug(1,"def read_options_file: self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = '%s'" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
 				except:
 					pass
 
 				try:
 					self.WIN_DISABLE_EXT_IF_ON_DISCO = parser.getboolean('oVPN','windisableextifondisco')
-					self.debug(1,"self.WIN_DISABLE_EXT_IF_ON_DISCO = '%s'" % (self.WIN_DISABLE_EXT_IF_ON_DISCO))
+					self.debug(1,"def read_options_file: self.WIN_DISABLE_EXT_IF_ON_DISCO = '%s'" % (self.WIN_DISABLE_EXT_IF_ON_DISCO))
 				except:
 					pass
 				
 				
 				try:
 					self.TAP_BLOCKOUTBOUND = parser.getboolean('oVPN','wintapblockoutbound')
-					self.debug(1,"self.TAP_BLOCKOUTBOUND = '%s'" % (self.TAP_BLOCKOUTBOUND))
+					self.debug(1,"def read_options_file: self.TAP_BLOCKOUTBOUND = '%s'" % (self.TAP_BLOCKOUTBOUND))
 				except:
 					pass
 				
 				try:
 					self.NO_DNS_CHANGE = parser.getboolean('oVPN','nodnschange')
-					self.debug(1,"self.NO_DNS_CHANGE = '%s'" % (self.NO_DNS_CHANGE))
+					self.debug(1,"def read_options_file: self.NO_DNS_CHANGE = '%s'" % (self.NO_DNS_CHANGE))
 				except:
 					pass
 
@@ -744,19 +750,26 @@ class Systray:
 					self.LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
 					if self.LOAD_DATA_EVERY <= 60:
 						self.LOAD_DATA_EVERY = 66
-					self.debug(1,"self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
+					self.debug(1,"def read_options_file: self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
+				except:
+					pass
+					
+				try:
+					MAINWINDOW_SHOWCELLS = json.loads(parser.get('oVPN','mainwindowshowcells'))
+					self.MAINWINDOW_SHOWCELLS = MAINWINDOW_SHOWCELLS
+					self.debug(1,"def read_options_file: self.MAINWINDOW_SHOWCELLS = '%s'" % (self.MAINWINDOW_SHOWCELLS))
 				except:
 					pass
 					
 				try:
 					self.LOAD_ACCDATA = parser.getboolean('oVPN','loadaccinfo')
-					self.debug(1,"self.LOAD_ACCDATA = '%s'" % (self.LOAD_ACCDATA))
+					self.debug(1,"def read_options_file: self.LOAD_ACCDATA = '%s'" % (self.LOAD_ACCDATA))
 				except:
 					pass
 				
 				try:
 					self.LOAD_SRVDATA = parser.getboolean('oVPN','serverviewextend')
-					self.debug(1,"self.LOAD_SRVDATA = '%s'" % (self.LOAD_SRVDATA))
+					self.debug(1,"def read_options_file: self.LOAD_SRVDATA = '%s'" % (self.LOAD_SRVDATA))
 				except:
 					pass
 				
@@ -770,33 +783,33 @@ class Systray:
 						self.SRV_LIGHT_HEIGHT = SRV_LIGHT_HEIGHT
 						self.SRV_WIDTH = SRV_WIDTH
 						self.SRV_HEIGHT = SRV_HEIGHT
-						self.debug(1,"self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
-						self.debug(1,"self.SRV_WIDTH,self.SRV_HEIGHT Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
+						self.debug(1,"def read_options_file: self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
+						self.debug(1,"def read_options_file: self.SRV_WIDTH,self.SRV_HEIGHT Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
 				except:
 					pass
 				
 				try:
 					self.APP_THEME = parser.get('oVPN','theme')
-					self.debug(1,"self.APP_THEME = '%s'" % (self.APP_THEME))
+					self.debug(1,"def read_options_file: self.APP_THEME = '%s'" % (self.APP_THEME))
 				except:
 					pass
 				
 				try:
 					self.ICONS_THEME = parser.get('oVPN','icons')
 					self.load_icons()
-					self.debug(1,"self.ICONS_THEME = '%s'" % (self.ICONS_THEME))
+					self.debug(1,"def read_options_file: self.ICONS_THEME = '%s'" % (self.ICONS_THEME))
 				except:
 					pass
 				
 				try:
 					self.APP_FONT_SIZE = parser.get('oVPN','font')
-					self.debug(1,"self.APP_FONT_SIZE = '%s'" % (self.APP_FONT_SIZE))
+					self.debug(1,"def read_options_file: self.APP_FONT_SIZE = '%s'" % (self.APP_FONT_SIZE))
 				except:
 					pass
 				
 				try:
 					self.DISABLE_QUIT_ENTRY = parser.getboolean('oVPN','disablequitentry')
-					self.debug(1,"self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
+					self.debug(1,"def read_options_file: self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
 				except:
 					pass
 					
@@ -856,6 +869,7 @@ class Systray:
 				parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 				parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
 				parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
+				parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.MAINWINDOW_SHOWCELLS, ensure_ascii=True)))
 				parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 				parser.set('oVPN','mydns','False')
 				parser.write(cfg)
@@ -910,6 +924,7 @@ class Systray:
 			parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 			parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
 			parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
+			parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.MAINWINDOW_SHOWCELLS, ensure_ascii=True)))
 			parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 			parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
 			parser.write(cfg)
@@ -2240,7 +2255,15 @@ class Systray:
 		## cell 0 == statusicon
 		## cell 1 == flagicon
 		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24			25
-		cellnames = [ " Server ", " IPv4 ", " IPv6 ", " Port ", " Proto ", " MTU ", " Cipher ", " Mbps ", " Link ", " VLAN IPv4 ", " VLAN IPv6 ", " Processor ", " RAM ", " HDD ", " Traffic ", " Load ", " oVPN % ", " oSSH % ", " SOCK % ", " HTTP % ", " TINC % ", " PING4 ", " PING6 ", " Short " ]
+		for cellid,cellname in self.MAINWINDOW_CELLINDEX.items():
+			align=0.5
+			if cellnumber in [ 9, 23, 24 ]:
+				align=1
+			if cellnumber in [ 3, 4, 11, 12, 13, 16 ]:
+				align=0
+			cell = Gtk.CellRendererText(xalign=align)
+			column = Gtk.TreeViewColumn(" %s " % (cellname), cell, text=cellnumber)
+			"""
 		for cellname in cellnames:
 			align=0.5
 			if cellnumber in [ 9, 23, 24 ]:
@@ -2249,7 +2272,7 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			
+			"""
 			if self.ENABLE_MAINWINDOW_SORTING == True:
 				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 					column.set_sort_column_id(cellnumber)
@@ -2262,6 +2285,12 @@ class Systray:
 			if self.LOAD_SRVDATA == False:
 				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 					column.set_visible(False)
+			elif self.LOAD_SRVDATA == True:
+				if cellnumber in self.MAINWINDOW_ALLOWCELLHIDE:
+					if not cellnumber in self.MAINWINDOW_SHOWCELLS:
+						column.set_visible(False)
+					else:
+						column.set_visible(True)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
 		
