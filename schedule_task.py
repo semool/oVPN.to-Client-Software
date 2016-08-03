@@ -51,7 +51,7 @@ def set_task():
 	print >> ind, '  </Settings>'
 	print >> ind, '  <Actions Context="Author">'
 	print >> ind, '    <Exec>'
-	print >> ind, '      <Command>"%s\ovpn_client.exe"</Command>' % (SOURCEDIR)
+	print >> ind, '      <Command>"%s\%s"</Command>' % (SOURCEDIR,release_version.setup_data()["exename"])
 	print >> ind, '      <WorkingDirectory>%s</WorkingDirectory>' % (SOURCEDIR)
 	print >> ind, '    </Exec>'
 	print >> ind, '  </Actions>'
