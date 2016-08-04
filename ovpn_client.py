@@ -4716,7 +4716,7 @@ class Systray:
 				hidecellswindow.add(vbox)
 				hidecellswindow.connect("destroy",self.cb_destroy_hidecellswindow)
 				hidecellswindow.set_position(Gtk.WindowPosition.CENTER)
-				hidecellswindow.set_size_request(640,96)
+				hidecellswindow.set_size_request(600,110)
 				hidecellswindow.set_transient_for(self.window)
 				hidecellswindow.set_icon(self.app_icon)
 				text = _("Hide unwanted cells")
@@ -4727,6 +4727,7 @@ class Systray:
 				grid = Gtk.Grid()
 				grid.set_row_spacing(5)
 				grid.set_column_spacing(5)
+				grid.props.halign = Gtk.Align.CENTER
 				scrolledwindow.add(grid)
 				i = 0
 				x = 0
