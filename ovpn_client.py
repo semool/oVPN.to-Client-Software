@@ -258,10 +258,10 @@ class Systray:
 		self.request_LOAD_ACCDATA = True
 		self.LOAD_SRVDATA = False
 		self.request_LOAD_SRVDATA = False
-		self.SRV_LIGHT_WIDTH = "490"
-		self.SRV_LIGHT_HEIGHT = "830"
-		self.SRV_WIDTH = "910"
-		self.SRV_HEIGHT = "830"
+		self.SRV_LIGHT_WIDTH = "512"
+		self.SRV_LIGHT_HEIGHT = "720"
+		self.SRV_WIDTH = "1280"
+		self.SRV_HEIGHT = "720"
 		self.SRV_LIGHT_WIDTH_DEFAULT = self.SRV_LIGHT_WIDTH
 		self.SRV_LIGHT_HEIGHT_DEFAULT = self.SRV_LIGHT_HEIGHT
 		self.SRV_WIDTH_DEFAULT = self.SRV_WIDTH
