@@ -4711,7 +4711,8 @@ class Systray:
 			if self.HIDECELLSWINDOW_OPEN == False:
 				self.HIDECELLSWINDOW_OPEN = True
 				hidecellswindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-				vbox = Gtk.VBox(False,1)
+				vbox = Gtk.VBox(False,spacing=2)
+				vbox.set_border_width(8)
 				hidecellswindow.add(vbox)
 				hidecellswindow.connect("destroy",self.cb_destroy_hidecellswindow)
 				hidecellswindow.set_position(Gtk.WindowPosition.CENTER)
@@ -4724,6 +4725,8 @@ class Systray:
 				scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 				vbox.pack_start(scrolledwindow, True, True, 0)
 				grid = Gtk.Grid()
+				grid.set_row_spacing(5)
+				grid.set_column_spacing(5)
 				scrolledwindow.add(grid)
 				i = 0
 				x = 0
