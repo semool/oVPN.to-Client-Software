@@ -14,8 +14,8 @@ def debug(level,text,istrue,bindir):
 	if bindir == False:
 		print "DEBUG: %s" % (text)
 		return False
-	cmddir = os.getcwd()
-	if cmddir.endswith("system32"):
+	bindir = os.getcwd()
+	if bindir.endswith("system32"):
 		if os.path.exists(SOURCEDIR):
 			bindir=SOURCEDIR
 		else:
@@ -70,4 +70,4 @@ def write_debug(level,string,timefromboot,logfile):
 		dbg.write("%s\n" % (debugstringlog))
 		dbg.close()
 	except:
-		print("def write_debug: write to %s failed"%(DEBUGLOG))
+		print("def write_debug: write to %s failed"%(logfile))
