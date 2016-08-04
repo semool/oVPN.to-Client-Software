@@ -1176,7 +1176,15 @@ class Systray:
 				context_menu_servertab.append(extserverview)
 			except:
 				self.debug(1,"def make_context_menu_servertab: extserverview failed")
-			
+
+			try:
+				if self.LOAD_SRVDATA == True:
+					hidecells = Gtk.MenuItem(_("Hide unwanted cells"))
+					hidecells.connect('button-release-event', self.cb_hide_cells)
+					context_menu_servertab.append(hidecells)
+			except:
+				self.debug(1,"def make_context_menu_servertab: hidecells failed")
+
 			try:
 				if self.LOAD_SRVDATA == True:
 					WIDTH = self.SRV_WIDTH
@@ -1196,13 +1204,6 @@ class Systray:
 				context_menu_servertab.append(loaddataevery)
 			except:
 				self.debug(1,"def make_context_menu_servertab: loaddataevery failed")
-				
-			try:
-				hidecells = Gtk.MenuItem(_("Hide unwanted cells"))
-				hidecells.connect('button-release-event', self.cb_hide_cells)
-				context_menu_servertab.append(hidecells)
-			except:
-				self.debug(1,"def make_context_menu_servertab: hidecells failed")
 
 		context_menu_servertab.show_all()
 		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
