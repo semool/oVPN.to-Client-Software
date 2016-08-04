@@ -1916,9 +1916,7 @@ class Systray:
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 									self.OVPN_SERVER = list()
 									if self.load_ovpn_server() == True:
-										if self.MAINWINDOW_OPEN == True:
-											GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
-											GLib.idle_add(self.mainwindow_ovpn_server)
+										self.rebuild_mainwindow()
 									return True
 								else:
 									self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
@@ -2161,6 +2159,14 @@ class Systray:
 				GLib.idle_add(self.update_mwls)
 			except:
 				self.debug(1,"def call_redraw_mainwindow: try #1 failed")
+
+	def rebuild_mainwindow(self):
+		GLib.idle_add(self.rebuild_mainwindow_glib)
+
+	def rebuild_mainwindow_glib(self):
+		if self.MAINWINDOW_OPEN == True:
+			self.mainwindow.remove(self.mainwindow_vbox)
+			self.mainwindow_ovpn_server()
 
 	def show_mainwindow(self,widget,event):
 		self.debug(1,"def show_mainwindow()")
@@ -3000,16 +3006,11 @@ class Systray:
 				self.LOAD_SRVDATA = True
 		else:
 			self.LOAD_SRVDATA = False
-		reopen = False
-		if self.MAINWINDOW_OPEN == True:
-			reopen = True
 		if self.LOAD_SRVDATA == True:
 			self.LAST_OVPN_SRV_DATA_UPDATE = 0
 			self.OVPN_SRV_DATA = {}
 		self.write_options_file()
-		if reopen == True:
-			GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
-			GLib.idle_add(self.mainwindow_ovpn_server)
+		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
 	def settings_options_switch_debugmode(self,page):
@@ -4531,7 +4532,6 @@ class Systray:
 	def cb_extserverview(self,widget,event):
 		if event.button == 1:
 			self.debug(1,"def cb_extserverview()")
-			reopen = False
 			if self.LOAD_SRVDATA == False and not self.APIKEY == False:
 				self.LOAD_SRVDATA = True
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
@@ -4541,12 +4541,8 @@ class Systray:
 				GLib.idle_add(self.dialog_apikey)
 			else:
 				self.LOAD_SRVDATA = False
-			if self.MAINWINDOW_OPEN == True:
-				reopen = True
-				GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
 			self.write_options_file()
-			if reopen == True:
-				GLib.idle_add(self.mainwindow_ovpn_server)
+			self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 	
 	def cb_extserverview_size(self,widget,event):
@@ -4695,6 +4691,7 @@ class Systray:
 				self.MAINWINDOW_SHOWCELLS.append(cellid)
 				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
 			self.write_options_file()
+			self.rebuild_mainwindow()
 
 	def cb_change_ipmode1(self):
 		self.debug(1,"def cb_change_ipmode1()")
@@ -4704,9 +4701,7 @@ class Systray:
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
 			self.cb_check_normal_update()
-		if self.MAINWINDOW_OPEN == True:
-			self.mainwindow.remove(self.mainwindow_vbox)
-			self.mainwindow_ovpn_server()
+		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
 	def cb_change_ipmode2(self):
@@ -4718,9 +4713,7 @@ class Systray:
 		if len(self.OVPN_SERVER) == 0:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
 			self.cb_check_normal_update()
-		if self.MAINWINDOW_OPEN == True:
-			self.mainwindow.remove(self.mainwindow_vbox)
-			self.mainwindow_ovpn_server()
+		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
 	# *** fixme: need isValueIPv6 first! ***
