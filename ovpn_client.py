@@ -598,6 +598,7 @@ class Systray:
 				try:
 					APIKEY = parser.get('oVPN','apikey')
 					if APIKEY == "False" and not self.APIKEY == False:
+						# don't remove this pass or we go to else and this is not what we wanna have!
 						pass
 					elif APIKEY == "False":
 						self.APIKEY = False
@@ -4403,6 +4404,8 @@ class Systray:
 							if len(apikey) == 0:
 								self.APIKEY = False
 							else:
+								# don't ask if 'auth' is true or false, or expired user have to enter apikey on upgrade again...
+								self.API_REQUEST("auth")
 								self.APIKEY = apikey
 							self.debug(1,"def response_dialog_apilogin: return True #1")
 							return True
@@ -4411,6 +4414,8 @@ class Systray:
 						self.APIKEY = False
 					else:
 						self.APIKEY = apikey
+						# don't ask if 'auth' is true or false, or expired user have to enter apikey on upgrade again...
+						self.API_REQUEST("auth")
 					if not self.write_options_file() == True:
 						self.APIKEY = False
 						return False
@@ -4756,15 +4761,18 @@ class Systray:
 			self.debug(1,"def extract_ovpn: failed")
 
 	def API_REQUEST(self,API_ACTION):
-		self.debug(1,"def API_REQUEST()")
+		self.debug(1,"def API_REQUEST(%s)"%(API_ACTION))
 		if self.APIKEY == False:
-			self.msgwarn(_("No API-Key!"),_("Error: def API_REQUEST"))
+			self.msgwarn(_("No API-Key!"),_("No API-Key!"))
 			return False
-		if API_ACTION == "lastupdate": 
-			self.TO_CURL = "uid=%s&apikey=%s&action=%s" % (self.USERID,self.APIKEY,API_ACTION)
+		
+		if API_ACTION == "auth":
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+			
+		if API_ACTION == "lastupdate":
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
-		if API_ACTION == "getconfigs": 
+		if API_ACTION == "getconfigs":
 			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
 		
@@ -4785,18 +4793,17 @@ class Systray:
 				self.body = r.content
 			else:
 				self.body = r.text
-			if self.body == "wait":
-				pass
+			
 			if self.body == "AUTHERROR":
-				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
+				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("API Login Error"))
 				return False
+			elif API_ACTION == "auth" and self.body == "AUTHOK:True":
+				self.msgwarn(_("API Login OK!"),_("API Login OK!"))
+				return True
 			
 			if self.body.isalnum() and len(self.body) <= 128:
 				self.debug(1,"def API_REQUEST: self.body = %s"%(self.body))
 		
-		except requests.exceptions.ConnectionError as e:
-			self.debug(1,text = "def API_REQUEST: requests error on: %s = %s" % (API_ACTION,e))
-			return False
 		except:
 			self.msgwarn(_("API requests on: %s failed!") % (API_ACTION),_("Error: def API_REQUEST"))
 			return False
