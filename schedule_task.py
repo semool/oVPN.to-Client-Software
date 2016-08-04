@@ -1,6 +1,7 @@
 import os, subprocess
 import release_version
 import datetime
+from debug import debug
 
 def set_task():
 	SOURCEDIR = os.getcwd()
@@ -8,6 +9,7 @@ def set_task():
 	USERNAME = os.getenv('username')
 
 	XMLFILE = "%s\\autostart.xml" % (SOURCEDIR)
+	remove_xml(XMLFILE)
 	ind = open(XMLFILE, "w")
 	print >> ind, '<?xml version="1.0" encoding="UTF-16"?>'
 	print >> ind, '<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">'
@@ -61,18 +63,32 @@ def set_task():
 	if os.path.exists(XMLFILE):
 		string = 'schtasks.exe /Create /XML "%s" /TN "%s"' % (XMLFILE,release_version.version_data()["NAME"])
 		try:
-			cmd = subprocess.check_call("%s" % (string),shell=True)
-			print "def cb_switch_autostart: enable Ok"
+			exitcode = subprocess.check_call("%s" % (string),shell=True)
+			remove_xml(XMLFILE)
+			if exitcode == 0:
+				debug(1,"def cb_switch_autostart: enable Ok",True,True)
+				return True
+			else:
+				debug(1,"def cb_switch_autostart: enable fail, exitcode = '%s'" % (exitcode))
 		except:
-			print "def cb_switch_autostart: enable failed"
-		os.remove(XMLFILE)
-		return True
+			remove_xml(XMLFILE)
+			debug(1,"def cb_switch_autostart: enable failed",True,True)
+
+def remove_xml(XMLFILE):
+	if os.path.isfile(XMLFILE):
+		try:
+			os.remove(XMLFILE)
+		except:
+			debug(1,"def remove_xml: could not remove XMLFILE '%s'" % (XMLFILE),True,True)
 
 def delete_task():
 	string = 'schtasks.exe /Delete /TN "%s" /f' % (release_version.version_data()["NAME"])
 	try:
-		cmd = subprocess.check_call("%s" % (string),shell=True)
-		print "def cb_switch_autostart: disable Ok"
+		exitcode = subprocess.check_call("%s" % (string),shell=True)
+		if exitcode == 0:
+			debug(1,"def cb_switch_autostart: disable Ok",True,True)
+			return True
+		else:
+			debug(1,"def cb_switch_autostart: disable fail, exitcode = '%s'" % (exitcode),True,True)
 	except:
-		print "def cb_switch_autostart: disable failed"
-	return True
+		debug(1,"def cb_switch_autostart: disable failed",True,True)
