@@ -133,7 +133,7 @@ class Systray:
 		self.MAINWINDOW_CELLINDEX = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher",
 									9:"Mbps", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 
 									16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 
-									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR", 26:"FlagIcon2" }
+									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR", 26:"Right Flag" }
 		self.HIDECELLSWINDOW_OPEN = False
 		self.SETTINGSWINDOW_OPEN = False
 		self.APP_LANGUAGE = "en"
@@ -250,6 +250,8 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		#self.LAST_OVPN_SERVER_RELOAD = 0
 		self.AUTOSTART = False
+		self.AUTOSTART_DELAY_TIME = "30"
+		self.AUTOSTART_DELAY = [ "10", "20", "30", "40", "50", "60" ]
 		self.UPDATEOVPNONSTART = False
 		self.request_UPDATE = True
 		self.APIKEY = False
@@ -673,10 +675,15 @@ class Systray:
 					pass
 				
 				try:
+					self.AUTOSTART_DELAY_TIME = parser.get('oVPN','autostartdelay')
+				except:
+					pass
+				
+				try:
 					self.AUTOSTART = parser.getboolean('oVPN','autostart')
 					if self.AUTOSTART == True:
 						try:
-							schedule_task.set_task()
+							schedule_task.set_task(self.AUTOSTART_DELAY_TIME)
 						except:
 							pass
 					self.debug(1,"def read_options_file: self.AUTOSTART = '%s'" % (self.AUTOSTART))
@@ -864,6 +871,7 @@ class Systray:
 				parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 				parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
 				parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
+				parser.set('oVPN','autostartdelay','%s'%(self.AUTOSTART_DELAY_TIME))
 				parser.set('oVPN','autostart','%s'%(self.AUTOSTART))
 				parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 				parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
@@ -920,6 +928,7 @@ class Systray:
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
 			parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
+			parser.set('oVPN','autostartdelay','%s'%(self.AUTOSTART_DELAY_TIME))
 			parser.set('oVPN','autostart','%s'%(self.AUTOSTART))
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
 			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
@@ -1424,8 +1433,10 @@ class Systray:
 			# settings_options_switch_autostart
 			if self.AUTOSTART == True:
 				self.switch_autostart.set_active(True)
+				self.combobox_time.set_button_sensitivity(Gtk.SensitivityType.OFF)
 			else:
 				self.switch_autostart.set_active(False)
+				self.combobox_time.set_button_sensitivity(Gtk.SensitivityType.ON)
 			
 			# settings_options_switch_updateovpnonstart
 			if self.UPDATEOVPNONSTART == True:
@@ -2274,42 +2285,49 @@ class Systray:
 		## cell 1 == flagicon
 		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24			25
 		for cellid,cellname in self.MAINWINDOW_CELLINDEX.items():
-			self.debug(0,"def cellname = '%s'" % (cellname))
-			align=0.5
-			if cellnumber in [ 9, 23, 24 ]:
-				align=1
-			if cellnumber in [ 3, 4, 11, 12, 13, 16 ]:
-				align=0
-			cell = Gtk.CellRendererText(xalign=align)
-			column = Gtk.TreeViewColumn(" %s " % (cellname), cell, text=cellnumber)
+			if not cellnumber == 26:
+				self.debug(0,"def cellname = '%s'" % (cellname))
+				align=0.5
+				if cellnumber in [ 9, 23, 24 ]:
+					align=1
+				if cellnumber in [ 3, 4, 11, 12, 13, 16 ]:
+					align=0
+				cell = Gtk.CellRendererText(xalign=align)
+				column = Gtk.TreeViewColumn(" %s " % (cellname), cell, text=cellnumber)
+
+				# cell sorting stuff
+				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
+					column.set_sort_column_id(cellnumber)
+					# Add sort function for str cells
+					if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
+						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
+					if cellnumber in [ 16 ]:
+						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
 			
-			# cell sorting stuff
-			if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
-				column.set_sort_column_id(cellnumber)
-				# Add sort function for str cells
-				if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
-					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
-				if cellnumber in [ 16 ]:
-					self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
-			
-			# Hide colums in light server view
-			if self.LOAD_SRVDATA == False:
-				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
-					column.set_visible(False)
-			elif self.LOAD_SRVDATA == True:
-				if cellnumber in self.MAINWINDOW_ALLOWCELLHIDE:
-					if not cellnumber in self.MAINWINDOW_SHOWCELLS:
+				# Hide colums in light server view
+				if self.LOAD_SRVDATA == False:
+					if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 						column.set_visible(False)
-					else:
-						column.set_visible(True)
-			self.treeview.append_column(column)
-			cellnumber = cellnumber + 1
+				elif self.LOAD_SRVDATA == True:
+					if cellnumber in self.MAINWINDOW_ALLOWCELLHIDE:
+						if not cellnumber in self.MAINWINDOW_SHOWCELLS:
+							column.set_visible(False)
+						else:
+							column.set_visible(True)
+				self.treeview.append_column(column)
+				cellnumber = cellnumber + 1
+
 		cell = Gtk.CellRendererPixbuf()
-		column = Gtk.TreeViewColumn(' ',cell, pixbuf=26)
+		cellnumber = 26
+		column = Gtk.TreeViewColumn(' ',cell, pixbuf=cellnumber)
 		column.set_fixed_width(30)
 		if self.LOAD_SRVDATA == False:
 			column.set_visible(False)
-		
+		else:
+			if cellnumber in self.MAINWINDOW_ALLOWCELLHIDE:
+					if not cellnumber in self.MAINWINDOW_SHOWCELLS:
+						column.set_visible(False)
+
 		self.treeview.append_column(column)
 		self.call_fill_mainwindow_with_server()
 		# statusbar
@@ -2553,7 +2571,24 @@ class Systray:
 			self.nbpage1 = Gtk.VBox(False,spacing=2)
 			self.nbpage1.set_border_width(8)
 			self.nbpage1.pack_start(Gtk.Label(label=""),False,False,0)
-			self.settings_options_switch_autostart(self.nbpage1)
+			
+			##
+			self.nbpage1_h0 = Gtk.HBox(False, spacing=2)
+			self.nbpage1_h0.pack_start(Gtk.Label(label=""),False,False,0)
+			
+			self.nbpage1_h0_v1 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h0_v1.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_switch_autostart(self.nbpage1_h0_v1)
+			
+			self.nbpage1_h0_v2 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h0_v2.pack_start(Gtk.Label(label=""),False,False,0)
+			self.settings_options_combobox_time(self.nbpage1_h0_v2)
+			
+			self.nbpage1_h0.add(self.nbpage1_h0_v1)
+			self.nbpage1_h0.add(self.nbpage1_h0_v2)
+			self.nbpage1.add(self.nbpage1_h0)
+			##
+			
 			self.settings_options_switch_updateovpnonstart(self.nbpage1)
 			self.settings_options_switch_accinfo(self.nbpage1)
 			self.settings_options_switch_srvinfo(self.nbpage1)
@@ -2914,12 +2949,51 @@ class Systray:
 		self.debug(1,"def cb_switch_autostart()")
 		if switch.get_active():
 			self.AUTOSTART = True
-			schedule_task.set_task()
+			schedule_task.set_task(self.AUTOSTART_DELAY_TIME)
 		else:
 			self.AUTOSTART = False
 			schedule_task.delete_task()
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
+
+	def settings_options_combobox_time(self,page):
+		try:
+			self.debug(1,"def settings_options_combobox_time()")
+			combobox_title = Gtk.Label(label=_("Delay in seconds"))
+			combobox = Gtk.ComboBoxText.new()
+			self.combobox_time = combobox
+			for time in self.AUTOSTART_DELAY:
+				combobox.append_text(time)
+			if self.AUTOSTART_DELAY_TIME == "10":
+				active_item = 0
+			if self.AUTOSTART_DELAY_TIME == "20":
+				active_item = 1
+			if self.AUTOSTART_DELAY_TIME == "30":
+				active_item = 2
+			if self.AUTOSTART_DELAY_TIME == "40":
+				active_item = 3
+			if self.AUTOSTART_DELAY_TIME == "50":
+				active_item = 4
+			if self.AUTOSTART_DELAY_TIME == "60":
+				active_item = 5
+			combobox.set_active(active_item)
+			combobox.connect('changed',self.cb_time_switcher_changed)
+			page.pack_start(combobox_title,False,False,0)
+			page.pack_start(combobox,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except:
+			self.debug(1,"def settings_options_combobox_time: failed")
+
+	def cb_time_switcher_changed(self, combobox):
+		self.debug(1,"def cb_time_switcher_changed()")
+		model = combobox.get_model()
+		index = combobox.get_active()
+		if index > -1:
+			self.AUTOSTART_DELAY_TIME = combobox.get_active_text()
+			self.write_options_file()
+			self.UPDATE_SWITCH = True
+			self.debug(1,"def cb_time_switcher_changed: selected Time = '%s'" % (self.AUTOSTART_DELAY_TIME))
+		return
 
 	def settings_options_switch_accinfo(self,page):
 		try:

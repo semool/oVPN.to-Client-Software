@@ -3,10 +3,11 @@ import release_version
 import datetime
 from debug import debug
 
-def set_task():
+def set_task(delay):
 	SOURCEDIR = os.getcwd()
 	DATE = datetime.datetime.now()
 	USERNAME = os.getenv('username')
+	AUTOSTART_DELAY_TIME = delay
 
 	XMLFILE = "%s\\autostart.xml" % (SOURCEDIR)
 	remove_xml(XMLFILE)
@@ -22,7 +23,7 @@ def set_task():
 	print >> ind, '    <LogonTrigger>'
 	print >> ind, '      <Enabled>true</Enabled>'
 	print >> ind, '      <UserId>%s</UserId>' % USERNAME
-	print >> ind, '      <Delay>PT30S</Delay>'
+	print >> ind, '      <Delay>PT%sS</Delay>' % AUTOSTART_DELAY_TIME
 	print >> ind, '    </LogonTrigger>'
 	print >> ind, '  </Triggers>'
 	print >> ind, '  <Principals>'
@@ -66,29 +67,33 @@ def set_task():
 			exitcode = subprocess.check_call("%s" % (string),shell=True)
 			remove_xml(XMLFILE)
 			if exitcode == 0:
-				debug(1,"def cb_switch_autostart: enable Ok",True,True)
+				#debug(1,"def cb_switch_autostart: enable Ok",True,True)
 				return True
 			else:
-				debug(1,"def cb_switch_autostart: enable fail, exitcode = '%s'" % (exitcode))
+				#debug(1,"def cb_switch_autostart: enable fail, exitcode = '%s'" % (exitcode))
+				return False
 		except:
 			remove_xml(XMLFILE)
-			debug(1,"def cb_switch_autostart: enable failed",True,True)
+			#debug(1,"def cb_switch_autostart: enable failed",True,True)
 
 def remove_xml(XMLFILE):
 	if os.path.isfile(XMLFILE):
 		try:
 			os.remove(XMLFILE)
 		except:
-			debug(1,"def remove_xml: could not remove XMLFILE '%s'" % (XMLFILE),True,True)
+			#debug(1,"def remove_xml: could not remove XMLFILE '%s'" % (XMLFILE),True,True)
+			pass
 
 def delete_task():
 	string = 'schtasks.exe /Delete /TN "%s" /f' % (release_version.version_data()["NAME"])
 	try:
 		exitcode = subprocess.check_call("%s" % (string),shell=True)
 		if exitcode == 0:
-			debug(1,"def cb_switch_autostart: disable Ok",True,True)
+			#debug(1,"def cb_switch_autostart: disable Ok",True,True)
 			return True
 		else:
-			debug(1,"def cb_switch_autostart: disable fail, exitcode = '%s'" % (exitcode),True,True)
+			#debug(1,"def cb_switch_autostart: disable fail, exitcode = '%s'" % (exitcode),True,True)
+			return False
 	except:
-		debug(1,"def cb_switch_autostart: disable failed",True,True)
+		#debug(1,"def cb_switch_autostart: disable failed",True,True)
+		return False
