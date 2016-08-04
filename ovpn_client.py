@@ -1582,7 +1582,7 @@ class Systray:
 					self.tray.set_from_pixbuf(systrayicon)
 			
 			# statusbar
-			if self.MAINWINDOW_OPEN == True:
+			if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
 				if not self.statusbartext_from_before == statusbar_text:
 					self.set_statusbar_text(statusbar_text)
 					self.statusbartext_from_before = statusbar_text
@@ -2163,7 +2163,7 @@ class Systray:
 		GLib.idle_add(self.rebuild_mainwindow_glib)
 
 	def rebuild_mainwindow_glib(self):
-		if self.MAINWINDOW_OPEN == True:
+		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
 			self.mainwindow.remove(self.mainwindow_vbox)
 			self.mainwindow_ovpn_server()
 
@@ -4719,10 +4719,10 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
 			self.cb_check_normal_update()
-		if self.MAINWINDOW_OPEN == True:
-			self.destroy_mainwindow()
-		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
+		self.rebuild_mainwindow()
+		self.UPDATE_SWITCH = True
 
 	def cb_restore_firewallbackup(self,file):
 		self.debug(1,"def cb_restore_firewallbackup()")
