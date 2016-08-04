@@ -1566,29 +1566,38 @@ class Systray:
 					systrayicon = self.systray_icon_connected
 				except:
 					self.debug(1,"def systray_timer: systraytext failed")
-
+		
 		try:
-			# traytext
-			if not self.systraytext_from_before == systraytext and not systraytext == False:
-				self.systraytext_from_before = systraytext
-				self.tray.set_tooltip_markup(systraytext)
+			try:
+				# traytext
+				if not self.systraytext_from_before == systraytext and not systraytext == False:
+					self.systraytext_from_before = systraytext
+					self.tray.set_tooltip_markup(systraytext)
+			except:
+				self.debug(1,"def systray_timer2: set traytext failed")
+				
+			try:
+				# trayicon
+				if not self.systrayicon_from_before == systrayicon:
+					self.systrayicon_from_before = systrayicon
+					if self.APP_THEME == "private":
+						self.tray.set_from_file(systrayicon)
+					else:
+						self.tray.set_from_pixbuf(systrayicon)
+			except:
+				self.debug(1,"def systray_timer2: set trayicon failed")
 			
-			# trayicon
-			if not self.systrayicon_from_before == systrayicon:
-				self.systrayicon_from_before = systrayicon
-				if self.APP_THEME == "private":
-					self.tray.set_from_file(systrayicon)
-				else:
-					self.tray.set_from_pixbuf(systrayicon)
-			
-			# statusbar
-			if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
-				if not self.statusbartext_from_before == statusbar_text:
-					self.set_statusbar_text(statusbar_text)
-					self.statusbartext_from_before = statusbar_text
+			try:
+				# statusbar
+				if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
+					if not self.statusbartext_from_before == statusbar_text:
+						self.set_statusbar_text(statusbar_text)
+						self.statusbartext_from_before = statusbar_text
+			except:
+				self.debug(1,"def systray_timer2: set statusbar failed")
 		except:
-			pass
-
+			self.debug(1,"def systray_timer2: set 'traytext, trayicon, statusbar' failed")
+		
 		try:
 			if self.timer_load_remote_data_running == False:
 				thread = threading.Thread(target=self.load_remote_data)
@@ -1596,29 +1605,8 @@ class Systray:
 				thread.start()
 		except:
 			self.debug(1,"def systray_timer2: thread target=self.load_remote_data failed")
-
-		self.systray_timer2_running = False
 		
-		"""
-		if self.IDLE_TIME > 300:
-			
-			if len(self.FLAG_CACHE_PIXBUF) >= 1:
-				self.FLAG_CACHE_PIXBUF = {}
-				for entry in self.FLAG_CACHE_PIXBUF:
-					del entry
-					gc.collect()
-				self.debug(1,"def systray_timer2: CLEAR self.FLAG_CACHE_PIXBUF")
-			
-			if len(self.ICON_CACHE_PIXBUF) > 1:
-				self.ICON_CACHE_PIXBUF = {}
-				for entry in self.ICON_CACHE_PIXBUF:
-					del entry
-					gc.collect()
-				self.debug(1,"def systray_timer2: CLEAR self.ICON_CACHE_PIXBUF")
-		else:
-			self.IDLE_TIME += 0.5
-			#self.debug(1,"self.IDLE_TIME = %s" % (self.IDLE_TIME))
-		"""
+		self.systray_timer2_running = False
 		
 		self.debug(19,"def systray_timer2() return")
 		return
