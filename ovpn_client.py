@@ -128,15 +128,14 @@ class Systray:
 		self.SAVE_APIKEY_INFILE = False
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
-		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]
+		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
 		self.MAINWINDOW_SHOWCELLS = self.MAINWINDOW_ALLOWCELLHIDE
 		self.MAINWINDOW_CELLINDEX = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher",
 									9:"Mbps", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 
 									16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 
-									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR" }
+									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR", 26:"FlagIcon2" }
 		self.HIDECELLSWINDOW_OPEN = False
 		self.SETTINGSWINDOW_OPEN = False
-		self.ENABLE_MAINWINDOW_SORTING = True
 		self.APP_LANGUAGE = "en"
 		self.LANG_FONT_CHANGE = False
 		self.APP_FONT_SIZE = "9"
@@ -259,10 +258,10 @@ class Systray:
 		self.request_LOAD_ACCDATA = True
 		self.LOAD_SRVDATA = False
 		self.request_LOAD_SRVDATA = False
-		self.SRV_LIGHT_WIDTH = "490"
-		self.SRV_LIGHT_HEIGHT = "830"
-		self.SRV_WIDTH = "910"
-		self.SRV_HEIGHT = "830"
+		self.SRV_LIGHT_WIDTH = "512"
+		self.SRV_LIGHT_HEIGHT = "720"
+		self.SRV_WIDTH = "1280"
+		self.SRV_HEIGHT = "720"
 		self.SRV_LIGHT_WIDTH_DEFAULT = self.SRV_LIGHT_WIDTH
 		self.SRV_LIGHT_HEIGHT_DEFAULT = self.SRV_LIGHT_HEIGHT
 		self.SRV_WIDTH_DEFAULT = self.SRV_WIDTH
@@ -599,6 +598,7 @@ class Systray:
 				try:
 					APIKEY = parser.get('oVPN','apikey')
 					if APIKEY == "False" and not self.APIKEY == False:
+						# don't remove this pass or we go to else and this is not what we wanna have!
 						pass
 					elif APIKEY == "False":
 						self.APIKEY = False
@@ -1567,29 +1567,38 @@ class Systray:
 					systrayicon = self.systray_icon_connected
 				except:
 					self.debug(1,"def systray_timer: systraytext failed")
-
+		
 		try:
-			# traytext
-			if not self.systraytext_from_before == systraytext and not systraytext == False:
-				self.systraytext_from_before = systraytext
-				self.tray.set_tooltip_markup(systraytext)
+			try:
+				# traytext
+				if not self.systraytext_from_before == systraytext and not systraytext == False:
+					self.systraytext_from_before = systraytext
+					self.tray.set_tooltip_markup(systraytext)
+			except:
+				self.debug(1,"def systray_timer2: set traytext failed")
+				
+			try:
+				# trayicon
+				if not self.systrayicon_from_before == systrayicon:
+					self.systrayicon_from_before = systrayicon
+					if self.APP_THEME == "private":
+						self.tray.set_from_file(systrayicon)
+					else:
+						self.tray.set_from_pixbuf(systrayicon)
+			except:
+				self.debug(1,"def systray_timer2: set trayicon failed")
 			
-			# trayicon
-			if not self.systrayicon_from_before == systrayicon:
-				self.systrayicon_from_before = systrayicon
-				if self.APP_THEME == "private":
-					self.tray.set_from_file(systrayicon)
-				else:
-					self.tray.set_from_pixbuf(systrayicon)
-			
-			# statusbar
-			if self.MAINWINDOW_OPEN == True:
-				if not self.statusbartext_from_before == statusbar_text:
-					self.set_statusbar_text(statusbar_text)
-					self.statusbartext_from_before = statusbar_text
+			try:
+				# statusbar
+				if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
+					if not self.statusbartext_from_before == statusbar_text:
+						self.set_statusbar_text(statusbar_text)
+						self.statusbartext_from_before = statusbar_text
+			except:
+				self.debug(1,"def systray_timer2: set statusbar failed")
 		except:
-			pass
-
+			self.debug(1,"def systray_timer2: set 'traytext, trayicon, statusbar' failed")
+		
 		try:
 			if self.timer_load_remote_data_running == False:
 				thread = threading.Thread(target=self.load_remote_data)
@@ -1597,29 +1606,8 @@ class Systray:
 				thread.start()
 		except:
 			self.debug(1,"def systray_timer2: thread target=self.load_remote_data failed")
-
-		self.systray_timer2_running = False
 		
-		"""
-		if self.IDLE_TIME > 300:
-			
-			if len(self.FLAG_CACHE_PIXBUF) >= 1:
-				self.FLAG_CACHE_PIXBUF = {}
-				for entry in self.FLAG_CACHE_PIXBUF:
-					del entry
-					gc.collect()
-				self.debug(1,"def systray_timer2: CLEAR self.FLAG_CACHE_PIXBUF")
-			
-			if len(self.ICON_CACHE_PIXBUF) > 1:
-				self.ICON_CACHE_PIXBUF = {}
-				for entry in self.ICON_CACHE_PIXBUF:
-					del entry
-					gc.collect()
-				self.debug(1,"def systray_timer2: CLEAR self.ICON_CACHE_PIXBUF")
-		else:
-			self.IDLE_TIME += 0.5
-			#self.debug(1,"self.IDLE_TIME = %s" % (self.IDLE_TIME))
-		"""
+		self.systray_timer2_running = False
 		
 		self.debug(19,"def systray_timer2() return")
 		return
@@ -1916,9 +1904,7 @@ class Systray:
 									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 									self.OVPN_SERVER = list()
 									if self.load_ovpn_server() == True:
-										if self.MAINWINDOW_OPEN == True:
-											GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
-											GLib.idle_add(self.mainwindow_ovpn_server)
+										self.rebuild_mainwindow()
 									return True
 								else:
 									self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
@@ -2162,6 +2148,14 @@ class Systray:
 			except:
 				self.debug(1,"def call_redraw_mainwindow: try #1 failed")
 
+	def rebuild_mainwindow(self):
+		GLib.idle_add(self.rebuild_mainwindow_glib)
+
+	def rebuild_mainwindow_glib(self):
+		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
+			self.mainwindow.remove(self.mainwindow_vbox)
+			self.mainwindow_ovpn_server()
+
 	def show_mainwindow(self,widget,event):
 		self.debug(1,"def show_mainwindow()")
 		self.destroy_systray_menu()
@@ -2171,7 +2165,7 @@ class Systray:
 			self.load_ovpn_server()
 			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
+				self.mainwindow.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
@@ -2189,7 +2183,7 @@ class Systray:
 
 	def cell_sort(self, treemodel, iter1, iter2, user_data):
 		try:
-			self.debug(1,"def cell_sort()")
+			self.debug(16,"def cell_sort()")
 			sort_column, _ = treemodel.get_sort_column_id()
 			iter1 = treemodel.get_value(iter1, sort_column)
 			iter2 = treemodel.get_value(iter2, sort_column)
@@ -2200,11 +2194,11 @@ class Systray:
 			else:
 				return 1
 		except:
-			pass
+			self.debug(1,"def cell_sort: failed")
 
 	def cell_sort_traffic(self, treemodel, iter1, iter2, user_data):
 		try:
-			self.debug(1,"def cell_sort_traffic()")
+			self.debug(16,"def cell_sort_traffic()")
 			sort_column, _ = treemodel.get_sort_column_id()
 			data1 = treemodel.get_value(iter1, sort_column)
 			data2 = treemodel.get_value(iter2, sort_column)
@@ -2232,7 +2226,7 @@ class Systray:
 			else:
 				return 1
 		except:
-			pass
+			self.debug(1,"def cell_sort_traffic: failed")
 
 	def mainwindow_ovpn_server(self):
 		self.debug(1,"def mainwindow_ovpn_server: go")
@@ -2266,16 +2260,13 @@ class Systray:
 		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
 		
 		try:
-			self.debug(1,"def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
 			self.treeview.append_column(column)
-			self.debug(1,"def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=1)
 			column.set_fixed_width(30)
 			self.treeview.append_column(column)
-			self.debug(1,"def fill_mainwindow_with_server: go2.3")
 		except:
 			self.debug(1,"cell = Gtk.CellRendererPixbuf failed")
 		
@@ -2283,6 +2274,7 @@ class Systray:
 		## cell 1 == flagicon
 		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24			25
 		for cellid,cellname in self.MAINWINDOW_CELLINDEX.items():
+			self.debug(0,"def cellname = '%s'" % (cellname))
 			align=0.5
 			if cellnumber in [ 9, 23, 24 ]:
 				align=1
@@ -2290,24 +2282,16 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(" %s " % (cellname), cell, text=cellnumber)
-			"""
-		for cellname in cellnames:
-			align=0.5
-			if cellnumber in [ 9, 23, 24 ]:
-				align=1
-			if cellnumber in [ 3, 4, 11, 12, 13, 16 ]:
-				align=0
-			cell = Gtk.CellRendererText(xalign=align)
-			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			"""
-			if self.ENABLE_MAINWINDOW_SORTING == True:
-				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
-					column.set_sort_column_id(cellnumber)
-					# Add sort function for str cells
-					if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
-						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
-					if cellnumber in [ 16 ]:
-						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
+			
+			# cell sorting stuff
+			if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
+				column.set_sort_column_id(cellnumber)
+				# Add sort function for str cells
+				if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
+					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
+				if cellnumber in [ 16 ]:
+					self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
+			
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
 				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
@@ -2320,7 +2304,6 @@ class Systray:
 						column.set_visible(True)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
-		
 		cell = Gtk.CellRendererPixbuf()
 		column = Gtk.TreeViewColumn(' ',cell, pixbuf=26)
 		column.set_fixed_width(30)
@@ -2328,18 +2311,11 @@ class Systray:
 			column.set_visible(False)
 		
 		self.treeview.append_column(column)
-		
-		self.debug(1,"def fill_mainwindow_with_server: go2.4")
-		GLib.idle_add(self.fill_mainwindow_with_server)
-		GLib.idle_add(self.update_mwls)
-		self.debug(1,"def fill_mainwindow_with_server: go2.5")
-		
+		self.call_fill_mainwindow_with_server()
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
 		self.mainwindow_vbox.show_all()
-		self.debug(1,"def fill_mainwindow_with_server: go2.6")
-		
 		if self.LOAD_SRVDATA == True:
 			WIDTH = self.SRV_WIDTH
 			HEIGHT = self.SRV_HEIGHT
@@ -2349,6 +2325,19 @@ class Systray:
 			HEIGHT = self.SRV_LIGHT_HEIGHT
 			self.mainwindow.resize(int(WIDTH),int(HEIGHT))
 		return
+
+	def call_fill_mainwindow_with_server(self):
+		self.debug(1,"def call_fill_mainwindow_with_server()")
+		GLib.idle_add(self.call_fill_mainwindow_with_server_glib)
+
+	def call_fill_mainwindow_with_server_glib(self):
+		# to be called from 'def call_fill_mainwindow_with_server()' ONLY !
+		self.debug(1,"def call_fill_mainwindow_with_server_glib()")
+		try:
+			self.fill_mainwindow_with_server()
+			self.update_mwls()
+		except:
+			self.debug(1,"def call_fill_mainwindow_with_server_glib: failed")
 
 	def fill_mainwindow_with_server(self):
 		for server in self.OVPN_SERVER:
@@ -3000,16 +2989,11 @@ class Systray:
 				self.LOAD_SRVDATA = True
 		else:
 			self.LOAD_SRVDATA = False
-		reopen = False
-		if self.MAINWINDOW_OPEN == True:
-			reopen = True
 		if self.LOAD_SRVDATA == True:
 			self.LAST_OVPN_SRV_DATA_UPDATE = 0
 			self.OVPN_SRV_DATA = {}
 		self.write_options_file()
-		if reopen == True:
-			GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
-			GLib.idle_add(self.mainwindow_ovpn_server)
+		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
 	def settings_options_switch_debugmode(self,page):
@@ -3409,7 +3393,7 @@ class Systray:
 			self.MOUSE_IN_TRAY = 0
 			self.debug(2,"def destroy_systray_menu: true")
 		except:
-			self.debug(1,"def destroy_systray_menu: failed")
+			self.debug(7,"def destroy_systray_menu: failed")
 			self.systray_menu = False
 
 	def set_statusbar_text(self,text):
@@ -4420,6 +4404,8 @@ class Systray:
 							if len(apikey) == 0:
 								self.APIKEY = False
 							else:
+								# don't ask if 'auth' is true or false, or expired user have to enter apikey on upgrade again...
+								self.API_REQUEST("auth")
 								self.APIKEY = apikey
 							self.debug(1,"def response_dialog_apilogin: return True #1")
 							return True
@@ -4428,6 +4414,8 @@ class Systray:
 						self.APIKEY = False
 					else:
 						self.APIKEY = apikey
+						# don't ask if 'auth' is true or false, or expired user have to enter apikey on upgrade again...
+						self.API_REQUEST("auth")
 					if not self.write_options_file() == True:
 						self.APIKEY = False
 						return False
@@ -4531,7 +4519,6 @@ class Systray:
 	def cb_extserverview(self,widget,event):
 		if event.button == 1:
 			self.debug(1,"def cb_extserverview()")
-			reopen = False
 			if self.LOAD_SRVDATA == False and not self.APIKEY == False:
 				self.LOAD_SRVDATA = True
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
@@ -4541,12 +4528,8 @@ class Systray:
 				GLib.idle_add(self.dialog_apikey)
 			else:
 				self.LOAD_SRVDATA = False
-			if self.MAINWINDOW_OPEN == True:
-				reopen = True
-				GLib.idle_add(self.mainwindow.remove,self.mainwindow_vbox)
 			self.write_options_file()
-			if reopen == True:
-				GLib.idle_add(self.mainwindow_ovpn_server)
+			self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 	
 	def cb_extserverview_size(self,widget,event):
@@ -4653,20 +4636,23 @@ class Systray:
 		try:
 			if self.HIDECELLSWINDOW_OPEN == False:
 				self.HIDECELLSWINDOW_OPEN = True
-				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-				dialogWindow.connect("destroy",self.cb_destroy_hidecellswindow)
-				dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-				dialogWindow.set_size_request(100,720)
-				dialogWindow.set_transient_for(self.window)
-				dialogWindow.set_icon(self.app_icon)
+				hidecellswindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+				vbox = Gtk.VBox(False,1)
+				hidecellswindow.add(vbox)
+				hidecellswindow.connect("destroy",self.cb_destroy_hidecellswindow)
+				hidecellswindow.set_position(Gtk.WindowPosition.CENTER)
+				hidecellswindow.set_size_request(640,96)
+				hidecellswindow.set_transient_for(self.window)
+				hidecellswindow.set_icon(self.app_icon)
 				text = _("Hide unwanted cells")
-				dialogWindow.set_title(text)
+				hidecellswindow.set_title(text)
 				scrolledwindow = Gtk.ScrolledWindow()
 				scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-				dialogWindow.vbox.pack_start(scrolledwindow, True, True, 0)
+				vbox.pack_start(scrolledwindow, True, True, 0)
 				grid = Gtk.Grid()
 				scrolledwindow.add(grid)
 				i = 0
+				x = 0
 				for cellid in self.MAINWINDOW_ALLOWCELLHIDE:
 					cellname = self.MAINWINDOW_CELLINDEX[cellid]
 					print cellname
@@ -4676,11 +4662,13 @@ class Systray:
 					else:
 						button.set_active(False)
 					button.connect("toggled",self.cb_hide_cells2,cellid)
-					grid.attach(button,0,i,1,1)
-					i += 1
-				dialogWindow.show_all()
-				response = dialogWindow.run()
-				dialogWindow.destroy()
+					grid.attach(button,x,i,1,1)
+					if x >= 7:
+						i += 1
+						x = 0
+					else:
+						x += 1
+				hidecellswindow.show_all()
 		except:
 			self.debug(1,"def cb_hide_cells: failed")
 			self.HIDECELLSWINDOW_OPEN = False
@@ -4695,6 +4683,7 @@ class Systray:
 				self.MAINWINDOW_SHOWCELLS.append(cellid)
 				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
 			self.write_options_file()
+			self.rebuild_mainwindow()
 
 	def cb_change_ipmode1(self):
 		self.debug(1,"def cb_change_ipmode1()")
@@ -4704,9 +4693,7 @@ class Systray:
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
 			self.cb_check_normal_update()
-		if self.MAINWINDOW_OPEN == True:
-			self.mainwindow.remove(self.mainwindow_vbox)
-			self.mainwindow_ovpn_server()
+		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
 	def cb_change_ipmode2(self):
@@ -4718,9 +4705,7 @@ class Systray:
 		if len(self.OVPN_SERVER) == 0:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
 			self.cb_check_normal_update()
-		if self.MAINWINDOW_OPEN == True:
-			self.mainwindow.remove(self.mainwindow_vbox)
-			self.mainwindow_ovpn_server()
+		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
 	# *** fixme: need isValueIPv6 first! ***
@@ -4732,10 +4717,10 @@ class Systray:
 		self.read_options_file()
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
 			self.cb_check_normal_update()
-		if self.MAINWINDOW_OPEN == True:
-			self.destroy_mainwindow()
-		self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
+		self.rebuild_mainwindow()
+		self.UPDATE_SWITCH = True
 
 	def cb_restore_firewallbackup(self,file):
 		self.debug(1,"def cb_restore_firewallbackup()")
@@ -4781,15 +4766,18 @@ class Systray:
 			self.debug(1,"def extract_ovpn: failed")
 
 	def API_REQUEST(self,API_ACTION):
-		self.debug(1,"def API_REQUEST()")
+		self.debug(1,"def API_REQUEST(%s)"%(API_ACTION))
 		if self.APIKEY == False:
-			self.msgwarn(_("No API-Key!"),_("Error: def API_REQUEST"))
+			self.msgwarn(_("No API-Key!"),_("No API-Key!"))
 			return False
-		if API_ACTION == "lastupdate": 
-			self.TO_CURL = "uid=%s&apikey=%s&action=%s" % (self.USERID,self.APIKEY,API_ACTION)
+		
+		if API_ACTION == "auth":
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+			
+		if API_ACTION == "lastupdate":
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
-		if API_ACTION == "getconfigs": 
+		if API_ACTION == "getconfigs":
 			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
 		
@@ -4810,18 +4798,17 @@ class Systray:
 				self.body = r.content
 			else:
 				self.body = r.text
-			if self.body == "wait":
-				pass
+			
 			if self.body == "AUTHERROR":
-				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
+				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("API Login Error"))
 				return False
+			elif API_ACTION == "auth" and self.body == "AUTHOK:True":
+				self.msgwarn(_("API Login OK!"),_("API Login OK!"))
+				return True
 			
 			if self.body.isalnum() and len(self.body) <= 128:
 				self.debug(1,"def API_REQUEST: self.body = %s"%(self.body))
 		
-		except requests.exceptions.ConnectionError as e:
-			self.debug(1,text = "def API_REQUEST: requests error on: %s = %s" % (API_ACTION,e))
-			return False
 		except:
 			self.msgwarn(_("API requests on: %s failed!") % (API_ACTION),_("Error: def API_REQUEST"))
 			return False
