@@ -4610,6 +4610,12 @@ class Systray:
 		if event.button == 1:
 			self.debug(1,"def cb_extserverview_size()")
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+			try:
+				actualwidth = self.mainwindow.get_size()[0]
+				actualheigt = self.mainwindow.get_size()[1]
+			except:
+				actualwidth = 0
+				actualheigt = 0
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
 			try:
@@ -4624,10 +4630,14 @@ class Systray:
 			widthEntry = Gtk.Entry()
 			widthEntry.set_visibility(True)
 			widthEntry.set_size_request(40,24)
+			if not actualwidth == 0:
+				widthEntry.set_text(str(actualwidth))
 			heightLabel = Gtk.Label(label=_("Height (pixel):"))
 			heightEntry = Gtk.Entry()
 			heightEntry.set_visibility(True)
 			heightEntry.set_size_request(40,24)
+			if not actualheigt == 0:
+				heightEntry.set_text(str(actualheigt))
 			sizeLabel = Gtk.Label(label=_("Enter width and height\n\nLeave blank for default"))
 			dialogBox.pack_start(sizeLabel,False,False,0)
 			dialogBox.pack_start(widthLabel,False,False,0)
