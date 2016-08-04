@@ -136,7 +136,6 @@ class Systray:
 									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR" }
 		self.HIDECELLSWINDOW_OPEN = False
 		self.SETTINGSWINDOW_OPEN = False
-		self.ENABLE_MAINWINDOW_SORTING = True
 		self.APP_LANGUAGE = "en"
 		self.LANG_FONT_CHANGE = False
 		self.APP_FONT_SIZE = "9"
@@ -2272,16 +2271,13 @@ class Systray:
 		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
 		
 		try:
-			self.debug(1,"def fill_mainwindow_with_server: go2.1")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=0)
 			self.treeview.append_column(column)
-			self.debug(1,"def fill_mainwindow_with_server: go2.2")
 			cell = Gtk.CellRendererPixbuf()
 			column = Gtk.TreeViewColumn(' ',cell, pixbuf=1)
 			column.set_fixed_width(30)
 			self.treeview.append_column(column)
-			self.debug(1,"def fill_mainwindow_with_server: go2.3")
 		except:
 			self.debug(1,"cell = Gtk.CellRendererPixbuf failed")
 		
@@ -2289,6 +2285,7 @@ class Systray:
 		## cell 1 == flagicon
 		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24			25
 		for cellid,cellname in self.MAINWINDOW_CELLINDEX.items():
+			self.debug(0,"def cellname = '%s'" % (cellname))
 			align=0.5
 			if cellnumber in [ 9, 23, 24 ]:
 				align=1
@@ -2296,24 +2293,16 @@ class Systray:
 				align=0
 			cell = Gtk.CellRendererText(xalign=align)
 			column = Gtk.TreeViewColumn(" %s " % (cellname), cell, text=cellnumber)
-			"""
-		for cellname in cellnames:
-			align=0.5
-			if cellnumber in [ 9, 23, 24 ]:
-				align=1
-			if cellnumber in [ 3, 4, 11, 12, 13, 16 ]:
-				align=0
-			cell = Gtk.CellRendererText(xalign=align)
-			column = Gtk.TreeViewColumn(cellname, cell, text=cellnumber)
-			"""
-			if self.ENABLE_MAINWINDOW_SORTING == True:
-				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
-					column.set_sort_column_id(cellnumber)
-					# Add sort function for str cells
-					if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
-						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
-					if cellnumber in [ 16 ]:
-						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
+			
+			# cell sorting stuff
+			if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
+				column.set_sort_column_id(cellnumber)
+				# Add sort function for str cells
+				if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
+					self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
+				if cellnumber in [ 16 ]:
+					self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
+			
 			# Hide colums in light server view
 			if self.LOAD_SRVDATA == False:
 				if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
@@ -2326,7 +2315,6 @@ class Systray:
 						column.set_visible(True)
 			self.treeview.append_column(column)
 			cellnumber = cellnumber + 1
-		
 		cell = Gtk.CellRendererPixbuf()
 		column = Gtk.TreeViewColumn(' ',cell, pixbuf=26)
 		column.set_fixed_width(30)
@@ -2334,18 +2322,11 @@ class Systray:
 			column.set_visible(False)
 		
 		self.treeview.append_column(column)
-		
-		self.debug(1,"def fill_mainwindow_with_server: go2.4")
-		GLib.idle_add(self.fill_mainwindow_with_server)
-		GLib.idle_add(self.update_mwls)
-		self.debug(1,"def fill_mainwindow_with_server: go2.5")
-		
+		self.call_fill_mainwindow_with_server()
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
 		self.mainwindow_vbox.show_all()
-		self.debug(1,"def fill_mainwindow_with_server: go2.6")
-		
 		if self.LOAD_SRVDATA == True:
 			WIDTH = self.SRV_WIDTH
 			HEIGHT = self.SRV_HEIGHT
@@ -2355,6 +2336,19 @@ class Systray:
 			HEIGHT = self.SRV_LIGHT_HEIGHT
 			self.mainwindow.resize(int(WIDTH),int(HEIGHT))
 		return
+
+	def call_fill_mainwindow_with_server(self):
+		self.debug(1,"def call_fill_mainwindow_with_server()")
+		GLib.idle_add(self.call_fill_mainwindow_with_server_glib)
+
+	def call_fill_mainwindow_with_server_glib(self):
+		# to be called from 'def call_fill_mainwindow_with_server()' ONLY !
+		self.debug(1,"def call_fill_mainwindow_with_server_glib()")
+		try:
+			self.fill_mainwindow_with_server()
+			self.update_mwls()
+		except:
+			self.debug(1,"def call_fill_mainwindow_with_server_glib: failed")
 
 	def fill_mainwindow_with_server(self):
 		for server in self.OVPN_SERVER:
