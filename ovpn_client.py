@@ -128,12 +128,12 @@ class Systray:
 		self.SAVE_APIKEY_INFILE = False
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
-		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]
+		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
 		self.MAINWINDOW_SHOWCELLS = self.MAINWINDOW_ALLOWCELLHIDE
 		self.MAINWINDOW_CELLINDEX = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher",
 									9:"Mbps", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 
 									16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 
-									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR" }
+									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR", 26:"FlagIcon2" }
 		self.HIDECELLSWINDOW_OPEN = False
 		self.SETTINGSWINDOW_OPEN = False
 		self.APP_LANGUAGE = "en"
