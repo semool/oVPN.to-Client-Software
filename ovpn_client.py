@@ -4636,20 +4636,23 @@ class Systray:
 		try:
 			if self.HIDECELLSWINDOW_OPEN == False:
 				self.HIDECELLSWINDOW_OPEN = True
-				dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-				dialogWindow.connect("destroy",self.cb_destroy_hidecellswindow)
-				dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-				dialogWindow.set_size_request(100,720)
-				dialogWindow.set_transient_for(self.window)
-				dialogWindow.set_icon(self.app_icon)
+				hidecellswindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+				vbox = Gtk.VBox(False,1)
+				hidecellswindow.add(vbox)
+				hidecellswindow.connect("destroy",self.cb_destroy_hidecellswindow)
+				hidecellswindow.set_position(Gtk.WindowPosition.CENTER)
+				hidecellswindow.set_size_request(640,96)
+				hidecellswindow.set_transient_for(self.window)
+				hidecellswindow.set_icon(self.app_icon)
 				text = _("Hide unwanted cells")
-				dialogWindow.set_title(text)
+				hidecellswindow.set_title(text)
 				scrolledwindow = Gtk.ScrolledWindow()
 				scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-				dialogWindow.vbox.pack_start(scrolledwindow, True, True, 0)
+				vbox.pack_start(scrolledwindow, True, True, 0)
 				grid = Gtk.Grid()
 				scrolledwindow.add(grid)
 				i = 0
+				x = 0
 				for cellid in self.MAINWINDOW_ALLOWCELLHIDE:
 					cellname = self.MAINWINDOW_CELLINDEX[cellid]
 					print cellname
@@ -4659,11 +4662,13 @@ class Systray:
 					else:
 						button.set_active(False)
 					button.connect("toggled",self.cb_hide_cells2,cellid)
-					grid.attach(button,0,i,1,1)
-					i += 1
-				dialogWindow.show_all()
-				response = dialogWindow.run()
-				dialogWindow.destroy()
+					grid.attach(button,x,i,1,1)
+					if x >= 7:
+						i += 1
+						x = 0
+					else:
+						x += 1
+				hidecellswindow.show_all()
 		except:
 			self.debug(1,"def cb_hide_cells: failed")
 			self.HIDECELLSWINDOW_OPEN = False
