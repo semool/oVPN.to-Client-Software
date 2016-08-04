@@ -138,7 +138,7 @@ for d in gtk_dirs_to_include:
 innoscript = "%s\\inno_setup.iss" % (SOURCEDIR)
 ind = open(innoscript, "w")
 print >> ind, ';!!!DONT EDIT THIS FILE MANUALLY, IT WILL BE OVERWRITTEN IN NEXT BUILD RUN!!!'
-print >> ind, '#define AppExeName "ovpn_client.exe"'
+print >> ind, '#define AppExeName "%s"' % release_version.setup_data()["exename"]
 print >> ind, '#define Version "%s"' % release_version.version_data()["VERSION"]
 print >> ind, '#define AppName "%s"' % release_version.version_data()["NAME"]
 print >> ind, '#define AppDir "%s"' % release_version.version_data()["NAME"]

@@ -42,6 +42,7 @@ def org_data():
 def setup_data():
 	data = { 
 			"script" : "ovpn_client.py",
+			"exename" : "ovpn_client.exe",
 			"version" : "0.%s" % (version_data()["VERSION"]),
 			"name" : "%s for Windows" % (version_data()["NAME"]),
 			"description" : "%s %s" % (version_data()["NAME"],version_data()["VERSION"]),
