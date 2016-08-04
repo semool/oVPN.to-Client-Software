@@ -2182,7 +2182,7 @@ class Systray:
 
 	def cell_sort(self, treemodel, iter1, iter2, user_data):
 		try:
-			self.debug(1,"def cell_sort()")
+			self.debug(16,"def cell_sort()")
 			sort_column, _ = treemodel.get_sort_column_id()
 			iter1 = treemodel.get_value(iter1, sort_column)
 			iter2 = treemodel.get_value(iter2, sort_column)
@@ -2193,11 +2193,11 @@ class Systray:
 			else:
 				return 1
 		except:
-			pass
+			self.debug(1,"def cell_sort: failed")
 
 	def cell_sort_traffic(self, treemodel, iter1, iter2, user_data):
 		try:
-			self.debug(1,"def cell_sort_traffic()")
+			self.debug(16,"def cell_sort_traffic()")
 			sort_column, _ = treemodel.get_sort_column_id()
 			data1 = treemodel.get_value(iter1, sort_column)
 			data2 = treemodel.get_value(iter2, sort_column)
@@ -2225,7 +2225,7 @@ class Systray:
 			else:
 				return 1
 		except:
-			pass
+			self.debug(1,"def cell_sort_traffic: failed")
 
 	def mainwindow_ovpn_server(self):
 		self.debug(1,"def mainwindow_ovpn_server: go")
@@ -3392,7 +3392,7 @@ class Systray:
 			self.MOUSE_IN_TRAY = 0
 			self.debug(2,"def destroy_systray_menu: true")
 		except:
-			self.debug(1,"def destroy_systray_menu: failed")
+			self.debug(7,"def destroy_systray_menu: failed")
 			self.systray_menu = False
 
 	def set_statusbar_text(self,text):
