@@ -252,7 +252,8 @@ class Systray:
 		#self.LAST_OVPN_SERVER_RELOAD = 0
 		self.AUTOSTART = False
 		self.AUTOSTART_DELAY_TIME = 30
-		self.AUTOSTART_DELAY = [ "10", "20", "30", "40", "50", "60" ]
+		#self.AUTOSTART_DELAY = [ "10", "20", "30", "40", "50", "60" ]
+		self.AUTOSTART_DELAY = [ 10, 20, 30, 40, 50, 60 ]
 		self.UPDATEOVPNONSTART = False
 		self.request_UPDATE = True
 		self.APIKEY = False
@@ -2974,7 +2975,7 @@ class Systray:
 			combobox = Gtk.ComboBoxText.new()
 			self.combobox_time = combobox
 			for time in self.AUTOSTART_DELAY:
-				combobox.append_text(time)
+				combobox.append_text("%s"%(time))
 			if self.AUTOSTART_DELAY_TIME == 10:
 				active_item = 0
 			if self.AUTOSTART_DELAY_TIME == 20:
