@@ -251,7 +251,7 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		#self.LAST_OVPN_SERVER_RELOAD = 0
 		self.AUTOSTART = False
-		self.AUTOSTART_DELAY_TIME = "30"
+		self.AUTOSTART_DELAY_TIME = 30
 		self.AUTOSTART_DELAY = [ "10", "20", "30", "40", "50", "60" ]
 		self.UPDATEOVPNONSTART = False
 		self.request_UPDATE = True
@@ -677,7 +677,12 @@ class Systray:
 					pass
 				
 				try:
-					self.AUTOSTART_DELAY_TIME = parser.getint('oVPN','autostartdelay')
+					AUTOSTART_DELAY_TIME = parser.getint('oVPN','autostartdelay')
+					if AUTOSTART_DELAY_TIME >= 10:
+						self.AUTOSTART_DELAY_TIME = AUTOSTART_DELAY_TIME
+					else:
+						self.AUTOSTART_DELAY_TIME = 10
+					self.debug(1,"def read_options_file: self.AUTOSTART_DELAY_TIME = '%s'" % (self.AUTOSTART_DELAY_TIME))
 				except:
 					pass
 				
@@ -2970,17 +2975,17 @@ class Systray:
 			self.combobox_time = combobox
 			for time in self.AUTOSTART_DELAY:
 				combobox.append_text(time)
-			if self.AUTOSTART_DELAY_TIME == "10":
+			if self.AUTOSTART_DELAY_TIME == 10:
 				active_item = 0
-			if self.AUTOSTART_DELAY_TIME == "20":
+			if self.AUTOSTART_DELAY_TIME == 20:
 				active_item = 1
-			if self.AUTOSTART_DELAY_TIME == "30":
+			if self.AUTOSTART_DELAY_TIME == 30:
 				active_item = 2
-			if self.AUTOSTART_DELAY_TIME == "40":
+			if self.AUTOSTART_DELAY_TIME == 40:
 				active_item = 3
-			if self.AUTOSTART_DELAY_TIME == "50":
+			if self.AUTOSTART_DELAY_TIME == 50:
 				active_item = 4
-			if self.AUTOSTART_DELAY_TIME == "60":
+			if self.AUTOSTART_DELAY_TIME == 60:
 				active_item = 5
 			combobox.set_active(active_item)
 			combobox.connect('changed',self.cb_time_switcher_changed)
