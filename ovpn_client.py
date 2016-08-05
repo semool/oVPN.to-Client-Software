@@ -2557,7 +2557,7 @@ class Systray:
 		try:
 			self.nbpage0 = Gtk.VBox(False,spacing=2)
 			self.nbpage0.set_border_width(8)
-			self.nbpage0.pack_start(Gtk.Label(label=""),False,False,0)
+			
 			self.settings_firewall_switch_nofw(self.nbpage0)
 			self.settings_firewall_switch_fwblockonexit(self.nbpage0)
 			self.settings_firewall_switch_fwdontaskonexit(self.nbpage0)
@@ -2566,6 +2566,7 @@ class Systray:
 			self.settings_network_switch_nodns(self.nbpage0)
 			self.settings_firewall_switch_tapblockoutbound(self.nbpage0)
 			self.settings_network_switch_disableextifondisco(self.nbpage0)
+
 			self.settingsnotebook.append_page(self.nbpage0, Gtk.Label(_(" Security ")))
 		except:
 			self.debug(1,"def show_settingswindow: nbpage0 failed")
@@ -2574,63 +2575,55 @@ class Systray:
 		try:
 			self.nbpage1 = Gtk.VBox(False,spacing=2)
 			self.nbpage1.set_border_width(8)
-			self.nbpage1.pack_start(Gtk.Label(label=""),False,False,0)
-			
+
 			##
 			self.nbpage1_h0 = Gtk.HBox(False, spacing=2)
-			self.nbpage1_h0.pack_start(Gtk.Label(label=""),False,False,0)
 			
 			self.nbpage1_h0_v1 = Gtk.VBox(False, spacing=0)
-			self.nbpage1_h0_v1.pack_start(Gtk.Label(label=""),False,False,0)
+			self.nbpage1_h0.pack_start(self.nbpage1_h0_v1,True,True,0)
 			self.settings_options_switch_autostart(self.nbpage1_h0_v1)
-			
+
 			self.nbpage1_h0_v2 = Gtk.VBox(False, spacing=0)
-			self.nbpage1_h0_v2.pack_start(Gtk.Label(label=""),False,False,0)
+			self.nbpage1_h0.pack_start(self.nbpage1_h0_v2,True,True,0)
 			self.settings_options_combobox_time(self.nbpage1_h0_v2)
-			
-			self.nbpage1_h0.add(self.nbpage1_h0_v1)
-			self.nbpage1_h0.add(self.nbpage1_h0_v2)
-			self.nbpage1.add(self.nbpage1_h0)
+
+			self.nbpage1.pack_start(self.nbpage1_h0,False,False,0)
 			##
-			
+
+			##
 			self.settings_options_switch_updateovpnonstart(self.nbpage1)
 			self.settings_options_switch_accinfo(self.nbpage1)
 			self.settings_options_switch_srvinfo(self.nbpage1)
 			self.settings_options_switch_disablequit(self.nbpage1)
 			self.settings_options_switch_debugmode(self.nbpage1)
+			##
 
 			##
 			self.nbpage1_h1 = Gtk.HBox(False, spacing=2)
-			self.nbpage1_h1.pack_start(Gtk.Label(label=""),False,False,0)
-
+			
 			self.nbpage1_h1_v1 = Gtk.VBox(False, spacing=0)
-			self.nbpage1_h1_v1.pack_start(Gtk.Label(label=""),False,False,0)
+			self.nbpage1_h1.pack_start(self.nbpage1_h1_v1,True,True,0)
 			self.settings_options_combobox_theme(self.nbpage1_h1_v1)
 			
 			self.nbpage1_h1_v2 = Gtk.VBox(False, spacing=0)
-			self.nbpage1_h1_v2.pack_start(Gtk.Label(label=""),False,False,0)
+			self.nbpage1_h1.pack_start(self.nbpage1_h1_v2,True,True,0)
 			self.settings_options_combobox_icons(self.nbpage1_h1_v2)
-
-			self.nbpage1_h1.add(self.nbpage1_h1_v1)
-			self.nbpage1_h1.add(self.nbpage1_h1_v2)
-			self.nbpage1.add(self.nbpage1_h1)
+			
+			self.nbpage1.pack_start(self.nbpage1_h1,False,False,0)
 			##
 
 			##
 			self.nbpage1_h2 = Gtk.HBox(False, spacing=2)
-			self.nbpage1_h2.pack_start(Gtk.Label(label=""),False,False,0)
 
 			self.nbpage1_h2_v1 = Gtk.VBox(False, spacing=0)
-			self.nbpage1_h2_v1.pack_start(Gtk.Label(label=""),False,False,0)
+			self.nbpage1_h2.pack_start(self.nbpage1_h2_v1,True,True,0)
 			self.settings_options_combobox_fontsize(self.nbpage1_h2_v1)
 			
 			self.nbpage1_h2_v2 = Gtk.VBox(False, spacing=0)
-			self.nbpage1_h2_v2.pack_start(Gtk.Label(label=""),False,False,0)
+			self.nbpage1_h2.pack_start(self.nbpage1_h2_v2,True,True,0)
 			self.settings_options_combobox_language(self.nbpage1_h2_v2)
 
-			self.nbpage1_h2.add(self.nbpage1_h2_v1)
-			self.nbpage1_h2.add(self.nbpage1_h2_v2)
-			self.nbpage1.add(self.nbpage1_h2)
+			self.nbpage1.pack_start(self.nbpage1_h2,False,False,0)
 			##
 
 			self.settingsnotebook.append_page(self.nbpage1, Gtk.Label(_(" Options ")))
@@ -2641,12 +2634,15 @@ class Systray:
 		try:
 			self.nbpage2 = Gtk.VBox(False,spacing=2)
 			self.nbpage2.set_border_width(8)
-			self.nbpage2.pack_start(Gtk.Label(label=""),False,False,0)
-			self.settings_updates_button_normalconf(self.nbpage2)
+
+			self.nbpage2_v1 = self.settings_updates_button_normalconf(self.nbpage2)
 			self.settings_updates_button_forceconf(self.nbpage2)
 			self.settings_options_button_ipv6(self.nbpage2)
 			self.settings_options_button_networkadapter(self.nbpage2)
 			self.settings_updates_button_apireset(self.nbpage2)
+
+			self.nbpage2.pack_start(Gtk.Label(self.nbpage2_v1),False,False,0)
+
 			self.settingsnotebook.append_page(self.nbpage2, Gtk.Label(_(" Updates ")))
 		except:
 			self.debug(1,"def show_settingswindow: nbpage2 failed")
