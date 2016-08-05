@@ -127,6 +127,7 @@ class Systray:
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
 		self.MAINWINDOW_OPEN = False
+		self.MAINWINDOW_REBUILD_RUNNING = False
 		self.MAINWINDOW_HIDE = False
 		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
 		self.MAINWINDOW_SHOWCELLS = self.MAINWINDOW_ALLOWCELLHIDE
@@ -250,8 +251,9 @@ class Systray:
 		self.LAST_OVPN_ACC_DATA_UPDATE = 0
 		#self.LAST_OVPN_SERVER_RELOAD = 0
 		self.AUTOSTART = False
-		self.AUTOSTART_DELAY_TIME = "30"
-		self.AUTOSTART_DELAY = [ "10", "20", "30", "40", "50", "60" ]
+		self.AUTOSTART_DELAY_TIME = 30
+		#self.AUTOSTART_DELAY = [ "10", "20", "30", "40", "50", "60" ]
+		self.AUTOSTART_DELAY = [ 10, 20, 30, 40, 50, 60 ]
 		self.UPDATEOVPNONSTART = False
 		self.request_UPDATE = True
 		self.APIKEY = False
@@ -612,6 +614,7 @@ class Systray:
 				
 				try:
 					self.DEBUG = parser.getboolean('oVPN','debugmode')
+					self.debug(1,BUILT_STRING)
 				except:
 					pass
 				
@@ -629,7 +632,7 @@ class Systray:
 					self.debug(1,"def read_options_file: self.APP_LANGUAGE FAILED")
 				
 				try:
-					self.LAST_CFG_UPDATE = parser.get('oVPN','lastcfgupdate')
+					self.LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
 					if not self.LAST_CFG_UPDATE >= 0:
 						self.LAST_CFG_UPDATE = 0
 				except:
@@ -675,7 +678,12 @@ class Systray:
 					pass
 				
 				try:
-					self.AUTOSTART_DELAY_TIME = parser.get('oVPN','autostartdelay')
+					AUTOSTART_DELAY_TIME = parser.getint('oVPN','autostartdelay')
+					if AUTOSTART_DELAY_TIME >= 10:
+						self.AUTOSTART_DELAY_TIME = AUTOSTART_DELAY_TIME
+					else:
+						self.AUTOSTART_DELAY_TIME = 10
+					self.debug(1,"def read_options_file: self.AUTOSTART_DELAY_TIME = '%s'" % (self.AUTOSTART_DELAY_TIME))
 				except:
 					pass
 				
@@ -1960,8 +1968,8 @@ class Systray:
 					cellnumber = 0
 					row_changed = 0
 					while cellnumber <= 24:
-						oldvalue = row[cellnumber]
 						try:
+							oldvalue = row[cellnumber]
 							serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
 							serverport = str(self.OVPN_SERVER_INFO[servershort][1])
 							serverproto = str(self.OVPN_SERVER_INFO[servershort][2])
@@ -2167,9 +2175,23 @@ class Systray:
 		GLib.idle_add(self.rebuild_mainwindow_glib)
 
 	def rebuild_mainwindow_glib(self):
+		self.MAINWINDOW_REBUILD_RUNNING = True
 		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
-			self.mainwindow.remove(self.mainwindow_vbox)
-			self.mainwindow_ovpn_server()
+			try:
+				self.mainwindow.remove(self.mainwindow_vbox)
+				self.debug(1,"def rebuild_mainwindow_glib: removed vbox from mainwindow")
+			except:
+				self.debug(1,"def rebuild_mainwindow_glib: no vbox in mainwindow")
+				
+			try:
+				self.mainwindow_ovpn_server()
+				self.fill_mainwindow_with_server()
+				self.update_mwls()
+				self.mainwindow.show_all()
+				self.debug(1,"def rebuild_mainwindow_glib: filled window with data")
+			except:
+				self.debug(1,"def rebuild_mainwindow_glib: fill window failed")
+		self.MAINWINDOW_REBUILD_RUNNING = False
 
 	def show_mainwindow(self,widget,event):
 		self.debug(1,"def show_mainwindow()")
@@ -2185,8 +2207,7 @@ class Systray:
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
 				self.mainwindow.set_icon(self.app_icon)
-				self.mainwindow_ovpn_server()
-				self.mainwindow.show_all()
+				self.rebuild_mainwindow()
 				self.MAINWINDOW_OPEN = True
 				return True
 			except:
@@ -2287,7 +2308,7 @@ class Systray:
 		
 		## cell 0 == statusicon
 		## cell 1 == flagicon
-		cellnumber = 2 #	2		3			4		5			6		7			8			9		10			11				12				13			14		15			16		17			18			19			20			21			22			23			24			25
+		cellnumber = 2
 		for cellid,cellname in self.MAINWINDOW_CELLINDEX.items():
 			if not cellnumber == 26:
 				self.debug(0,"def cellname = '%s'" % (cellname))
@@ -2298,7 +2319,7 @@ class Systray:
 					align=0
 				cell = Gtk.CellRendererText(xalign=align)
 				column = Gtk.TreeViewColumn(" %s " % (cellname), cell, text=cellnumber)
-
+				
 				# cell sorting stuff
 				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 					column.set_sort_column_id(cellnumber)
@@ -2320,7 +2341,8 @@ class Systray:
 							column.set_visible(True)
 				self.treeview.append_column(column)
 				cellnumber = cellnumber + 1
-
+		
+		# RightFlagIcon
 		cell = Gtk.CellRendererPixbuf()
 		cellnumber = 26
 		column = Gtk.TreeViewColumn(' ',cell, pixbuf=cellnumber)
@@ -2331,13 +2353,12 @@ class Systray:
 			if cellnumber in self.MAINWINDOW_ALLOWCELLHIDE:
 					if not cellnumber in self.MAINWINDOW_SHOWCELLS:
 						column.set_visible(False)
-
 		self.treeview.append_column(column)
-		self.call_fill_mainwindow_with_server()
+		
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
-		self.mainwindow_vbox.show_all()
+		
 		if self.LOAD_SRVDATA == True:
 			WIDTH = self.SRV_WIDTH
 			HEIGHT = self.SRV_HEIGHT
@@ -2347,19 +2368,6 @@ class Systray:
 			HEIGHT = self.SRV_LIGHT_HEIGHT
 			self.mainwindow.resize(int(WIDTH),int(HEIGHT))
 		return
-
-	def call_fill_mainwindow_with_server(self):
-		self.debug(1,"def call_fill_mainwindow_with_server()")
-		GLib.idle_add(self.call_fill_mainwindow_with_server_glib)
-
-	def call_fill_mainwindow_with_server_glib(self):
-		# to be called from 'def call_fill_mainwindow_with_server()' ONLY !
-		self.debug(1,"def call_fill_mainwindow_with_server_glib()")
-		try:
-			self.fill_mainwindow_with_server()
-			self.update_mwls()
-		except:
-			self.debug(1,"def call_fill_mainwindow_with_server_glib: failed")
 
 	def fill_mainwindow_with_server(self):
 		for server in self.OVPN_SERVER:
@@ -2961,18 +2969,18 @@ class Systray:
 			combobox = Gtk.ComboBoxText.new()
 			self.combobox_time = combobox
 			for time in self.AUTOSTART_DELAY:
-				combobox.append_text(time)
-			if self.AUTOSTART_DELAY_TIME == "10":
+				combobox.append_text("%s"%(time))
+			if self.AUTOSTART_DELAY_TIME == 10:
 				active_item = 0
-			if self.AUTOSTART_DELAY_TIME == "20":
+			if self.AUTOSTART_DELAY_TIME == 20:
 				active_item = 1
-			if self.AUTOSTART_DELAY_TIME == "30":
+			if self.AUTOSTART_DELAY_TIME == 30:
 				active_item = 2
-			if self.AUTOSTART_DELAY_TIME == "40":
+			if self.AUTOSTART_DELAY_TIME == 40:
 				active_item = 3
-			if self.AUTOSTART_DELAY_TIME == "50":
+			if self.AUTOSTART_DELAY_TIME == 50:
 				active_item = 4
-			if self.AUTOSTART_DELAY_TIME == "60":
+			if self.AUTOSTART_DELAY_TIME == 60:
 				active_item = 5
 			combobox.set_active(active_item)
 			combobox.connect('changed',self.cb_time_switcher_changed)
@@ -4773,8 +4781,14 @@ class Systray:
 			else:
 				self.MAINWINDOW_SHOWCELLS.append(cellid)
 				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
-			self.write_options_file()
-			self.rebuild_mainwindow()
+			if self.MAINWINDOW_REBUILD_RUNNING == True:
+				if button.get_active() == True:
+					button.set_active(False)
+				else:
+					button.set_active(True)
+			else:
+				self.write_options_file()
+				self.rebuild_mainwindow()
 
 	def cb_change_ipmode1(self):
 		self.debug(1,"def cb_change_ipmode1()")
