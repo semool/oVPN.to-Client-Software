@@ -613,6 +613,7 @@ class Systray:
 				
 				try:
 					self.DEBUG = parser.getboolean('oVPN','debugmode')
+					self.debug(1,BUILT_STRING)
 				except:
 					pass
 				
