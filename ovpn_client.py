@@ -631,48 +631,56 @@ class Systray:
 					self.debug(1,"def read_options_file: self.APP_LANGUAGE FAILED")
 				
 				try:
-					self.LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
-					if not self.LAST_CFG_UPDATE >= 0:
+					LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
+					if not LAST_CFG_UPDATE >= 0:
 						self.LAST_CFG_UPDATE = 0
 				except:
 					pass
 				
 				try:
-					self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
-					if self.OVPN_FAV_SERVER == "False": 
+					OVPN_FAV_SERVER = parser.get('oVPN','favserver')
+					if OVPN_FAV_SERVER == "False": 
 						self.OVPN_FAV_SERVER = False
+					else:
+						self.OVPN_FAV_SERVER = OVPN_FAV_SERVER
 					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 				except:
 					pass
 				
 				try:
-					self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
-					if not self.OVPN_FAV_SERVER == False and self.OVPN_AUTO_CONNECT_ON_START == False:
+					OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
+					if not self.OVPN_FAV_SERVER == False and OVPN_AUTO_CONNECT_ON_START == False:
 						self.OVPN_AUTO_CONNECT_ON_START = True
 					self.debug(1,"def read_options_file: self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
 				except:
 					pass
 				
 				try:
-					self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
-					if self.WIN_EXT_DEVICE == "False": 
+					WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
+					if WIN_EXT_DEVICE == "False": 
 						self.WIN_EXT_DEVICE = False
+					else:
+						self.WIN_EXT_DEVICE = WIN_EXT_DEVICE
 					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
 				except:
 					pass
 				
 				try:
-					self.WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
-					if self.WIN_TAP_DEVICE == "False": 
+					WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
+					if WIN_TAP_DEVICE == "False": 
 						self.WIN_TAP_DEVICE = False
+					else:
+						self.WIN_TAP_DEVICE = WIN_TAP_DEVICE
 					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
 				except:
 					pass
 				
 				try:
-					self.OPENVPN_EXE = parser.get('oVPN','openvpnexe')
-					if self.OPENVPN_EXE == "False":
+					OPENVPN_EXE = parser.get('oVPN','openvpnexe')
+					if OPENVPN_EXE == "False":
 						self.OPENVPN_EXE = False
+					else:
+						self.OPENVPN_EXE = OPENVPN_EXE
 				except:
 					pass
 				
@@ -706,7 +714,6 @@ class Systray:
 				try:
 					ocfgv = parser.get('oVPN','configversion')
 					if ocfgv == "23x" or ocfgv == "23x46" or ocfgv == "23x64":
-					
 						self.OVPN_CONFIGVERSION = ocfgv
 					else:
 						self.OVPN_CONFIGVERSION = "23x"
@@ -775,9 +782,12 @@ class Systray:
 					pass
 
 				try:
-					self.LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
-					if self.LOAD_DATA_EVERY <= 60:
-						self.LOAD_DATA_EVERY = 66
+					LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
+					if LOAD_DATA_EVERY >= 66:
+						self.LOAD_DATA_EVERY = LOAD_DATA_EVERY
+					else:
+						self.LOAD_DATA_EVERY = 900
+						
 					self.debug(1,"def read_options_file: self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
 				except:
 					pass
