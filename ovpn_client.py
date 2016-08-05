@@ -1967,7 +1967,7 @@ class Systray:
 					value = liststore.get_value(iter,2)
 					cellnumber = 0
 					row_changed = 0
-					while cellnumber <= 24:
+					while cellnumber <= 27:
 						try:
 							oldvalue = row[cellnumber]
 							serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
@@ -2041,6 +2041,8 @@ class Systray:
 							elif cellnumber == 25:
 								pass
 							elif cellnumber == 26:
+								pass
+							elif cellnumber == 27:
 								pass
 							elif self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 								try:
@@ -2280,7 +2282,7 @@ class Systray:
 		
 		self.debug(1,"def mainwindow_ovpn_server: go1")
 		try:
-			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,GdkPixbuf.Pixbuf)
+			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,GdkPixbuf.Pixbuf,str)
 			self.debug(1,"def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(1,"def mainwindow_ovpn_server: server-window failed")
@@ -2355,6 +2357,13 @@ class Systray:
 						column.set_visible(False)
 		self.treeview.append_column(column)
 		
+		# Spacer
+		cell = Gtk.CellRendererText()
+		cellnumber = 27
+		column = Gtk.TreeViewColumn(' ',cell, text=cellnumber)
+		column.set_fixed_width(1)
+		self.treeview.append_column(column)
+		
 		# statusbar
 		self.statusbar_text = Gtk.Label()
 		self.mainwindow_vbox.pack_start(self.statusbar_text,False,False,0)
@@ -2384,7 +2393,7 @@ class Systray:
 					servermtu = self.OVPN_SERVER_INFO[servershort][4]
 				except:
 					servermtu = 1500
-				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("-1"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str(servershort),countryimg])
+				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("-1"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str(servershort),countryimg,str("")])
 			except:
 				self.debug(1,"def fill_mainwindow_with_server: server '%s' failed" % (server))
 
@@ -2441,10 +2450,8 @@ class Systray:
 			if self.LOAD_ACCDATA == False:
 				text = _("Settings -> Updates: 'Load Account Info' [disabled]")
 			else:
-				text = _("No data loaded! Retry in few seconds...")
-			entry = Gtk.Entry()
-			entry.set_max_length(64)
-			entry.set_editable(0)
+				text = _("No data loaded!\nRetry in few seconds...")
+			entry = Gtk.Label()
 			entry.set_text(text)
 			self.accwindow_accinfo_vbox.pack_start(entry,True,True,0)
 		elif len(self.OVPN_ACC_DATA) > 0:
