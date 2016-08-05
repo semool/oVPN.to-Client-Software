@@ -127,7 +127,6 @@ class Systray:
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
 		self.MAINWINDOW_OPEN = False
-		self.MAINWINDOW_REBUILD_RUNNING = False
 		self.MAINWINDOW_HIDE = False
 		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
 		self.MAINWINDOW_SHOWCELLS = self.MAINWINDOW_ALLOWCELLHIDE
@@ -2177,7 +2176,6 @@ class Systray:
 		GLib.idle_add(self.rebuild_mainwindow_glib)
 
 	def rebuild_mainwindow_glib(self):
-		self.MAINWINDOW_REBUILD_RUNNING = True
 		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
 			try:
 				self.mainwindow.remove(self.mainwindow_vbox)
@@ -2193,7 +2191,6 @@ class Systray:
 				self.debug(1,"def rebuild_mainwindow_glib: filled window with data")
 			except:
 				self.debug(1,"def rebuild_mainwindow_glib: fill window failed")
-		self.MAINWINDOW_REBUILD_RUNNING = False
 
 	def show_mainwindow(self,widget,event):
 		self.debug(1,"def show_mainwindow()")
@@ -4792,11 +4789,8 @@ class Systray:
 			else:
 				self.MAINWINDOW_SHOWCELLS.append(cellid)
 				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
-			if self.MAINWINDOW_REBUILD_RUNNING == True:
-				return False
-			else:
-				self.write_options_file()
-				self.rebuild_mainwindow()
+			self.write_options_file()
+			self.rebuild_mainwindow()
 
 	def cb_change_ipmode1(self):
 		self.debug(1,"def cb_change_ipmode1()")
