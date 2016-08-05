@@ -631,7 +631,7 @@ class Systray:
 					self.debug(1,"def read_options_file: self.APP_LANGUAGE FAILED")
 				
 				try:
-					self.LAST_CFG_UPDATE = parser.get('oVPN','lastcfgupdate')
+					self.LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
 					if not self.LAST_CFG_UPDATE >= 0:
 						self.LAST_CFG_UPDATE = 0
 				except:
@@ -677,7 +677,7 @@ class Systray:
 					pass
 				
 				try:
-					self.AUTOSTART_DELAY_TIME = parser.get('oVPN','autostartdelay')
+					self.AUTOSTART_DELAY_TIME = parser.getint('oVPN','autostartdelay')
 				except:
 					pass
 				
