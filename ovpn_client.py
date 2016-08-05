@@ -2635,13 +2635,11 @@ class Systray:
 			self.nbpage2 = Gtk.VBox(False,spacing=2)
 			self.nbpage2.set_border_width(8)
 
-			self.nbpage2_v1 = self.settings_updates_button_normalconf(self.nbpage2)
+			self.settings_updates_button_normalconf(self.nbpage2)
 			self.settings_updates_button_forceconf(self.nbpage2)
 			self.settings_options_button_ipv6(self.nbpage2)
 			self.settings_options_button_networkadapter(self.nbpage2)
 			self.settings_updates_button_apireset(self.nbpage2)
-
-			self.nbpage2.pack_start(Gtk.Label(self.nbpage2_v1),False,False,0)
 
 			self.settingsnotebook.append_page(self.nbpage2, Gtk.Label(_(" Updates ")))
 		except:
