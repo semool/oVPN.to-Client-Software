@@ -2204,7 +2204,7 @@ class Systray:
 			self.load_ovpn_server()
 			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-				self.mainwindow.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
