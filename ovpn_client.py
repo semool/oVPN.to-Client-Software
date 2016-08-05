@@ -1034,6 +1034,7 @@ class Systray:
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
+		dialogWindow.set_border_width(8)
 		try:
 			dialogWindow.set_icon(self.app_icon)
 		except:
@@ -1058,6 +1059,7 @@ class Systray:
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
+		dialogWindow.set_border_width(8)
 		try:
 			dialogWindow.set_icon(self.app_icon)
 		except:
@@ -1085,6 +1087,7 @@ class Systray:
 		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_transient_for(self.window)
+		dialogWindow.set_border_width(8)
 		try:
 			dialogWindow.set_icon(self.app_icon)
 		except:
@@ -4409,6 +4412,7 @@ class Systray:
 			except:
 				pass
 			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_border_width(8)
 			dialogWindow.set_title(_("oVPN.to Setup"))
 			dialogWindow.set_markup(_("Enter your oVPN.to Details"))
 			dialogBox = dialogWindow.get_content_area()
@@ -4620,6 +4624,7 @@ class Systray:
 				actualheigt = 0
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_border_width(8)
 			try:
 				dialogWindow.set_icon(self.app_icon)
 			except:
@@ -4680,6 +4685,7 @@ class Systray:
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_border_width(8)
 			dialogWindow.set_icon(self.app_icon)
 			text = _("Load Data every X seconds")
 			dialogWindow.set_title(text)
@@ -4726,6 +4732,7 @@ class Systray:
 				hidecellswindow.add(vbox)
 				hidecellswindow.connect("destroy",self.cb_destroy_hidecellswindow)
 				hidecellswindow.set_position(Gtk.WindowPosition.CENTER)
+				hidecellswindow.set_size_request(600,100)
 				hidecellswindow.set_transient_for(self.window)
 				hidecellswindow.set_icon(self.app_icon)
 				text = _("Hide unwanted cells")
@@ -5704,6 +5711,7 @@ class Systray:
 				except:
 					pass
 				dialog.set_transient_for(self.window)
+				dialog.set_border_width(8)
 				self.QUIT_DIALOG = dialog
 				dialog.set_markup(_("Do you really want to quit?"))
 				response = dialog.run()
@@ -5777,6 +5785,7 @@ class Systray:
 					except:
 						pass
 					dialog.set_transient_for(self.window)
+					dialog.set_border_width(8)
 					if self.WIN_BACKUP_FIREWALL == True:
 						text = _("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
 						dialog.set_markup()
@@ -5840,6 +5849,7 @@ class Systray:
 			message = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			message.set_position(Gtk.WindowPosition.CENTER)
 			message.set_title(_("Error"))
+			message.set_border_width(8)
 			try:
 				message.set_icon(self.app_icon)
 			except:
@@ -5918,6 +5928,7 @@ class Systray:
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_border_width(8)
 			try:
 				dialogWindow.set_icon(self.app_icon)
 			except:
