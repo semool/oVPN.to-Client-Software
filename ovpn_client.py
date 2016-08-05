@@ -4212,10 +4212,12 @@ class Systray:
 	def win_firewall_export_on_start(self):
 		self.debug(1,"def win_firewall_export_on_start()")
 		if self.NO_WIN_FIREWALL == True:
+			self.debug(1,"def win_firewall_export_on_start: return NO_WIN_FIREWALL == True")
 			return True
 		if self.WIN_BACKUP_FIREWALL == False:
+			self.debug(1,"def win_firewall_export_on_start: return WIN_BACKUP_FIREWALL == False")
 			return True
-		self.debug(1,"def win_firewall_export_on_start()")
+		self.debug(1,"def win_firewall_export_on_start() call")
 		if os.path.isfile(self.pfw_bak):
 			os.remove(self.pfw_bak)
 		self.NETSH_CMDLIST.append('advfirewall export "%s"' % (self.pfw_bak))
@@ -4224,11 +4226,13 @@ class Systray:
 	def win_firewall_restore_on_exit(self):
 		self.debug(1,"def win_firewall_restore_on_exit()")
 		if self.NO_WIN_FIREWALL == True:
+			self.debug(1,"def win_firewall_restore_on_exit: return NO_WIN_FIREWALL == True")
 			return True
 		if self.WIN_BACKUP_FIREWALL == False:
+			self.debug(1,"def win_firewall_restore_on_exit: return WIN_BACKUP_FIREWALL == False")
 			return True
 		if self.WIN_FIREWALL_STARTED == True:
-			self.debug(1,"def win_firewall_restore_on_exit()")
+			self.debug(1,"def win_firewall_restore_on_exit() call")
 			self.NETSH_CMDLIST.append("advfirewall reset")
 			if os.path.isfile(self.pfw_bak):
 				self.NETSH_CMDLIST.append('advfirewall import "%s"' % (self.pfw_bak))
