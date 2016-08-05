@@ -127,7 +127,6 @@ class Systray:
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
 		self.MAINWINDOW_OPEN = False
-		self.MAINWINDOW_REBUILD_RUNNING = False
 		self.MAINWINDOW_HIDE = False
 		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
 		self.MAINWINDOW_SHOWCELLS = self.MAINWINDOW_ALLOWCELLHIDE
@@ -2177,7 +2176,6 @@ class Systray:
 		GLib.idle_add(self.rebuild_mainwindow_glib)
 
 	def rebuild_mainwindow_glib(self):
-		self.MAINWINDOW_REBUILD_RUNNING = True
 		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
 			try:
 				self.mainwindow.remove(self.mainwindow_vbox)
@@ -2193,7 +2191,6 @@ class Systray:
 				self.debug(1,"def rebuild_mainwindow_glib: filled window with data")
 			except:
 				self.debug(1,"def rebuild_mainwindow_glib: fill window failed")
-		self.MAINWINDOW_REBUILD_RUNNING = False
 
 	def show_mainwindow(self,widget,event):
 		self.debug(1,"def show_mainwindow()")
@@ -2204,7 +2201,7 @@ class Systray:
 			self.load_ovpn_server()
 			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-				self.mainwindow.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
 				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
@@ -4219,10 +4216,12 @@ class Systray:
 	def win_firewall_export_on_start(self):
 		self.debug(1,"def win_firewall_export_on_start()")
 		if self.NO_WIN_FIREWALL == True:
+			self.debug(1,"def win_firewall_export_on_start: return NO_WIN_FIREWALL == True")
 			return True
 		if self.WIN_BACKUP_FIREWALL == False:
+			self.debug(1,"def win_firewall_export_on_start: return WIN_BACKUP_FIREWALL == False")
 			return True
-		self.debug(1,"def win_firewall_export_on_start()")
+		self.debug(1,"def win_firewall_export_on_start() call")
 		if os.path.isfile(self.pfw_bak):
 			os.remove(self.pfw_bak)
 		self.NETSH_CMDLIST.append('advfirewall export "%s"' % (self.pfw_bak))
@@ -4231,11 +4230,13 @@ class Systray:
 	def win_firewall_restore_on_exit(self):
 		self.debug(1,"def win_firewall_restore_on_exit()")
 		if self.NO_WIN_FIREWALL == True:
+			self.debug(1,"def win_firewall_restore_on_exit: return NO_WIN_FIREWALL == True")
 			return True
 		if self.WIN_BACKUP_FIREWALL == False:
+			self.debug(1,"def win_firewall_restore_on_exit: return WIN_BACKUP_FIREWALL == False")
 			return True
 		if self.WIN_FIREWALL_STARTED == True:
-			self.debug(1,"def win_firewall_restore_on_exit()")
+			self.debug(1,"def win_firewall_restore_on_exit() call")
 			self.NETSH_CMDLIST.append("advfirewall reset")
 			if os.path.isfile(self.pfw_bak):
 				self.NETSH_CMDLIST.append('advfirewall import "%s"' % (self.pfw_bak))
@@ -4788,14 +4789,8 @@ class Systray:
 			else:
 				self.MAINWINDOW_SHOWCELLS.append(cellid)
 				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
-			if self.MAINWINDOW_REBUILD_RUNNING == True:
-				if button.get_active() == True:
-					button.set_active(False)
-				else:
-					button.set_active(True)
-			else:
-				self.write_options_file()
-				self.rebuild_mainwindow()
+			self.write_options_file()
+			self.rebuild_mainwindow()
 
 	def cb_change_ipmode1(self):
 		self.debug(1,"def cb_change_ipmode1()")
