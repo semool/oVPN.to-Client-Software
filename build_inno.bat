@@ -23,6 +23,7 @@ IF EXIST %WORKPATH% rmdir /S/Q %WORKPATH%\
 IF EXIST %EXESTRING% del %EXESTRING%
 IF EXIST %PY2EXE_ERR% del %PY2EXE_ERR%
 IF EXIST %PY2EXE_LOG% del %PY2EXE_LOG%
+IF EXIST %SOURCEDIR%\client_debug.log del %SOURCEDIR%\client_debug.log
 IF EXIST inno_setup.iss del inno_setup.iss
 
 echo hit to compile py2exe: %BINARY%
