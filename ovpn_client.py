@@ -4559,7 +4559,7 @@ class Systray:
 
 	def check_last_server_update(self,remote_lastupdate):
 		self.debug(1,"def check_last_server_update()")
-		if self.LAST_CFG_UPDATE < remote_lastupdate:
+		if self.LAST_CFG_UPDATE < int(remote_lastupdate):
 			self.remote_lastupdate = remote_lastupdate
 			self.debug(1,"def check_last_server_update: requesting update")
 			return True
