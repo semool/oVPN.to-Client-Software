@@ -4793,10 +4793,7 @@ class Systray:
 				self.MAINWINDOW_SHOWCELLS.append(cellid)
 				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
 			if self.MAINWINDOW_REBUILD_RUNNING == True:
-				if button.get_active() == True:
-					button.set_active(False)
-				else:
-					button.set_active(True)
+				return False
 			else:
 				self.write_options_file()
 				self.rebuild_mainwindow()
