@@ -4611,6 +4611,7 @@ class Systray:
 		if event.button == 1:
 			self.debug(1,"def cb_extserverview_size()")
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK_CANCEL)
+			dialogWindow.set_border_width(8)
 			try:
 				actualwidth = self.mainwindow.get_size()[0]
 				actualheigt = self.mainwindow.get_size()[1]
@@ -4625,7 +4626,7 @@ class Systray:
 				pass
 			text = _("Server Window Size")
 			dialogWindow.set_title(text)
-			dialogWindow.set_markup(text)
+			dialogWindow.set_markup(_("Enter width and height\n\nLeave blank for default"))
 			dialogBox = dialogWindow.get_content_area()
 			widthLabel = Gtk.Label(label=_("Width (pixel):"))
 			widthEntry = Gtk.Entry()
@@ -4639,8 +4640,6 @@ class Systray:
 			heightEntry.set_size_request(40,24)
 			if not actualheigt == 0:
 				heightEntry.set_text(str(actualheigt))
-			sizeLabel = Gtk.Label(label=_("Enter width and height\n\nLeave blank for default"))
-			dialogBox.pack_start(sizeLabel,False,False,0)
 			dialogBox.pack_start(widthLabel,False,False,0)
 			dialogBox.pack_start(widthEntry,False,False,0)
 			dialogBox.pack_start(heightLabel,False,False,0)
@@ -4727,7 +4726,6 @@ class Systray:
 				hidecellswindow.add(vbox)
 				hidecellswindow.connect("destroy",self.cb_destroy_hidecellswindow)
 				hidecellswindow.set_position(Gtk.WindowPosition.CENTER)
-				hidecellswindow.set_size_request(600,110)
 				hidecellswindow.set_transient_for(self.window)
 				hidecellswindow.set_icon(self.app_icon)
 				text = _("Hide unwanted cells")
@@ -4736,6 +4734,8 @@ class Systray:
 				scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 				vbox.pack_start(scrolledwindow, True, True, 0)
 				grid = Gtk.Grid()
+				grid.set_column_homogeneous(True)
+				grid.set_row_homogeneous(False)
 				grid.set_row_spacing(5)
 				grid.set_column_spacing(5)
 				grid.props.halign = Gtk.Align.CENTER
@@ -4758,6 +4758,7 @@ class Systray:
 					else:
 						x += 1
 				hidecellswindow.show_all()
+				hidecellswindow.resize(grid.get_allocation().width + 20, grid.get_allocation().height + 20)
 		except:
 			self.debug(1,"def cb_hide_cells: failed")
 			self.HIDECELLSWINDOW_OPEN = False
