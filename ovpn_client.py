@@ -650,7 +650,7 @@ class Systray:
 						self.OVPN_AUTO_CONNECT_ON_START = True
 					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER failed")
 				
 				try:
 					WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
@@ -660,7 +660,7 @@ class Systray:
 						self.WIN_EXT_DEVICE = WIN_EXT_DEVICE
 					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE failed")
 				
 				try:
 					WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
@@ -670,7 +670,7 @@ class Systray:
 						self.WIN_TAP_DEVICE = WIN_TAP_DEVICE
 					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE failed")
 				
 				try:
 					OPENVPN_EXE = parser.get('oVPN','openvpnexe')
@@ -678,6 +678,7 @@ class Systray:
 						self.OPENVPN_EXE = False
 					else:
 						self.OPENVPN_EXE = OPENVPN_EXE
+					self.debug(1,"def read_options_file: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
 				except:
 					pass
 				
@@ -689,7 +690,7 @@ class Systray:
 						self.AUTOSTART_DELAY_TIME = 10
 					self.debug(1,"def read_options_file: self.AUTOSTART_DELAY_TIME = '%s'" % (self.AUTOSTART_DELAY_TIME))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.AUTOSTART_DELAY_TIME failed")
 				
 				try:
 					self.AUTOSTART = parser.getboolean('oVPN','autostart')
@@ -700,13 +701,13 @@ class Systray:
 							pass
 					self.debug(1,"def read_options_file: self.AUTOSTART = '%s'" % (self.AUTOSTART))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.AUTOSTART failed")
 				
 				try:
 					self.UPDATEOVPNONSTART = parser.getboolean('oVPN','updateovpnonstart')
 					self.debug(1,"def read_options_file: self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.UPDATEOVPNONSTART failed")
 				
 				try:
 					ocfgv = parser.get('oVPN','configversion')
@@ -727,7 +728,7 @@ class Systray:
 					
 					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION failed")
 				
 				try:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
@@ -848,13 +849,12 @@ class Systray:
 					self.debug(1,"def read_options_file: self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
 				except:
 					pass
-					
-				
 				
 				try:
-					self.MYDNS = json.loads(parser.get('oVPN','mydns'))
-					self.debug(1,"def read_options_file: len(self.MYDNS) == '%s'"%(len(self.MYDNS)))
-					self.debug(1,"def read_options_file: self.MYDNS == '%s'"%(self.MYDNS))
+					MYDNS = json.loads(parser.get('oVPN','mydns'))
+					if len(MYDNS) > 0:
+						self.MYDNS = MYDNS
+					self.debug(1,"def read_options_file: len(self.MYDNS) == '%s', self.MYDNS == '%s'"%(len(self.MYDNS),self.MYDNS))
 				except:
 					self.debug(1,"def read_options_file: self.MYDNS = json.loads failed")
 					self.MYDNS = {}
