@@ -631,48 +631,54 @@ class Systray:
 					self.debug(1,"def read_options_file: self.APP_LANGUAGE FAILED")
 				
 				try:
-					self.LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
-					if not self.LAST_CFG_UPDATE >= 0:
+					LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
+					if not LAST_CFG_UPDATE >= 0:
 						self.LAST_CFG_UPDATE = 0
+					else:
+						self.LAST_CFG_UPDATE = LAST_CFG_UPDATE
+					self.debug(1,"def read_options_file: self.LAST_CFG_UPDATE = '%s'" % (self.LAST_CFG_UPDATE))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.LAST_CFG_UPDATE failed")
 				
 				try:
-					self.OVPN_FAV_SERVER = parser.get('oVPN','favserver')
-					if self.OVPN_FAV_SERVER == "False": 
+					OVPN_FAV_SERVER = parser.get('oVPN','favserver')
+					if OVPN_FAV_SERVER == "False": 
 						self.OVPN_FAV_SERVER = False
+						self.OVPN_AUTO_CONNECT_ON_START = False
+					else:
+						self.OVPN_FAV_SERVER = OVPN_FAV_SERVER
+						self.OVPN_AUTO_CONNECT_ON_START = True
 					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER failed")
 				
 				try:
-					self.OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
-					if not self.OVPN_FAV_SERVER == False and self.OVPN_AUTO_CONNECT_ON_START == False:
-						self.OVPN_AUTO_CONNECT_ON_START = True
-					self.debug(1,"def read_options_file: self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
-				except:
-					pass
-				
-				try:
-					self.WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
-					if self.WIN_EXT_DEVICE == "False": 
+					WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
+					if WIN_EXT_DEVICE == "False": 
 						self.WIN_EXT_DEVICE = False
+					else:
+						self.WIN_EXT_DEVICE = WIN_EXT_DEVICE
 					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE failed")
 				
 				try:
-					self.WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
-					if self.WIN_TAP_DEVICE == "False": 
+					WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
+					if WIN_TAP_DEVICE == "False": 
 						self.WIN_TAP_DEVICE = False
+					else:
+						self.WIN_TAP_DEVICE = WIN_TAP_DEVICE
 					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_TAP_DEVICE))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE failed")
 				
 				try:
-					self.OPENVPN_EXE = parser.get('oVPN','openvpnexe')
-					if self.OPENVPN_EXE == "False":
+					OPENVPN_EXE = parser.get('oVPN','openvpnexe')
+					if OPENVPN_EXE == "False":
 						self.OPENVPN_EXE = False
+					else:
+						self.OPENVPN_EXE = OPENVPN_EXE
+					self.debug(1,"def read_options_file: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
 				except:
 					pass
 				
@@ -684,7 +690,7 @@ class Systray:
 						self.AUTOSTART_DELAY_TIME = 10
 					self.debug(1,"def read_options_file: self.AUTOSTART_DELAY_TIME = '%s'" % (self.AUTOSTART_DELAY_TIME))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.AUTOSTART_DELAY_TIME failed")
 				
 				try:
 					self.AUTOSTART = parser.getboolean('oVPN','autostart')
@@ -695,18 +701,17 @@ class Systray:
 							pass
 					self.debug(1,"def read_options_file: self.AUTOSTART = '%s'" % (self.AUTOSTART))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.AUTOSTART failed")
 				
 				try:
 					self.UPDATEOVPNONSTART = parser.getboolean('oVPN','updateovpnonstart')
 					self.debug(1,"def read_options_file: self.UPDATEOVPNONSTART = '%s'" % (self.UPDATEOVPNONSTART))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.UPDATEOVPNONSTART failed")
 				
 				try:
 					ocfgv = parser.get('oVPN','configversion')
 					if ocfgv == "23x" or ocfgv == "23x46" or ocfgv == "23x64":
-					
 						self.OVPN_CONFIGVERSION = ocfgv
 					else:
 						self.OVPN_CONFIGVERSION = "23x"
@@ -723,7 +728,7 @@ class Systray:
 					
 					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION failed")
 				
 				try:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
@@ -775,9 +780,12 @@ class Systray:
 					pass
 
 				try:
-					self.LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
-					if self.LOAD_DATA_EVERY <= 60:
-						self.LOAD_DATA_EVERY = 66
+					LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
+					if LOAD_DATA_EVERY >= 66:
+						self.LOAD_DATA_EVERY = LOAD_DATA_EVERY
+					else:
+						self.LOAD_DATA_EVERY = 900
+						
 					self.debug(1,"def read_options_file: self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
 				except:
 					pass
@@ -841,13 +849,12 @@ class Systray:
 					self.debug(1,"def read_options_file: self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
 				except:
 					pass
-					
-				
 				
 				try:
-					self.MYDNS = json.loads(parser.get('oVPN','mydns'))
-					self.debug(1,"def read_options_file: len(self.MYDNS) == '%s'"%(len(self.MYDNS)))
-					self.debug(1,"def read_options_file: self.MYDNS == '%s'"%(self.MYDNS))
+					MYDNS = json.loads(parser.get('oVPN','mydns'))
+					if len(MYDNS) > 0:
+						self.MYDNS = MYDNS
+					self.debug(1,"def read_options_file: len(self.MYDNS) == '%s', self.MYDNS == '%s'"%(len(self.MYDNS),self.MYDNS))
 				except:
 					self.debug(1,"def read_options_file: self.MYDNS = json.loads failed")
 					self.MYDNS = {}
@@ -873,7 +880,6 @@ class Systray:
 				parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 				parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 				parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
-				parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 				parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
 				parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 				parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
@@ -930,7 +936,6 @@ class Systray:
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 			parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
-			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
@@ -3496,7 +3501,6 @@ class Systray:
 			self.debug(1,"def cb_set_ovpn_favorite_server()")
 			try:
 				self.OVPN_FAV_SERVER = server
-				#self.OVPN_AUTO_CONNECT_ON_START = True
 				self.write_options_file()
 				self.call_redraw_mainwindow()
 				return True
@@ -3509,7 +3513,6 @@ class Systray:
 			self.debug(1,"def cb_del_ovpn_favorite_server()")
 			try:
 				self.OVPN_FAV_SERVER = False
-				self.OVPN_AUTO_CONNECT_ON_START = False
 				self.write_options_file()
 				self.call_redraw_mainwindow()
 				return True
@@ -4560,8 +4563,8 @@ class Systray:
 		return
 
 	def check_last_server_update(self,remote_lastupdate):
-		self.debug(1,"def check_last_server_update()")
-		if self.LAST_CFG_UPDATE < remote_lastupdate:
+		self.debug(1,"def check_last_server_update(): self.LAST_CFG_UPDATE = '%s', remote_lastupdate = '%s'" % (self.LAST_CFG_UPDATE,remote_lastupdate))
+		if self.LAST_CFG_UPDATE < int(remote_lastupdate):
 			self.remote_lastupdate = remote_lastupdate
 			self.debug(1,"def check_last_server_update: requesting update")
 			return True
@@ -4902,7 +4905,30 @@ class Systray:
 		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
 		
 		try:
-			r = requests.post(self.APIURL,data=values)
+			headers = False
+			
+			try:
+				version = release_version.version_data()["VERSION"]
+				versionint = 0
+				
+				try:
+					split = version.split(".")
+					versionint = "%s%s%s" % (split[0],split[1],split[2])
+				except:
+					self.debug(1,"def API_REQUEST: version.split failed")
+				
+				if versionint > 0:
+					version = versionint
+				user_agent = "client/%s" % (version)
+				headers = { 'User-Agent':user_agent }
+			except:
+				self.debug(1,"def API_REQUEST: construct user-agent failed")
+			
+			if headers == False:
+				r = requests.post(url=self.APIURL,data=values)
+			else:
+				r = requests.post(url=self.APIURL,data=values,headers=headers)
+			
 			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
 				self.body = r.content
 			else:

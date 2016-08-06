@@ -1,0 +1,100 @@
+# changelog.txt
+#
+
+ Version: 0.6.5
++ some more debugs
++ added useragent string to API_REQUESTs: does not contain your user-id, only version! so we can easier opt-out older clients if we do any hard API changes
++ fixed freshly introduced bug: always updates configs on start if update on start is enabled
+
+
+ Version: 0.6.4
++ fixes and debugs
++ added another theme
++ better GLib.idle_add() calls
++ added check if API Login is OK
++ added option to hide unwanted serverwindow cells
++ added option to create and remove windows taskscheduler autostart job with 10 - 60s delay (thx²semool)
+
+
+ Version: 0.6.3
++ another fix for high dpi icon scaling
++ changed function: read dns to backup
++ internal debugs
+
+
+ Version: 0.6.2
++ fixed bug on reading nameservers from registry, client 0.6.0 / 0.6.1 fail if there was only 1 dns set.
++ readded high dpi icon scaling patch with prepatched and presigned dlls
+
+
+ Version: 0.6.1
+ + 0.6.0 about window did not show correct version string
+
+
+ Version: 0.6.0
++ new way to read interfaces/adapters and nameservers from registry. hopefully works on all possible windows OS languages, instead of reading netsh.exe output
++ added cache for ovpn servers, to not read configfiles every systray call etc. from disk
++ updated to latest PyGObject 3.18.2rev8 AIO release
++ lots of internal build process changes
+
+
+ Version: 0.5.9
+changes:
++ added more debugs for french OS language
++ release digitally signed with our "Code Signing Certificate" from our own Certificate Authority: setup.exe, ovpn_client.exe and almost all DLLs are signed, libgtk-3-0.dll is not.
++ to verify releases: add our CA to your "Trusted CA" Store and allow purposes only to "codesign" !
+
+
+ Version: 0.5.8
++ fixed app-crash bug on serverwindow reload after config update
++ updated language, countrynames and ms-windows theme
++ some high resolution DPI fixes
+
+
+ Version: 0.5.7-gtk3
++ inno_setup: added AppMutex to detect if Client is running on setup: please disconnect and close "oVPN.to Client" before installing new release!
++ inno_setup: added SetupMutex to start setup only once
++ new 'portable mode' or normal setup with uninstall routine
++ all your User Data stored in your install folder: %PROGRAMFILES%\oVPN.to Client for Windows\appdata\ovpn\12345\...
++ old User Data from Clients older 0.5 in folder: %APPDATA%\Roaming\ovpn\12345\
++ user-id selection menu on start: create more user-id folders manually in '%install%\appdata\ovpn\45321'
++ removed server entry from systray: leftclick on systray icon opens serverwindow
++ leftclick systray opens serverwindow and leftclick again sends serverwindow to HIDE (keep window data in memory).
++ hit serverwindow X button to really "destroy" it: open serverwindow again needs milliseconds longer
++ wait ~30s on start for interface to come up
++ fixed option: save apikey in file
++ optimized ipv6 button and more gui optimizations
++ icon fixes (sharper icons)
++ hardcoded all app & flag icons to base64 with an icon pixbuf cache: less disk activity and faster drawing
++ 'standard', 'classic' and 'experimental' icon themes
++ option to create a private icon theme ( 32px ) in 'ico/private/' [ connected.ico, connect.ico, testing.ico, disconnect.ico, disconnect_menu.ico, sync_1.ico, sync_2.ico, sync_3.ico ]
++ added new Adwaita-dark app theme
++ hardcoded d0wns DNS from dns.txt
++ more debugs and new debug function with loglevels
++ added ISO index of all countrynames
++ memory (RAM) usage: ~20 MB with all 3 windows open, may drop or not if all windows closed, normally  updates -> reset api-login
++ some language updates
+
+
+ Version: 0.5.4-gtk3
++ fixed problem with autoconnect on start
++ fixed problem with MYDNS view in serverwindow
++ moved DebugMode and ThemeSwitcher to settings window
++ removed refresh button from serverwindow
++ added 'F5' key to refresh account and server window
++ some language fixes
+
+
+ Version: 0.5.3-gtk3
++ dropped SFX binary. we go with "inno_setup" only!
++ added german language
++ systray cleaned up and added new settings window
++ all your userdata is stored next to ovpn_client.exe in folder 'appdata'
++ lots of internal improvements!
+
+
+ Version: 0.5.2-gtk3
++ fixed bug which could crash app if mouse idles in systray_menu!
++ added theme selector
++ 2 packages now: self-extracting and setup/installer binary!
+
