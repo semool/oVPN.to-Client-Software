@@ -18,7 +18,7 @@ else:
 
 try:
 	import patches
-	patches.select_gtkdll()
+	patches.select_gtkdll(DEBUG)
 except:
 	sys.exit()
 
@@ -696,7 +696,7 @@ class Systray:
 					self.AUTOSTART = parser.getboolean('oVPN','autostart')
 					if self.AUTOSTART == True:
 						try:
-							schedule_task.set_task(self.AUTOSTART_DELAY_TIME)
+							schedule_task.set_task(self.DEBUG,self.AUTOSTART_DELAY_TIME)
 						except:
 							pass
 					self.debug(1,"def read_options_file: self.AUTOSTART = '%s'" % (self.AUTOSTART))
@@ -2964,10 +2964,10 @@ class Systray:
 		self.debug(1,"def cb_switch_autostart()")
 		if switch.get_active():
 			self.AUTOSTART = True
-			schedule_task.set_task(self.AUTOSTART_DELAY_TIME)
+			schedule_task.set_task(self.DEBUG,self.AUTOSTART_DELAY_TIME)
 		else:
 			self.AUTOSTART = False
-			schedule_task.delete_task()
+			schedule_task.delete_task(self.DEBUG)
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
 

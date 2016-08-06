@@ -3,10 +3,12 @@ import os
 import sys, shutil, struct
 from _winreg import *
 from ctypes import *
+from debug import debug
 
 BITS = struct.calcsize("P") * 8
 
-def select_gtkdll():
+def select_gtkdll(istrue):
+	DEBUG = istrue
 	pixel = 16
 	gtkfile = "%s\\libgtk-3-0.dll" % (os.getcwd())
 	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (os.getcwd())
@@ -21,7 +23,7 @@ def select_gtkdll():
 			pixel = 32
 		if dpi == 96:
 			pixel = 16
-		print "Get DPI from DC: %s" % dpi
+		debug(1,"def select_gtkdll() Get DPI from DC: %s" % dpi,DEBUG,True)
 	except:
 		try:
 			Registry = ConnectRegistry(None, HKEY_CURRENT_USER)
@@ -40,29 +42,28 @@ def select_gtkdll():
 							pixel = 16
 						break
 					i += 1
-				print "Get DPI from REG: %s" % value
+				debug(1,"def select_gtkdll() Get DPI from Reg: %s" % value,DEBUG,True)
 		except:
 			pass
 
 	try:
-		print "pixel = '%s'" % (pixel)
+		debug(1,"def select_gtkdll() Detected Pixel Size: %s" % pixel,DEBUG,True)
 		if pixel == 32:
-			print "pixel is 32"
 			if os.path.isfile(gtkfile32):
-				print "gtkfile --> gtkfile16"
+				debug(1,"def select_gtkdll() gtkfile --> gtkfile16",DEBUG,True)
 				shutil.move(gtkfile, gtkfile16)
-				print "restore gtkfile32 --> gtkfile"
+				debug(1,"def select_gtkdll() gtkfile32 --> gtkfile",DEBUG,True)
 				shutil.move(gtkfile32, gtkfile)
 			else:
-				print "select_gtkdll not needed: gtkfile32 not found"
+				debug(1,"def select_gtkdll() select_gtkdll not needed: gtkfile32 not found",DEBUG,True)
 		if pixel == 16:
-			print "pixel is 16"
 			if os.path.isfile(gtkfile16):
-				print "gtkfile --> gtkfile32"
+				debug(1,"def select_gtkdll() gtkfile --> gtkfile32",DEBUG,True)
 				shutil.move(gtkfile, gtkfile32)
-				print "gtkfile16 --> gtkfile"
+				debug(1,"def select_gtkdll() gtkfile16 --> gtkfile",DEBUG,True)
 				shutil.move(gtkfile16, gtkfile)
 			else:
-				print "select_gtkdll not needed: gtkfile16 not found"
+				debug(1,"def select_gtkdll() select_gtkdll not needed: gtkfile16 not found",DEBUG,True)
 	except:
 		print "select_gtkdll failed"
+		debug(1,"def select_gtkdll() failed",DEBUG,True)
