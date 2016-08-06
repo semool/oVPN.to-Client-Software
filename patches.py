@@ -65,5 +65,4 @@ def select_gtkdll(istrue):
 			else:
 				debug(1,"def select_gtkdll() select_gtkdll not needed: gtkfile16 not found",DEBUG,True)
 	except:
-		print "select_gtkdll failed"
 		debug(1,"def select_gtkdll() failed",DEBUG,True)
