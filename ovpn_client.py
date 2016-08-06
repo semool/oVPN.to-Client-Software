@@ -634,8 +634,11 @@ class Systray:
 					LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
 					if not LAST_CFG_UPDATE >= 0:
 						self.LAST_CFG_UPDATE = 0
+					else:
+						self.LAST_CFG_UPDATE = LAST_CFG_UPDATE
+					self.debug(1,"def read_options_file: self.LAST_CFG_UPDATE = '%s'" % (self.LAST_CFG_UPDATE))
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.LAST_CFG_UPDATE failed")
 				
 				try:
 					OVPN_FAV_SERVER = parser.get('oVPN','favserver')
@@ -4570,7 +4573,7 @@ class Systray:
 		return
 
 	def check_last_server_update(self,remote_lastupdate):
-		self.debug(1,"def check_last_server_update()")
+		self.debug(1,"def check_last_server_update(): self.LAST_CFG_UPDATE = '%s', remote_lastupdate = '%s'" % (self.LAST_CFG_UPDATE,remote_lastupdate))
 		if self.LAST_CFG_UPDATE < int(remote_lastupdate):
 			self.remote_lastupdate = remote_lastupdate
 			self.debug(1,"def check_last_server_update: requesting update")
@@ -4912,7 +4915,26 @@ class Systray:
 		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
 		
 		try:
-			r = requests.post(self.APIURL,data=values)
+			headers = False
+			try:
+				version = release_version.version_data()["VERSION"]
+				try:
+					split = version.split(".")
+					versionint = "%s%s%s" % (split[0],split[1],split[2])
+				except:
+					versionint = 0
+				if versionint > 0:
+					version = versionint
+				user_agent = "client/%s" % (version)
+				headers = { 'User-Agent':user_agent }
+			except:
+				self.debug(1,"def API_REQUEST: construct user-agent failed")
+			
+			if headers == False:
+				r = requests.post(url=self.APIURL,data=values)
+			else:
+				r = requests.post(url=self.APIURL,data=values,headers=headers)
+			
 			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
 				self.body = r.content
 			else:
