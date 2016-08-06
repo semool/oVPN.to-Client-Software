@@ -4916,13 +4916,17 @@ class Systray:
 		
 		try:
 			headers = False
+			
 			try:
 				version = release_version.version_data()["VERSION"]
+				versionint = 0
+				
 				try:
 					split = version.split(".")
 					versionint = "%s%s%s" % (split[0],split[1],split[2])
 				except:
-					versionint = 0
+					self.debug(1,"def API_REQUEST: version.split failed")
+				
 				if versionint > 0:
 					version = versionint
 				user_agent = "client/%s" % (version)
