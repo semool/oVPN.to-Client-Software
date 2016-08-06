@@ -644,17 +644,11 @@ class Systray:
 					OVPN_FAV_SERVER = parser.get('oVPN','favserver')
 					if OVPN_FAV_SERVER == "False": 
 						self.OVPN_FAV_SERVER = False
+						self.OVPN_AUTO_CONNECT_ON_START = False
 					else:
 						self.OVPN_FAV_SERVER = OVPN_FAV_SERVER
-					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
-				except:
-					pass
-				
-				try:
-					OVPN_AUTO_CONNECT_ON_START = parser.getboolean('oVPN','autoconnect')
-					if not self.OVPN_FAV_SERVER == False and OVPN_AUTO_CONNECT_ON_START == False:
 						self.OVPN_AUTO_CONNECT_ON_START = True
-					self.debug(1,"def read_options_file: self.OVPN_AUTO_CONNECT_ON_START = '%s'" % (self.OVPN_AUTO_CONNECT_ON_START))
+					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
 				except:
 					pass
 				
@@ -886,7 +880,6 @@ class Systray:
 				parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 				parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 				parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
-				parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 				parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
 				parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 				parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
@@ -943,7 +936,6 @@ class Systray:
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 			parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
-			parser.set('oVPN','autoconnect','%s'%(self.OVPN_AUTO_CONNECT_ON_START))
 			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
@@ -3509,7 +3501,6 @@ class Systray:
 			self.debug(1,"def cb_set_ovpn_favorite_server()")
 			try:
 				self.OVPN_FAV_SERVER = server
-				#self.OVPN_AUTO_CONNECT_ON_START = True
 				self.write_options_file()
 				self.call_redraw_mainwindow()
 				return True
@@ -3522,7 +3513,6 @@ class Systray:
 			self.debug(1,"def cb_del_ovpn_favorite_server()")
 			try:
 				self.OVPN_FAV_SERVER = False
-				self.OVPN_AUTO_CONNECT_ON_START = False
 				self.write_options_file()
 				self.call_redraw_mainwindow()
 				return True
