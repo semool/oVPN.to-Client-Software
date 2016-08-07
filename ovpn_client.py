@@ -1002,7 +1002,7 @@ class Systray:
 	def win_read_interfaces(self):
 		self.debug(1,"def win_read_interfaces()")
 		self.win_detect_openvpn()
-		self.INTERFACES = winregs.get_networkadapterlist()
+		self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG)
 		if len(self.INTERFACES) < 2:
 			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
 		newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
@@ -4034,8 +4034,8 @@ class Systray:
 		DNS1 = False
 		DNS2 = False
 		try:
-			DEVICE_GUID = winregs.get_networkadapter_guid(adaptername)
-			DEVICE_DATA = winregs.get_interface_infos_from_guid(DEVICE_GUID)
+			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,adaptername)
+			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
 			try:
 				DNS1 = DEVICE_DATA['NameServer'].split(",")[0]
 				if self.isValueIPv4(DNS1):

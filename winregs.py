@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys, time, subprocess, netifaces
+from debug import debug
 from _winreg import *
 
 def get_uninstall_progs():
@@ -28,7 +29,8 @@ def get_networkadapterlist_from_netsh():
 	data = data.split('\r\n')
 	return data
 
-def get_networkadapterlist_from_guids(iface_guids):
+def get_networkadapterlist_from_guids(istrue,iface_guids):
+	DEBUG = istrue
 	iface_names = ['(unknown)' for i in range(len(iface_guids))]
 	mapguids = {}
 	reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
@@ -41,14 +43,15 @@ def get_networkadapterlist_from_guids(iface_guids):
 			mapguids[iface_name] = '%s' % (iface_guids[i])
 		except:
 			pass
-	print "mapguids = '%s'" % (mapguids)
+	debug(1,"def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
 	data = { "iface_names":iface_names,"mapguids":mapguids }
 	return data
 	#return iface_names
 
-def get_networkadapterlist():
+def get_networkadapterlist(istrue):
+	DEBUG = istrue
 	newlist = []
-	list1 = get_networkadapterlist_from_guids(get_networkadapter_guids())["iface_names"]
+	list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
 	list2 = get_networkadapterlist_from_netsh()
 	for name in list1:
 		for line in list2:
@@ -56,10 +59,11 @@ def get_networkadapterlist():
 				newlist.append(name)
 	return newlist
 
-def get_networkadapter_guid(adaptername):
+def get_networkadapter_guid(istrue,adaptername):
+	DEBUG = istrue
 	guids = get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"]
 	guid = guids[adaptername]
-	print "def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid)
+	debug(1,"def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
 	return guid
 	#return get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"][adaptername]
 
@@ -78,8 +82,9 @@ def get_tapadapters(OPENVPN_EXE,INTERFACES):
 					break
 		return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
 
-def get_interface_infos_from_guid(guid):
-	print "winregs: def get_interface_infos_from_guid(%s)" % (guid)
+def get_interface_infos_from_guid(istrue,guid):
+	DEBUG = istrue
+	debug(1,"def get_interface_infos_from_guid: '%s'" % guid,DEBUG,True)
 	"""
 	winregs.get_interface_infos_from_guid("{XXXXXXXX-YYYY-ZZZZ-AAAA-CCCCDDDDEEEE}")
 	return = {
@@ -95,7 +100,7 @@ def get_interface_infos_from_guid(guid):
 			values[keyname] = QueryValueEx(key, keyname)[0]
 		except:
 			pass
-	print "get_interface_infos_from_guid: '%s'" % (values)
+	debug(1,"get_interface_infos_from_guid: '%s'" % values,DEBUG,True)
 	return values
 
 
