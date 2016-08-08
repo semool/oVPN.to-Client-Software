@@ -15,8 +15,18 @@
 ```
 C:\Python27[_64]\Scripts\pip.exe install --upgrade pip
 C:\Python27[_64]\Scripts\pip.exe install requests
-C:\Python27[_64]\Scripts\pip.exe install netifaces
 ```
+### 32 Bit:
+```
+C:\Python27\Scripts\pip.exe install netifaces
+```
+### 64 Bit:
++ When an old Version of netifaces is installed: ```C:\Python27_64]\Scripts\pip.exe uninstall netifaces```
++ Download [netifaces-0.10.4-cp27-none-win_amd64.whl](http://www.lfd.uci.edu/~gohlke/pythonlibs/#netifaces) and place it in ```C:\Python27_64\Scripts```
+```
+C:\Python27_64]\Scripts\pip.exe install netifaces-0.10.4-cp35-none-win32.whl
+```
+
 
 ## Basic Requirements:
 + [PyGObject 3.18.2rev8 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev8-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
