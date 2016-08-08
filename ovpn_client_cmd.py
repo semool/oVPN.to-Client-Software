@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, requests, sys, struct, time, zipfile
+import os, requests, subprocess, sys, struct, time, zipfile
 from datetime import datetime as datetime
 from ConfigParser import SafeConfigParser
 # .py files imports
@@ -341,6 +341,15 @@ class CMDLINE:
 		except:
 			self.msgwarn("Failed to check for updates!","Error: def inThread_timer_check_certdl")
 		return False
+
+	def delete_dir(self,path):
+		try:
+			self.debug(1,"def delete_dir()")
+			string = 'rmdir /S /Q "%s"' % (path)
+			self.debug(1,"def delete_dir: %s" % (string))
+			subprocess.check_output("%s" % (string),shell=True)
+		except:
+			self.debug(1,"def delete_dir: failed")
 
 	def extract_ovpn(self):
 		self.debug(1,"def extract_ovpn()")
