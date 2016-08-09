@@ -21,10 +21,10 @@ C:\Python27[_64]\Scripts\pip.exe install requests
 C:\Python27\Scripts\pip.exe install netifaces
 ```
 ### 64 Bit:
-+ When an old Version of netifaces is installed: ```C:\Python27_64]\Scripts\pip.exe uninstall netifaces```
++ When an old Version of netifaces is installed: ```C:\Python27_64\Scripts\pip.exe uninstall netifaces```
 + Download [netifaces-0.10.4-cp27-none-win_amd64.whl](http://www.lfd.uci.edu/~gohlke/pythonlibs/#netifaces) and place it in ```C:\Python27_64\Scripts```
 ```
-C:\Python27_64]\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
+C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
 ```
 
 
