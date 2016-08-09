@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, requests, subprocess, sys, struct, time, zipfile
+import hashlib, os, requests, subprocess, sys, struct, time, zipfile
 from datetime import datetime as datetime
 from ConfigParser import SafeConfigParser
 # .py files imports
@@ -63,13 +63,22 @@ class CMDLINE:
 		self.OVPN_CONFIGVERSION = "23x"
 		self.BIN_DIR = os.getcwd()
 		self.OPT_FILE = "%s\\ovpn_client_cmd.conf" % (self.BIN_DIR)
-		self.VPN_CFGip4 = "%s\\ip4" % (self.BIN_DIR)
-		self.VPN_CFGip46 = "%s\\ip46" % (self.BIN_DIR)
-		self.VPN_CFGip64 = "%s\\ip64" % (self.BIN_DIR)
-		self.zip_cfg = "%s\\confs.zip" % (self.BIN_DIR)
-		self.zip_crt = "%s\\certs.zip" % (self.BIN_DIR)
+		self.VPN_CFGip4 = "%s\\configs\\ip4" % (self.BIN_DIR)
+		self.VPN_CFGip46 = "%s\\configs\\ip46" % (self.BIN_DIR)
+		self.VPN_CFGip64 = "%s\\configs\\ip64" % (self.BIN_DIR)
+		self.zip_cfg = "%s\\configs\\confs.zip" % (self.BIN_DIR)
+		self.zip_crt = "%s\\configs\\certs.zip" % (self.BIN_DIR)
 		BIN1 = "%s\\ovpn_client_cmd.exe" % (self.BIN_DIR)
 		BIN2 = "%s\\ovpn_client_cmd.py" % (self.BIN_DIR)
+		
+		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.BIN_DIR)
+		self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"
+		
+		if not self.load_ca_cert():
+			return False
+			
+		if not os.path.isdir(self.BIN_DIR+"\\configs"):
+			os.mkdir(self.BIN_DIR+"\\configs")
 		
 		if os.path.exists(BIN1) or os.path.exists(BIN2):
 			pass
@@ -77,6 +86,35 @@ class CMDLINE:
 			self.debug(1,"def init_dirs: binary not found")
 			return False
 		return True
+
+	def hash_sha512_file(self,file):
+		self.debug(1,"def hash_sha512_file()")
+		if os.path.isfile(file):
+			hasher = hashlib.sha512()
+			fp = open(file, 'rb')
+			with fp as afile:
+				buf = afile.read()
+				hasher.update(buf)
+			fp.close()
+			return hasher.hexdigest()
+
+	def load_ca_cert(self):
+		self.debug(1,"def load_ca_cert()")
+		if os.path.isfile(self.CA_FILE):
+			self.CA_FILE_HASH = self.hash_sha512_file(self.CA_FILE)
+			if self.CA_FILE_HASH == self.CA_FIXED_HASH:
+				try:
+					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(self.BIN_DIR, self.CA_FILE)
+					return True
+				except:
+					self.debug(1,"Error:\nSSL Root Certificate for %s not loaded %s" % (VCP_DOMAIN,self.CA_FILE))
+					return False
+			else:
+				self.debug(1,"Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'" % (VCP_DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH))
+				return False
+		else:
+			self.debug(1,"Error:\nSSL Root Certificate for %s not found in:\n'%s'!" % (VCP_DOMAIN,self.CA_FILE))
+			return False
 
 	def read_options_file(self):
 		self.debug(1,"def read_options_file()")
@@ -207,10 +245,8 @@ class CMDLINE:
 		self.body = False
 		
 		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
-		
 		try:
 			headers = False
-			
 			try:
 				version = release_version.version_data()["VERSION"]
 				versionint = 0
@@ -229,9 +265,17 @@ class CMDLINE:
 				self.debug(1,"def API_REQUEST: construct user-agent failed")
 			
 			if headers == False:
-				r = requests.post(url=self.APIURL,data=values)
+				try:
+					r = requests.post(url=self.APIURL,data=values)
+				except:
+					self.debug(1,"def API_REQUEST: post without headers failed")#
+					return False
 			else:
-				r = requests.post(url=self.APIURL,data=values,headers=headers)
+				try:
+					r = requests.post(url=self.APIURL,data=values,headers=headers)
+				except:
+					self.debug(1,"def API_REQUEST: post with headers failed")
+					return False
 			
 			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
 				self.body = r.content
@@ -249,7 +293,7 @@ class CMDLINE:
 				self.debug(1,"def API_REQUEST: self.body = %s"%(self.body))
 		
 		except:
-			self.debug(1,"API requests on: %s failed!" % (API_ACTION))
+			self.debug(1,"API requests on: '%s' failed!" % (API_ACTION))
 			return False
 		
 		if not self.body == False:
@@ -405,6 +449,7 @@ class CMDLINE:
 
 def app():
 	CMDLINE()
+	time.sleep(90)
 
 if __name__ == "__main__":
 	app()
