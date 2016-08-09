@@ -9,6 +9,28 @@ for %%v in ("%DISTDIR%\*.dll") do (
 		IF NOT EXIST %DLLDIR_U%\%%~nxA (
 			echo copy /Y "%%v" "%DLLDIR_U%\"
 			copy /Y "%%v" "%DLLDIR_U%\"
+		) else (
+			setlocal EnableDelayedExpansion
+			set /a COUNTER=1
+			for /F "tokens=* delims=" %%D in ('"%CERTUTIL% -hashfile %%v sha1"') do (
+				IF !COUNTER! EQU 2 set "SHA1_DIST=%%D"
+				set /a COUNTER+=1
+			)
+			echo !SHA1_DIST: =!
+			set /a COUNTER=1
+			for /F "tokens=* delims=" %%D in ('"%CERTUTIL% -hashfile %DLLDIR_U%\%%~nxA sha1"') do (
+				IF !COUNTER! EQU 2 set "SHA1_U=%%D"
+				set /a COUNTER+=1
+			)
+			echo !SHA1_U: =!
+			IF "!SHA1_DIST: =!" NEQ "!SHA1_U: =!" (
+				del "%DLLDIR_U%\%%~nxA" 2> nul
+				del "%DLLDIR_S%\%%~nxA" 2> nul
+				echo SHA1 check Failed, copy new File
+				echo copy /Y "%%v" "%DLLDIR_U%\"
+				copy /Y "%%v" "%DLLDIR_U%\"
+			)
+			endlocal
 		)
 		IF NOT EXIST %DLLDIR_S%\%%~nxA (
 			IF DEFINED SIGNTOOLCMD1 (%SIGNTOOLCMD1% "%%v")
@@ -35,6 +57,28 @@ for %%v in ("%DISTDIR%\lib\gtk-3.0\3.0.0\theming-engines\*.dll") do (
 		IF NOT EXIST %DLLDIR_U%\%%~nxA (
 			echo copy /Y "%%v" "%DLLDIR_U%\"
 			copy /Y "%%v" "%DLLDIR_U%\"
+		) else (
+			setlocal EnableDelayedExpansion
+			set /a COUNTER=1
+			for /F "tokens=* delims=" %%D in ('"%CERTUTIL% -hashfile %%v sha1"') do (
+				IF !COUNTER! EQU 2 set "SHA1_DIST=%%D"
+				set /a COUNTER+=1
+			)
+			echo !SHA1_DIST: =!
+			set /a COUNTER=1
+			for /F "tokens=* delims=" %%D in ('"%CERTUTIL% -hashfile %DLLDIR_U%\%%~nxA sha1"') do (
+				IF !COUNTER! EQU 2 set "SHA1_U=%%D"
+				set /a COUNTER+=1
+			)
+			echo !SHA1_U: =!
+			IF "!SHA1_DIST: =!" NEQ "!SHA1_U: =!" (
+				del "%DLLDIR_U%\%%~nxA" 2> nul
+				del "%DLLDIR_S%\%%~nxA" 2> nul
+				echo SHA1 check Failed, copy new File
+				echo copy /Y "%%v" "%DLLDIR_U%\"
+				copy /Y "%%v" "%DLLDIR_U%\"
+			)
+			endlocal
 		)
 		IF NOT EXIST %DLLDIR_S%\%%~nxA (
 			IF DEFINED SIGNTOOLCMD1 (%SIGNTOOLCMD1% "%%v")
@@ -60,6 +104,28 @@ for %%v in ("%DISTDIR%\*.pyd") do (
 	for %%A in ("%%v") do (
 		IF NOT EXIST %DLLDIR_U%\%%~nxA (
 			copy /Y "%%v" "%DLLDIR_U%\"
+		) else (
+			setlocal EnableDelayedExpansion
+			set /a COUNTER=1
+			for /F "tokens=* delims=" %%D in ('"%CERTUTIL% -hashfile %%v sha1"') do (
+				IF !COUNTER! EQU 2 set "SHA1_DIST=%%D"
+				set /a COUNTER+=1
+			)
+			echo !SHA1_DIST: =!
+			set /a COUNTER=1
+			for /F "tokens=* delims=" %%D in ('"%CERTUTIL% -hashfile %DLLDIR_U%\%%~nxA sha1"') do (
+				IF !COUNTER! EQU 2 set "SHA1_U=%%D"
+				set /a COUNTER+=1
+			)
+			echo !SHA1_U: =!
+			IF "!SHA1_DIST: =!" NEQ "!SHA1_U: =!" (
+				del "%DLLDIR_U%\%%~nxA" 2> nul
+				del "%DLLDIR_S%\%%~nxA" 2> nul
+				echo SHA1 check Failed, copy new File
+				echo copy /Y "%%v" "%DLLDIR_U%\"
+				copy /Y "%%v" "%DLLDIR_U%\"
+			)
+			endlocal
 		)
 		IF NOT EXIST %DLLDIR_S%\%%~nxA (
 			IF DEFINED SIGNTOOLCMD1 (%SIGNTOOLCMD1% "%%v")

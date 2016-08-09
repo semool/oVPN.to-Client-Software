@@ -6,9 +6,12 @@ set APPDIR=%APPDATA%\ovpn\bin\client\dist
 set INNOCOMPILE="C:\Program Files (x86)\Inno Setup 5\Compil32.exe"
 set EXE7Z="%PROGRAMFILES%\7-Zip\7z.exe"
 
+set CERTUTIL="C:\Windows\System32\CertUtil.exe"
+
 set SIGNTOOL="E:\codesign\bin_w10sdk\signtool.exe"
 set SIGNCERTSHA1=0775a45c76fad6989cbeb35c87e476642ccc172f
 
+IF NOT EXIST %CERTUTIL% (echo %CERTUTIL% NOT FOUND && PAUSE && EXIT)
 IF NOT EXIST %SIGNTOOL% (echo %SIGNTOOL% NOT FOUND && PAUSE && EXIT)
 
 REM DONT CHANGE DOWN HERE !
