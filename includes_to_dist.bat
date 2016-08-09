@@ -26,11 +26,11 @@ IF EXIST %DLLDIR_U%\%GTKDLL32% (
 	)
 	echo !SHA1_U: =!
 	IF "!SHA1_DIST: =!" NEQ "!SHA1_U: =!" (
+		echo SHA1 check Failed, delete old %GTKDLL32% and %GTKDLL32PX%
 		del "%DLLDIR_U%\%GTKDLL32%" 2> nul
 		del "%DLLDIR_S%\%GTKDLL32%" 2> nul
 		del "%DLLDIR_U%\%GTKDLL32PX%" 2> nul
 		del "%DLLDIR_S%\%GTKDLL32PX%" 2> nul
-		echo SHA1 check Failed, delete old %GTKDLL32% and %GTKDLL32PX%
 	)
 	endlocal
 )
