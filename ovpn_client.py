@@ -3154,19 +3154,19 @@ class Systray:
 			self.debug(1,"def settings_options_combobox_theme()")
 			combobox_title = Gtk.Label(label=_("Change App Theme"))
 			combobox = Gtk.ComboBoxText.new()
+
+			item = 0
 			for theme in self.INSTALLED_THEMES:
-				combobox.append_text(theme)
-			if self.APP_THEME == "ms-windows":
-				active_item = 0
-			if self.APP_THEME == "Adwaita":
-				active_item = 1
-			if self.APP_THEME == "Adwaita-dark":
-				active_item = 2
-			if self.APP_THEME == "Greybird":
-				active_item = 3
-			if self.APP_THEME == "Flat-Remix-OS":
-				active_item = 4
-			combobox.set_active(active_item)
+				THEME_DIR = "%s\\share\\themes\\%s" % (self.BIN_DIR, theme)
+				if not os.path.isdir(THEME_DIR):
+					THEME_DIR = "E:\\Persoenlich\\ovpn-client\\dist%s\\share\\themes\\%s" % (BITS, theme)
+
+				if os.path.isdir(THEME_DIR):
+					combobox.append_text(theme)
+					if self.APP_THEME == theme:
+						combobox.set_active(item)
+					item = item + 1
+
 			combobox.connect('changed',self.cb_theme_switcher_changed)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
@@ -3193,21 +3193,14 @@ class Systray:
 			combobox_title = Gtk.Label(label=_("Change App Icons"))
 			combobox = Gtk.ComboBoxText.new()
 			self.combobox_icons = combobox
+
+			item = 0
 			for icons in self.INSTALLED_ICONS:
 				combobox.append_text(icons)
-			if self.ICONS_THEME == "standard":
-				active_item = 0
-			if self.ICONS_THEME == "classic":
-				active_item = 1
-			if self.ICONS_THEME == "classic2":
-				active_item = 2
-			if self.ICONS_THEME == "shield_bluesync":
-				active_item = 3
-			if self.ICONS_THEME == "experimental":
-				active_item = 4
-			if self.ICONS_THEME == "private":
-				active_item = 5
-			combobox.set_active(active_item)
+				if self.ICONS_THEME == icons:
+					combobox.set_active(item)
+				item = item + 1
+
 			combobox.connect('changed',self.cb_icons_switcher_changed)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
@@ -3237,25 +3230,14 @@ class Systray:
 			self.debug(1,"def settings_options_combobox_fontsize()")
 			combobox_title = Gtk.Label(label=_("Change App Font Size"))
 			combobox = Gtk.ComboBoxText.new()
+			
+			item = 0
 			for size in self.APP_FONT_SIZE_AVAIABLE:
 				combobox.append_text(size)
-			if self.APP_FONT_SIZE == "6":
-				active_item = 0
-			if self.APP_FONT_SIZE == "7":
-				active_item = 1
-			if self.APP_FONT_SIZE == "8":
-				active_item = 2
-			if self.APP_FONT_SIZE == "9":
-				active_item = 3
-			if self.APP_FONT_SIZE == "10":
-				active_item = 4
-			if self.APP_FONT_SIZE == "11":
-				active_item = 5
-			if self.APP_FONT_SIZE == "12":
-				active_item = 6
-			if self.APP_FONT_SIZE == "13":
-				active_item = 7
-			combobox.set_active(active_item)
+				if self.APP_FONT_SIZE == size:
+					combobox.set_active(item)
+				item = item + 1
+
 			combobox.connect('changed',self.cb_settings_options_combobox_fontsize)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
@@ -3283,15 +3265,26 @@ class Systray:
 			self.debug(1,"def settings_options_combobox_theme()")
 			combobox_title = Gtk.Label(label=_("Change App Language"))
 			combobox = Gtk.ComboBoxText.new()
+
+			item = 0
 			for lang in self.INSTALLED_LANGUAGES:
-				combobox.append_text(lang)
-			if self.APP_LANGUAGE == "en":
-				active_item = 0
-			if self.APP_LANGUAGE == "de":
-				active_item = 1
-			if self.APP_LANGUAGE == "es":
-				active_item = 2
-			combobox.set_active(active_item)
+				if lang == "en":
+					combobox.append_text(lang)
+					if self.APP_LANGUAGE == lang:
+						combobox.set_active(item)
+					item = item + 1
+				else:
+
+					LANGUAGE_DIR = "%s\\locale\\%s" % (self.BIN_DIR, lang)
+					if not os.path.isdir(LANGUAGE_DIR):
+						LANGUAGE_DIR = "E:\\Persoenlich\\ovpn-client\\dist%s\\locale\\%s" % (BITS, lang)
+
+					if os.path.isdir(LANGUAGE_DIR):
+						combobox.append_text(lang)
+						if self.APP_LANGUAGE == lang:
+							combobox.set_active(item)
+						item = item + 1
+
 			combobox.connect('changed',self.cb_settings_options_combobox_language)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
