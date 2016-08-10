@@ -51,6 +51,8 @@ class CMDLINE:
 					if self.API_REQUEST("auth"):
 						self.debug(1,"API Login OK!")
 						self.check_certdl()
+						self.debug(1,"sleeping 15 seconds before exit")
+						time.sleep(15)
 				else:
 					self.debug(1,"def __init__: config file '%s' created, please edit and enter your login credentials!" % (self.OPT_FILE))
 
@@ -60,14 +62,16 @@ class CMDLINE:
 		self.APIKEY = False
 		self.APIURL = API_URL
 		self.LAST_CFG_UPDATE = 0
+		
 		self.OVPN_CONFIGVERSION = "23x"
+		self.CONFIGVERSIONS = [ "23x", "23x46", "23x64" ]
+		
+		self.OVPN_CONFIGSOSTYPE = "win"
+		self.CONFIGSOSTYPES = [ "win", "lin", "mac", "and" ]
+		
 		self.BIN_DIR = os.getcwd()
 		self.OPT_FILE = "%s\\ovpn_client_cmd.conf" % (self.BIN_DIR)
-		self.VPN_CFGip4 = "%s\\configs\\ip4" % (self.BIN_DIR)
-		self.VPN_CFGip46 = "%s\\configs\\ip46" % (self.BIN_DIR)
-		self.VPN_CFGip64 = "%s\\configs\\ip64" % (self.BIN_DIR)
-		self.zip_cfg = "%s\\configs\\confs.zip" % (self.BIN_DIR)
-		self.zip_crt = "%s\\configs\\certs.zip" % (self.BIN_DIR)
+		
 		BIN1 = "%s\\ovpn_client_cmd.exe" % (self.BIN_DIR)
 		BIN2 = "%s\\ovpn_client_cmd.py" % (self.BIN_DIR)
 		
@@ -76,9 +80,6 @@ class CMDLINE:
 		
 		if not self.load_ca_cert():
 			return False
-			
-		if not os.path.isdir(self.BIN_DIR+"\\configs"):
-			os.mkdir(self.BIN_DIR+"\\configs")
 		
 		if os.path.exists(BIN1) or os.path.exists(BIN2):
 			pass
@@ -127,7 +128,8 @@ class CMDLINE:
 					self.DEBUG = parser.getboolean('oVPN','debugmode')
 					self.debug(1,BUILT_STRING)
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.DEBUG failed")
+					#return False
 				
 				try:
 					USERID = parser.get('oVPN','userid')
@@ -136,7 +138,8 @@ class CMDLINE:
 					else:
 						self.USERID = USERID
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.USERID failed")
+					#return False
 				
 				try:
 					APIKEY = parser.get('oVPN','apikey')
@@ -148,7 +151,8 @@ class CMDLINE:
 						else:
 							self.APIKEY = False
 				except:
-					pass
+					self.debug(1,"def read_options_file: self.APIKEY failed")
+					#return False
 				
 				try:
 					LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
@@ -159,33 +163,86 @@ class CMDLINE:
 					self.debug(1,"def read_options_file: self.LAST_CFG_UPDATE = '%s'" % (self.LAST_CFG_UPDATE))
 				except:
 					self.debug(1,"def read_options_file: self.LAST_CFG_UPDATE failed")
+					#return False
 				
 				try:
 					ocfgv = parser.get('oVPN','configversion')
-					if ocfgv == "23x" or ocfgv == "23x46" or ocfgv == "23x64":
-						self.OVPN_CONFIGVERSION = ocfgv
+					if ocfgv.lower() in self.CONFIGVERSIONS:
+						self.OVPN_CONFIGVERSION = ocfgv.lower()
 					else:
 						self.OVPN_CONFIGVERSION = "23x"
+				except:
+					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION failed")
+					return False
+				
+				try:
+					configsostype = parser.get('oVPN','configsostype')
+					if configsostype.lower() in self.CONFIGSOSTYPES:
+						self.OVPN_CONFIGSOSTYPE = configsostype.lower()
+					else:
+						self.OVPN_CONFIGSOSTYPE = "win"
+					self.debug(1,"def read_options_file: self.OVPN_CONFIGSOSTYPE = '%s'"%(self.OVPN_CONFIGSOSTYPE))
+				except:
+					self.write_options_file()
+					self.debug(1,"def read_options_file: self.OVPN_CONFIGSOSTYPE failed, please restart")
+					return False
 					
+					
+				if len(sys.argv) > 1:
+					try:
+						if sys.argv[1].lower() in self.CONFIGSOSTYPES:
+							self.OVPN_CONFIGSOSTYPE = sys.argv[1].lower()
+							self.LAST_CFG_UPDATE = 0
+							self.debug(1,"def read_options_file: self.OVPN_CONFIGSOSTYPE overwritten from sys.argv[1] = '%s'"%(sys.argv[1].lower()))
+					except:
+						pass
+					
+					try:
+						if sys.argv[2].lower() in self.CONFIGVERSIONS:
+							self.OVPN_CONFIGVERSION = sys.argv[2].lower()
+							self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION overwritten from sys.argv[2] = '%s'"%(sys.argv[2].lower()))
+					except:
+						pass
+					
+				
+				try:
+					print self.OVPN_CONFIGVERSION
 					if self.OVPN_CONFIGVERSION == "23x":
-						self.VPN_CFG = self.VPN_CFGip4
+						self.VPN_CFG = "%s\\configs\\%s\\ip4" % (self.BIN_DIR,self.OVPN_CONFIGSOSTYPE)
 					elif self.OVPN_CONFIGVERSION == "23x46":
-						self.VPN_CFG = self.VPN_CFGip46
+						self.VPN_CFG = "%s\\configs\\%s\\ip46" % (self.BIN_DIR,self.OVPN_CONFIGSOSTYPE)
 					elif self.OVPN_CONFIGVERSION == "23x64":
-						self.VPN_CFG = self.VPN_CFGip64
+						self.VPN_CFG = "%s\\configs\\%s\\ip64" % (self.BIN_DIR,self.OVPN_CONFIGSOSTYPE)
 					else:
 						return False
 					
 					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
+					
+					self.ZIP_CFG = "%s\\configs\\%s_%s_confs.zip" % (self.BIN_DIR,self.OVPN_CONFIGSOSTYPE,self.OVPN_CONFIGVERSION)
+					self.ZIP_CRT = "%s\\configs\\%s_%s_certs.zip" % (self.BIN_DIR,self.OVPN_CONFIGSOSTYPE,self.OVPN_CONFIGVERSION)
+					
+					self.debug(1,"self.ZIP_CFG = '%s', self.ZIP_CRT = '%s'"%(self.ZIP_CFG,self.ZIP_CRT))
+					
 				except:
 					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION failed")
+					return False
 				
+				if not os.path.isdir("%s\\configs"%(self.BIN_DIR)):
+					os.mkdir("%s\\configs"%(self.BIN_DIR))
+				
+				if not os.path.isdir("%s\\configs\\%s"%(self.BIN_DIR,self.OVPN_CONFIGSOSTYPE)):
+					os.mkdir("%s\\configs\\%s"%(self.BIN_DIR,self.OVPN_CONFIGSOSTYPE))
+					
+				if not os.path.isdir(self.VPN_CFG):
+					os.mkdir(self.VPN_CFG)
+					self.debug(1,"def read_options_file: created DIR self.VPN_CFG = '%s'"%(self.VPN_CFG))
+				
+				self.debug(1,"def read_options_file: return True")
 				return True
 			except:
 				self.debug(1,"def read_options_file: failed")
 		else:
 			# We have no config file here at first start, set right values
-			self.VPN_CFG = self.VPN_CFGip4
 			try:
 				cfg = open(self.OPT_FILE,'wb')
 				parser = SafeConfigParser()
@@ -195,6 +252,7 @@ class CMDLINE:
 				parser.set('oVPN','apikey','%s'%(self.APIKEY))
 				parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
 				parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
+				parser.set('oVPN','configsostype','%s'%(self.OVPN_CONFIGSOSTYPE))
 				parser.write(cfg)
 				cfg.close()
 				return True
@@ -212,6 +270,7 @@ class CMDLINE:
 			parser.set('oVPN','apikey','%s'%(self.APIKEY))
 			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
 			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
+			parser.set('oVPN','configsostype','%s'%(self.OVPN_CONFIGSOSTYPE))
 			parser.write(cfg)
 			cfg.close()
 			return True
@@ -232,14 +291,14 @@ class CMDLINE:
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
 		if API_ACTION == "getconfigs":
-			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
+			if os.path.isfile(self.ZIP_CFG): os.remove(self.ZIP_CFG)
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : self.OVPN_CONFIGSOSTYPE }
 		
 		if API_ACTION == "requestcerts":
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
 		if API_ACTION == "getcerts":
-			if os.path.isfile(self.zip_crt): os.remove(self.zip_crt)
+			if os.path.isfile(self.ZIP_CRT): os.remove(self.ZIP_CRT)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
 		self.body = False
@@ -311,8 +370,10 @@ class CMDLINE:
 				return False
 			
 			if API_ACTION == "getconfigs":
+				if os.path.isfile(self.ZIP_CFG):
+					os.remove(self.ZIP_CFG)
 				try:
-					fp = open(self.zip_cfg, "wb")
+					fp = open(self.ZIP_CFG, "wb")
 					fp.write(self.body)
 					fp.close()
 					return True
@@ -320,8 +381,10 @@ class CMDLINE:
 					return False
 			
 			elif API_ACTION == "getcerts":
+				if os.path.isfile(self.ZIP_CRT):
+					os.remove(self.ZIP_CRT)
 				try:
-					fp = open(self.zip_crt, "wb")
+					fp = open(self.ZIP_CRT, "wb")
 					fp.write(self.body)
 					fp.close()
 					return True
@@ -398,9 +461,9 @@ class CMDLINE:
 	def extract_ovpn(self):
 		self.debug(1,"def extract_ovpn()")
 		try:
-			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):
-				z1file = zipfile.ZipFile(self.zip_cfg)
-				z2file = zipfile.ZipFile(self.zip_crt)
+			if os.path.isfile(self.ZIP_CFG) and os.path.isfile(self.ZIP_CRT):
+				z1file = zipfile.ZipFile(self.ZIP_CFG)
+				z2file = zipfile.ZipFile(self.ZIP_CRT)
 				if os.path.isdir(self.VPN_CFG):
 					self.debug(1,"def extract_ovpn: os.path.isdir(%s)"%(self.VPN_CFG))
 					self.delete_dir(self.VPN_CFG)
@@ -449,7 +512,6 @@ class CMDLINE:
 
 def app():
 	CMDLINE()
-	time.sleep(90)
 
 if __name__ == "__main__":
 	app()

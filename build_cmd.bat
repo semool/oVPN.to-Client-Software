@@ -16,6 +16,7 @@ if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 echo py2exe compiled
 
 copy includes\cacert_ovpn.pem %DISTDIR3%\cacert_ovpn.pem
+copy includes\cmd_get_all_configs.bat %DISTDIR3%\cmd_get_all_configs.bat
 
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 pause
