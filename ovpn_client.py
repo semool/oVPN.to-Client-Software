@@ -3156,11 +3156,11 @@ class Systray:
 			combobox = Gtk.ComboBoxText.new()
 
 			item = 0
+			THEME_DIR_CHECK = "%s\\share\\themes" % (self.BIN_DIR)
+			if not os.path.isdir(THEME_DIR_CHECK):
+				THEME_DIR_CHECK = "E:\\Persoenlich\\ovpn-client\\includes\\themes"
 			for theme in self.INSTALLED_THEMES:
-				THEME_DIR = "%s\\share\\themes\\%s" % (self.BIN_DIR, theme)
-				if not os.path.isdir(THEME_DIR):
-					THEME_DIR = "E:\\Persoenlich\\ovpn-client\\dist%s\\share\\themes\\%s" % (BITS, theme)
-
+				THEME_DIR = "%s\\%s" % (THEME_DIR_CHECK, theme)
 				if os.path.isdir(THEME_DIR):
 					combobox.append_text(theme)
 					if self.APP_THEME == theme:
@@ -3267,6 +3267,9 @@ class Systray:
 			combobox = Gtk.ComboBoxText.new()
 
 			item = 0
+			LANGUAGE_DIR_CHECK = "%s\\locale" % (self.BIN_DIR)
+			if not os.path.isdir(LANGUAGE_DIR_CHECK):
+				LANGUAGE_DIR_CHECK = "E:\\Persoenlich\\ovpn-client\\locale"
 			for lang in self.INSTALLED_LANGUAGES:
 				if lang == "en":
 					combobox.append_text(lang)
@@ -3274,11 +3277,7 @@ class Systray:
 						combobox.set_active(item)
 					item = item + 1
 				else:
-
-					LANGUAGE_DIR = "%s\\locale\\%s" % (self.BIN_DIR, lang)
-					if not os.path.isdir(LANGUAGE_DIR):
-						LANGUAGE_DIR = "E:\\Persoenlich\\ovpn-client\\dist%s\\locale\\%s" % (BITS, lang)
-
+					LANGUAGE_DIR = "%s\\%s" % (LANGUAGE_DIR_CHECK, lang)
 					if os.path.isdir(LANGUAGE_DIR):
 						combobox.append_text(lang)
 						if self.APP_LANGUAGE == lang:
