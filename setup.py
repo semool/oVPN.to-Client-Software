@@ -243,6 +243,7 @@ print >> ind, 'Name: "themes\Greybird"; Description: "Greybird"; Types: full'
 print >> ind, 'Name: "themes\Windows"; Description: "Windows"; Types: full'
 print >> ind, '[Files]'
 print >> ind, 'Source: "%s\*"; DestDir: "{app}"; Flags:replacesameversion' % (DIST_DIR)
+print >> ind, 'Source: "%s\appdata\*"; DestDir: "{app}\appdata\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
 print >> ind, 'Source: "%s\etc\*"; DestDir: "{app}\etc\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
 print >> ind, 'Source: "%s\lib\*"; DestDir: "{app}\lib\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
 print >> ind, 'Source: "%s\Microsoft.VC90.CRT\*"; DestDir: "{app}\Microsoft.VC90.CRT\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
