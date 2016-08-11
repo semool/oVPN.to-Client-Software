@@ -231,8 +231,35 @@ print >> ind, 'Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"'
 print >> ind, 'Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"'
 print >> ind, '[Tasks]'
 print >> ind, 'Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked'
+print >> ind, '[Components]'
+print >> ind, 'Name: "main"; Description: "%s"; Types: full compact custom; Flags: fixed' % release_version.version_data()["NAME"]
+print >> ind, 'Name: "languages"; Description: "Languages"; Types: full'
+print >> ind, 'Name: "languages\deutsch"; Description: "Deutsch"; Types: full'
+print >> ind, 'Name: "languages\espanol"; Description: "Espanol"; Types: full'
+print >> ind, 'Name: "themes"; Description: "Themes"; Types: full'
+print >> ind, 'Name: "themes\AdwaitaDark"; Description: "AdwaitaDark"; Types: full'
+print >> ind, 'Name: "themes\FlatRemixOS"; Description: "FlatRemixOS"; Types: full'
+print >> ind, 'Name: "themes\Greybird"; Description: "Greybird"; Types: full'
+print >> ind, 'Name: "themes\Windows"; Description: "Windows"; Types: full'
 print >> ind, '[Files]'
-print >> ind, 'Source: "%s\*.*"; DestDir: "{app}"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\*"; DestDir: "{app}"; Flags:replacesameversion' % (DIST_DIR)
+print >> ind, 'Source: "%s\appdata\*"; DestDir: "{app}\appdata\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\etc\*"; DestDir: "{app}\etc\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\lib\*"; DestDir: "{app}\lib\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\Microsoft.VC90.CRT\*"; DestDir: "{app}\Microsoft.VC90.CRT\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\glib-2.0\*"; DestDir: "{app}\share\glib-2.0\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\icons\*"; DestDir: "{app}\share\icons\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\locale\locale.alias"; DestDir: "{app}\share\locale\"; Flags:replacesameversion' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\locale\en\*"; DestDir: "{app}\share\locale\en\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\\themes\\Adwaita\*"; DestDir: "{app}\share\\themes\\Adwaita\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR)
+print >> ind, 'Source: "%s\locale\de\*"; DestDir: "{app}\locale\de\"; Flags:replacesameversion recursesubdirs; Components: languages\deutsch' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\locale\de\*"; DestDir: "{app}\share\locale\de\"; Flags:replacesameversion recursesubdirs; Components: languages\deutsch' % (DIST_DIR)
+print >> ind, 'Source: "%s\locale\es\*"; DestDir: "{app}\locale\es\"; Flags:replacesameversion recursesubdirs; Components: languages\espanol' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\locale\es\*"; DestDir: "{app}\share\locale\es\"; Flags:replacesameversion recursesubdirs; Components: languages\espanol' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\\themes\\Adwaita-dark\*"; DestDir: "{app}\\share\\themes\\Adwaita-dark\"; Flags:replacesameversion recursesubdirs; Components: themes\AdwaitaDark' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\\themes\\Flat-Remix-OS\*"; DestDir: "{app}\\share\\themes\\Flat-Remix-OS\"; Flags:replacesameversion recursesubdirs; Components: themes\FlatRemixOS' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\\themes\\Greybird\*"; DestDir: "{app}\share\\themes\\Greybird\"; Flags:replacesameversion recursesubdirs; Components: themes\Greybird' % (DIST_DIR)
+print >> ind, 'Source: "%s\share\\themes\\MS-Windows\*"; DestDir: "{app}\share\\themes\\MS-Windows\"; Flags:replacesameversion recursesubdirs; Components: themes\Windows' % (DIST_DIR)
 print >> ind, '[Icons]'
 print >> ind, 'Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"'
 print >> ind, 'Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"'
