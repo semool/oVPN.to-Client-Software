@@ -980,11 +980,11 @@ class Systray:
 				if self.win_read_interfaces():
 					if self.win_firewall_export_on_start():
 						if self.win_read_dns_to_backup():
-							if self.read_gateway_from_routes():
+							if self.read_gateway_from_interface():
 								return True
 							else:
 								i = 0
-								while not self.read_gateway_from_routes():
+								while not self.read_gateway_from_interface():
 									if i > 5:
 										return False
 									time.sleep(5)
@@ -996,7 +996,7 @@ class Systray:
 				if self.win_read_interfaces():
 					if self.win_firewall_export_on_start():
 						if self.win_read_dns_to_backup():
-							if self.read_gateway_from_routes():
+							if self.read_gateway_from_interface():
 								return True
 
 	def win_read_interfaces(self):
@@ -3687,7 +3687,10 @@ class Systray:
 	def inThread_spawn_openvpn_process(self):
 		self.debug(1,"def inThread_spawn_openvpn_process")
 		exitcode = False
-		self.win_enable_tap_interface()
+		# *fixme* def win_select_networkadapter() fails if anybody changes interface name between start and connect
+		#if not self.win_read_interfaces():
+		#	self.reset_ovpn_values_disconnected()
+		#	return False
 		if not self.openvpn_check_files():
 			self.reset_ovpn_values_disconnected()
 			return False
@@ -3830,7 +3833,41 @@ class Systray:
 		except:
 			self.debug(1,"def get_ovpn_ping: failed")
 
+	#def read_gateway_from_routes
+	def read_gateway_from_interface(self):
+		try:
+			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
+			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
+			GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
+			if self.isValueIPv4(GATEWAY_LOCAL):
+				self.GATEWAY_LOCAL = GATEWAY_LOCAL
+				self.debug(1,"def read_gateway_from_interface: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
+				return True
+		except:
+			self.debug(1,"def read_gateway_from_interface: failed")
+
 	def read_gateway_from_routes(self):
+		self.debug(1,"def read_gateway_from_routes()")
+		try:
+			output = self.win_return_route_cmd('print')
+			for line in output:
+				split = line.split()
+				try:
+					if self.OVPN_CONNECTEDtoIP in line:
+						self.debug(1,"def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
+						GATEWAY_LOCAL = line.split()[2]
+						if self.isValueIPv4(GATEWAY_LOCAL) and GATEWAY_LOCAL == self.GATEWAY_LOCAL:
+							self.debug(1,"def read_gateway_from_routes: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
+							return True
+						else:
+							self.msgwarn(_("def read_gateway_from_routes: GATEWAY_LOCAL != self.GATEWAY_LOCAL '%s' '%s'") % (GATEWAY_LOCAL,self.GATEWAY_LOCAL),_("Error"))
+				except:
+					pass
+		except:
+			self.debug(1,"def read_gateway_from_routes: failed")
+
+	""" *fixme* delete me later
+	def read_gateway_from_routes_old(self):
 		self.debug(1,"def read_gateway_from_routes()")
 		try:
 			output = self.win_return_route_cmd('print')
@@ -3858,6 +3895,7 @@ class Systray:
 				return False
 		except:
 			self.debug(1,"def read_gateway_from_routes: failed")
+	"""
 
 	def del_ovpn_routes(self):
 		self.debug(1,"def del_ovpn_routes()")
