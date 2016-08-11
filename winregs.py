@@ -29,8 +29,7 @@ def get_networkadapterlist_from_netsh():
 	data = data.split('\r\n')
 	return data
 
-def get_networkadapterlist_from_guids(istrue,iface_guids):
-	DEBUG = istrue
+def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 	iface_names = ['(unknown)' for i in range(len(iface_guids))]
 	mapguids = {}
 	reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
@@ -48,8 +47,7 @@ def get_networkadapterlist_from_guids(istrue,iface_guids):
 	return data
 	#return iface_names
 
-def get_networkadapterlist(istrue):
-	DEBUG = istrue
+def get_networkadapterlist(DEBUG):
 	newlist = []
 	list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
 	list2 = get_networkadapterlist_from_netsh()
@@ -59,9 +57,8 @@ def get_networkadapterlist(istrue):
 				newlist.append(name)
 	return newlist
 
-def get_networkadapter_guid(istrue,adaptername):
-	DEBUG = istrue
-	guids = get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"]
+def get_networkadapter_guid(DEBUG,adaptername):
+	guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["mapguids"]
 	guid = guids[adaptername]
 	debug(1,"def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
 	return guid
@@ -82,9 +79,8 @@ def get_tapadapters(OPENVPN_EXE,INTERFACES):
 					break
 		return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
 
-def get_interface_infos_from_guid(istrue,guid):
-	DEBUG = istrue
-	debug(1,"def get_interface_infos_from_guid: '%s'" % guid,DEBUG,True)
+def get_interface_infos_from_guid(DEBUG,guid):
+	debug(1,"def get_interface_infos_from_guid: '%s'" % (guid),DEBUG,True)
 	"""
 	winregs.get_interface_infos_from_guid("{XXXXXXXX-YYYY-ZZZZ-AAAA-CCCCDDDDEEEE}")
 	return = {
@@ -100,7 +96,7 @@ def get_interface_infos_from_guid(istrue,guid):
 			values[keyname] = QueryValueEx(key, keyname)[0]
 		except:
 			pass
-	debug(1,"get_interface_infos_from_guid: '%s'" % values,DEBUG,True)
+	debug(1,"get_interface_infos_from_guid: '%s'" % (values),DEBUG,True)
 	return values
 
 
