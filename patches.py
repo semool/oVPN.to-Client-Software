@@ -7,8 +7,7 @@ from debug import debug
 
 BITS = struct.calcsize("P") * 8
 
-def select_gtkdll(istrue):
-	DEBUG = istrue
+def select_gtkdll(DEBUG):
 	pixel = 16
 	gtkfile = "%s\\libgtk-3-0.dll" % (os.getcwd())
 	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (os.getcwd())
