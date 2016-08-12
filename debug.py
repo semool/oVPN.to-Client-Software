@@ -10,7 +10,7 @@ LOGLEVELS = [0,1,2,3]
 DEBUGcount = 0
 DEBUGfrombefore = False
 
-def debug(level,text,istrue,bindir):
+def debug(level,text,DEBUG,bindir):
 	if bindir == False:
 		print "DEBUG: %s" % (text)
 		return False
@@ -54,7 +54,7 @@ def debug(level,text,istrue,bindir):
 		if level > 0:
 			print("%s" % (debugstringsht))
 	DEBUGfrombefore = text
-	if istrue == True:
+	if DEBUG == True:
 		if not debugstringsht == False:
 			write_debug(level,debugstringsht,timefromboot,logfile)
 		if not debugstringsht1 == False:
