@@ -5588,9 +5588,15 @@ class Systray:
 		signtool = self.find_signtool()
 		if os.path.isfile(file):
 			cscertsha1 = "E08110E5ECFE4194B846C53EB157965EFE0ECEFF"
+			if DEVMODE == True:
+				cscertsha1 = "1234000012340000123400001234000012340000"
 			string1 = '"%s" verify /v /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
 			self.debug(1,"def signtool_verify: string1 = '%s'"%(string1))
-			exitcode1 = subprocess.check_call("%s" % (string1),shell=True)
+			exitcode1 = 1
+			try:
+				exitcode1 = subprocess.check_call("%s" % (string1),shell=True)
+			except:
+				pass
 			if exitcode1 == 0:
 				self.debug(1,"def signtool_verify: file = '%s' signature verified"%(file))
 				return True
@@ -5604,7 +5610,11 @@ class Systray:
 					cacertsha1 = "92C1588E85AF2201CE7915E8538B492F605B80C6"
 					string2 = '"%s" verify /v /a /all /pa /tw /ca %s "%s"' % (signtool,cacertsha1,file)
 					self.debug(1,"def signtool_verify: string2 = '%s'"%(string2))
-					exitcode2 = subprocess.check_call("%s" % (string2),shell=True)
+					exitcode2 = 1
+					try:
+						exitcode2 = subprocess.check_call("%s" % (string2),shell=True)
+					except:
+						pass
 					if exitcode2 == 0:
 						self.debug(1,"def signtool_verify: file = '%s' signature CA verified"%(file))
 						return True
