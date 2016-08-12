@@ -3,8 +3,7 @@ import release_version
 import datetime
 from debug import debug
 
-def set_task(istrue,delay):
-	DEBUG = istrue
+def set_task(DEBUG,delay):
 	SOURCEDIR = os.getcwd()
 	DATE = datetime.datetime.now()
 	USERNAME = os.getenv('username')
@@ -77,8 +76,7 @@ def set_task(istrue,delay):
 			remove_xml(DEBUG,XMLFILE)
 			debug(1,"def cb_switch_autostart: enable failed",DEBUG,True)
 
-def remove_xml(istrue,XMLFILE):
-	DEBUG = istrue
+def remove_xml(DEBUG,XMLFILE):
 	if os.path.isfile(XMLFILE):
 		try:
 			os.remove(XMLFILE)
@@ -86,8 +84,7 @@ def remove_xml(istrue,XMLFILE):
 			debug(1,"def remove_xml: could not remove XMLFILE '%s'" % (XMLFILE),DEBUG,True)
 			pass
 
-def delete_task(istrue):
-	DEBUG = istrue
+def delete_task(DEBUG):
 	string = 'schtasks.exe /Delete /TN "%s" /f' % (release_version.version_data()["NAME"])
 	try:
 		exitcode = subprocess.check_call("%s" % (string),shell=True)
