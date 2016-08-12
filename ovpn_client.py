@@ -5600,7 +5600,7 @@ class Systray:
 				if DEVMODE == False:
 					return False
 				else:
-					self.debug(1,"def signtool_verify: file = '%s' check signature CA hash"%(exitcode2,file))
+					self.debug(1,"def signtool_verify: file = '%s' check signature CA hash"%(file))
 					cacertsha1 = "92C1588E85AF2201CE7915E8538B492F605B80C6"
 					string2 = '"%s" verify /v /a /all /pa /tw /ca %s "%s"' % (signtool,cacertsha1,file)
 					self.debug(1,"def signtool_verify: string2 = '%s'"%(string2))
@@ -5609,7 +5609,7 @@ class Systray:
 						self.debug(1,"def signtool_verify: file = '%s' signature CA verified"%(file))
 						return True
 					else:
-						self.debug(1,"def signtool_verify: file = '%s' signature CA failed"%(exitcode2,file))
+						self.debug(1,"def signtool_verify: file = '%s' signature CA failed"%(file))
 						return False
 		else:
 			self.debug(1,"def signtool_verify(%s) not found"%(file))
