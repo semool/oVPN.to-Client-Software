@@ -2042,17 +2042,11 @@ class Systray:
 								liststore.set_value(iter,cellnumber,servercipher)
 								row_changed += 1
 								if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' servercipher" % (server))
-							elif cellnumber == 25:
-								pass
-							elif cellnumber == 26:
-								pass
-							elif cellnumber == 27:
-								pass
 							elif self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 								try:
 									vlanip4 = str(self.OVPN_SRV_DATA[servershort]["vlanip4"])
 									vlanip6 = str(self.OVPN_SRV_DATA[servershort]["vlanip6"])
-									live = str(self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
+									live = str("%s Mbps" % self.OVPN_SRV_DATA[servershort]["traffic"]["live"])
 									uplink = str(self.OVPN_SRV_DATA[servershort]["traffic"]["uplink"])
 									cpuinfo = str(self.OVPN_SRV_DATA[servershort]["info"]["cpu"])
 									raminfo = str(self.OVPN_SRV_DATA[servershort]["info"]["ram"])
@@ -2152,7 +2146,12 @@ class Systray:
 										liststore.set_value(iter,cellnumber,ping6)
 										row_changed += 1
 										if debugupdate_mwls: self.debug(1,"def update_mwls: updated server '%s' ping6" % (server))
-								
+									elif cellnumber == 25:
+										pass
+									elif cellnumber == 26:
+										pass
+									elif cellnumber == 27:
+										pass
 								except:
 									pass
 									# we may fail silently for private servers
@@ -2234,6 +2233,7 @@ class Systray:
 			else:
 				return 1
 		except:
+			return 0
 			self.debug(1,"def cell_sort: failed")
 
 	def cell_sort_traffic(self, treemodel, iter1, iter2, user_data):
@@ -2267,6 +2267,29 @@ class Systray:
 				return 1
 		except:
 			self.debug(1,"def cell_sort_traffic: failed")
+			return 0
+
+	def cell_sort_mbps(self, treemodel, iter1, iter2, user_data):
+		try:
+			self.debug(16,"def cell_sort_mbps()")
+			sort_column, _ = treemodel.get_sort_column_id()
+			data1 = treemodel.get_value(iter1, sort_column)
+			data2 = treemodel.get_value(iter2, sort_column)
+			
+			iter1 = data1.split(" ")
+			iter2 = data2.split(" ")
+			number1 = float(iter1[0])
+			number2 = float(iter2[0])
+			
+			if float(number1) < float(number2):
+				return -1
+			elif float(number1) == float(number2):
+				return 0
+			else:
+				return 1
+		except:
+			return 0
+			self.debug(1,"def cell_sort_mbps: failed")
 
 	def mainwindow_ovpn_server(self):
 		self.debug(1,"def mainwindow_ovpn_server: go")
@@ -2328,11 +2351,12 @@ class Systray:
 				if cellnumber in [ 2, 5, 6, 7, 9, 10, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 					column.set_sort_column_id(cellnumber)
 					# Add sort function for str cells
-					if not cellnumber in [ 2, 6, 16, 25 ]: # sortable but text str, cannot convert to float, 16: Traffic needs own sort_func
+					if not cellnumber in [ 2, 6, 9, 16, 25 ]: # sortable but text str, cannot convert to float, 9+16 needs own sort_func
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort, None)
-					if cellnumber in [ 16 ]:
+					if cellnumber == 9:
+						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_mbps, None)
+					if cellnumber == 16:
 						self.serverliststore.set_sort_func(cellnumber, self.cell_sort_traffic, None)
-			
 				# Hide colums in light server view
 				if self.LOAD_SRVDATA == False:
 					if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
