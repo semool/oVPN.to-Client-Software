@@ -5596,7 +5596,8 @@ class Systray:
 				return True
 			else:
 				self.debug(1,"def signtool_verify: file = '%s' signature failed"%(file))
-				if self.DEBUG == False:
+				# only check file is signed from same CA if DEVMODE is True
+				if DEVMODE == False:
 					return False
 				else:
 					self.debug(1,"def signtool_verify: file = '%s' check signature CA hash"%(exitcode2,file))
