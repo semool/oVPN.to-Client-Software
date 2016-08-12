@@ -204,8 +204,6 @@ class Systray:
 		self.OPENVPN_EXE = False
 		self.OPENVPN_SILENT_SETUP = False
 		
-		HEADERS = self.make_useragent()
-		
 		self.OVPN_SERVER = list()
 		self.OVPN_FAV_SERVER = False
 		self.OVPN_AUTO_CONNECT_ON_START = False
