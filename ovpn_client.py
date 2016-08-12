@@ -26,7 +26,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
-import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string
 from ConfigParser import SafeConfigParser
 # .py files imports
 import debug
@@ -203,6 +203,8 @@ class Systray:
 		self.API_DIR = False
 		self.OPENVPN_EXE = False
 		self.OPENVPN_SILENT_SETUP = False
+		
+		HEADERS = self.make_useragent()
 		
 		self.OVPN_SERVER = list()
 		self.OVPN_FAV_SERVER = False
@@ -4907,6 +4909,34 @@ class Systray:
 		except:
 			self.debug(1,"def extract_ovpn: failed")
 
+	def get_random_string(self):
+		int = random.randint(16,32)
+		rand = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(int))
+		return rand
+
+	def make_useragent(self):
+		#self.debug(1,"def make_useragent()")
+		user_agent = False
+		rand = self.get_random_string()
+		try:
+			version = release_version.version_data()["VERSION"]
+			versionint = 0
+			
+			try:
+				split = version.split(".")
+				versionint = "%s%s%s" % (split[0],split[1],split[2])
+			except:
+				self.debug(1,"def make_useragent: version.split failed")
+			
+			if versionint > 0:
+				version = versionint
+			user_agent = "client/%s" % (version)
+		except:
+			self.debug(1,"def make_useragent: construct user-agent failed")
+		headers = { 'User-Agent':"%s/%s" % (user_agent,rand) }
+		self.debug(1,"def make_useragent: return headers = '%s'" % (headers))
+		return headers
+
 	def API_REQUEST(self,API_ACTION):
 		self.debug(1,"def API_REQUEST(%s)"%(API_ACTION))
 		if self.APIKEY == False:
@@ -4935,29 +4965,8 @@ class Systray:
 		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
 		
 		try:
-			headers = False
-			
-			try:
-				version = release_version.version_data()["VERSION"]
-				versionint = 0
-				
-				try:
-					split = version.split(".")
-					versionint = "%s%s%s" % (split[0],split[1],split[2])
-				except:
-					self.debug(1,"def API_REQUEST: version.split failed")
-				
-				if versionint > 0:
-					version = versionint
-				user_agent = "client/%s" % (version)
-				headers = { 'User-Agent':user_agent }
-			except:
-				self.debug(1,"def API_REQUEST: construct user-agent failed")
-			
-			if headers == False:
-				r = requests.post(url=self.APIURL,data=values)
-			else:
-				r = requests.post(url=self.APIURL,data=values,headers=headers)
+			HEADERS = self.make_useragent()
+			r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
 			
 			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
 				self.body = r.content
@@ -5045,7 +5054,8 @@ class Systray:
 				return True
 			try:
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
-				r = requests.get(url,timeout=2)
+				HEADERS = self.make_useragent()
+				r = requests.get(url,timeout=3,headers=HEADERS)
 				rip = r.content.strip().split()[0]
 				if rip == self.OVPN_CONNECTEDtoIP:
 					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP")
@@ -5220,7 +5230,8 @@ class Systray:
 		try:
 			API_ACTION = "loadserverdata"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-			r = requests.post(self.APIURL,data=values,timeout=(3,3))
+			HEADERS = self.make_useragent()
+			r = requests.post(self.APIURL,data=values,headers=HEADERS,timeout=(3,3))
 			self.debug(1,"def load_serverdata_from_remote: posted")
 			try:
 				if not r.content == "AUTHERROR":
@@ -5276,7 +5287,8 @@ class Systray:
 		try:
 			API_ACTION = "accinfo"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-			r = requests.post(self.APIURL,data=values,timeout=(2,2))
+			HEADERS = self.make_useragent()
+			r = requests.post(self.APIURL,data=values,headers=HEADERS,timeout=(3,3))
 			self.debug(1,"def load_accinfo_from_remote: posted")
 			try:
 				if not r.content == "AUTHERROR":
@@ -5354,8 +5366,8 @@ class Systray:
 				self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
 				self.debug(1,"Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
 				try:
-					
-					r1 = requests.get(self.OPENVPN_DL_URL)
+					HEADERS = self.make_useragent()
+					r1 = requests.get(self.OPENVPN_DL_URL,headers=HEADERS)
 					if len(r1.content) == self.OPENVPN_FILESIZE:
 						fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
 						fp1.write(r1.content)
@@ -5363,7 +5375,8 @@ class Systray:
 						ascfile = "%s.asc" % (self.OPENVPN_DL_URL)
 						if os.path.isfile(ascfile):
 							os.remove(ascfile)
-						r2 = requests.get(ascfile)
+						HEADERS = self.make_useragent()
+						r2 = requests.get(ascfile,headers=HEADERS)
 						fp2 = open(self.OPENVPN_ASC_FILE, "wb")
 						fp2.write(r2.content)
 						fp2.close()
@@ -5692,7 +5705,8 @@ class Systray:
 				if not os.path.isfile(self.dns_d0wntxt):
 					try:
 						url = "https://%s/files/dns/d0wns_dns.static.txt" % (VCP_DOMAIN)
-						r = requests.get(url)
+						HEADERS = self.make_useragent()
+						r = requests.get(url,headers=HEADERS)
 						fp = open(self.dns_d0wntxt,'wb')
 						fp.write(r.content)
 						fp.close()
