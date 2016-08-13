@@ -9,21 +9,23 @@ mkdir %DEVDIST%
 mkdir %BINSDIR%
 
 mkdir "%DEVDIST%\includes\"
-xcopy /Y /E "%INCLUDESDIR%\themes" "%DEVDIST%\includes\themes\"
-copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DEVDIST%\includes\"
-xcopy /Y /E "%INCLUDESDIR%\Microsoft.VC90.CRT_win%BITS%" "%DEVDIST%\includes\Microsoft.VC90.CRT_win%BITS%\"
-xcopy /Y /E "%LOCALEDIR%" "%DEVDIST%\locale\"
+mkdir "%DEVDIST%\includes\signtool"
 mkdir "%DEVDIST%\else\"
 mkdir "%DEVDIST%\else\app_icons"
+xcopy /Y /E "%INCLUDESDIR%\themes" "%DEVDIST%\includes\themes\"
+xcopy /Y /E "%INCLUDESDIR%\Microsoft.VC90.CRT_win%BITS%" "%DEVDIST%\includes\Microsoft.VC90.CRT_win%BITS%\"
+xcopy /Y /E "%LOCALEDIR%" "%DEVDIST%\locale\"
+copy /Y "%SIGNTOOL%" "%DEVDIST%\includes\signtool\"
+copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DEVDIST%\includes\"
 copy /Y "%SOURCEDIR%\else\app_icons\shield_exe*" "%DEVDIST%\else\app_icons"
 copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
-del "%SOURCEDIR%\%EXESTRING%"
-del "%SOURCEDIR%\*.pyo"
 copy /Y "%SOURCEDIR%\ovpn_client.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\*.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\*.bat" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\inno_setup%BITS%.iss" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\inno.release" "%DEVDIST%\"
+del "%SOURCEDIR%\%EXESTRING%"
+del "%SOURCEDIR%\*.pyo"
 
 set BUILDDEVFILE=%DEVSDIR%\build-dev-%VERSION%.7z
 IF EXIST %BUILDDEVFILE% (del %BUILDDEVFILE%)
