@@ -324,9 +324,10 @@ class Systray:
 						if self.win_pre3_load_profile_dir_vars():
 							if self.check_config_folders():
 								if self.read_options_file():
-									if self.read_interfaces():
-										if self.write_options_file():
-											return True
+									if self.win_detect_openvpn():
+										if self.read_interfaces():
+											if self.write_options_file():
+												return True
 		elif OS == "linux2" :
 			self.errorquit(text=_("Operating System not supported: %s") % (self.OS))
 		elif OS == "darwin":
@@ -1003,7 +1004,6 @@ class Systray:
 
 	def win_read_interfaces(self):
 		self.debug(1,"def win_read_interfaces()")
-		self.win_detect_openvpn()
 		self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG)
 		if len(self.INTERFACES) < 2:
 			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
@@ -3717,7 +3717,7 @@ class Systray:
 		#if not self.win_read_interfaces():
 		#	self.reset_ovpn_values_disconnected()
 		#	return False
-		if not self.openvpn_check_files():
+		if not self.openvpn_check_files() == True:
 			self.reset_ovpn_values_disconnected()
 			return False
 		if not self.win_firewall_start():
@@ -5347,7 +5347,8 @@ class Systray:
 			self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
 			self.debug(1,"def load_accinfo_from_remote: api request failed")
 			return False
-
+	
+	""" *fixme* move to openvpn.py """
 	def build_openvpn_dlurl(self):
 		self.debug(1,"def build_openvpn_dlurl()")
 		self.PLATFORM = self.os_platform()
@@ -5370,6 +5371,7 @@ class Systray:
 		#print "def build_openvpn_dlurl: PLATFORM=%s url='%s'" % (self.PLATFORM,self.OPENVPN_DL_URL)
 		return True
 
+	""" *fixme* move to openvpn.py """
 	def upgrade_openvpn(self):
 		self.debug(1,"def upgrade_openvpn()")
 		if self.load_openvpnbin_from_remote():
@@ -5380,7 +5382,8 @@ class Systray:
 			self.errorquit(text=_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
 		else:
 			self.errorquit(text=_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
-
+	
+	""" *fixme* move to openvpn.py """
 	def load_openvpnbin_from_remote(self):
 		self.debug(1,"def load_openvpnbin_from_remote()")
 		if not self.OPENVPN_DL_URL == False:
@@ -5413,7 +5416,8 @@ class Systray:
 					return False
 		else:
 			return False
-
+	
+	""" *fixme* move to openvpn.py """
 	def verify_openvpnbin_dl(self):
 		self.debug(1,"def verify_openvpnbin_dl()")
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
@@ -5432,6 +5436,7 @@ class Systray:
 		else:
 			return False
 
+	""" *fixme* move to openvpn.py """
 	def win_install_openvpn(self):
 		self.debug(1,"def win_install_openvpn()")
 		self.tray.set_tooltip_markup(_("%s - Install openVPN") % (CLIENT_STRING))
@@ -5462,6 +5467,7 @@ class Systray:
 			self.debug(1,"def win_install_openvpn: '%s' failed" % (netshcmd))
 			return False
 
+	""" *fixme* move to openvpn.py """
 	def win_select_openvpn(self):
 		self.debug(1,"def win_select_openvpn()")
 		self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
@@ -5486,38 +5492,26 @@ class Systray:
 		except:
 			return False
 
+	""" *fixme* call openvpn.py """
 	def win_detect_openvpn(self):
-		self.debug(1,"def win_detect_openvpn()")
-		if self.OPENVPN_DIR == False:
-			os_programfiles = "PROGRAMFILES PROGRAMFILES(x86) PROGRAMW6432"
-			for getenv in os_programfiles.split():
-				programfiles = os.getenv(getenv)
-				OPENVPN_DIR = "%s\\OpenVPN\\bin" % (programfiles)
-				file = "%s\\openvpn.exe" % (OPENVPN_DIR)
-				if os.path.isfile(file):
-					self.debug(1,"def win_detect_openvpn: %s" % (file))
-					self.OPENVPN_EXE = file
-					self.OPENVPN_DIR = OPENVPN_DIR
-					break
-		elif os.path.isdir(self.OPENVPN_DIR):
-			file = "%s\\bin\\openvpn.exe" % (self.OPENVPN_DIR)
-			if os.path.isfile(file):
-				self.OPENVPN_EXE = file
+		import openvpn
+		values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
+		if not values == False:
+			self.OPENVPN_DIR = values["OPENVPN_DIR"]
+			self.OPENVPN_EXE = values["OPENVPN_EXE"]
+			self.debug(1,"def win_detect_openvpn: DIR = '%s', EXE = '%s'"%(self.OPENVPN_DIR,self.OPENVPN_EXE))
+			if self.OPENVPN_EXE == False or self.OPENVPN_DIR == False:
+				if not self.win_select_openvpn():
+					if self.upgrade_openvpn():
+						openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_DIR)
 			else:
-				self.OPENVPN_DIR = False
-		if self.OPENVPN_DIR == False and not self.OPENVPN_EXE == False:
-			self.OPENVPN_DIR = self.OPENVPN_EXE.rsplit('\\', 1)[0]
-		if self.OPENVPN_EXE == False or (not os.path.isfile(self.OPENVPN_EXE) or self.OPENVPN_EXE == False):
-			if not self.win_select_openvpn():
-				if self.upgrade_openvpn():
-					self.win_detect_openvpn()
-		else:
-			if not self.openvpn_check_files():
-				self.errorquit(_("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']") % (self.OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE))
-			self.debug(1,"def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
-			if self.win_detect_openvpn_version() == True:
-				return True
+				if not self.openvpn_check_files() == True:
+					self.errorquit(_("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']") % (OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE))
+				self.debug(1,"def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
+				if self.win_detect_openvpn_version() == True:
+					return True
 
+	""" *fixme* move to openvpn.py """
 	def win_detect_openvpn_version(self):
 		self.debug(1,"def win_detect_openvpn_version()")
 		if not os.path.isfile(self.OPENVPN_EXE):
@@ -5552,6 +5546,7 @@ class Systray:
 		except:
 			self.msgwarn(_("Could not find openVPN"),_("Error"))
 
+	""" *fixme* move to export """
 	def find_signtool(self):
 		self.debug(1,"def find_signtool()")
 		try:
@@ -5573,25 +5568,9 @@ class Systray:
 			self.debug(1,"def find_signtool: failed")
 		return False
 
+	""" *fixme* move to export """
 	def signtool_verify(self,file):
 		self.debug(1,"def signtool_verify(%s)"%(file))
-		"""
-		Signing Certificate Chain:
-			Issued to: DigiCert Assured ID Root CA
-			Issued by: DigiCert Assured ID Root CA
-			Expires:   Mon Nov 10 02:00:00 2031
-			SHA1 hash: 0563B8630D62D75ABBC8AB1E4BDFB5A899B24D43
-
-				Issued to: DigiCert SHA2 Assured ID Code Signing CA
-				Issued by: DigiCert Assured ID Root CA
-				Expires:   Sun Oct 22 14:00:00 2028
-				SHA1 hash: 92C1588E85AF2201CE7915E8538B492F605B80C6
-
-					Issued to: OpenVPN Technologies, Inc.
-					Issued by: DigiCert SHA2 Assured ID Code Signing CA
-					Expires:   Fri Sep 02 14:00:00 2016
-					SHA1 hash: E08110E5ECFE4194B846C53EB157965EFE0ECEFF
-		"""
 		signtool = self.find_signtool()
 		if os.path.isfile(file):
 			cscertsha1 = "E08110E5ECFE4194B846C53EB157965EFE0ECEFF"
@@ -5632,6 +5611,7 @@ class Systray:
 			self.debug(1,"def signtool_verify(%s) not found"%(file))
 			return False
 
+	""" *fixme* move to openvpn.py """
 	def openvpn_check_files(self):
 		self.debug(1,"def openvpn_check_files()")
 		# check exe vs. hardcoded
@@ -5643,11 +5623,11 @@ class Systray:
 		else:
 			if not self.find_signtool() == False:
 				# openvpn.exe hash failed, check exe/dll signatures
-				for file in self.get_openvpn_files(".exe"):
+				for file in self.list_openvpn_files(".exe"):
 					filepath = "%s\\%s" % (self.OPENVPN_DIR,file)
 					if not self.signtool_verify(filepath):
 						return False
-				for file in self.get_openvpn_files(".dll"):
+				for file in self.list_openvpn_files(".dll"):
 					filepath = "%s\\%s" % (self.OPENVPN_DIR,file)
 					if not self.signtool_verify(filepath):
 						return False
@@ -5655,9 +5635,10 @@ class Systray:
 				return True
 		self.debug(1,"def openvpn_check_files: failed")
 		return False
-
-	def get_openvpn_files(self,type):
-		self.debug(1,"def get_openvpn_files()")
+	
+	""" *fixme* move to openvpn.py """
+	def list_openvpn_files(self,type):
+		self.debug(1,"def list_openvpn_files()")
 		try:
 			dir = self.OPENVPN_EXE.rsplit('\\', 1)[0]
 			if os.path.exists(dir):
@@ -5667,14 +5648,15 @@ class Systray:
 					if file.endswith(type):
 						list.append(file)
 				self.OPENVPN_DIR = dir
-				self.debug(1,"def get_openvpn_files: self.OPENVPN_DIR = '%s'" % (self.OPENVPN_DIR))
+				self.debug(1,"def list_openvpn_files: self.OPENVPN_DIR = '%s'" % (self.OPENVPN_DIR))
 				return list
 			else:
-				self.debug(1,"def get_openvpn_files: '%s' not found!" % (self.OPENVPN_DIR))
+				self.debug(1,"def list_openvpn_files: '%s' not found!" % (self.OPENVPN_DIR))
 		except:
-			self.debug(1,"def get_openvpn_files: failed")
+			self.debug(1,"def list_openvpn_files: failed")
 		return False
-
+	
+	""" *fixme* move to openvpn.py """
 	def openvpn_check_file_hashs(self,type):
 		self.debug(1,"def openvpn_check_file_hashs(%s)"%(type))
 		if DEVMODE == True:
@@ -5687,8 +5669,7 @@ class Systray:
 		try:
 			if self.CHECK_FILEHASHS == False:
 				return True
-			content = self.get_openvpn_files(type)
-			print content
+			content = self.list_openvpn_files(type)
 			filename = self.openvpn_filename_exe()
 			hashs = self.OPENVPN_FILEHASHS[filename]
 			self.debug(2,"hashs = '%s'" % (hashs))
@@ -5710,7 +5691,8 @@ class Systray:
 		except:
 			self.debug(1,"def openvpn_check_file_hashs: failed!")
 			return False
-
+	
+	""" *fixme* move to openvpn.py """
 	def openvpn_filename_exe(self):
 		self.debug(1,"def openvpn_filename_exe()")
 		if self.PLATFORM == "AMD64":
