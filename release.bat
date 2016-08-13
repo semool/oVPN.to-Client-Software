@@ -9,13 +9,13 @@ mkdir %DEVDIST%
 mkdir %BINSDIR%
 
 mkdir "%DEVDIST%\includes\"
-mkdir "%DEVDIST%\includes\signtool"
+mkdir "%DEVDIST%\includes\codesign"
 mkdir "%DEVDIST%\else\"
 mkdir "%DEVDIST%\else\app_icons"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DEVDIST%\includes\themes\"
 xcopy /Y /E "%INCLUDESDIR%\Microsoft.VC90.CRT_win%BITS%" "%DEVDIST%\includes\Microsoft.VC90.CRT_win%BITS%\"
 xcopy /Y /E "%LOCALEDIR%" "%DEVDIST%\locale\"
-copy /Y "%SIGNTOOL%" "%DEVDIST%\includes\signtool\"
+copy /Y "%SIGNTOOL%" "%DEVDIST%\includes\codesign\"
 copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DEVDIST%\includes\"
 copy /Y "%SOURCEDIR%\else\app_icons\shield_exe*" "%DEVDIST%\else\app_icons"
 copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
