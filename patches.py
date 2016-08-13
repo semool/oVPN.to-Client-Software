@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
-import sys, shutil, struct
+import os, sys, shutil, struct
 from _winreg import *
 from ctypes import *
 from debug import debug
@@ -9,9 +8,10 @@ BITS = struct.calcsize("P") * 8
 
 def select_gtkdll(DEBUG):
 	pixel = 16
-	gtkfile = "%s\\libgtk-3-0.dll" % (os.getcwd())
-	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (os.getcwd())
-	gtkfile32 = "%s\\libgtk-3-0-32.dll" % (os.getcwd())
+	BIN_DIR = os.getcwd()
+	gtkfile = "%s\\libgtk-3-0.dll" % (BIN_DIR)
+	gtkfile16 = "%s\\libgtk-3-0-16.dll" % (BIN_DIR)
+	gtkfile32 = "%s\\libgtk-3-0-32.dll" % (BIN_DIR)
 
 	try:
 		LOGPIXELSX = 88

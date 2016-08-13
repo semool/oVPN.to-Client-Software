@@ -1,15 +1,14 @@
-import os, subprocess
+# -*- coding: utf-8 -*-
+import os, subprocess, datetime
 import release_version
-import datetime
 from debug import debug
 
-def set_task(DEBUG,delay):
-	SOURCEDIR = os.getcwd()
+def set_task(DEBUG,AUTOSTART_DELAY_TIME):
+	BIN_DIR = os.getcwd()
 	DATE = datetime.datetime.now()
 	USERNAME = os.getenv('username')
-	AUTOSTART_DELAY_TIME = delay
 
-	XMLFILE = "%s\\autostart.xml" % (SOURCEDIR)
+	XMLFILE = "%s\\autostart.xml" % (BIN_DIR)
 	remove_xml(DEBUG,XMLFILE)
 	ind = open(XMLFILE, "w")
 	print >> ind, '<?xml version="1.0" encoding="UTF-16"?>'
@@ -54,8 +53,8 @@ def set_task(DEBUG,delay):
 	print >> ind, '  </Settings>'
 	print >> ind, '  <Actions Context="Author">'
 	print >> ind, '    <Exec>'
-	print >> ind, '      <Command>"%s\%s"</Command>' % (SOURCEDIR,release_version.setup_data()["exename"])
-	print >> ind, '      <WorkingDirectory>%s</WorkingDirectory>' % (SOURCEDIR)
+	print >> ind, '      <Command>"%s\%s"</Command>' % (BIN_DIR,release_version.setup_data()["exename"])
+	print >> ind, '      <WorkingDirectory>%s</WorkingDirectory>' % (BIN_DIR)
 	print >> ind, '    </Exec>'
 	print >> ind, '  </Actions>'
 	print >> ind, '</Task>'
