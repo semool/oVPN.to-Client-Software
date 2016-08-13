@@ -3885,7 +3885,7 @@ class Systray:
 							self.debug(1,"def read_gateway_from_routes: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
 							return True
 						else:
-							self.msgwarn(_("def read_gateway_from_routes: GATEWAY_LOCAL != self.GATEWAY_LOCAL '%s' '%s'") % (GATEWAY_LOCAL,self.GATEWAY_LOCAL),_("Error"))
+							self.msgwarn(_("Read Gateway from Routes failed:\nGATEWAY_LOCAL: '%s' != self.GATEWAY_LOCAL: '%s'") % (GATEWAY_LOCAL,self.GATEWAY_LOCAL),_("Error"))
 				except:
 					pass
 		except:
