@@ -4,6 +4,7 @@ IF NOT DEFINED DISTDIR (EXIT)
 IF NOT DEFINED BITS (EXIT)
 
 copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
+copy /Y "%SIGNTOOL%" "%DISTDIR%\"
 xcopy /Y /E "%LOCALEDIR%" "%DISTDIR%\locale\"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
 

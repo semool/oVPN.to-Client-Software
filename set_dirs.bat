@@ -6,9 +6,19 @@ set APPDIR=%APPDATA%\ovpn\bin\client\dist
 set INNOCOMPILE="C:\Program Files (x86)\Inno Setup 5\Compil32.exe"
 set EXE7Z="%PROGRAMFILES%\7-Zip\7z.exe"
 
+set BITS=%~1
+set INCLUDESDIR=%SOURCEDIR%\includes
+set LOCALEDIR=%SOURCEDIR%\locale
+set DISTDIR=%SOURCEDIR%\dist%BITS%
+set DISTDIR2=%SOURCEDIR%\dist_check_bin%BITS%
+set DISTDIR3=%SOURCEDIR%\dist_cmd%BITS%
+set WORKPATH=%SOURCEDIR%\build%BITS%
+set LANGPATH=%DISTDIR%\share\locale\
+set BINARY=%DISTDIR%\ovpn_client.exe
+
 set CERTUTIL="C:\Windows\System32\CertUtil.exe"
 
-set SIGNTOOL="E:\codesign\bin_w10sdk\signtool.exe"
+set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk.exe
 set SIGNCERTSHA1=0775a45c76fad6989cbeb35c87e476642ccc172f
 
 IF NOT EXIST %CERTUTIL% (echo %CERTUTIL% NOT FOUND && PAUSE && EXIT)
@@ -22,7 +32,7 @@ set SIGNTOOLCMD1=%SIGNTOOL% sign /v /sha1 %SIGNCERTSHA1% /fd sha1 /t http://time
 set SIGNTOOLCMD4=%SIGNTOOL% sign /v /as /sha1 %SIGNCERTSHA1% /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512
 set SIGNTOOLVERI=%SIGNTOOL% verify /v /a /all /pa /tw /sha1 %SIGNCERTSHA1% 
 
-set BITS=%~1
+
 set PY32EXE=%PY32%\python.exe
 set PY64EXE=%PY64%\python.exe
 set PY32GET=%PY32%\Tools\i18n
@@ -54,14 +64,6 @@ IF NOT DEFINED PYEXE (echo MISSING BITS && PAUSE && EXIT)
 IF NOT EXIST %PYEXE% (echo PYEXE %PYEXE% NOT FOUND && PAUSE && EXIT)
 IF NOT EXIST %PYINSTALLER% (echo PYINSTALLER %PYINSTALLER% NOT FOUND && PAUSE && EXIT)
 
-
-set INCLUDESDIR=%SOURCEDIR%\includes
-set LOCALEDIR=%SOURCEDIR%\locale
-set DISTDIR=%SOURCEDIR%\dist%BITS%
-set DISTDIR2=%SOURCEDIR%\dist_check_bin%BITS%
-set WORKPATH=%SOURCEDIR%\build%BITS%
-set LANGPATH=%DISTDIR%\share\locale\
-set BINARY=%DISTDIR%\ovpn_client.exe
 
 set PY2EXE_LOG=%SOURCEDIR%\py2exe_%BITS%.log
 set PY2EXE_ERR=%SOURCEDIR%\py2exe_ERR_%BITS%.log
