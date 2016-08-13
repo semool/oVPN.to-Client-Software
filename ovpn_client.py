@@ -395,7 +395,7 @@ class Systray:
 			except:
 				pass
 		self.lock_file = "%s\\lock.file" % (self.APP_DIR)
-		self.opt_file = "%s\\options.cfg" % (self.API_DIR)
+		self.OPT_FILE = "%s\\options.cfg" % (self.API_DIR)
 		self.api_cfg = "%s\\ovpnapi.conf" % (self.API_DIR)
 		if os.path.isfile(self.api_cfg):
 			os.remove(self.api_cfg)
@@ -596,10 +596,10 @@ class Systray:
 
 	def read_options_file(self):
 		self.debug(1,"def read_options_file()")
-		if os.path.isfile(self.opt_file):
+		if os.path.isfile(self.OPT_FILE):
 			try:
 				parser = SafeConfigParser()
-				parser.read(self.opt_file)
+				parser.read(self.OPT_FILE)
 				
 				try:
 					APIKEY = parser.get('oVPN','apikey')
@@ -867,7 +867,7 @@ class Systray:
 			except:
 				self.msgwarn(_("Read config file failed!"),_("Error: def read_options_file"))
 				try:
-					os.remove(self.opt_file)
+					os.remove(self.OPT_FILE)
 				except:
 					pass
 		
@@ -876,7 +876,7 @@ class Systray:
 			self.VPN_CFG = self.VPN_CFGip4
 			self.init_localization(None)
 			try:
-				cfg = open(self.opt_file,'wb')
+				cfg = open(self.OPT_FILE,'wb')
 				parser = SafeConfigParser()
 				parser.add_section('oVPN')
 				parser.set('oVPN','apikey','%s'%(self.APIKEY))
@@ -932,7 +932,7 @@ class Systray:
 					APIKEY = False
 			else:
 				APIKEY = False
-			cfg = open(self.opt_file,'wb')
+			cfg = open(self.OPT_FILE,'wb')
 			parser = SafeConfigParser()
 			parser.add_section('oVPN')
 			parser.set('oVPN','apikey','%s'%(APIKEY))
@@ -1124,7 +1124,6 @@ class Systray:
 		dialogWindow.destroy()
 		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.APP_DIR,self.USERID)):
 			return True
-
 
 	def on_right_click_mainwindow(self, treeview, event):
 		self.debug(1,"def on_right_click_mainwindow()")
