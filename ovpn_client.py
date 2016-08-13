@@ -4857,6 +4857,7 @@ class Systray:
 		self.OVPN_CONFIGVERSION = "23x"
 		self.write_options_file()
 		self.read_options_file()
+		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
 			self.cb_check_normal_update()
@@ -4868,6 +4869,7 @@ class Systray:
 		self.OVPN_CONFIGVERSION = "23x46"
 		self.write_options_file()
 		self.read_options_file()
+		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
@@ -4882,6 +4884,7 @@ class Systray:
 		self.OVPN_CONFIGVERSION = "23x64"
 		self.write_options_file()
 		self.read_options_file()
+		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
