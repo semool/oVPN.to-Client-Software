@@ -53,32 +53,28 @@ def win_detect_openvpn_version(DEBUG,OPENVPN_EXE,OVPN_LATEST,OVPN_LATEST_BUILT,O
 		debug(1,"OVPN_VERSION = %s, OVPN_BUILT = %s, OVPN_LATESTBUILT = %s" % (OVPN_VERSION,OVPN_BUILT,OVPN_LATESTBUILT),DEBUG,True)
 		if OVPN_VERSION >= OVPN_LATEST:
 			debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_VERSION '%s' >= OVPN_LATEST '%s': True"%(OVPN_VERSION,OVPN_LATEST),DEBUG,True)
-			if (not len(OVPN_BUILT) == 3 or not len(OVPN_LATESTBUILT) == 3):
-				return False
-			else:
-				pass
+			if len(OVPN_BUILT) == 3 and len(OVPN_LATESTBUILT) == 3:
 				STR1 = str(OVPN_BUILT[0]+OVPN_BUILT[1]+OVPN_BUILT[2])
 				STR2 = str(OVPN_LATESTBUILT[0]+OVPN_LATESTBUILT[1]+OVPN_LATESTBUILT[2])
-			if OVPN_BUILT == OVPN_LATESTBUILT:
-				debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_BUILT '%s' == OVPN_LATESTBUILT '%s': True"%(OVPN_BUILT,OVPN_LATESTBUILT),DEBUG,True)
-				return True
-			else:
-				built_mon = OVPN_BUILT[0]
-				built_day = int(OVPN_BUILT[1])
-				built_year = int(OVPN_BUILT[2])
-				builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
-				string_built_time = time.strptime(builtstr,"%b/%d/%Y")
-				built_month_int = int(string_built_time.tm_mon)
-				built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
-				debug(1,"openvpn built_timestamp = %s OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,OVPN_LATEST_BUILT_TIMESTAMP),DEBUG,True)
-				if built_timestamp > OVPN_LATEST_BUILT_TIMESTAMP:
+				if STR1 == STR2:
+					debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_BUILT '%s' == OVPN_LATESTBUILT '%s': True"%(OVPN_BUILT,OVPN_LATESTBUILT),DEBUG,True)
 					return True
+				else:
+					built_mon = OVPN_BUILT[0]
+					built_day = int(OVPN_BUILT[1])
+					built_year = int(OVPN_BUILT[2])
+					builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
+					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
+					built_month_int = int(string_built_time.tm_mon)
+					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
+					if built_timestamp > OVPN_LATEST_BUILT_TIMESTAMP:
+						debug(1,"[openvpn.py] def win_detect_openvpn_version: built_timestamp '%s' > OVPN_LATEST_BUILT_TIMESTAMP '%s': True" % (built_timestamp,OVPN_LATEST_BUILT_TIMESTAMP),DEBUG,True)
+						return True
 		else:
-			pass
-			#self.upgrade_openvpn()
+			debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_VERSION '%s' too old"%(OVPN_VERSION),DEBUG,True)
 	except:
-		self.msgwarn(_("Could not find openVPN"),_("Error"))
-		return False
+		debug(1,"[openvpn.py] def win_detect_openvpn_version: failed",DEBUG,True)
+	return False
 
 """
 def upgrade_openvpn(DEBUG):
