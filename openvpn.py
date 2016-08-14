@@ -22,15 +22,9 @@ def win_detect_openvpn(DEBUG,OPENVPN_EXE):
 			except:
 				return False
 		
-		if OPENVPN_DIR == False:
-			return False
-		elif not os.path.isdir(OPENVPN_DIR):
-			return False
-		else:
+		if not OPENVPN_DIR == False and os.path.isdir(OPENVPN_DIR):
 			OPENVPN_EXE = "%s\\openvpn.exe" % (OPENVPN_DIR)
-			if not os.path.isfile(OPENVPN_EXE):
-				return False
-			else:
+			if os.path.isfile(OPENVPN_EXE):
 				return { "OPENVPN_DIR":OPENVPN_DIR,"OPENVPN_EXE":OPENVPN_EXE }
 	except:
 		debug(1,"[openvpn.py] def win_detect_openvpn: failed",DEBUG,True)
