@@ -36,6 +36,7 @@ import winregs
 import icons_b64
 import schedule_task
 import release_version
+import openvpn
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -363,7 +364,7 @@ class Systray:
 				self.PROFILES.append(profile)
 		self.PROFILES_COUNT = len(self.PROFILES)
 		self.debug(1,"def list_profiles: profiles_count %s" % (self.PROFILES_COUNT))
-		
+
 	def win_pre2_check_profiles_win(self):
 		self.debug(1,"def win_pre2_check_profiles_win()")
 		self.list_profiles()
@@ -384,7 +385,7 @@ class Systray:
 			if not self.select_userid() == True:
 				self.errorquit(text=_("Select User-ID failed!"))
 			return True
-	
+
 	def win_pre3_load_profile_dir_vars(self):
 		self.debug(1,"def win_pre3_load_profile_dir_vars()")
 		self.API_DIR = "%s\\%s" % (self.APP_DIR,self.USERID)
@@ -3858,7 +3859,6 @@ class Systray:
 		except:
 			self.debug(1,"def get_ovpn_ping: failed")
 
-	#def read_gateway_from_routes
 	def read_gateway_from_interface(self):
 		try:
 			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
@@ -3890,37 +3890,6 @@ class Systray:
 					pass
 		except:
 			self.debug(1,"def read_gateway_from_routes: failed")
-
-	""" *fixme* delete me later
-	def read_gateway_from_routes_old(self):
-		self.debug(1,"def read_gateway_from_routes()")
-		try:
-			output = self.win_return_route_cmd('print')
-			for line in output:
-				split = line.split()
-				try:
-					if split[0] == "0.0.0.0" and split[1] == "0.0.0.0":
-						self.GATEWAY_LOCAL = split[2]
-						self.debug(1,"def read_gateway_from_routes: self.GATEWAY_LOCAL #1: %s" % (self.GATEWAY_LOCAL))
-						return True
-				except:
-					pass
-					self.debug(8,"def read_gateway_from_routes: #1 failed")
-				try:
-					if self.OVPN_CONNECTEDtoIP in line:
-						self.debug(1,"def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
-						self.GATEWAY_LOCAL = line.split()[2]
-						self.debug(1,"self.GATEWAY_LOCAL #2: %s" % (self.GATEWAY_LOCAL))
-						return True
-				except:
-					pass
-					self.debug(8,"def read_gateway_from_routes: #2 failed")
-			if self.GATEWAY_LOCAL == False:
-				self.debug(1,"def read_gateway_from_routes: failed")
-				return False
-		except:
-			self.debug(1,"def read_gateway_from_routes: failed")
-	"""
 
 	def del_ovpn_routes(self):
 		self.debug(1,"def del_ovpn_routes()")
@@ -4908,6 +4877,7 @@ class Systray:
 			self.debug(1,"def delete_dir: %s" % (string))
 			subprocess.check_output("%s" % (string),shell=True)
 
+	""" *fixme* move to openvpn.py """
 	def extract_ovpn(self):
 		self.debug(1,"def extract_ovpn()")
 		try:
@@ -5384,7 +5354,7 @@ class Systray:
 			self.errorquit(text=_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
 		else:
 			self.errorquit(text=_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
-	
+
 	""" *fixme* move to openvpn.py """
 	def load_openvpnbin_from_remote(self):
 		self.debug(1,"def load_openvpnbin_from_remote()")
@@ -5494,9 +5464,8 @@ class Systray:
 		except:
 			return False
 
-	""" *fixme* call openvpn.py """
+	""" *fixme* moved to openvpn.py """
 	def win_detect_openvpn(self):
-		import openvpn
 		values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
 		if not values == False:
 			self.OPENVPN_DIR = values["OPENVPN_DIR"]
@@ -5510,43 +5479,10 @@ class Systray:
 				if not self.openvpn_check_files() == True:
 					self.errorquit(_("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']") % (OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE))
 				self.debug(1,"def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
-				if self.win_detect_openvpn_version() == True:
-					return True
-
-	""" *fixme* move to openvpn.py """
-	def win_detect_openvpn_version(self):
-		self.debug(1,"def win_detect_openvpn_version()")
-		if not os.path.isfile(self.OPENVPN_EXE):
-			return False
-		try:
-			out, err = subprocess.Popen("\"%s\" --version" % (self.OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
-		except:
-			self.msgwarn(_("Could not detect openVPN Version!"),_("Error"))
-			return False
-		try:
-			self.OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
-			self.OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
-			self.OVPN_LATESTBUILT = self.OVPN_LATEST_BUILT.split()
-			self.debug(1,"self.OVPN_VERSION = %s, self.OVPN_BUILT = %s, self.OVPN_LATESTBUILT = %s" % (self.OVPN_VERSION,self.OVPN_BUILT,self.OVPN_LATESTBUILT))
-			if self.OVPN_VERSION >= self.OVPN_LATEST:
-				if self.OVPN_BUILT == self.OVPN_LATESTBUILT:
-					self.debug(1,"self.OVPN_BUILT == self.OVPN_LATESTBUILT: True")
+				if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_EXE,self.OVPN_LATEST,self.OVPN_LATEST_BUILT,self.OVPN_LATEST_BUILT_TIMESTAMP) == True:
 					return True
 				else:
-					built_mon = self.OVPN_BUILT[0]
-					built_day = int(self.OVPN_BUILT[1])
-					built_year = int(self.OVPN_BUILT[2])
-					builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
-					string_built_time = time.strptime(builtstr,"%b/%d/%Y")
-					built_month_int = int(string_built_time.tm_mon)
-					built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
-					self.debug(1,"openvpn built_timestamp = %s self.OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,self.OVPN_LATEST_BUILT_TIMESTAMP))
-					if built_timestamp > self.OVPN_LATEST_BUILT_TIMESTAMP:
-						self.CHECK_FILEHASHS = False
-						return True
-			self.upgrade_openvpn()
-		except:
-			self.msgwarn(_("Could not find openVPN"),_("Error"))
+					return self.upgrade_openvpn()
 
 	""" *fixme* move to export """
 	def find_signtool(self):

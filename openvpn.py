@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import os, subprocess
 from debug import debug
 
 def win_detect_openvpn(DEBUG,OPENVPN_EXE):
@@ -36,7 +36,54 @@ def win_detect_openvpn(DEBUG,OPENVPN_EXE):
 		debug(1,"[openvpn.py] def win_detect_openvpn: failed",DEBUG,True)
 		return False
 
+def win_detect_openvpn_version(DEBUG,OPENVPN_EXE,OVPN_LATEST,OVPN_LATEST_BUILT,OVPN_LATEST_BUILT_TIMESTAMP):
+	debug(1,"[openvpn.py] def win_detect_openvpn_version()",DEBUG,True)
+	if not os.path.isfile(OPENVPN_EXE):
+		debug(1,"[openvpn.py] def win_detect_openvpn_version: OPENVPN_EXE not found",DEBUG,True)
+		return False
+	try:
+		out, err = subprocess.Popen("\"%s\" --version" % (OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
+	except:
+		#self.msgwarn(_("Could not detect openVPN Version!"),_("Error"))
+		return False
+	try:
+		OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
+		OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
+		OVPN_LATESTBUILT = OVPN_LATEST_BUILT.split()
+		debug(1,"OVPN_VERSION = %s, OVPN_BUILT = %s, OVPN_LATESTBUILT = %s" % (OVPN_VERSION,OVPN_BUILT,OVPN_LATESTBUILT),DEBUG,True)
+		if OVPN_VERSION >= OVPN_LATEST:
+			debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_VERSION '%s' >= OVPN_LATEST '%s': True"%(OVPN_VERSION,OVPN_LATEST),DEBUG,True)
+			if (not len(OVPN_BUILT) == 3 or not len(OVPN_LATESTBUILT) == 3):
+				return False
+			else:
+				pass
+				STR1 = str(OVPN_BUILT[0]+OVPN_BUILT[1]+OVPN_BUILT[2])
+				STR2 = str(OVPN_LATESTBUILT[0]+OVPN_LATESTBUILT[1]+OVPN_LATESTBUILT[2])
+			if OVPN_BUILT == OVPN_LATESTBUILT:
+				debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_BUILT '%s' == OVPN_LATESTBUILT '%s': True"%(OVPN_BUILT,OVPN_LATESTBUILT),DEBUG,True)
+				return True
+			else:
+				built_mon = OVPN_BUILT[0]
+				built_day = int(OVPN_BUILT[1])
+				built_year = int(OVPN_BUILT[2])
+				builtstr = "%s/%s/%s" % (built_mon,built_day,built_year)
+				string_built_time = time.strptime(builtstr,"%b/%d/%Y")
+				built_month_int = int(string_built_time.tm_mon)
+				built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
+				debug(1,"openvpn built_timestamp = %s OVPN_LATESTBUILT_TIMESTAMP = %s" % (built_timestamp,OVPN_LATEST_BUILT_TIMESTAMP),DEBUG,True)
+				if built_timestamp > OVPN_LATEST_BUILT_TIMESTAMP:
+					return True
+		else:
+			pass
+			#self.upgrade_openvpn()
+	except:
+		self.msgwarn(_("Could not find openVPN"),_("Error"))
+		return False
+
 """
+def upgrade_openvpn(DEBUG):
+	pass
+
 def list_openvpn_files(DEBUG,type):
 	pass
 
@@ -52,9 +99,6 @@ def openvpn_check_file_hashs(DEBUG,type):
 def build_openvpn_dlurl(self):
 	pass
 
-def upgrade_openvpn(self):
-	pass
-
 def load_openvpnbin_from_remote(self):
 	pass
 
@@ -62,6 +106,9 @@ def verify_openvpnbin_dl(self):
 	pass
 
 def win_install_openvpn(self):
+	pass
+
+def extract_ovpn(self):
 	pass
 
 def win_select_openvpn(self):
