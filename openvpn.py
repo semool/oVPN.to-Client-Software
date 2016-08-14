@@ -34,7 +34,8 @@ def win_detect_openvpn(DEBUG,OPENVPN_EXE):
 				return { "OPENVPN_DIR":OPENVPN_DIR,"OPENVPN_EXE":OPENVPN_EXE }
 	except:
 		debug(1,"[openvpn.py] def win_detect_openvpn: failed",DEBUG,True)
-		return False
+	debug(1,"[openvpn.py] def win_detect_openvpn: return False",DEBUG,True)
+	return False
 
 def win_detect_openvpn_version(DEBUG,OPENVPN_EXE,OVPN_LATEST,OVPN_LATEST_BUILT,OVPN_LATEST_BUILT_TIMESTAMP):
 	debug(1,"[openvpn.py] def win_detect_openvpn_version()",DEBUG,True)
@@ -74,6 +75,7 @@ def win_detect_openvpn_version(DEBUG,OPENVPN_EXE,OVPN_LATEST,OVPN_LATEST_BUILT,O
 			debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_VERSION '%s' too old"%(OVPN_VERSION),DEBUG,True)
 	except:
 		debug(1,"[openvpn.py] def win_detect_openvpn_version: failed",DEBUG,True)
+	debug(1,"[openvpn.py] def win_detect_openvpn_version: return False",DEBUG,True)
 	return False
 
 """

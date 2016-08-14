@@ -1013,10 +1013,10 @@ class Systray:
 		self.WIN_TAP_DEVS = newdata["TAP_DEVS"]
 		self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
 		self.debug(1,"def win_read_interfaces: self.INTERFACES = '%s'"%(self.INTERFACES))
-		#if self.WIN_TAP_DEVICE in self.WIN_TAP_DEVS:
-		#	self.debug(1,"Found self.WIN_TAP_DEVICE '%s' in self.WIN_TAP_DEVS '%s'" % (self.WIN_TAP_DEVICE,self.WIN_TAP_DEVS))
 		if len(self.WIN_TAP_DEVS) == 0:
-			self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
+			if self.upgrade_openvpn() == True:
+				if not self.win_detect_openvpn() == True:
+					self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
 		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
 			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 		else:
@@ -5442,7 +5442,7 @@ class Systray:
 	""" *fixme* move to openvpn.py """
 	def win_select_openvpn(self):
 		self.debug(1,"def win_select_openvpn()")
-		self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
+		#self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
 		dialogWindow = Gtk.FileChooserDialog(_("Select openvpn.exe or Cancel to install openVPN"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_default_response(Gtk.ResponseType.OK)
@@ -5453,15 +5453,16 @@ class Systray:
 		try:
 			response = dialogWindow.run()
 			if response == Gtk.ResponseType.OK:
+				self.OPENVPN_EXE = dialogWindow.get_filename()
 				dialogWindow.destroy()
-				self.OPENVPN_EXE = dialog.get_filename()
-				self.debug(1,"selected: %s" % (self.OPENVPN_EXE))
+				self.debug(1,"def win_select_openvpn: selected = '%s'" % (self.OPENVPN_EXE))
 				return True
 			else:
 				dialogWindow.destroy()
-				self.debug(1,"Closed, no files selected")
+				self.debug(1,"def win_select_openvpn: Closed, no files selected")
 				return False
 		except:
+			self.debug(1,"def win_select_openvpn: response failed")
 			return False
 
 	""" *fixme* moved to openvpn.py """
@@ -5471,18 +5472,20 @@ class Systray:
 			self.OPENVPN_DIR = values["OPENVPN_DIR"]
 			self.OPENVPN_EXE = values["OPENVPN_EXE"]
 			self.debug(1,"def win_detect_openvpn: DIR = '%s', EXE = '%s'"%(self.OPENVPN_DIR,self.OPENVPN_EXE))
-			if self.OPENVPN_EXE == False or self.OPENVPN_DIR == False:
-				if not self.win_select_openvpn():
-					if self.upgrade_openvpn():
-						openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_DIR)
-			else:
-				if not self.openvpn_check_files() == True:
-					self.errorquit(_("WARNING! Failed to verify files in\n'%s'\n\nUninstall openVPN and restart oVPN Client Software!\n\nOr install openVPN from URL:\n%s[debug self.LAST_FAILED_CHECKFILE = '%s']") % (OPENVPN_DIR,self.OPENVPN_DL_URL,self.LAST_FAILED_CHECKFILE))
-				self.debug(1,"def win_detect_openvpn: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
+			
+			if self.openvpn_check_files() == True:
 				if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_EXE,self.OVPN_LATEST,self.OVPN_LATEST_BUILT,self.OVPN_LATEST_BUILT_TIMESTAMP) == True:
 					return True
-				else:
-					return self.upgrade_openvpn()
+			else:
+				if self.upgrade_openvpn() == True:
+					return self.win_detect_openvpn()
+		else:
+			if self.win_select_openvpn() == True:
+				return self.win_detect_openvpn()
+			else:
+				if self.upgrade_openvpn() == True:
+					return self.win_detect_openvpn()
+		return False
 
 	""" *fixme* move to export """
 	def find_signtool(self):
