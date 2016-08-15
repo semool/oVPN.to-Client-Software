@@ -1,15 +1,14 @@
-import os, subprocess
+# -*- coding: utf-8 -*-
+import os, subprocess, datetime
 import release_version
-import datetime
 from debug import debug
 
-def set_task(DEBUG,delay):
-	SOURCEDIR = os.getcwd()
+def set_task(DEBUG,AUTOSTART_DELAY_TIME):
+	BIN_DIR = os.getcwd()
 	DATE = datetime.datetime.now()
 	USERNAME = os.getenv('username')
-	AUTOSTART_DELAY_TIME = delay
 
-	XMLFILE = "%s\\autostart.xml" % (SOURCEDIR)
+	XMLFILE = "%s\\autostart.xml" % (BIN_DIR)
 	remove_xml(DEBUG,XMLFILE)
 	ind = open(XMLFILE, "w")
 	print >> ind, '<?xml version="1.0" encoding="UTF-16"?>'
@@ -54,8 +53,8 @@ def set_task(DEBUG,delay):
 	print >> ind, '  </Settings>'
 	print >> ind, '  <Actions Context="Author">'
 	print >> ind, '    <Exec>'
-	print >> ind, '      <Command>"%s\%s"</Command>' % (SOURCEDIR,release_version.setup_data()["exename"])
-	print >> ind, '      <WorkingDirectory>%s</WorkingDirectory>' % (SOURCEDIR)
+	print >> ind, '      <Command>"%s\%s"</Command>' % (BIN_DIR,release_version.setup_data()["exename"])
+	print >> ind, '      <WorkingDirectory>%s</WorkingDirectory>' % (BIN_DIR)
 	print >> ind, '    </Exec>'
 	print >> ind, '  </Actions>'
 	print >> ind, '</Task>'
@@ -67,21 +66,21 @@ def set_task(DEBUG,delay):
 			exitcode = subprocess.check_call("%s" % (string),shell=True)
 			remove_xml(DEBUG,XMLFILE)
 			if exitcode == 0:
-				debug(1,"def cb_switch_autostart: enable Ok",DEBUG,True)
+				debug(1,"[schedule_task.py] def cb_switch_autostart: enable Ok",DEBUG,True)
 				return True
 			else:
-				debug(1,"def cb_switch_autostart: enable fail, exitcode = '%s'" % (exitcode),DEBUG,True)
+				debug(1,"[schedule_task.py] def cb_switch_autostart: enable fail, exitcode = '%s'" % (exitcode),DEBUG,True)
 				return False
 		except:
 			remove_xml(DEBUG,XMLFILE)
-			debug(1,"def cb_switch_autostart: enable failed",DEBUG,True)
+			debug(1,"[schedule_task.py] def cb_switch_autostart: enable failed",DEBUG,True)
 
 def remove_xml(DEBUG,XMLFILE):
 	if os.path.isfile(XMLFILE):
 		try:
 			os.remove(XMLFILE)
 		except:
-			debug(1,"def remove_xml: could not remove XMLFILE '%s'" % (XMLFILE),DEBUG,True)
+			debug(1,"[schedule_task.py] def remove_xml: could not remove XMLFILE '%s'" % (XMLFILE),DEBUG,True)
 			pass
 
 def delete_task(DEBUG):
@@ -89,11 +88,11 @@ def delete_task(DEBUG):
 	try:
 		exitcode = subprocess.check_call("%s" % (string),shell=True)
 		if exitcode == 0:
-			debug(1,"def cb_switch_autostart: disable Ok",DEBUG,True)
+			debug(1,"[schedule_task.py] def cb_switch_autostart: disable Ok",DEBUG,True)
 			return True
 		else:
-			debug(1,"def cb_switch_autostart: disable fail, exitcode = '%s'" % (exitcode),DEBUG,True)
+			debug(1,"[schedule_task.py] def cb_switch_autostart: disable fail, exitcode = '%s'" % (exitcode),DEBUG,True)
 			return False
 	except:
-		debug(1,"def cb_switch_autostart: disable failed",DEBUG,True)
+		debug(1,"[schedule_task.py] def cb_switch_autostart: disable failed",DEBUG,True)
 		return False

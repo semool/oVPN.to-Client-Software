@@ -42,7 +42,7 @@ def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 			mapguids[iface_name] = '%s' % (iface_guids[i])
 		except:
 			pass
-	debug(1,"def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
+	debug(1,"[winregs.py] def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
 	data = { "iface_names":iface_names,"mapguids":mapguids }
 	return data
 	#return iface_names
@@ -60,7 +60,7 @@ def get_networkadapterlist(DEBUG):
 def get_networkadapter_guid(DEBUG,adaptername):
 	guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["mapguids"]
 	guid = guids[adaptername]
-	debug(1,"def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
+	debug(1,"[winregs.py] def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
 	return guid
 	#return get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"][adaptername]
 
@@ -80,7 +80,7 @@ def get_tapadapters(OPENVPN_EXE,INTERFACES):
 		return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
 
 def get_interface_infos_from_guid(DEBUG,guid):
-	debug(1,"def get_interface_infos_from_guid: '%s'" % (guid),DEBUG,True)
+	debug(1,"[winregs.py] def get_interface_infos_from_guid: '%s'" % (guid),DEBUG,True)
 	"""
 	winregs.get_interface_infos_from_guid("{XXXXXXXX-YYYY-ZZZZ-AAAA-CCCCDDDDEEEE}")
 	return = {
@@ -96,7 +96,7 @@ def get_interface_infos_from_guid(DEBUG,guid):
 			values[keyname] = QueryValueEx(key, keyname)[0]
 		except:
 			pass
-	debug(1,"get_interface_infos_from_guid: '%s'" % (values),DEBUG,True)
+	debug(1,"[winregs.py] get_interface_infos_from_guid: '%s'" % (values),DEBUG,True)
 	return values
 
 
