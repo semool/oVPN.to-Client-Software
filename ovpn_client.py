@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
 
-DEV_DIR="E:\\Persoenlich\\ovpn-client"
+
 
 import sys
-if len(sys.argv) > 1:
-	if sys.argv[1] == "DEVMODE":
-		DEVMODE = True
-		DEBUG = True
-		print "DEVMODE=True"
-	else:
-		print "invalid args"
-		print sys.argv
-		print len(sys.argv)
-		sys.exit()
+import debug
+DEVMODE = debug.devmode()
+if DEVMODE == True:
+	DEBUG = True
 else:
-	DEVMODE = False
 	DEBUG = False
-	print "DEVMODE=False"
+DEV_DIR=debug.devdir()
 
 try:
 	import patches
@@ -31,12 +24,16 @@ from datetime import datetime as datetime
 import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string
 from ConfigParser import SafeConfigParser
 # .py files imports
-import debug
+
 import winregs
 import icons_b64
 import schedule_task
 import release_version
 import openvpn
+import signtool
+import hashings
+
+
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -4096,32 +4093,10 @@ class Systray:
 	def win_compare_dns(self):
 		self.debug(1,"def win_compare_dns()")
 
-	def hash_sha512_file(self,file):
-		self.debug(1,"def hash_sha512_file()")
-		if os.path.isfile(file):
-			hasher = hashlib.sha512()
-			fp = open(file, 'rb')
-			with fp as afile:
-				buf = afile.read()
-				hasher.update(buf)
-			fp.close()
-			return hasher.hexdigest()
-
-	def hash_sha256_file(self,file):
-		self.debug(1,"def hash_sha256_file()")
-		if os.path.isfile(file):
-			hasher = hashlib.sha256()
-			fp = open(file, 'rb')
-			with fp as afile:
-				buf = afile.read()
-				hasher.update(buf)
-			fp.close()
-			return hasher.hexdigest()
-
 	def load_ca_cert(self):
 		self.debug(1,"def load_ca_cert()")
 		if os.path.isfile(self.CA_FILE):
-			self.CA_FILE_HASH = self.hash_sha512_file(self.CA_FILE)
+			self.CA_FILE_HASH = hashings.hash_sha512_file(self.DEBUG,self.CA_FILE)
 			if self.CA_FILE_HASH == self.CA_FIXED_HASH:
 				try:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
@@ -5393,7 +5368,7 @@ class Systray:
 	def verify_openvpnbin_dl(self):
 		self.debug(1,"def verify_openvpnbin_dl()")
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
-			localhash = self.hash_sha512_file(self.OPENVPN_SAVE_BIN_TO)
+			localhash = hashings.hash_sha512_file(self.DEBUG,self.OPENVPN_SAVE_BIN_TO)
 			if self.OPENVPN_FILEHASH == localhash:
 				self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
 				return True
@@ -5487,71 +5462,6 @@ class Systray:
 					return self.win_detect_openvpn()
 		return False
 
-	""" *fixme* move to export """
-	def find_signtool(self):
-		self.debug(1,"def find_signtool()")
-		try:
-			signtoolhash = "e85d79cc617642f585cb9e4ad5dd919b8d15570a291bdd1e69fd38d4f278bc4b6f110329e8fa6948b7d516917cc2bde43532cde33e8c5e66355d0c97cfd7ebc2"
-			exe = "signtool_w10sdk.exe"
-			signtool = "%s\\%s" % (self.BIN_DIR,exe)
-			if not os.path.isfile(signtool):
-				signtool = "%s\\includes\\codesign\\%s" % (DEV_DIR,exe)
-			if os.path.isfile(signtool):
-				hash = self.hash_sha512_file(signtool)
-				if signtoolhash == hash:
-					self.debug(1,"def find_signtool: signtool = '%s'" % (signtool))
-					return signtool
-				else:
-					self.debug(1,"def find_signtool: signtoolhash failed")
-			else:
-				self.debug(1,"def signtool_verify_files: signtool not found")
-		except:
-			self.debug(1,"def find_signtool: failed")
-		return False
-
-	""" *fixme* move to export """
-	def signtool_verify(self,file):
-		self.debug(1,"def signtool_verify(%s)"%(file))
-		signtool = self.find_signtool()
-		if os.path.isfile(file):
-			cscertsha1 = "E08110E5ECFE4194B846C53EB157965EFE0ECEFF"
-			#if DEVMODE == True:
-			#	cscertsha1 = "1234000012340000123400001234000012340000"
-			string1 = '"%s" verify /v /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
-			self.debug(1,"def signtool_verify: string1 = '%s'"%(string1))
-			exitcode1 = 1
-			try:
-				exitcode1 = subprocess.check_call("%s" % (string1),shell=True)
-			except:
-				pass
-			if exitcode1 == 0:
-				self.debug(1,"def signtool_verify: file = '%s' signature verified"%(file))
-				return True
-			else:
-				self.debug(1,"def signtool_verify: file = '%s' signature failed"%(file))
-				# only check file is signed from same CA if DEVMODE is True
-				if DEVMODE == False:
-					return False
-				else:
-					self.debug(1,"def signtool_verify: file = '%s' check signature CA hash"%(file))
-					cacertsha1 = "92C1588E85AF2201CE7915E8538B492F605B80C6"
-					string2 = '"%s" verify /v /a /all /pa /tw /ca %s "%s"' % (signtool,cacertsha1,file)
-					self.debug(1,"def signtool_verify: string2 = '%s'"%(string2))
-					exitcode2 = 1
-					try:
-						exitcode2 = subprocess.check_call("%s" % (string2),shell=True)
-					except:
-						pass
-					if exitcode2 == 0:
-						self.debug(1,"def signtool_verify: file = '%s' signature CA verified"%(file))
-						return True
-					else:
-						self.debug(1,"def signtool_verify: file = '%s' signature CA failed"%(file))
-						return False
-		else:
-			self.debug(1,"def signtool_verify(%s) not found"%(file))
-			return False
-
 	""" *fixme* move to openvpn.py """
 	def openvpn_check_files(self):
 		self.debug(1,"def openvpn_check_files()")
@@ -5562,39 +5472,25 @@ class Systray:
 				# hashs verified
 				return True
 		else:
-			if not self.find_signtool() == False:
+			if not signtool.find_signtool(self.DEBUG) == False:
 				# openvpn.exe hash failed, check exe/dll signatures
-				for file in self.list_openvpn_files(".exe"):
+				files = openvpn.list_openvpn_files(self.DEBUG,self.OPENVPN_DIR,".exe")
+				if files == False:
+					return False
+				for file in files:
 					filepath = "%s\\%s" % (self.OPENVPN_DIR,file)
-					if not self.signtool_verify(filepath):
+					if not signtool.signtool_verify(self.DEBUG,filepath):
 						return False
-				for file in self.list_openvpn_files(".dll"):
+				files = openvpn.list_openvpn_files(self.DEBUG,self.OPENVPN_DIR,".dll")
+				if files == False:
+					return False
+				for file in files:
 					filepath = "%s\\%s" % (self.OPENVPN_DIR,file)
-					if not self.signtool_verify(filepath):
+					if not signtool.signtool_verify(self.DEBUG,filepath):
 						return False
 				# all file signatures verified
 				return True
 		self.debug(1,"def openvpn_check_files: failed")
-		return False
-	
-	""" *fixme* move to openvpn.py """
-	def list_openvpn_files(self,type):
-		self.debug(1,"def list_openvpn_files()")
-		try:
-			dir = self.OPENVPN_EXE.rsplit('\\', 1)[0]
-			if os.path.exists(dir):
-				content = os.listdir(dir)
-				list = []
-				for file in content:
-					if file.endswith(type):
-						list.append(file)
-				self.OPENVPN_DIR = dir
-				self.debug(1,"def list_openvpn_files: self.OPENVPN_DIR = '%s'" % (self.OPENVPN_DIR))
-				return list
-			else:
-				self.debug(1,"def list_openvpn_files: '%s' not found!" % (self.OPENVPN_DIR))
-		except:
-			self.debug(1,"def list_openvpn_files: failed")
 		return False
 	
 	""" *fixme* move to openvpn.py """
@@ -5610,7 +5506,9 @@ class Systray:
 		try:
 			if self.CHECK_FILEHASHS == False:
 				return True
-			content = self.list_openvpn_files(type)
+			content = openvpn.list_openvpn_files(self.DEBUG,self.OPENVPN_DIR,type)
+			if content == False:
+				return False
 			filename = self.openvpn_filename_exe()
 			hashs = self.OPENVPN_FILEHASHS[filename]
 			self.debug(2,"hashs = '%s'" % (hashs))
@@ -5618,7 +5516,7 @@ class Systray:
 				self.LAST_FAILED_CHECKFILE = file
 				if file.endswith(type):
 					filepath = "%s\\%s" % (self.OPENVPN_DIR,file)
-					hasha = self.hash_sha512_file(filepath)
+					hasha = hashings.hash_sha512_file(self.DEBUG,filepath)
 					hashb = hashs[file]
 					if hasha == hashb:
 						self.debug(1,"def openvpn_check_file_hashs: hash '%s' OK!" % (file))

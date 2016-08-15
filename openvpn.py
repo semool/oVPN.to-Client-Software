@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import os, subprocess
+
+# .py file imports
 from debug import debug
+
 
 def win_detect_openvpn(DEBUG,OPENVPN_EXE):
 	# returns [ OPENVPN_DIR, OPENVPN_EXE ]
@@ -32,6 +35,7 @@ def win_detect_openvpn(DEBUG,OPENVPN_EXE):
 	return False
 
 def win_detect_openvpn_version(DEBUG,OPENVPN_EXE,OVPN_LATEST,OVPN_LATEST_BUILT,OVPN_LATEST_BUILT_TIMESTAMP):
+	# returns True or False
 	debug(1,"[openvpn.py] def win_detect_openvpn_version()",DEBUG,True)
 	if not os.path.isfile(OPENVPN_EXE):
 		debug(1,"[openvpn.py] def win_detect_openvpn_version: OPENVPN_EXE not found",DEBUG,True)
@@ -72,11 +76,38 @@ def win_detect_openvpn_version(DEBUG,OPENVPN_EXE,OVPN_LATEST,OVPN_LATEST_BUILT,O
 	debug(1,"[openvpn.py] def win_detect_openvpn_version: return False",DEBUG,True)
 	return False
 
+def list_openvpn_files(DEBUG,OPENVPN_DIR,type):
+	debug(1,"[openvpn.py] def list_openvpn_files()",DEBUG,True)
+	try:
+		dir = OPENVPN_DIR
+		if os.path.exists(dir):
+			content = os.listdir(dir)
+			list = []
+			for file in content:
+				if file.endswith(type):
+					list.append(file)
+			if len(list) >= 1:
+				debug(1,"[openvpn.py] def list_openvpn_files: dir '%s', files = '%s'" % (dir,len(list)),DEBUG,True)
+				return list
+		else:
+			debug(1,"[openvpn.py] def list_openvpn_files: dir '%s' not found!" % (dir),DEBUG,True)
+	except:
+		debug(1,"[openvpn.py] def list_openvpn_files: failed",DEBUG,True)
+	debug(1,"[openvpn.py] def list_openvpn_files: return False",DEBUG,True)
+	return False
+
+
+
+
+
+
+
+
+
+
+
 """
 def upgrade_openvpn(DEBUG):
-	pass
-
-def list_openvpn_files(DEBUG,type):
 	pass
 
 def openvpn_filename_exe(self):

@@ -2,13 +2,27 @@
 import os, sys, time
 BOOTTIME = time.time()
 
-SOURCEDIR="E:\\Persoenlich\\ovpn-client"
-
 LOGLEVEL = 1
 LOGLEVELS = [0,1,2,3]
 
 DEBUGcount = 0
 DEBUGfrombefore = False
+
+def devdir():
+	dir = "E:\\Persoenlich\\ovpn-client"
+	return dir
+
+def devmode():
+	if len(sys.argv) > 1:
+		if sys.argv[1] == "DEVMODE":
+			return True
+		else:
+			print "invalid args"
+			print sys.argv
+			print len(sys.argv)
+			sys.exit()
+	else:
+		return False
 
 def debug(level,text,DEBUG,bindir):
 	if bindir == False:
@@ -16,8 +30,8 @@ def debug(level,text,DEBUG,bindir):
 		return False
 	bindir = os.getcwd()
 	if bindir.endswith("system32"):
-		if os.path.exists(SOURCEDIR):
-			bindir=SOURCEDIR
+		if os.path.exists(devdir()):
+			bindir=devdir()
 		else:
 			print "DEBUG: %s" % (text)
 			return False
