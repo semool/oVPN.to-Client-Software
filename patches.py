@@ -22,7 +22,7 @@ def select_gtkdll(DEBUG):
 			pixel = 32
 		if dpi == 96:
 			pixel = 16
-		debug(1,"def select_gtkdll() Get DPI from DC: %s" % dpi,DEBUG,True)
+		debug(1,"[patches.py] def select_gtkdll() Get DPI from DC: %s" % dpi,DEBUG,True)
 	except:
 		try:
 			Registry = ConnectRegistry(None, HKEY_CURRENT_USER)
@@ -41,27 +41,27 @@ def select_gtkdll(DEBUG):
 							pixel = 16
 						break
 					i += 1
-				debug(1,"def select_gtkdll() Get DPI from Reg: %s" % value,DEBUG,True)
+				debug(1,"[patches.py] def select_gtkdll() Get DPI from Reg: %s" % value,DEBUG,True)
 		except:
 			pass
 
 	try:
-		debug(1,"def select_gtkdll() Detected Pixel Size: %s" % pixel,DEBUG,True)
+		debug(1,"[patches.py] def select_gtkdll() Detected Pixel Size: %s" % pixel,DEBUG,True)
 		if pixel == 32:
 			if os.path.isfile(gtkfile32):
-				debug(1,"def select_gtkdll() gtkfile --> gtkfile16",DEBUG,True)
+				debug(1,"[patches.py] def select_gtkdll() gtkfile --> gtkfile16",DEBUG,True)
 				shutil.move(gtkfile, gtkfile16)
-				debug(1,"def select_gtkdll() gtkfile32 --> gtkfile",DEBUG,True)
+				debug(1,"[patches.py] def select_gtkdll() gtkfile32 --> gtkfile",DEBUG,True)
 				shutil.move(gtkfile32, gtkfile)
 			else:
-				debug(1,"def select_gtkdll() select_gtkdll not needed: gtkfile32 not found",DEBUG,True)
+				debug(1,"[patches.py] def select_gtkdll() select_gtkdll not needed: gtkfile32 not found",DEBUG,True)
 		if pixel == 16:
 			if os.path.isfile(gtkfile16):
-				debug(1,"def select_gtkdll() gtkfile --> gtkfile32",DEBUG,True)
+				debug(1,"[patches.py] def select_gtkdll() gtkfile --> gtkfile32",DEBUG,True)
 				shutil.move(gtkfile, gtkfile32)
-				debug(1,"def select_gtkdll() gtkfile16 --> gtkfile",DEBUG,True)
+				debug(1,"[patches.py] def select_gtkdll() gtkfile16 --> gtkfile",DEBUG,True)
 				shutil.move(gtkfile16, gtkfile)
 			else:
-				debug(1,"def select_gtkdll() select_gtkdll not needed: gtkfile16 not found",DEBUG,True)
+				debug(1,"[patches.py] def select_gtkdll() select_gtkdll not needed: gtkfile16 not found",DEBUG,True)
 	except:
-		debug(1,"def select_gtkdll() failed",DEBUG,True)
+		debug(1,"[patches.py] def select_gtkdll() failed",DEBUG,True)
