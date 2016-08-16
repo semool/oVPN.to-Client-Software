@@ -18,14 +18,17 @@ def values(DEBUG):
 		TIMESTAMP = 1462831200
 		VERSION = "2.3.11"
 		BUILT_V = "I601"
+		
 		SHA_512 = {
 			"i686" : "b6c1e5d9dd80fd6515d9683044dae7cad13c4cb5ac5590be4116263b7cde25e0fef1163deb5a1f1ad646e5fdb84c286308fa8af288692b9c7d4e2b7dbff38bbe",
 			"x86_64" : "a59284b98e80c1cd43cfe2f0aee2ebb9d18ca44ffb7035b5a4bb4cb9c2860039943798d4bb8860e065a56be0284f5f23b74eba6a5e17f05df87303ea019c42a3"
 			}
+			
 		F_SIZES = {
 			"i686": 1738368,
 			"x86_64": 1837808
 			}
+			
 		URLS = {
 			"REM" : "https://%s/files/openvpn" % (release_version.org_data()["VCP_DOMAIN"]),
 			"ALT" : "https://swupdate.openvpn.net/community/releases"

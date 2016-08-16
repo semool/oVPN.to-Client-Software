@@ -3,7 +3,7 @@ import os, sys, time
 BOOTTIME = time.time()
 
 LOGLEVEL = 1
-LOGLEVELS = [0,1,2,3]
+LOGLEVELS = []
 
 DEBUGcount = 0
 DEBUGfrombefore = False
@@ -35,15 +35,15 @@ def debug(level,text,DEBUG,bindir):
 		else:
 			print "DEBUG: %s" % (text)
 			return False
-
- 
+	
 	logfile = "%s\\client_debug.log" % (bindir)
 	global DEBUGcount
 	global DEBUGfrombefore
-	if not level in LOGLEVELS:
-		return False
-	elif not level <= LOGLEVEL:
-		return False
+	
+	if level > LOGLEVEL:
+		if not level in LOGLEVELS:
+			return False
+	
 	timefromboot = round(time.time() - BOOTTIME,3)
 	debugstringsht = False
 	debugstringsht1 = False

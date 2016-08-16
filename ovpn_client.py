@@ -5469,8 +5469,6 @@ class Systray:
 			self.debug(1,"def openvpn_check_file_hashs: type '%s' invalid"%(type))
 			return False
 		try:
-			#if self.CHECK_FILEHASHS == False:
-			#	return True
 			content = openvpn.list_openvpn_files(self.DEBUG,self.OPENVPN_DIR,type)
 			if content == False:
 				return False
@@ -5480,7 +5478,7 @@ class Systray:
 				self.debug(1,"def openvpn_check_file_hashs: failed")
 				sys.exit()
 			hashs = self.OPENVPN_FILEHASHS[filename]
-			self.debug(2,"hashs = '%s'" % (hashs))
+			self.debug(2,"def openvpn_check_file_hashs: hashs = '%s'" % (hashs))
 			for file in content:
 				self.LAST_FAILED_CHECKFILE = file
 				if file.endswith(type):
