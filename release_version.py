@@ -5,7 +5,7 @@ BITS = struct.calcsize("P") * 8
 
 def version_data():
 	data = {
-			"VERSION" : "0.6.8",
+			"VERSION" : "0.6.9",
 			"SIGN" : True,
 			"NAME" : "%s Client" % (org_data()["ORG"]),
 		}
