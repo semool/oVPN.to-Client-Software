@@ -121,9 +121,10 @@ class Systray:
 	def self_vars(self):
 		self.DEBUG = DEBUG
 		self.DEVMODE = DEVMODE
+		self.OS = sys.platform
+		self.ARCH = openvpn.values(self.DEBUG)["ARCH"]
 		self.APIURL = API_URL
 		self.MOUSELEVEL = False
-		self.OS = sys.platform
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
 		self.MAINWINDOW_OPEN = False
@@ -148,23 +149,12 @@ class Systray:
 		self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
 		self.ACCWINDOW_OPEN = False
 		self.DEBUG_LOGFILE = False
-		self.OVPN_LATEST = 2311
-		self.OVPN_LATEST_BUILT = "May 10 2016"
-		self.OVPN_LATEST_BUILT_TIMESTAMP = 1462831200
-		
-		self.OPENVPN_REM_URL = "https://%s/files/openvpn" % (VCP_DOMAIN)
-		self.OPENVPN_ALT_URL = "https://swupdate.openvpn.net/community/releases"
-		self.OPENVPN_VERSION = "2.3.11"
-		self.OPENVPN_BUILT_V = "I601"
 		self.OPENVPN_FILEHASHS = {"openvpn-install-2.3.11-I601-x86_64.exe": {"libeay32.dll": "8a96ddc451110b84ef7bad7003222de593fa6b44757093b13076404b9d92b9de5050196885dbbdff0335cd527d0821f83d9ff3cb610ab7c5aa2ebc7c6afc7cbe", "openvpn.exe": "e94cb06e44a17d2e0a4d884cee2253d960b8a41dcd191340a3f5be12888c4936d8a8a60e5f13604fd8bbac66df7350d8773391e4432697a5b3b1a3d0662837e9", "openvpnserv.exe": "3c86a89a163c2f7d043f692883d51ff6e1c2bd77801fefcd4e5458bfd0473863223d8ebdcf573fdbe64753b0071e505e285ab08a52d4925a1b0a6ce24d80a7d7", "liblzo2-2.dll": "5de56ee903501e84a4f8f988c7deb6d24b34e5b2ff4cf51e9e80cdcbc5a4710639bd7f6e559fdd2df7ae29d83bf7c58c41e74c5c4f7ddab7faf15df0353d0b05", "openvpn-gui.exe": "3c8d174dcfb71b6ce750bc7460bd4f0ab6b4e0bba8305253658fc4e02fb74fa1d737ca9e290a64818bea48857ecfb66b7af720c673e3f2d9f7eba206799aae8f", "libpkcs11-helper-1.dll": "f1ac4d5eed3a97b8cd9c5b053c6f3ea8fc7e2b25d1a9adead3b8a198bee9dea7237c07dd2d2561aeebed62aac318d90b321b73729b81f00a03f10b45eda56480", "ssleay32.dll": "a9384fd0ded117e3c27f988ea35109e7843b929edf79473ad0e485b5d0285660676fd9b9c43458de007dd142aedf9fdea75a2a7bdb9b7b600edee392d18bf90e", "openssl.exe": "7c6699cf02f3b1d017b867855935019f2d50fe6b4d49c79de06a7e40663d29dd955a7f6bfb7836aa2e52dde4d817712b6e46650a2a10f5958a81338b4106be1b"}, "openvpn-install-2.3.11-I601-i686.exe": {"libeay32.dll": "592475e0b0286914d697f36fff8af7b3e265342787d945c7fe9e234a7cfbd84a13e757850fe7588a382a83c5f59e0046f91aed1736d4c06181d180e33aced806", "openvpn.exe": "dfbad890037291a534da7c534b49ec70ecc9a044ee0d8508654696819d88b5b4845b81b2e1aecd5475dc62e0d9a0d1c147524c70940a4e96c4e1530e257758d6", "openvpnserv.exe": "6dc640730a5724de687b805699e51595a1f08b16bc1596564b89cd580deee7478113a4296c3de677f96d4501f4f40a4e36d7d4c1f6993d4dbb7199b0e6edfa14", "liblzo2-2.dll": "31b744a57105d122d2150b5ab793620b73dbc28788be8484fa682e1cf6857f01102034e220b63d5709f6baa44b547df94e2c8aad6b5124b91e105e42d258e40b", "openvpn-gui.exe": "dab26e87d66d65e727733e16f3234585f44f8ebbf969c9fd20d4fc55a973820cecfb6218e1b5da98eecdae111473a839cab7b128687808676801bce25558c4c2", "libpkcs11-helper-1.dll": "bd7339e3911ab75ddf805555e0f59e65927f1539a5561b22456e25f3d1868fb42d89cd95eaa96c3335fef7d3ec2a21ff7c53f04961fedc5e374f43f4070df58c", "ssleay32.dll": "440cf92524e21e9dc1d92f45a8fbd566f0eeec597e0f52a235847879bdd4806ac219b592aaec9976620082b2d8d5690d432e1a45b0df035b18404453530855d9", "openssl.exe": "49d274c5f4ccddda28751a1a6271888c32188a192b9ad9c224832b51af0b474225d75c6ac51e61438b7a9f956b1ba78fef7a5392759a3d38fc4ddd1d7772e464"}}
-		self.CHECK_FILEHASHS = True
 		
-		self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-i686.exe"
-		self.OVPN_WIN_SHA512_x86 = "b6c1e5d9dd80fd6515d9683044dae7cad13c4cb5ac5590be4116263b7cde25e0fef1163deb5a1f1ad646e5fdb84c286308fa8af288692b9c7d4e2b7dbff38bbe"
-		self.OVPN_WIN_F_SIZE_x86 = 1738368
-		self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
-		self.OVPN_WIN_SHA512_x64 = "a59284b98e80c1cd43cfe2f0aee2ebb9d18ca44ffb7035b5a4bb4cb9c2860039943798d4bb8860e065a56be0284f5f23b74eba6a5e17f05df87303ea019c42a3"
-		self.OVPN_WIN_F_SIZE_x64 = 1837808
+		""" *fixme* UNUSED """
+		#self.CHECK_FILEHASHS = True
+		#self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-i686.exe"
+		#self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
 		
 		self.timer_load_remote_data_running = False
 		self.timer_ovpn_ping_running = False
@@ -582,8 +572,6 @@ class Systray:
 				os.mkdir(self.stu_dir)
 			if not os.path.exists(self.pfw_dir):
 				os.mkdir(self.pfw_dir)
-			if not self.build_openvpn_dlurl():
-				return False
 			if os.path.exists(self.API_DIR) and os.path.exists(self.VPN_DIR) and os.path.exists(self.VPN_CFG) \
 			and os.path.exists(self.prx_dir) and os.path.exists(self.stu_dir) and os.path.exists(self.pfw_dir):
 				return True
@@ -1020,7 +1008,7 @@ class Systray:
 			self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 			self.win_select_tapadapter()
 		if self.WIN_TAP_DEVICE == False:
-			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
+			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]))
 		else:
 			badchars = ["%","&","$"]
 			for char in badchars:
@@ -4102,13 +4090,13 @@ class Systray:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
 					return True
 				except:
-					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #1"))
+					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (release_version.org_data()["VCP_DOMAIN"],self.CA_FILE),_("Error: SSL CA Cert #1"))
 					return False
 			else:
-				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (VCP_DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
+				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (release_version.org_data()["VCP_DOMAIN"],self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
 				return False
 		else:
-			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #3"))
+			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (release_version.org_data()["VCP_DOMAIN"],self.CA_FILE),_("Error: SSL CA Cert #3"))
 			return False
 
 	def win_firewall_start(self):
@@ -4205,7 +4193,7 @@ class Systray:
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
-		url = "https://%s" % (VCP_DOMAIN)
+		url = "https://%s" % (release_version.org_data()["VCP_DOMAIN"])
 		ips = ["178.17.170.116",self.GATEWAY_OVPN_IP4A]
 		port = 443
 		protocol = "tcp"
@@ -4816,7 +4804,7 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (release_version.org_data()["VCP_DOMAIN"]),_("Switched to IPv4+6"))
 			self.cb_check_normal_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
@@ -4831,7 +4819,7 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (release_version.org_data()["VCP_DOMAIN"]),_("Switched to IPv6+4"))
 			self.cb_check_normal_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
@@ -4886,8 +4874,8 @@ class Systray:
 		return rand
 
 	def make_useragent(self):
-		#self.debug(1,"def make_useragent()")
-		user_agent = False
+		self.debug(99,"def make_useragent()")
+		user_agent = 007
 		rand = self.get_random_string()
 		try:
 			version = release_version.version_data()["VERSION"]
@@ -4905,7 +4893,7 @@ class Systray:
 		except:
 			self.debug(1,"def make_useragent: construct user-agent failed")
 		headers = { 'User-Agent':"%s/%s" % (user_agent,rand) }
-		self.debug(1,"def make_useragent: return headers = '%s'" % (headers))
+		self.debug(99,"def make_useragent: return headers = '%s'" % (headers))
 		return headers
 
 	def API_REQUEST(self,API_ACTION):
@@ -5296,29 +5284,6 @@ class Systray:
 			return False
 	
 	""" *fixme* move to openvpn.py """
-	def build_openvpn_dlurl(self):
-		self.debug(1,"def build_openvpn_dlurl()")
-		self.PLATFORM = self.os_platform()
-		if self.PLATFORM == "AMD64":
-			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-x86_64.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
-			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x64
-			self.OPENVPN_FILESIZE = self.OVPN_WIN_F_SIZE_x64
-		elif self.PLATFORM == "x86":
-			self.OPENVPN_FILENAME = "openvpn-install-%s-%s-i686.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V)
-			self.OPENVPN_FILEHASH = self.OVPN_WIN_SHA512_x86
-			self.OPENVPN_FILESIZE = self.OVPN_WIN_F_SIZE_x86
-		else:
-			self.OPENVPN_DL_URL = False
-			self.msgwarn(_("Platform '%s' not supported") % (self.PLATFORM),_("Error!"))
-			return False
-		self.OPENVPN_DL_URL = "%s/%s" % (self.OPENVPN_REM_URL,self.OPENVPN_FILENAME)
-		self.OPENVPN_DL_URL_ALT = "%s/%s" % (self.OPENVPN_ALT_URL,self.OPENVPN_FILENAME)
-		self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.VPN_DIR,self.OPENVPN_FILENAME)
-		self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
-		#print "def build_openvpn_dlurl: PLATFORM=%s url='%s'" % (self.PLATFORM,self.OPENVPN_DL_URL)
-		return True
-
-	""" *fixme* move to openvpn.py """
 	def upgrade_openvpn(self):
 		self.debug(1,"def upgrade_openvpn()")
 		if self.load_openvpnbin_from_remote():
@@ -5328,48 +5293,48 @@ class Systray:
 		if self.verify_openvpnbin_dl():
 			self.errorquit(text=_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
 		else:
-			self.errorquit(text=_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (self.OPENVPN_DL_URL,self.OPENVPN_DL_URL_ALT))
+			self.errorquit(text=_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]))
 
 	""" *fixme* move to openvpn.py """
 	def load_openvpnbin_from_remote(self):
 		self.debug(1,"def load_openvpnbin_from_remote()")
-		if not self.OPENVPN_DL_URL == False:
-			if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
-				return self.verify_openvpnbin_dl()
-			else:
-				self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
-				self.debug(1,"Install OpenVPN %s (%s) (%s)\n\nStarting download (~1.8 MB) from:\n'%s'\nto\n'%s'\n\nPlease wait..." % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,self.PLATFORM,self.OPENVPN_DL_URL,self.OPENVPN_SAVE_BIN_TO))
-				try:
-					HEADERS = self.make_useragent()
-					r1 = requests.get(self.OPENVPN_DL_URL,headers=HEADERS)
-					if len(r1.content) == self.OPENVPN_FILESIZE:
-						fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
-						fp1.write(r1.content)
-						fp1.close()
-						ascfile = "%s.asc" % (self.OPENVPN_DL_URL)
-						if os.path.isfile(ascfile):
-							os.remove(ascfile)
-						HEADERS = self.make_useragent()
-						r2 = requests.get(ascfile,headers=HEADERS)
-						fp2 = open(self.OPENVPN_ASC_FILE, "wb")
-						fp2.write(r2.content)
-						fp2.close()
-						self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
-					else:
-						self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
-					return self.verify_openvpnbin_dl()
-				except:
-					self.debug(1,"def load_openvpnbin_from_remote: failed")
-					return False
+		# *fixme*
+		self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.VPN_DIR,openvpn.values(DEBUG)["SETUP_FILENAME"])
+		self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
+		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
+			return self.verify_openvpnbin_dl()
 		else:
-			return False
-	
+			self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
+			try:
+				HEADERS = self.make_useragent()
+				r1 = requests.get(openvpn.values(DEBUG)["OPENVPN_DL_URL"],headers=HEADERS)
+				if len(r1.content) == openvpn.values(self.DEBUG)["F_SIZES"][self.ARCH]:
+					fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
+					fp1.write(r1.content)
+					fp1.close()
+					ascfile = "%s.asc" % (openvpn.values(DEBUG)["OPENVPN_DL_URL"])
+					if os.path.isfile(ascfile):
+						os.remove(ascfile)
+					HEADERS = self.make_useragent()
+					r2 = requests.get(ascfile,headers=HEADERS)
+					fp2 = open(self.OPENVPN_ASC_FILE, "wb")
+					fp2.write(r2.content)
+					fp2.close()
+					self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
+				else:
+					self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
+				return self.verify_openvpnbin_dl()
+			except:
+				self.debug(1,"def load_openvpnbin_from_remote: failed")
+				return False
+
 	""" *fixme* move to openvpn.py """
 	def verify_openvpnbin_dl(self):
 		self.debug(1,"def verify_openvpnbin_dl()")
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 			localhash = hashings.hash_sha512_file(self.DEBUG,self.OPENVPN_SAVE_BIN_TO)
-			if self.OPENVPN_FILEHASH == localhash:
+			storehash = openvpn.values(DEBUG)["SHA_512"][self.ARCH]
+			if storehash == localhash:
 				self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
 				return True
 			else:
@@ -5449,7 +5414,7 @@ class Systray:
 			self.debug(1,"def win_detect_openvpn: DIR = '%s', EXE = '%s'"%(self.OPENVPN_DIR,self.OPENVPN_EXE))
 			
 			if self.openvpn_check_files() == True:
-				if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_EXE,self.OVPN_LATEST,self.OVPN_LATEST_BUILT,self.OVPN_LATEST_BUILT_TIMESTAMP) == True:
+				if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_EXE) == True:
 					return True
 			else:
 				if self.upgrade_openvpn() == True:
@@ -5504,12 +5469,16 @@ class Systray:
 			self.debug(1,"def openvpn_check_file_hashs: type '%s' invalid"%(type))
 			return False
 		try:
-			if self.CHECK_FILEHASHS == False:
-				return True
+			#if self.CHECK_FILEHASHS == False:
+			#	return True
 			content = openvpn.list_openvpn_files(self.DEBUG,self.OPENVPN_DIR,type)
 			if content == False:
 				return False
-			filename = self.openvpn_filename_exe()
+			try:
+				filename = openvpn.values(self.DEBUG)["SETUP_FILENAME"]
+			except:
+				self.debug(1,"def openvpn_check_file_hashs: failed")
+				sys.exit()
 			hashs = self.OPENVPN_FILEHASHS[filename]
 			self.debug(2,"hashs = '%s'" % (hashs))
 			for file in content:
@@ -5531,28 +5500,6 @@ class Systray:
 			self.debug(1,"def openvpn_check_file_hashs: failed!")
 			return False
 	
-	""" *fixme* move to openvpn.py """
-	def openvpn_filename_exe(self):
-		self.debug(1,"def openvpn_filename_exe()")
-		if self.PLATFORM == "AMD64":
-			arch = "x86_64"
-		elif self.PLATFORM == "x86":
-			arch = "i686"
-		else:
-			self.errorquit(_("arch '%s' not supported!") % (self.PLATFORM))
-		self.debug(1,"def openvpn_filename_exe: arch = '%s'" % (arch))
-		return "openvpn-install-%s-%s-%s.exe" % (self.OPENVPN_VERSION,self.OPENVPN_BUILT_V,arch)
-
-	def os_platform(self):
-		self.debug(1,"def os_platform()")
-		true_platform = os.environ['PROCESSOR_ARCHITECTURE']
-		try:
-			true_platform = os.environ["PROCESSOR_ARCHITEW6432"]
-		except KeyError:
-			pass
-			#true_platform not assigned to if this does not exist
-		return true_platform
-
 	def check_dns_is_whitelisted(self):
 		self.debug(1,"def check_dns_is_whitelisted()")
 		#if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4 or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
@@ -5682,7 +5629,7 @@ class Systray:
 			try:
 				if not os.path.isfile(self.dns_d0wntxt):
 					try:
-						url = "https://%s/files/dns/d0wns_dns.static.txt" % (VCP_DOMAIN)
+						url = "https://%s/files/dns/d0wns_dns.static.txt" % (release_version.org_data()["VCP_DOMAIN"])
 						HEADERS = self.make_useragent()
 						r = requests.get(url,headers=HEADERS)
 						fp = open(self.dns_d0wntxt,'wb')
