@@ -32,6 +32,7 @@ import release_version
 import openvpn
 import signtool
 import hashings
+import request_api
 
 
 
@@ -4859,35 +4860,7 @@ class Systray:
 					return False
 		except:
 			self.debug(1,"def extract_ovpn: failed")
-
-	def get_random_string(self):
-		int = random.randint(16,32)
-		rand = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(int))
-		return rand
-
-	def make_useragent(self):
-		self.debug(99,"def make_useragent()")
-		user_agent = 007
-		rand = self.get_random_string()
-		try:
-			version = release_version.version_data()["VERSION"]
-			versionint = 0
-			
-			try:
-				split = version.split(".")
-				versionint = "%s%s%s" % (split[0],split[1],split[2])
-			except:
-				self.debug(1,"def make_useragent: version.split failed")
-			
-			if versionint > 0:
-				version = versionint
-			user_agent = "client/%s" % (version)
-		except:
-			self.debug(1,"def make_useragent: construct user-agent failed")
-		headers = { 'User-Agent':"%s/%s" % (user_agent,rand) }
-		self.debug(99,"def make_useragent: return headers = '%s'" % (headers))
-		return headers
-
+	
 	def API_REQUEST(self,API_ACTION):
 		self.debug(1,"def API_REQUEST(%s)"%(API_ACTION))
 		if self.APIKEY == False:
@@ -4901,14 +4874,16 @@ class Systray:
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
 		if API_ACTION == "getconfigs":
-			if os.path.isfile(self.zip_cfg): os.remove(self.zip_cfg)
+			if os.path.isfile(self.zip_cfg): 
+				os.remove(self.zip_cfg)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
 		
 		if API_ACTION == "requestcerts":
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
 		if API_ACTION == "getcerts":
-			if os.path.isfile(self.zip_crt): os.remove(self.zip_crt)
+			if os.path.isfile(self.zip_crt): 
+				os.remove(self.zip_crt)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
 		self.body = False
@@ -4916,7 +4891,7 @@ class Systray:
 		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
 		
 		try:
-			HEADERS = self.make_useragent()
+			HEADERS = request_api.useragent(self.DEBUG)
 			r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
 			
 			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
@@ -5005,7 +4980,7 @@ class Systray:
 				return True
 			try:
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
-				HEADERS = self.make_useragent()
+				HEADERS = request_api.useragent(self.DEBUG)
 				r = requests.get(url,timeout=3,headers=HEADERS)
 				rip = r.content.strip().split()[0]
 				if rip == self.OVPN_CONNECTEDtoIP:
@@ -5181,7 +5156,7 @@ class Systray:
 		try:
 			API_ACTION = "loadserverdata"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-			HEADERS = self.make_useragent()
+			HEADERS = request_api.useragent(self.DEBUG)
 			r = requests.post(self.APIURL,data=values,headers=HEADERS,timeout=(3,3))
 			self.debug(1,"def load_serverdata_from_remote: posted")
 			try:
@@ -5238,7 +5213,7 @@ class Systray:
 		try:
 			API_ACTION = "accinfo"
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-			HEADERS = self.make_useragent()
+			HEADERS = request_api.useragent(self.DEBUG)
 			r = requests.post(self.APIURL,data=values,headers=HEADERS,timeout=(3,3))
 			self.debug(1,"def load_accinfo_from_remote: posted")
 			try:
@@ -5297,7 +5272,7 @@ class Systray:
 		else:
 			self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
 			try:
-				HEADERS = self.make_useragent()
+				HEADERS = request_api.useragent(self.DEBUG)
 				r1 = requests.get(openvpn.values(DEBUG)["OPENVPN_DL_URL"],headers=HEADERS)
 				if len(r1.content) == openvpn.values(self.DEBUG)["F_SIZES"][self.ARCH]:
 					fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
@@ -5306,12 +5281,11 @@ class Systray:
 					ascfile = "%s.asc" % (openvpn.values(DEBUG)["OPENVPN_DL_URL"])
 					if os.path.isfile(ascfile):
 						os.remove(ascfile)
-					HEADERS = self.make_useragent()
+					HEADERS = request_api.useragent(self.DEBUG)
 					r2 = requests.get(ascfile,headers=HEADERS)
 					fp2 = open(self.OPENVPN_ASC_FILE, "wb")
 					fp2.write(r2.content)
 					fp2.close()
-					self.tray.set_tooltip_markup(_("%s - Verify openVPN") % (CLIENT_STRING))
 				else:
 					self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
 				return self.verify_openvpnbin_dl()
@@ -5548,7 +5522,7 @@ class Systray:
 				if not os.path.isfile(self.dns_d0wntxt):
 					try:
 						url = "https://%s/files/dns/d0wns_dns.static.txt" % (release_version.org_data()["VCP_DOMAIN"])
-						HEADERS = self.make_useragent()
+						HEADERS = request_api.useragent(self.DEBUG)
 						r = requests.get(url,headers=HEADERS)
 						fp = open(self.dns_d0wntxt,'wb')
 						fp.write(r.content)
