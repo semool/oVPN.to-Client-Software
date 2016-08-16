@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-
 import sys
 import debug
 DEVMODE = debug.devmode()
@@ -3836,13 +3834,24 @@ class Systray:
 
 	def read_gateway_from_interface(self):
 		try:
+			GATEWAY_LOCAL = False
 			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
 			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
-			GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
-			if self.isValueIPv4(GATEWAY_LOCAL):
-				self.GATEWAY_LOCAL = GATEWAY_LOCAL
-				self.debug(1,"def read_gateway_from_interface: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
-				return True
+			#GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
+			try:
+				GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
+			except:
+				self.debug(1,"def read_gateway_from_interface: try DefaultGateway failed")
+				try:
+					GATEWAY_LOCAL = DEVICE_DATA["DhcpServer"]
+				except:
+					self.debug(1,"def read_gateway_from_interface: try DhcpServer failed")
+			
+			if not GATEWAY_LOCAL == False:
+				if self.isValueIPv4(GATEWAY_LOCAL):
+					self.GATEWAY_LOCAL = GATEWAY_LOCAL
+					self.debug(1,"def read_gateway_from_interface: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
+					return True
 		except:
 			self.debug(1,"def read_gateway_from_interface: failed")
 
