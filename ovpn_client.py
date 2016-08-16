@@ -3692,7 +3692,7 @@ class Systray:
 		#if not self.win_read_interfaces():
 		#	self.reset_ovpn_values_disconnected()
 		#	return False
-		if not self.openvpn_check_files() == True:
+		if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
 			self.reset_ovpn_values_disconnected()
 			return False
 		if not self.win_firewall_start():
