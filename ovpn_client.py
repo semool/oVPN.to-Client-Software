@@ -46,9 +46,6 @@ try:
 	VCP_DOMAIN = release_version.org_data()["VCP_DOMAIN"]
 	API_DOMAIN = release_version.org_data()["API_DOMAIN"]
 	API_URL = "https://%s:%s/%s" % (API_DOMAIN,release_version.org_data()["API_PORT"],release_version.org_data()["API_POST"])
-	print CLIENTVERSION
-	print CLIENT_STRING
-	print API_URL
 	
 	try:
 		BITS = struct.calcsize("P") * 8
@@ -4083,13 +4080,13 @@ class Systray:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
 					return True
 				except:
-					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (release_version.org_data()["VCP_DOMAIN"],self.CA_FILE),_("Error: SSL CA Cert #1"))
+					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #1"))
 					return False
 			else:
-				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (release_version.org_data()["VCP_DOMAIN"],self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
+				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (VCP_DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
 				return False
 		else:
-			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (release_version.org_data()["VCP_DOMAIN"],self.CA_FILE),_("Error: SSL CA Cert #3"))
+			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #3"))
 			return False
 
 	def win_firewall_start(self):
@@ -4186,7 +4183,7 @@ class Systray:
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
-		url = "https://%s" % (release_version.org_data()["VCP_DOMAIN"])
+		url = "https://%s" % (VCP_DOMAIN)
 		ips = ["178.17.170.116",self.GATEWAY_OVPN_IP4A]
 		port = 443
 		protocol = "tcp"
@@ -4797,7 +4794,7 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (release_version.org_data()["VCP_DOMAIN"]),_("Switched to IPv4+6"))
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
 			self.cb_check_normal_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
@@ -4812,7 +4809,7 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (release_version.org_data()["VCP_DOMAIN"]),_("Switched to IPv6+4"))
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
 			self.cb_check_normal_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
@@ -5521,7 +5518,7 @@ class Systray:
 			try:
 				if not os.path.isfile(self.dns_d0wntxt):
 					try:
-						url = "https://%s/files/dns/d0wns_dns.static.txt" % (release_version.org_data()["VCP_DOMAIN"])
+						url = "https://%s/files/dns/d0wns_dns.static.txt" % (VCP_DOMAIN)
 						HEADERS = request_api.useragent(self.DEBUG)
 						r = requests.get(url,headers=HEADERS)
 						fp = open(self.dns_d0wntxt,'wb')
