@@ -151,11 +151,6 @@ class Systray:
 		self.DEBUG_LOGFILE = False
 		self.OPENVPN_FILEHASHS = {"openvpn-install-2.3.11-I601-x86_64.exe": {"libeay32.dll": "8a96ddc451110b84ef7bad7003222de593fa6b44757093b13076404b9d92b9de5050196885dbbdff0335cd527d0821f83d9ff3cb610ab7c5aa2ebc7c6afc7cbe", "openvpn.exe": "e94cb06e44a17d2e0a4d884cee2253d960b8a41dcd191340a3f5be12888c4936d8a8a60e5f13604fd8bbac66df7350d8773391e4432697a5b3b1a3d0662837e9", "openvpnserv.exe": "3c86a89a163c2f7d043f692883d51ff6e1c2bd77801fefcd4e5458bfd0473863223d8ebdcf573fdbe64753b0071e505e285ab08a52d4925a1b0a6ce24d80a7d7", "liblzo2-2.dll": "5de56ee903501e84a4f8f988c7deb6d24b34e5b2ff4cf51e9e80cdcbc5a4710639bd7f6e559fdd2df7ae29d83bf7c58c41e74c5c4f7ddab7faf15df0353d0b05", "openvpn-gui.exe": "3c8d174dcfb71b6ce750bc7460bd4f0ab6b4e0bba8305253658fc4e02fb74fa1d737ca9e290a64818bea48857ecfb66b7af720c673e3f2d9f7eba206799aae8f", "libpkcs11-helper-1.dll": "f1ac4d5eed3a97b8cd9c5b053c6f3ea8fc7e2b25d1a9adead3b8a198bee9dea7237c07dd2d2561aeebed62aac318d90b321b73729b81f00a03f10b45eda56480", "ssleay32.dll": "a9384fd0ded117e3c27f988ea35109e7843b929edf79473ad0e485b5d0285660676fd9b9c43458de007dd142aedf9fdea75a2a7bdb9b7b600edee392d18bf90e", "openssl.exe": "7c6699cf02f3b1d017b867855935019f2d50fe6b4d49c79de06a7e40663d29dd955a7f6bfb7836aa2e52dde4d817712b6e46650a2a10f5958a81338b4106be1b"}, "openvpn-install-2.3.11-I601-i686.exe": {"libeay32.dll": "592475e0b0286914d697f36fff8af7b3e265342787d945c7fe9e234a7cfbd84a13e757850fe7588a382a83c5f59e0046f91aed1736d4c06181d180e33aced806", "openvpn.exe": "dfbad890037291a534da7c534b49ec70ecc9a044ee0d8508654696819d88b5b4845b81b2e1aecd5475dc62e0d9a0d1c147524c70940a4e96c4e1530e257758d6", "openvpnserv.exe": "6dc640730a5724de687b805699e51595a1f08b16bc1596564b89cd580deee7478113a4296c3de677f96d4501f4f40a4e36d7d4c1f6993d4dbb7199b0e6edfa14", "liblzo2-2.dll": "31b744a57105d122d2150b5ab793620b73dbc28788be8484fa682e1cf6857f01102034e220b63d5709f6baa44b547df94e2c8aad6b5124b91e105e42d258e40b", "openvpn-gui.exe": "dab26e87d66d65e727733e16f3234585f44f8ebbf969c9fd20d4fc55a973820cecfb6218e1b5da98eecdae111473a839cab7b128687808676801bce25558c4c2", "libpkcs11-helper-1.dll": "bd7339e3911ab75ddf805555e0f59e65927f1539a5561b22456e25f3d1868fb42d89cd95eaa96c3335fef7d3ec2a21ff7c53f04961fedc5e374f43f4070df58c", "ssleay32.dll": "440cf92524e21e9dc1d92f45a8fbd566f0eeec597e0f52a235847879bdd4806ac219b592aaec9976620082b2d8d5690d432e1a45b0df035b18404453530855d9", "openssl.exe": "49d274c5f4ccddda28751a1a6271888c32188a192b9ad9c224832b51af0b474225d75c6ac51e61438b7a9f956b1ba78fef7a5392759a3d38fc4ddd1d7772e464"}}
 		
-		""" *fixme* UNUSED """
-		#self.CHECK_FILEHASHS = True
-		#self.OVPN_WIN_DL_URL_x86 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-i686.exe"
-		#self.OVPN_WIN_DL_URL_x64 = "https://swupdate.openvpn.net/community/releases/openvpn-install-2.3.11-I601-x86_64.exe"
-		
 		self.timer_load_remote_data_running = False
 		self.timer_ovpn_ping_running = False
 		self.timer_check_certdl_running = False
@@ -5298,7 +5293,6 @@ class Systray:
 	""" *fixme* move to openvpn.py """
 	def load_openvpnbin_from_remote(self):
 		self.debug(1,"def load_openvpnbin_from_remote()")
-		# *fixme*
 		self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.VPN_DIR,openvpn.values(DEBUG)["SETUP_FILENAME"])
 		self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
@@ -5380,8 +5374,8 @@ class Systray:
 			return False
 
 	""" *fixme* move to openvpn.py """
-	def win_select_openvpn(self):
-		self.debug(1,"def win_select_openvpn()")
+	def win_dialog_select_openvpn(self):
+		self.debug(1,"def win_dialog_select_openvpn()")
 		#self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
 		dialogWindow = Gtk.FileChooserDialog(_("Select openvpn.exe or Cancel to install openVPN"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
@@ -5395,14 +5389,14 @@ class Systray:
 			if response == Gtk.ResponseType.OK:
 				self.OPENVPN_EXE = dialogWindow.get_filename()
 				dialogWindow.destroy()
-				self.debug(1,"def win_select_openvpn: selected = '%s'" % (self.OPENVPN_EXE))
+				self.debug(1,"def win_dialog_select_openvpn: selected = '%s'" % (self.OPENVPN_EXE))
 				return True
 			else:
 				dialogWindow.destroy()
-				self.debug(1,"def win_select_openvpn: Closed, no files selected")
+				self.debug(1,"def win_dialog_select_openvpn: Closed, no files selected")
 				return False
 		except:
-			self.debug(1,"def win_select_openvpn: response failed")
+			self.debug(1,"def win_dialog_select_openvpn: response failed")
 			return False
 
 	""" *fixme* moved to openvpn.py """
@@ -5420,7 +5414,7 @@ class Systray:
 				if self.upgrade_openvpn() == True:
 					return self.win_detect_openvpn()
 		else:
-			if self.win_select_openvpn() == True:
+			if self.win_dialog_select_openvpn() == True:
 				return self.win_detect_openvpn()
 			else:
 				if self.upgrade_openvpn() == True:
