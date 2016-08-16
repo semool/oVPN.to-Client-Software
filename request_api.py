@@ -10,11 +10,11 @@ def random_string():
 	int = random.randint(16,32)
 	rand = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(int))
 	return rand
-	
+
 def useragent(DEBUG):
 	debug(99,"def useragent()",DEBUG,True)
-	user_agent = 007
 	rand = random_string()
+	user_agent = "client/007/%s" % rand
 	try:
 		version = release_version.version_data()["VERSION"]
 		versionint = 0
