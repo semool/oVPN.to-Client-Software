@@ -230,7 +230,6 @@ def check_file_hashs(DEBUG,OPENVPN_DIR,type):
 		
 		debug(2,"def check_file_hashs: hashs = '%s'" % (hashs),DEBUG,True)
 		for file in content:
-			#self.LAST_FAILED_CHECKFILE = file
 			if file.endswith(type):
 				filepath = "%s\\%s" % (OPENVPN_DIR,file)
 				hasha = hashings.hash_sha512_file(DEBUG,filepath)
@@ -238,11 +237,8 @@ def check_file_hashs(DEBUG,OPENVPN_DIR,type):
 				if hasha == hashb:
 					debug(1,"[openvpn.py] def check_file_hashs: hash '%s' OK!" % (file),DEBUG,True)
 				else:
-					#self.msgwarn(_("Invalid Hash: '%s'! is '%s' != '%s'") % (filepath,hasha,hashb),_("Error!"))
+					# Invalid Hash
 					return file
-			else:
-				#self.msgwarn(_("Invalid content '%s' in '%s'") % (file,OPENVPN_DIR),_("Error!"))
-				return file
 		return True
 	except:
 		debug(1,"[openvpn.py] def check_file_hashs: failed",DEBUG,True)

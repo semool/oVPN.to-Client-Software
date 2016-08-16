@@ -3122,7 +3122,7 @@ class Systray:
 		button.connect('clicked', self.cb_settings_options_button_networkadapter)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
-		
+
 	def cb_settings_options_button_networkadapter(self,event):
 		GLib.idle_add(self.cb_resetextif)
 
@@ -3294,7 +3294,7 @@ class Systray:
 			self.debug(1,"def settings_options_combobox_language()")
 		except:
 			self.debug(1,"def settings_options_combobox_language: failed")
-			
+
 	def cb_settings_options_combobox_language(self, combobox):
 		self.debug(1,"def cb_settings_options_combobox_language()")
 		model = combobox.get_model()
@@ -3355,7 +3355,7 @@ class Systray:
 		button.connect('clicked', self.cb_settings_updates_button_apireset)
 		page.pack_start(button,False,False,0)
 		page.pack_start(Gtk.Label(label=""),False,False,0)
-		
+
 	def cb_settings_updates_button_apireset(self,event):
 		GLib.idle_add(self.dialog_apikey)
 
@@ -3373,7 +3373,7 @@ class Systray:
 		self.debug(1,"def cb_destroy_mainwindow")
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
-		
+
 	def cb_destroy_hidecellswindow(self,event):
 		self.debug(1,"def cb_destroy_hidecellswindow")
 		self.HIDECELLSWINDOW_OPEN = False
@@ -3519,7 +3519,7 @@ class Systray:
 			self.call_redraw_mainwindow()
 			self.debug(1,"def cb_reset_load_remote_timer == F5")
 			self.reset_load_remote_timer()
-		
+
 	def reset_load_remote_timer(self):
 		
 		if self.LOAD_SRVDATA == True and self.MAINWINDOW_OPEN == True:
@@ -4513,7 +4513,7 @@ class Systray:
 				self.request_UPDATE = False
 				self.check_remote_update()
 		self.UPDATE_SWITCH = True
-			
+
 	def cb_interface_selector_changed(self, combobox):
 		self.debug(1,"def cb_interface_selector_changed()")
 		model = combobox.get_model()
@@ -4604,7 +4604,7 @@ class Systray:
 			self.write_options_file()
 			self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
-	
+
 	def cb_extserverview_size(self,widget,event):
 		if event.button == 1:
 			self.debug(1,"def cb_extserverview_size()")
@@ -5274,7 +5274,7 @@ class Systray:
 			self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
 			self.debug(1,"def load_accinfo_from_remote: api request failed")
 			return False
-	
+
 	""" *fixme* move to openvpn.py """
 	def upgrade_openvpn(self):
 		self.debug(1,"def upgrade_openvpn()")
