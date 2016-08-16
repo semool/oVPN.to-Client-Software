@@ -3,8 +3,10 @@ import os, subprocess, sys
 
 # .py file imports
 from debug import debug
-
+from debug import devmode
 import release_version
+import hashings
+import signtool
 
 
 #self.OPENVPN_FILEHASHS = {"openvpn-install-2.3.11-I601-x86_64.exe": {"libeay32.dll": "8a96ddc451110b84ef7bad7003222de593fa6b44757093b13076404b9d92b9de5050196885dbbdff0335cd527d0821f83d9ff3cb610ab7c5aa2ebc7c6afc7cbe", "openvpn.exe": "e94cb06e44a17d2e0a4d884cee2253d960b8a41dcd191340a3f5be12888c4936d8a8a60e5f13604fd8bbac66df7350d8773391e4432697a5b3b1a3d0662837e9", "openvpnserv.exe": "3c86a89a163c2f7d043f692883d51ff6e1c2bd77801fefcd4e5458bfd0473863223d8ebdcf573fdbe64753b0071e505e285ab08a52d4925a1b0a6ce24d80a7d7", "liblzo2-2.dll": "5de56ee903501e84a4f8f988c7deb6d24b34e5b2ff4cf51e9e80cdcbc5a4710639bd7f6e559fdd2df7ae29d83bf7c58c41e74c5c4f7ddab7faf15df0353d0b05", "openvpn-gui.exe": "3c8d174dcfb71b6ce750bc7460bd4f0ab6b4e0bba8305253658fc4e02fb74fa1d737ca9e290a64818bea48857ecfb66b7af720c673e3f2d9f7eba206799aae8f", "libpkcs11-helper-1.dll": "f1ac4d5eed3a97b8cd9c5b053c6f3ea8fc7e2b25d1a9adead3b8a198bee9dea7237c07dd2d2561aeebed62aac318d90b321b73729b81f00a03f10b45eda56480", "ssleay32.dll": "a9384fd0ded117e3c27f988ea35109e7843b929edf79473ad0e485b5d0285660676fd9b9c43458de007dd142aedf9fdea75a2a7bdb9b7b600edee392d18bf90e", "openssl.exe": "7c6699cf02f3b1d017b867855935019f2d50fe6b4d49c79de06a7e40663d29dd955a7f6bfb7836aa2e52dde4d817712b6e46650a2a10f5958a81338b4106be1b"}, "openvpn-install-2.3.11-I601-i686.exe": {"libeay32.dll": "592475e0b0286914d697f36fff8af7b3e265342787d945c7fe9e234a7cfbd84a13e757850fe7588a382a83c5f59e0046f91aed1736d4c06181d180e33aced806", "openvpn.exe": "dfbad890037291a534da7c534b49ec70ecc9a044ee0d8508654696819d88b5b4845b81b2e1aecd5475dc62e0d9a0d1c147524c70940a4e96c4e1530e257758d6", "openvpnserv.exe": "6dc640730a5724de687b805699e51595a1f08b16bc1596564b89cd580deee7478113a4296c3de677f96d4501f4f40a4e36d7d4c1f6993d4dbb7199b0e6edfa14", "liblzo2-2.dll": "31b744a57105d122d2150b5ab793620b73dbc28788be8484fa682e1cf6857f01102034e220b63d5709f6baa44b547df94e2c8aad6b5124b91e105e42d258e40b", "openvpn-gui.exe": "dab26e87d66d65e727733e16f3234585f44f8ebbf969c9fd20d4fc55a973820cecfb6218e1b5da98eecdae111473a839cab7b128687808676801bce25558c4c2", "libpkcs11-helper-1.dll": "bd7339e3911ab75ddf805555e0f59e65927f1539a5561b22456e25f3d1868fb42d89cd95eaa96c3335fef7d3ec2a21ff7c53f04961fedc5e374f43f4070df58c", "ssleay32.dll": "440cf92524e21e9dc1d92f45a8fbd566f0eeec597e0f52a235847879bdd4806ac219b592aaec9976620082b2d8d5690d432e1a45b0df035b18404453530855d9", "openssl.exe": "49d274c5f4ccddda28751a1a6271888c32188a192b9ad9c224832b51af0b474225d75c6ac51e61438b7a9f956b1ba78fef7a5392759a3d38fc4ddd1d7772e464"}}
@@ -18,6 +20,7 @@ def values(DEBUG):
 		TIMESTAMP = 1462831200
 		VERSION = "2.3.11"
 		BUILT_V = "I601"
+		
 		
 		SHA_512 = {
 			"i686" : "b6c1e5d9dd80fd6515d9683044dae7cad13c4cb5ac5590be4116263b7cde25e0fef1163deb5a1f1ad646e5fdb84c286308fa8af288692b9c7d4e2b7dbff38bbe",
@@ -38,10 +41,13 @@ def values(DEBUG):
 		OPENVPN_DL_URL =  "%s/%s" % (URLS["REM"],SETUP_FILENAME)
 		OPENVPN_DL_URL_ALT = "%s/%s" % (URLS["ALT"],SETUP_FILENAME)
 		
+		OPENVPN_FILEHASHS = {"openvpn-install-2.3.11-I601-x86_64.exe": {"libeay32.dll": "8a96ddc451110b84ef7bad7003222de593fa6b44757093b13076404b9d92b9de5050196885dbbdff0335cd527d0821f83d9ff3cb610ab7c5aa2ebc7c6afc7cbe", "openvpn.exe": "e94cb06e44a17d2e0a4d884cee2253d960b8a41dcd191340a3f5be12888c4936d8a8a60e5f13604fd8bbac66df7350d8773391e4432697a5b3b1a3d0662837e9", "openvpnserv.exe": "3c86a89a163c2f7d043f692883d51ff6e1c2bd77801fefcd4e5458bfd0473863223d8ebdcf573fdbe64753b0071e505e285ab08a52d4925a1b0a6ce24d80a7d7", "liblzo2-2.dll": "5de56ee903501e84a4f8f988c7deb6d24b34e5b2ff4cf51e9e80cdcbc5a4710639bd7f6e559fdd2df7ae29d83bf7c58c41e74c5c4f7ddab7faf15df0353d0b05", "openvpn-gui.exe": "3c8d174dcfb71b6ce750bc7460bd4f0ab6b4e0bba8305253658fc4e02fb74fa1d737ca9e290a64818bea48857ecfb66b7af720c673e3f2d9f7eba206799aae8f", "libpkcs11-helper-1.dll": "f1ac4d5eed3a97b8cd9c5b053c6f3ea8fc7e2b25d1a9adead3b8a198bee9dea7237c07dd2d2561aeebed62aac318d90b321b73729b81f00a03f10b45eda56480", "ssleay32.dll": "a9384fd0ded117e3c27f988ea35109e7843b929edf79473ad0e485b5d0285660676fd9b9c43458de007dd142aedf9fdea75a2a7bdb9b7b600edee392d18bf90e", "openssl.exe": "7c6699cf02f3b1d017b867855935019f2d50fe6b4d49c79de06a7e40663d29dd955a7f6bfb7836aa2e52dde4d817712b6e46650a2a10f5958a81338b4106be1b"}, "openvpn-install-2.3.11-I601-i686.exe": {"libeay32.dll": "592475e0b0286914d697f36fff8af7b3e265342787d945c7fe9e234a7cfbd84a13e757850fe7588a382a83c5f59e0046f91aed1736d4c06181d180e33aced806", "openvpn.exe": "dfbad890037291a534da7c534b49ec70ecc9a044ee0d8508654696819d88b5b4845b81b2e1aecd5475dc62e0d9a0d1c147524c70940a4e96c4e1530e257758d6", "openvpnserv.exe": "6dc640730a5724de687b805699e51595a1f08b16bc1596564b89cd580deee7478113a4296c3de677f96d4501f4f40a4e36d7d4c1f6993d4dbb7199b0e6edfa14", "liblzo2-2.dll": "31b744a57105d122d2150b5ab793620b73dbc28788be8484fa682e1cf6857f01102034e220b63d5709f6baa44b547df94e2c8aad6b5124b91e105e42d258e40b", "openvpn-gui.exe": "dab26e87d66d65e727733e16f3234585f44f8ebbf969c9fd20d4fc55a973820cecfb6218e1b5da98eecdae111473a839cab7b128687808676801bce25558c4c2", "libpkcs11-helper-1.dll": "bd7339e3911ab75ddf805555e0f59e65927f1539a5561b22456e25f3d1868fb42d89cd95eaa96c3335fef7d3ec2a21ff7c53f04961fedc5e374f43f4070df58c", "ssleay32.dll": "440cf92524e21e9dc1d92f45a8fbd566f0eeec597e0f52a235847879bdd4806ac219b592aaec9976620082b2d8d5690d432e1a45b0df035b18404453530855d9", "openssl.exe": "49d274c5f4ccddda28751a1a6271888c32188a192b9ad9c224832b51af0b474225d75c6ac51e61438b7a9f956b1ba78fef7a5392759a3d38fc4ddd1d7772e464"}}
+		
 		return {
 				"ARCH":ARCH, "BUILT":BUILT, "LATEST":LATEST, "TIMESTAMP":TIMESTAMP, "VERSION":VERSION, "BUILT_V":BUILT_V, 
 				"SHA_512":SHA_512, "F_SIZES":F_SIZES, "SETUP_FILENAME":SETUP_FILENAME,
 				"URLS":URLS, "OPENVPN_DL_URL":OPENVPN_DL_URL, "OPENVPN_DL_URL_ALT":OPENVPN_DL_URL_ALT,
+				"OPENVPN_FILEHASHS":OPENVPN_FILEHASHS
 				}
 	except:
 		debug(1,"[openvpn.py] def values: failed",DEBUG,True)
@@ -172,18 +178,83 @@ def list_openvpn_files(DEBUG,OPENVPN_DIR,type):
 	debug(1,"[openvpn.py] def list_openvpn_files: return False",DEBUG,True)
 	return False
 
+def check_files(DEBUG,OPENVPN_DIR):
+	debug(1,"[openvpn.py] def check_files()",DEBUG,True)
+	
+	if check_file_hashs(DEBUG,OPENVPN_DIR,".exe") == True:
+		if check_file_hashs(DEBUG,OPENVPN_DIR,".dll") == True:
+			return True
+	else:
+		# openvpn.exe hash failed, search signtool
+		if not signtool.find_signtool(DEBUG) == False:
+			# check exe signatures
+			files = list_openvpn_files(DEBUG,OPENVPN_DIR,".exe")
+			if files == False:
+				return False
+			for file in files:
+				filepath = "%s\\%s" % (OPENVPN_DIR,file)
+				if not signtool.signtool_verify(DEBUG,filepath):
+					return False
+			# check dll signatures
+			files = list_openvpn_files(DEBUG,OPENVPN_DIR,".dll")
+			if files == False:
+				return False
+			for file in files:
+				filepath = "%s\\%s" % (OPENVPN_DIR,file)
+				if not signtool.signtool_verify(DEBUG,filepath):
+					return False
+			# all file signatures verified
+			return True
+	debug(1,"[openvpn.py] def check_files: failed",DEBUG,True)
+	return False
+
+def check_file_hashs(DEBUG,OPENVPN_DIR,type):
+	print "debug 1"
+	debug(1,"[openvpn.py] def check_file_hashs(%s)"%(type),DEBUG,True)
+	if devmode() == True:
+		print "debug 2"
+		debug(1,"[openvpn.py] def check_file_hashs: DEVMODE ! force signature check",DEBUG,True)
+		return False
+	print "debug 3"
+	types = [ ".exe", ".dll" ]
+	if not type in types:
+		debug(1,"[openvpn.py] def check_file_hashs: type '%s' invalid"%(type),DEBUG,True)
+		return False
+	try:
+		content = list_openvpn_files(DEBUG,OPENVPN_DIR,type)
+		if content == False:
+			return False
+		try:
+			filename = values(DEBUG)["SETUP_FILENAME"]
+			hashs = values(DEBUG)["OPENVPN_FILEHASHS"][filename]
+			print hashs
+		except:
+			debug(1,"[openvpn.py] def check_file_hashs: filename/hashs failed",DEBUG,True)
+			sys.exit()
+		
+		debug(2,"def check_file_hashs: hashs = '%s'" % (hashs),DEBUG,True)
+		for file in content:
+			#self.LAST_FAILED_CHECKFILE = file
+			if file.endswith(type):
+				filepath = "%s\\%s" % (OPENVPN_DIR,file)
+				hasha = hashings.hash_sha512_file(DEBUG,filepath)
+				hashb = hashs[file]
+				if hasha == hashb:
+					debug(1,"[openvpn.py] def check_file_hashs: hash '%s' OK!" % (file),DEBUG,True)
+				else:
+					#self.msgwarn(_("Invalid Hash: '%s'! is '%s' != '%s'") % (filepath,hasha,hashb),_("Error!"))
+					return file
+			else:
+				#self.msgwarn(_("Invalid content '%s' in '%s'") % (file,OPENVPN_DIR),_("Error!"))
+				return file
+		return True
+	except:
+		debug(1,"[openvpn.py] def check_file_hashs: failed",DEBUG,True)
+		sys.exit()
+		return False
 
 """
 def upgrade_openvpn(DEBUG):
-	pass
-
-def openvpn_check_files(DEBUG,OPENVPN_DIR):
-	pass
-
-def openvpn_check_file_hashs(DEBUG,type):
-	pass
-
-def build_openvpn_dlurl(self):
 	pass
 
 def load_openvpnbin_from_remote(self):
