@@ -1703,10 +1703,10 @@ class Systray:
 			try:
 				countrycodefrombefore = 0
 				for servername in self.OVPN_SERVER:
-					servershort = servername[:3]
+					servershort = servername.split(".")[0].upper()
 					
 					textstring = "%s [%s]:%s (%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][0],self.OVPN_SERVER_INFO[servershort][1],self.OVPN_SERVER_INFO[servershort][2])
-					countrycode = servershort[:2].lower()
+					countrycode = servershort[:2]
 					#print "string = %s, countrycode = %s" % (textstring,countrycode)
 					
 					if not countrycodefrombefore == countrycode:
@@ -1717,9 +1717,9 @@ class Systray:
 						cgmenu.connect('leave-notify-event', self.systray_notify_event_leave,"sub_cgmenu")
 						self.cgmenu = cgmenu
 						try:
-							countryname = self.COUNTRYNAMES[countrycode.upper()]
+							countryname = self.COUNTRYNAMES[countrycode]
 						except:
-							countryname = countrycode.upper()
+							countryname = countrycode
 						
 						try:
 							cgm = Gtk.ImageMenuItem(countryname)
@@ -1762,7 +1762,7 @@ class Systray:
 		if self.state_openvpn() == True:
 			try:
 				sep = Gtk.SeparatorMenuItem()
-				servershort = self.OVPN_CONNECTEDto[:3]
+				servershort = self.OVPN_CONNECTEDto.split(".")[0].upper()
 				textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
 				disconnect = Gtk.ImageMenuItem(textstring)
 				img = Gtk.Image()
@@ -1937,7 +1937,7 @@ class Systray:
 			server = row[2]
 			if server in self.OVPN_SERVER:
 				if debugupdate_mwls: self.debug(1,"def update_mwls: server '%s'" % (server))
-				servershort = server[:3].upper()
+				servershort = server.split(".")[0].upper()
 				if row[2] == server:
 					value = False
 					iter = liststore.get_iter_first()
@@ -2382,8 +2382,8 @@ class Systray:
 	def fill_mainwindow_with_server(self):
 		for server in self.OVPN_SERVER:
 			try:
-				countrycode = server[:2].lower()
-				servershort = server[:3].upper()
+				countrycode = server[:2]
+				servershort = server.split(".")[0].upper()
 				statusimg = self.decode_icon("bullet_white")
 				countryimg = self.decode_flag(countrycode)
 				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
@@ -5030,10 +5030,9 @@ class Systray:
 					if file.endswith('.ovpn.to.ovpn'):
 						filepath = "%s\\%s" % (self.VPN_CFG,file)
 						servername = file[:-5]
-						countrycode = servername[:2].lower()
-						servershort = servername[:3].upper()
+						servershort = servername.split(".")[0].upper()
 						if os.path.isfile(filepath):
-							#print filepath
+							self.debug(1,"def load_ovpn_server: filepath = '%s'"%(filepath))
 							serverinfo = list()
 							for line in open(filepath):
 								if "remote " in line:
@@ -5871,6 +5870,7 @@ class Systray:
 	def decode_flag(self,flag):
 		#self.debug(48,"def decode_flag()")
 		try:
+			flag = flag.lower()
 			try:
 				imgpixbuf = self.FLAG_CACHE_PIXBUF[flag]
 				if isinstance(imgpixbuf, GdkPixbuf.Pixbuf):
