@@ -19,7 +19,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
-import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string, re
 from ConfigParser import SafeConfigParser
 # .py files imports
 
@@ -5013,6 +5013,12 @@ class Systray:
 		except:
 			self.debug(1,"def load_firewall_backups: failed")
 
+	def sort_ovpn_server(self,content):
+		convert = lambda text: int(text) if text.isdigit() else text
+		alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+		content.sort(key=alphanum_key)
+		return content
+
 	def load_ovpn_server(self):
 		self.debug(1,"def load_ovpn_server()")
 		# *fixme* useless?
@@ -5024,6 +5030,7 @@ class Systray:
 			if os.path.exists(self.VPN_CFG):
 				self.debug(1,"def load_ovpn_server: self.VPN_CFG = '%s'" % (self.VPN_CFG))
 				content = os.listdir(self.VPN_CFG)
+				content = self.sort_ovpn_server(content)
 				self.OVPN_SERVER = list()
 				self.OVPN_SERVER_INFO = {}
 				for file in content:
@@ -5080,8 +5087,6 @@ class Systray:
 							self.OVPN_SERVER_INFO[servershort] = serverinfo
 						self.OVPN_SERVER.append(servername)
 						self.debug(5,"def load_ovpn_server: file = '%s' END" % (file))
-				# for end
-				self.OVPN_SERVER.sort()
 				#*fixme* useless?
 				#self.LAST_OVPN_SERVER_RELOAD = time.time()
 				return True
