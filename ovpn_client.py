@@ -5391,6 +5391,9 @@ class Systray:
 			if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
 				if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_EXE) == True:
 					return True
+				else:
+					if self.upgrade_openvpn() == True:
+						return self.win_detect_openvpn()
 			else:
 				if self.upgrade_openvpn() == True:
 					return self.win_detect_openvpn()
