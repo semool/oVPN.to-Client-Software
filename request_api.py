@@ -23,13 +23,13 @@ def useragent(DEBUG):
 			split = version.split(".")
 			versionint = "%s%s%s" % (split[0],split[1],split[2])
 		except:
-			debug(1,"def useragent: version.split failed",DEBUG,True)
+			debug(1,"[request_api.py] def useragent: version.split failed",DEBUG,True)
 		
 		if versionint > 0:
 			version = versionint
 		user_agent = "client/%s" % (version)
 	except:
-		debug(1,"def useragent: construct user-agent failed",DEBUG,True)
+		debug(1,"[request_api.py] def useragent: construct user-agent failed",DEBUG,True)
 	headers = { 'User-Agent':"%s/%s" % (user_agent,rand) }
-	debug(99,"def useragent: return headers = '%s'" % (headers),DEBUG,True)
+	debug(99,"[request_api.py] def useragent: return headers = '%s'" % (headers),DEBUG,True)
 	return headers

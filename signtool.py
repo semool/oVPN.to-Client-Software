@@ -20,14 +20,14 @@ def find_signtool(DEBUG):
 		if os.path.isfile(signtool):
 			hash = hashings.hash_sha512_file(DEBUG,signtool)
 			if signtoolhash == hash:
-				debug(1,"def find_signtool: signtool = '%s'" % (signtool),DEBUG,True)
+				debug(1,"[signtool.py] def find_signtool: signtool = '%s'" % (signtool),DEBUG,True)
 				return signtool
 			else:
-				debug(1,"def find_signtool: signtoolhash failed",DEBUG,True)
+				debug(1,"[signtool.py] def find_signtool: signtoolhash failed",DEBUG,True)
 		else:
 			debug(1,"[signtool.py] def signtool_verify_files: signtool not found",DEBUG,True)
 	except:
-		debug(1,"def find_signtool: failed",DEBUG,True)
+		debug(1,"[signtool.py] def find_signtool: failed",DEBUG,True)
 	return False
 
 def signtool_verify(DEBUG,file):
@@ -38,6 +38,7 @@ def signtool_verify(DEBUG,file):
 		#if devmode() == True:
 		#	cscertsha1 = "1234000012340000123400001234000012340000"
 		string1 = '"%s" verify /v /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
+		string1 = '"%s" verify /q /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
 		debug(1,"[signtool.py] def signtool_verify: string1 = '%s'"%(string1),DEBUG,True)
 		exitcode1 = 1
 		try:
