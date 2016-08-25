@@ -55,6 +55,7 @@ def select_gtkdll(DEBUG):
 				shutil.move(gtkfile32, gtkfile)
 			else:
 				debug(1,"[patches.py] def select_gtkdll() select_gtkdll not needed: gtkfile32 not found",DEBUG,True)
+			return pixel
 		if pixel == 16:
 			if os.path.isfile(gtkfile16):
 				debug(1,"[patches.py] def select_gtkdll() gtkfile --> gtkfile32",DEBUG,True)
@@ -63,5 +64,6 @@ def select_gtkdll(DEBUG):
 				shutil.move(gtkfile16, gtkfile)
 			else:
 				debug(1,"[patches.py] def select_gtkdll() select_gtkdll not needed: gtkfile16 not found",DEBUG,True)
+			return pixel
 	except:
 		debug(1,"[patches.py] def select_gtkdll() failed",DEBUG,True)

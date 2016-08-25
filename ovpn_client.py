@@ -11,7 +11,7 @@ DEV_DIR=debug.devdir()
 
 try:
 	import patches
-	patches.select_gtkdll(DEBUG)
+	TRAYSIZE = patches.select_gtkdll(DEBUG)
 except:
 	sys.exit()
 
@@ -86,9 +86,7 @@ class Systray:
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		self.tray.is_embedded()
-		traysize = self.tray.get_size()
-		self.debug(1,"TrayIcon Output Size: %s pixel" % (traysize))
-		self.tray.connect('size-changed', self.statusicon_size_changed)
+		self.debug(1,"TrayIcon Output Size: %s pixel" % (TRAYSIZE))
 		self.tray.set_from_stock(Gtk.STOCK_EXECUTE)
 		self.tray.set_tooltip_markup(CLIENT_STRING)
 		self.tray.connect('popup-menu', self.on_right_click)
@@ -5853,9 +5851,6 @@ class Systray:
 			dialogWindow.destroy()
 		except:
 			self.debug(1,"def msgwarn_glib: failed")
-
-	def statusicon_size_changed(widget, size):
-		self.debug(1,"def statusicon_size_changed() size = '%s'" % (size))
 
 	def decode_icon(self,icon):
 		#self.debug(49,"def decode_icon()")
