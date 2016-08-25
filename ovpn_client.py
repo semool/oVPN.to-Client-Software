@@ -5264,13 +5264,7 @@ class Systray:
 	def upgrade_openvpn(self):
 		self.debug(1,"def upgrade_openvpn()")
 		if self.load_openvpnbin_from_remote():
-			if self.win_install_openvpn():
-				self.debug(1,"def upgrade_openvpn: self.win_install_openvpn() = True")
-				return True
-		if self.verify_openvpnbin_dl():
-			self.errorquit(text=_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE))
-		else:
-			self.errorquit(text=_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]))
+			return self.win_install_openvpn()
 
 	""" *fixme* move to openvpn.py """
 	def load_openvpnbin_from_remote(self):
@@ -5382,27 +5376,36 @@ class Systray:
 
 	""" *fixme* moved to openvpn.py """
 	def win_detect_openvpn(self):
-		values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
-		if not values == False:
-			self.OPENVPN_DIR = values["OPENVPN_DIR"]
-			self.OPENVPN_EXE = values["OPENVPN_EXE"]
-			self.debug(1,"def win_detect_openvpn: DIR = '%s', EXE = '%s'"%(self.OPENVPN_DIR,self.OPENVPN_EXE))
+		try:
+			values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
+			if not values == False:
+				self.OPENVPN_DIR = values["OPENVPN_DIR"]
+				self.OPENVPN_EXE = values["OPENVPN_EXE"]
+				self.debug(1,"def win_detect_openvpn: DIR = '%s', EXE = '%s'"%(self.OPENVPN_DIR,self.OPENVPN_EXE))
+				
+				if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
+					if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_DIR) == True:
+						return True
+			else:
+				if self.win_dialog_select_openvpn() == True:
+					if self.win_detect_openvpn == True:
+						return True
+			
+			if self.upgrade_openvpn() == True:
+				if self.win_detect_openvpn() == True:
+					return True
+			else:
+				if self.verify_openvpnbin_dl() == True:
+					self.msgwarn(_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE),_("Info"))
+				else:
+					self.msgwarn(_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]),_("Error"))
 			
 			if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-				if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_EXE) == True:
+				if openvpn.win_get_openvpn_version(self.DEBUG,self.OPENVPN_DIR)[0] in openvpn.values(self.DEBUG)["ALLOWED_VERSIONS"]:
+					self.debug(1,"def win_detect_openvpn: OVPN_VERSION in openvpn.values(DEBUG)[ALLOWED_VERSIONS]: True")
 					return True
-				else:
-					if self.upgrade_openvpn() == True:
-						return self.win_detect_openvpn()
-			else:
-				if self.upgrade_openvpn() == True:
-					return self.win_detect_openvpn()
-		else:
-			if self.win_dialog_select_openvpn() == True:
-				return self.win_detect_openvpn()
-			else:
-				if self.upgrade_openvpn() == True:
-					return self.win_detect_openvpn()
+		except:
+			self.debug(1,"def win_detect_openvpn: failed")
 		return False
 
 	def check_dns_is_whitelisted(self):
