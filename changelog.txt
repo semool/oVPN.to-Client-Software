@@ -1,6 +1,43 @@
 # changelog.txt
 #
 
+
+ Version: 0.7.2
++ add openVPN 2.3.12
+
+
+ Version: 0.7.1
++ bugfix: server sorting
+
+
+ Version: 0.7.0
++ bugfix: internal server database string cut problem
+
+
+ Version: 0.6.9
++ bugfix: client failed to start with DHCP... shame... tested with static ips only...
+
+
+ Version: 0.6.8
++ bugfix servercache: did not reload server / clear cache on button 'use ipv4/6 exit server'
++ read gateway from registry
++ rewrite of openvpn detection and verification
++ internal code changes and exports to different files for better reading and debugs
++ added signtool.exe to verfify openvpn.exe and .dll signatures if hash-check fails*
+- fails to start if you are using DHCP
+* hash may file if you have newer openvpn version which lacks hardcoded hashs**
+** force openvpn signature check with signtool.exe: add DEVMODE to exe-link ( client in DEVMODE will start with 15 seconds delay!)
+
+
+ Version: 0.6.7
++ added themes and language selection on setup
+
+
+ Version: 0.6.6
++ some more debugs
++ fixed problem: 64 Bit build failed to start with "netifaces DLL load error"
+
+
  Version: 0.6.5
 + some more debugs
 + added useragent string to API_REQUESTs: does not contain your user-id, only version! so we can easier opt-out older clients if we do any hard API changes
