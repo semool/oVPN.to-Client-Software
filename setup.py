@@ -1,7 +1,6 @@
 from distutils.core import setup
 import py2exe
 import sys, os, site, shutil, time
-import platform
 import struct
 import release_version
 

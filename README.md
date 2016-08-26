@@ -1,13 +1,13 @@
 
 # oVPN.to Client Software for Windows
 
-## Setup 32/64 Bit Dev-Env:
+## Setup 32/64 Bit Dev-Env
 ### 32 Bit Downloads
-+ [Python 2.7.12 win32](https://www.python.org/ftp/python/2.7.12/python-2.7.12.msi) (install to C:\Python27)!!!
++ [Python 2.7.12 win32](https://www.python.org/ftp/python/2.7.12/python-2.7.12.msi) (install to C:\Python27)
 + [py2exe 0.6.9 win32](http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win32-py2.7.exe/download)
 
 ### 64 Bit Downloads
-+ [Python 2.7.12 win64](https://www.python.org/ftp/python/2.7.12/python-2.7.12.amd64.msi) (install to C:\Python27_64) !!!
++ [Python 2.7.12 win64](https://www.python.org/ftp/python/2.7.12/python-2.7.12.amd64.msi) (install to C:\Python27_64)
 + [py2exe 0.6.9 win64](http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win64-py2.7.amd64.exe/download)
 
 ### 32 and 64 Bit
@@ -21,17 +21,17 @@ C:\Python27[_64]\Scripts\pip.exe install requests
 C:\Python27\Scripts\pip.exe install netifaces
 ```
 ### 64 Bit:
-+ When an old Version of netifaces is installed: ```C:\Python27_64\Scripts\pip.exe uninstall netifaces```
 + Download [netifaces-0.10.4-cp27-none-win_amd64.whl](http://www.lfd.uci.edu/~gohlke/pythonlibs/#netifaces) and place it in ```C:\Python27_64\Scripts```
 ```
 C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
 ```
 
 
-## Basic Requirements:
+## Basic Requirements
 + [PyGObject 3.18.2rev8 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev8-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
 + [Inno Setup 5.5.9](http://www.jrsoftware.org/download.php/is.exe)
++ [poedit 1.8.8](https://download.poedit.net/Poedit-1.8.8-setup.exe)
 
 ## Developer Imports: how to run or build from source
 ### Debug Mode
@@ -39,16 +39,17 @@ C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
 + ```X:\????\ovpn-client\debug.bat 32``` and run link as admin!
 + for Debug Mode with more debug messages set target:
 + ```X:\????\ovpn-client\debug.bat 32 DEVMODE```
++ same for 64 bits and do NOT run any of the *.bat files directly!
 
 ### Build Mode
 + create a link (name: BUILD32) to build_inno.bat: edit link, set target:
 + ```'X:\????\ovpn-client\build_inno.bat 32``` and run link normally!
 + to run in Sign Mode set target:
 + ```X:\????\ovpn-client\build_inno.bat 32 SIGN```
-+ same for 64 bits and do NOT run any of the *.bat files directly!
 + edit ```set_dirs.bat``` to your needs!
 + Update VERSION only in file: ```release_version.py```
 + Set SIGN in ```release_version.py``` to False for unsigned inno compile
++ same for 64 bits and do NOT run any of the *.bat files directly!
 
 ## Self Signed Certificate
 + Download and install SDK for your OS 
@@ -63,7 +64,8 @@ C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
 + Right click your Certificate and select "copy thumbprint to clipboard"
 + Edit ```set_dirs.bat``` and replace the ```SIGNCERTSHA1``` with the one in clipboard
 
-## Inno Setup Sign Tools: "Tools" -> "Configure Sign Tools..." -> Add
+## Inno Setup Sign Tools
++ Open InnoSetup and goto: ```Tools``` -> ```Configure Sign Tools...``` -> ```Add```
 + name: signtool1 [OK] command:
 + ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /sha1 YourThumbprint /fd sha1 /t http://timestamp.comodoca.com/?td=sha1 $f```
 + + name: signtool2 [OK] command:
@@ -73,8 +75,9 @@ C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
 + name: signtool4 [OK] command:
 + ```"Path to signtool.exe (e.g. 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe')" sign /v /as /sha1 YourThumbprint /fd sha512 /td sha512 /tr http://timestamp.comodoca.com/?td=sha512 $f```
 
-## Generate locales:
-+ run generate_po.bat
-+ start poedit 1.8+
+## Generate locales
++ create a link (name: GENERATE_PO32) to generate_po.bat: edit link, set target:
++ ```'X:\????\ovpn-client\generate_po.bat 32``` and run link normally!
++ start [poedit 1.8.8](https://download.poedit.net/Poedit-1.8.8-setup.exe)
 + open file ```X:\????\ovpn-client\locale\[lang]\ovpn_client.po```
 + catalog -> update from POT -> './messages.pot'

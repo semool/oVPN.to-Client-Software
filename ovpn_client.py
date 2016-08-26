@@ -2153,7 +2153,7 @@ class Systray:
 		GLib.idle_add(self.rebuild_mainwindow_glib)
 
 	def rebuild_mainwindow_glib(self):
-		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
+		if self.MAINWINDOW_OPEN == True or self.MAINWINDOW_HIDE == True:
 			try:
 				self.mainwindow.remove(self.mainwindow_vbox)
 				self.debug(1,"def rebuild_mainwindow_glib: removed vbox from mainwindow")
@@ -2164,7 +2164,10 @@ class Systray:
 				self.mainwindow_ovpn_server()
 				self.fill_mainwindow_with_server()
 				self.update_mwls()
-				self.mainwindow.show_all()
+				if self.MAINWINDOW_HIDE == False:
+					self.mainwindow.show_all()
+				else:
+					self.destroy_mainwindow()
 				self.debug(1,"def rebuild_mainwindow_glib: filled window with data")
 			except:
 				self.debug(1,"def rebuild_mainwindow_glib: fill window failed")
