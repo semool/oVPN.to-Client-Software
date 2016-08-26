@@ -2283,23 +2283,19 @@ class Systray:
 			mode = "IPv4 + IPv6"
 		elif self.OVPN_CONFIGVERSION == "23x64":
 			mode = "IPv6 + IPv4"
-		self.debug(1,"def mainwindow_ovpn_server: go0")
+		
 		label = Gtk.Label(_("oVPN Server [ %s ]") % (mode))
 		
-		self.debug(1,"def mainwindow_ovpn_server: go1")
 		try:
 			self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,GdkPixbuf.Pixbuf,str)
-			self.debug(1,"def mainwindow_ovpn_server: go2")
 		except:
 			self.debug(1,"def mainwindow_ovpn_server: server-window failed")
 		
-		self.debug(1,"def mainwindow_ovpn_server: go3")
 		self.treeview = Gtk.TreeView(self.serverliststore)
 		self.treeview.connect("button-release-event",self.on_right_click_mainwindow)
 		self.scrolledwindow = Gtk.ScrolledWindow()
 		self.scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 		self.scrolledwindow.set_size_request(64,48)
-		self.debug(1,"def mainwindow_ovpn_server: go4")
 		self.scrolledwindow.add(self.treeview)
 		self.mainwindow_vbox.pack_start(self.scrolledwindow,True,True,0)
 		
