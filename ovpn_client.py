@@ -2153,24 +2153,29 @@ class Systray:
 		GLib.idle_add(self.rebuild_mainwindow_glib)
 
 	def rebuild_mainwindow_glib(self):
-		if self.MAINWINDOW_OPEN == True or self.MAINWINDOW_HIDE == True:
-			try:
-				self.mainwindow.remove(self.mainwindow_vbox)
-				self.debug(1,"def rebuild_mainwindow_glib: removed vbox from mainwindow")
-			except:
-				self.debug(1,"def rebuild_mainwindow_glib: no vbox in mainwindow")
-				
-			try:
-				self.mainwindow_ovpn_server()
-				self.fill_mainwindow_with_server()
-				self.update_mwls()
-				if self.MAINWINDOW_HIDE == False:
-					self.mainwindow.show_all()
-				else:
+		if self.MAINWINDOW_OPEN == True:
+			if self.MAINWINDOW_HIDE == True:
+				try:
 					self.destroy_mainwindow()
-				self.debug(1,"def rebuild_mainwindow_glib: filled window with data")
-			except:
-				self.debug(1,"def rebuild_mainwindow_glib: fill window failed")
+					return False
+				except:
+					return False
+			else:
+				
+				try:
+					self.mainwindow.remove(self.mainwindow_vbox)
+					self.debug(1,"def rebuild_mainwindow_glib: removed vbox from mainwindow")
+				except:
+					self.debug(1,"def rebuild_mainwindow_glib: no vbox in mainwindow")
+				
+				try:
+					self.mainwindow_ovpn_server()
+					self.fill_mainwindow_with_server()
+					self.update_mwls()
+					self.mainwindow.show_all()
+					self.debug(1,"def rebuild_mainwindow_glib: filled window with data")
+				except:
+					self.debug(1,"def rebuild_mainwindow_glib: fill window failed")
 
 	def show_mainwindow(self,widget,event):
 		self.debug(1,"def show_mainwindow()")
