@@ -1299,7 +1299,6 @@ class Systray:
 					i += 1
 				except:
 					self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: dnsmenu.append(dnssubm) '%s' failed "%(countrycode))
-					break
 				
 			dnsm.show_all()
 			self.context_menu_servertab.append(dnsm)
