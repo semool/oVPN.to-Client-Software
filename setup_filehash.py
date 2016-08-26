@@ -14,7 +14,7 @@ import threading
 import requests
 import json
 
-	
+
 class OpenVPN_HashBinsToJson:
 	def __init__(self):
 		if self.self_vars():
@@ -27,7 +27,6 @@ class OpenVPN_HashBinsToJson:
 			print "init failed"
 			sys.exit()
 
-	#######		
 	def self_vars(self):
 	
 		self.SEVENZIP = "C:\\Program Files\\7-Zip\\7z.exe"
@@ -40,11 +39,7 @@ class OpenVPN_HashBinsToJson:
 		self.DOWNLOAD_ASC = True
 		
 		self.OPENVPN_ARCHS = ["i686","x86_64"]
-		#OPENVPN_BINSA = [ "2.3.10:I601","2.3.10:I602","2.3.10:I603","2.3.10:I604","2.3.11:I601" ]
-		#OPENVPN_BINSB = [ "2.3.10:I001","2.3.10:I002","2.3.10:I003","2.3.10:I005","2.3.11:I001" ]
-		OPENVPN_BINSA = [ "2.3.11:I601","2.3.12:I601" ]
-		#OPENVPN_BINSB = [ "2.3.11:I001" ]
-		self.OPENVPN_BINS = OPENVPN_BINSA # + OPENVPN_BINSB
+		self.OPENVPN_BINS = [ "2.3.11:I601","2.3.12:I601" ]
 		
 		self.WORKING_DIR = "files"
 		self.STORAGE_DIR = "%s/openvpn" % (self.WORKING_DIR)
@@ -83,7 +78,6 @@ class OpenVPN_HashBinsToJson:
 		if self.gpg_import_pubkey():
 			return True
 
-	#######
 	def load_hash_dbf(self):
 		if os.path.isfile(self.HASH_DBF):
 			fp = open(self.HASH_DBF,"rb")
@@ -95,7 +89,6 @@ class OpenVPN_HashBinsToJson:
 			#print "def load_hash_dbf: self.HASHS_DB = '%s' failed, pass" % (self.HASHS_DB)
 			return True	
 
-	#######
 	def write_hash_dbf(self):
 		try:
 			fp = open(self.HASH_DBF, "wb")
@@ -106,21 +99,18 @@ class OpenVPN_HashBinsToJson:
 		except:
 			print "def write_hash_dbf: failed!"
 			return False
-	
-		
-	#######
+
 	def files_downloader(self):
 		for BIN in self.OPENVPN_BINS:
 			version = BIN.split(':')[0]
 			built = BIN.split(':')[1]
-			for arch in self.OPENVPN_ARCHS:				
+			for arch in self.OPENVPN_ARCHS:
 				filename = self.openvpn_filename_exe(version,built,arch)
-				url = "%s/%s" % (self.OPENVPN_HTTP,filename)				
+				url = "%s/%s" % (self.OPENVPN_HTTP,filename)
 				self.download_file(url,filename)
 				
-		return True			
-					
-	#######
+		return True
+
 	def download_file(self,url,filename):
 		try:
 			savefileto = "%s/%s" % (self.STORAGE_DIR,filename)
@@ -137,7 +127,6 @@ class OpenVPN_HashBinsToJson:
 							return False
 						else:
 							print "Downloaded '%s' (%s bytes)" % (filename,bytes)
-
 						fp = open(savefileto, "wb")
 						fp.write(r.content)
 						fp.close()
@@ -178,27 +167,28 @@ class OpenVPN_HashBinsToJson:
 					return self.gpg_verify_file("%s.asc"%(savefileto))
 			except:
 				print "def files_downloader: downloading '%s' failed!" % (filename)
-				sys.exit()				
+				sys.exit()
 			
 		except:
 			print "def files_downloader: failed"
 			sys.exit()
 
-	#######
 	def gpg_import_pubkey(self):
 		if not self.DOWNLOAD_ASC:
 			return True
+		if not self.hash_sha512_file(self.OPENVPN_PGPG) == self.OPENVPN_HASH:
+			print "invalid filehash for key '%s'" % (self.OPENVPN_PGPG)
+			return False
 		string = "%s --import %s" % (self.GNUPGBIN,self.OPENVPN_PGPG)
 		try: 
 			with open(os.devnull, "w") as f: 
-				exitcode = subprocess.call("%s" % (string),shell=True,stdout=f)		
+				exitcode = subprocess.call("%s" % (string),shell=True,stdout=f)
 				if exitcode == 0:
 					return True
 		except:
 			print "def gpg_import_pubkey: failed!"
 			return False
-			
-	#######
+
 	def gpg_verify_file(self,file):
 		if not self.DOWNLOAD_ASC:
 			return True
@@ -211,8 +201,7 @@ class OpenVPN_HashBinsToJson:
 		except:
 			print "def gpg_verify_file: '%s' failed!" % (file)
 			return False
-		
-	#######
+
 	def hash_sha512_file(self,file):
 		if os.path.isfile(file):
 			hasher = hashlib.sha512()
@@ -222,9 +211,8 @@ class OpenVPN_HashBinsToJson:
 				hasher.update(buf)
 			fp.close()
 			hash = hasher.hexdigest()
-			return hash	
+			return hash
 
-	#######
 	def extract_file(self,file,filename):
 		try:
 			if os.path.isfile(file):
@@ -248,34 +236,31 @@ class OpenVPN_HashBinsToJson:
 			print "def extract_setup(self,%s,%s) failed!" % (file,filename)
 			return False
 
-	#######		
 	def hash_files(self,filename):
 		dir = "%s/%s/bin" % (self.EXTRACT_DIR,filename)
 		#print "def hash_files: dir = '%s'" % (dir)
 		if os.path.exists(dir):
-			content = os.listdir(dir)			
+			content = os.listdir(dir)
 			files = {}
 			#print "CONTENT = '%s'" % (content)
 			for file in content:
 				if file.endswith('.exe') or file.endswith('.dll'):
 					#print "FILE: '%s'" % (file)
-					filepath = "%s/%s" % (dir,file)					
+					filepath = "%s/%s" % (dir,file)
 					hash = self.hash_sha512_file(filepath)
 					#print "filepath = '%s' = SHA512 '%s'" % (filepath,hash)
 					files[file] = hash
 			self.HASHS_DB[filename] = files
-			return True					
-			
-	#######
+			return True
+
 	def openvpn_filename_exe(self,version,built,arch):
 		return "openvpn-install-%s-%s-%s.exe" % (version,built,arch)
 
-	#######
 	def openvpn_filename_asc(self,filename):
-		return "%s.asc" % (filename)	
-		
+		return "%s.asc" % (filename)
+
 def app():
 	OpenVPN_HashBinsToJson()
 
 if __name__ == "__main__":
-	app()		
+	app()
