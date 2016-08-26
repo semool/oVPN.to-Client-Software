@@ -208,6 +208,22 @@ class Systray:
 		# update content of 'self.d0wns_DNS' in DEVMODE only: if 'self.d0wns_DNS = {}' with self.load_d0wns_dns() called from mainwindow rightclick and copy from debug.log
 		#self.d0wns_DNS = {}
 		
+		oVPN_DNS = { 
+						'ns1.ch.dns.ovpn.to': {
+							'countrycode': 'ch', 
+							'dnscryptcertname': '2.dnscrypt-cert.swiss1.ovpn.to', 
+							'country': 'Switzerland', 
+							'dnscryptpubkey': 'pubkey.ch.dnscrypt.ovpn.to', 
+							'ip6': '2a03:9a60:827:abcd::ef42', 
+							'ip4': '185.128.41.238', 
+							'dnscryptports': '5353', 
+							'dnscryptfingerprint': '7A66:D5BA:186D:4C52:DD0F:FB42:0DD7:B9BF:7A4C:3442:E309:FD38:CC86:4E76:1445:877E',
+							#'expire': '2017-Aug-21'
+							},
+						}
+		for key,value in oVPN_DNS.iteritems():
+			self.d0wns_DNS[key] = value
+		
 		import flags_b64
 		self.FLAGS_B64 = flags_b64.flagsb64()
 		print "len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64))
@@ -1208,54 +1224,41 @@ class Systray:
 			dnsmenu = Gtk.Menu()
 			dnsm = Gtk.MenuItem(_("Change DNS"))
 			dnsm.set_submenu(dnsmenu)
-			self.dnsmenu = dnsmenu
 			
 			try:
-				self.debug(1,"mydns debug 1.1")
 				pridns = self.MYDNS[servername]["primary"]["ip4"]
-				self.debug(1,"mydns debug 1.2")
 				priname = self.MYDNS[servername]["primary"]["dnsname"]
-				self.debug(1,"mydns debug 1.3")
 				string = _("Primary DNS: %s (%s)") % (priname,pridns)
-				self.debug(1,"mydns debug 1.4")
 				pridnsm = Gtk.MenuItem(string)
-				self.debug(1,"mydns debug 1.5")
 				cbdata = {servername:{"primary":{"ip4":pridns,"dnsname":priname}}}
-				self.debug(1,"mydns debug 1.6")
 				pridnsm.connect('button-release-event',self.cb_del_dns,cbdata)
-				self.debug(1,"mydns debug 1.7")
 				self.context_menu_servertab.append(pridnsm)
-				self.debug(1,"mydns debug 1.8")
+				self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: pridns = '%s', priname = '%s'"%(pridns,priname))
 			except:
-				self.debug(1,"mydns debug 1.9")
 				pridns = False
 			
 			try:
-				self.debug(1,"mydns debug 2.1")
 				secdns = self.MYDNS[servername]["secondary"]["ip4"]
-				self.debug(1,"mydns debug 2.2")
 				secname = self.MYDNS[servername]["secondary"]["dnsname"]
-				self.debug(1,"mydns debug 2.3")
 				string = _("Secondary DNS: %s (%s)") % (secname,secdns)
-				self.debug(1,"mydns debug 2.4")
 				secdnsm = Gtk.MenuItem(string)
-				self.debug(1,"mydns debug 2.5")
 				cbdata = {servername:{"secondary":{"ip4":secdns,"dnsname":secname}}}
-				self.debug(1,"mydns debug 2.6")
 				secdnsm.connect('button-release-event',self.cb_del_dns,cbdata)
-				self.debug(1,"mydns debug 2.7")
 				self.context_menu_servertab.append(secdnsm)
-				self.debug(1,"mydns debug 2.8")
+				self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: secdns = '%s', secname = '%s'"%(secdns,secname))
 			except:
-				self.debug(1,"mydns debug 2.9")
 				secdns = False
 			
+			i=0
 			for name,value in sorted(self.d0wns_DNS.iteritems()):
 				try:
+					self.debug(59,"try name = '%s', len(value) = '%s', value = '%s'" % (name,len(value),value))
 					dnsip4 = value['ip4']
+					
+					self.debug(59,"try dnsip4 = '%s'" % dnsip4)
 					countrycode = self.d0wns_DNS[name]['countrycode']
+					self.debug(59,"try countrycode = %s" % countrycode)
 					dnssubmenu = Gtk.Menu()
-					self.dnssubmenu = dnssubmenu
 					dnssubmtext = "%s (%s)" % (name,dnsip4)
 					dnssubm = Gtk.ImageMenuItem(dnssubmtext)
 					dnssubm.set_submenu(dnssubmenu)
@@ -1266,27 +1269,37 @@ class Systray:
 					dnssubm.set_image(img)
 					dnsmenu.append(dnssubm)
 					
-					cbdata = {servername:{"primary":{"ip4":dnsip4,"dnsname":name}}}
-					if pridns == dnsip4:
-						string = _("Primary DNS '%s' @ %s") % (pridns,servername)
-						setpridns = Gtk.MenuItem(string)
-						setpridns.connect('button-release-event',self.cb_del_dns,cbdata)
-					else:
-						setpridns = Gtk.MenuItem(_("Set Primary DNS"))
-						setpridns.connect('button-release-event',self.cb_set_dns,cbdata)
-					dnssubmenu.append(setpridns)
+					try:
+						cbdata = {servername:{"primary":{"ip4":dnsip4,"dnsname":name}}}
+						if pridns == dnsip4:
+							string = _("Primary DNS '%s' @ %s") % (pridns,servername)
+							setpridns = Gtk.MenuItem(string)
+							setpridns.connect('button-release-event',self.cb_del_dns,cbdata)
+						else:
+							setpridns = Gtk.MenuItem(_("Set Primary DNS"))
+							setpridns.connect('button-release-event',self.cb_set_dns,cbdata)
+						dnssubmenu.append(setpridns)
+					except:
+						self.debug(1,"dnssubmenu.append(setpridns) failed")
 					
-					cbdata = {servername:{"secondary":{"ip4":dnsip4,"dnsname":name}}}
-					if secdns == dnsip4:
-						string = _("Secondary DNS '%s' @ %s") % (secdns,servername)
-						setsecdns = Gtk.MenuItem(string)
-						setsecdns.connect('button-release-event',self.cb_del_dns,cbdata)
-					else:
-						setsecdns = Gtk.MenuItem(_("Set Secondary DNS"))
-						setsecdns.connect('button-release-event',self.cb_set_dns,cbdata)
-					dnssubmenu.append(setsecdns)
+					try:
+						cbdata = {servername:{"secondary":{"ip4":dnsip4,"dnsname":name}}}
+						if secdns == dnsip4:
+							string = _("Secondary DNS '%s' @ %s") % (secdns,servername)
+							setsecdns = Gtk.MenuItem(string)
+							setsecdns.connect('button-release-event',self.cb_del_dns,cbdata)
+						else:
+							setsecdns = Gtk.MenuItem(_("Set Secondary DNS"))
+							setsecdns.connect('button-release-event',self.cb_set_dns,cbdata)
+						dnssubmenu.append(setsecdns)
+					except:
+						self.debug(1,"dnssubmenu.append(setsecdns) failed")
+						
+					self.debug(59,"dnsmenu.append name = '%s' i=%s\n" % (name,i))
+					i += 1
 				except:
 					self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: dnsmenu.append(dnssubm) '%s' failed "%(countrycode))
+					break
 				
 			dnsm.show_all()
 			self.context_menu_servertab.append(dnsm)
@@ -3454,16 +3467,6 @@ class Systray:
 	def destroy_context_menu_servertab(self):
 		self.debug(1,"def destroy_context_menu_servertab()")
 		try:
-			self.dnssubmenu.hide()
-			self.debug(1,"def destroy_context_menu_servertab: 0x0001")
-		except:
-			pass
-		try:
-			self.dnsmenu.hide()
-			self.debug(1,"def destroy_context_menu_servertab: 0x0002")
-		except:
-			pass
-		try:
 			self.context_menu_servertab.hide()
 			self.debug(1,"def destroy_context_menu_servertab: 0x0003")
 		except:
@@ -5480,7 +5483,7 @@ class Systray:
 			for entry in data:
 				entry = int(entry)
 				if entry > 0 and entry <= 65535:
-					return True
+					pass
 				else:
 					self.debug(1,"def check_d0wns_dnscryptports: failed value '%s'" % (value))
 					return False
@@ -5492,7 +5495,7 @@ class Systray:
 		self.debug(59,"def check_d0wns_names()")
 		try:
 			data = name.split('.')
-			#print "def check_d0wns_names: data = '%s' len(data)='%s'" % (data,len(data))
+			self.debug(59,"def check_d0wns_names: data = '%s' len(data)='%s'" % (data,len(data)))
 			if len(data) == 5:
 				if data[0].startswith("ns") and data[0].isalnum() and data[1].isalnum() and data[2].isalnum() and data[3].isalnum() and data[4].isalnum():
 					self.d0wns_DNS[name] = {"countrycode":data[1]}
