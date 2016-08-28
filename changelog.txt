@@ -1,6 +1,11 @@
 # changelog.txt
 #
 
+ Version: 0.7.3
++ bugfix: hidden mainwindow did not reload on change: destroy hidden mainwindow before filling, rebuild on open
++ update: DNS Servers
++ redirect unencrypted DNS queries to dnscrypt mappings: http://172.16.32.1/dnscrypt.txt
+
 
  Version: 0.7.2
 + add openVPN 2.3.12
