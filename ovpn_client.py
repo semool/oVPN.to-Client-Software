@@ -968,10 +968,10 @@ class Systray:
 		self.debug(1,"def read_interfaces()")
 		if self.OS == "win32":
 			if self.WIN_RESET_EXT_DEVICE == False:
-				if self.win_read_interfaces():
-					if self.win_firewall_export_on_start():
-						if self.win_read_dns_to_backup():
-							if self.read_gateway_from_interface():
+				if self.win_read_interfaces() == True:
+					if self.win_firewall_export_on_start() == True:
+						if self.win_read_dns_to_backup() == True:
+							if self.read_gateway_from_interface() == True:
 								return True
 							else:
 								i = 0
@@ -984,10 +984,10 @@ class Systray:
 			else:
 				self.win_netsh_restore_dns_from_backup()
 				self.WIN_RESET_EXT_DEVICE = False
-				if self.win_read_interfaces():
-					if self.win_firewall_export_on_start():
-						if self.win_read_dns_to_backup():
-							if self.read_gateway_from_interface():
+				if self.win_read_interfaces() == True:
+					if self.win_firewall_export_on_start() == True:
+						if self.win_read_dns_to_backup() == True:
+							if self.read_gateway_from_interface() == True:
 								return True
 
 	def win_read_interfaces(self):
@@ -2482,7 +2482,7 @@ class Systray:
 						if int(value) == ((2**31)-1):
 							value1 = "Lifetime"
 						else:
-							value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+							value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
 					elif key == "003":
 						head = "Balance EUR"
 						value1 = round(int(value),0) / 100
@@ -2490,21 +2490,22 @@ class Systray:
 						head = "Saved Days"
 					elif key == "005":
 						head = "Last Login"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
 					elif key == "006":
 						head = "Login Count"
 					elif key == "007":
 						head = "Login Fail Count"
 					elif key == "008":
 						head = "Last Failed Login"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
 					elif key == "009":
 						head = "eMail verified"
 					elif key == "010":
 						head = "Last eMail sent"
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
 					elif key == "020":
 						head = "Last Update Request"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S UTC+1')
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
 					elif key == "022":
 						head = "API Counter WIN"
 					elif key == "021":
@@ -3841,11 +3842,10 @@ class Systray:
 			GATEWAY_LOCAL = False
 			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
 			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
-			#GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
 			try:
 				GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
 			except:
-				self.debug(1,"def read_gateway_from_interface: try DefaultGateway failed")
+				self.debug(1,"def read_gateway_from_interface: read DefaultGateway failed, try dhcp")
 				try:
 					GATEWAY_LOCAL = DEVICE_DATA["DhcpServer"]
 				except:
@@ -4043,6 +4043,7 @@ class Systray:
 			self.debug(1,"def win_netsh_restore_dns_from_backup: failed")
 
 	def win_read_dns_from_interface(self,adaptername):
+		self.debug(1,"def win_read_dns_from_interface(adaptername='%s')"%(adaptername))
 		DNS1 = False
 		DNS2 = False
 		try:
@@ -4068,16 +4069,23 @@ class Systray:
 		self.debug(1,"def win_read_dns_to_backup()")
 		try:
 			if not self.WIN_EXT_DEVICE == False:
+				self.debug(1,"def win_read_dns_to_backup: self.WIN_EXT_DEVICE = '%s'"%(self.WIN_EXT_DEVICE))
 				data = False
 				data = self.win_read_dns_from_interface(self.WIN_EXT_DEVICE)
 				if not data == False and len(data) == 2:
-					self.GATEWAY_DNS1 = data["DNS1"]
-					self.GATEWAY_DNS2 = data["DNS2"]
+					if self.isValueIPv4(data["DNS1"]):
+						self.GATEWAY_DNS1 = data["DNS1"]
+						if self.isValueIPv4(data["DNS2"]):
+							self.GATEWAY_DNS2 = data["DNS2"]
 					if not self.GATEWAY_DNS1 == False:
+						self.debug(1,"def win_read_dns_to_backup: set self.WIN_EXT_DHCP_DNS = False, self.GATEWAY_DNS1 = '%s', self.GATEWAY_DNS2 = '%s'" % (self.GATEWAY_DNS1,self.GATEWAY_DNS2))
 						self.WIN_EXT_DHCP_DNS = False
 					else:
+						self.debug(1,"def win_read_dns_to_backup: set self.WIN_EXT_DHCP_DNS = True")
 						self.WIN_EXT_DHCP_DNS = True
 					return True
+			else:
+				self.debug(1,"def win_read_dns_to_backup: self.WIN_EXT_DEVICE == False, failed")
 		except:
 			return False
 
