@@ -138,7 +138,7 @@ class Systray:
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
 		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
-		self.MAINWINDOW_SHOWCELLS = self.MAINWINDOW_ALLOWCELLHIDE
+		self.MAINWINDOW_SHOWCELLS = [6, 7, 9, 24, 23, 25, 26, 16, 10, 8, 5, 4, 3]
 		self.MAINWINDOW_CELLINDEX = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher",
 									9:"Live", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 
 									16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 
@@ -4850,9 +4850,8 @@ class Systray:
 	def extract_ovpn(self):
 		self.debug(1,"def extract_ovpn()")
 		try:
-			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):
+			if os.path.isfile(self.zip_cfg):
 				z1file = zipfile.ZipFile(self.zip_cfg)
-				#z2file = zipfile.ZipFile(self.zip_crt)
 				if os.path.isdir(self.VPN_CFG):
 					self.debug(1,"def extract_ovpn: os.path.isdir(%s), delete"%(self.VPN_CFG))
 					self.delete_dir(self.VPN_CFG)
@@ -4864,9 +4863,8 @@ class Systray:
 						self.debug(1,"def extract_ovpn: %s not found, create failed."%(self.VPN_CFG))
 				try:
 					z1file.extractall(self.VPN_CFG)
-					#z2file.extractall(self.VPN_CFG)
 					if self.write_last_update():
-						self.debug(1,"Certificates and Configs extracted.")
+						self.debug(1,"def extract_ovpn: write_last_update() return True")
 						return True
 				except:
 					self.debug(1,"Error on extracting Certificates and Configs!")
