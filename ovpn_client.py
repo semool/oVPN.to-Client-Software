@@ -32,7 +32,19 @@ import signtool
 import hashings
 import request_api
 
-
+if DEVMODE == True:
+	try:
+		reload(sys)
+		sys.setdefaultencoding('utf_8')
+		print "sys.stdout.encoding = %s" % sys.stdout.encoding
+		print "sys.stdout.isatty() = %s" % sys.stdout.isatty()
+		print "locale.getpreferredencoding() = %s" % locale.getpreferredencoding()
+		print "sys.getfilesystemencoding() = %s" %sys.getfilesystemencoding()
+		print "os.environ PYTHONIOENCODING = %s" % (os.environ["PYTHONIOENCODING"])
+		time.sleep(10)
+	except:
+		print "print encoding failed"
+		time.sleep(3)
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -60,8 +72,8 @@ try:
 	print BUILT_STRING
 
 	if DEVMODE == True:
-		print "DEVMODE sleep 15"
-		time.sleep(15)
+		print "DEVMODE sleep 3"
+		time.sleep(3)
 except:
 	print "import release_version failed"
 	sys.exit()
@@ -4264,9 +4276,13 @@ class Systray:
 		self.debug(1,"def win_return_netsh_cmd()")
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
+			""" *fixme* encoding"""
+			if DEVMODE == True:
+				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
 				read = subprocess.check_output('%s' % (netshcmd),shell=True)
-				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
+				#output = read.strip().decode('cp1252','ignore').strip(' ').split('\r\n')
+				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
 			except:
@@ -4280,6 +4296,9 @@ class Systray:
 			i=0
 			for cmd in self.NETSH_CMDLIST:
 				netshcmd = '"%s" %s' % (self.WIN_NETSH_EXE,cmd)
+				""" *fixme* encoding"""
+				if DEVMODE == True:
+					netshcmd = netshcmd.encode(locale.getpreferredencoding())
 				try: 
 					exitcode = subprocess.call('%s' % (netshcmd),shell=True)
 					if exitcode == 0:
@@ -4304,7 +4323,8 @@ class Systray:
 			routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
 			try: 
 				read = subprocess.check_output('%s' % (routecmd),shell=True)
-				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
+				#output = read.strip().decode('cp1252','ignore').strip(' ').split('\r\n')
+				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_route_cmd: output = '%s'" % (output))
 				return output
 			except:
@@ -4788,7 +4808,7 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
 			self.cb_check_normal_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
@@ -4803,7 +4823,7 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!\n\nYou have to join 'IPv6 Beta' on https://%s to use any IPv6 options!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!") % (VCP_DOMAIN),_("Switched to IPv6+4"))
 			self.cb_check_normal_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
