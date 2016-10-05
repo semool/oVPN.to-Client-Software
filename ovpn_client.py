@@ -4798,7 +4798,7 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.cb_check_normal_update()
+			self.cb_force_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
@@ -4810,8 +4810,8 @@ class Systray:
 		self.OVPN_SERVER = {}
 		self.load_ovpn_server()
 		if len(self.OVPN_SERVER) == 0:
-			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!") % (VCP_DOMAIN),_("Switched to IPv4+6"))
-			self.cb_check_normal_update()
+			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!"),_("Switched to IPv4+6"))
+			self.cb_force_update()
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
