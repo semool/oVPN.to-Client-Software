@@ -1,9 +1,17 @@
 # changelog.txt
 #
 
+
+ Version: 0.7.5
++ update: openVPN 2.3.12-I602
++ update: openVPN CodeSign Fingerprint
++ update: new config download
+
+
  Version: 0.7.4
 + bugfix: networkadapter did not reset on quit if 'DHCP' in use
 + bugfix: timezones for account dates updated
+
 
  Version: 0.7.3
 + bugfix: hidden mainwindow did not reload on change: destroy hidden mainwindow before filling, rebuild on open
