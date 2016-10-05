@@ -1885,46 +1885,15 @@ class Systray:
 				if self.check_last_server_update(self.curldata):
 					self.STATE_CERTDL = "getconfigs"
 					if self.API_REQUEST(API_ACTION = "getconfigs"):
-						self.STATE_CERTDL = "requestcerts"
-						if self.API_REQUEST(API_ACTION = "requestcerts"):
-							self.STATUS_ICON_BLINK = 0
-							self.STATE_CERTDL = "wait"
-							self.API_COUNTDOWN = 180
-							LAST_requestcerts = 0
-							while not self.body == "ready":
-								if self.API_COUNTDOWN <= 0:
-									self.timer_check_certdl_running = False
-									self.msgwarn(_("Update took too long...aborted!\nPlease retry in few minutes..."),_("Error: Update Timeout"))
-									return False
-								sleep = 0.5
-								time.sleep(sleep)
-								if LAST_requestcerts > 16:
-									self.OVERWRITE_TRAYICON = self.systray_icon_syncupdate3
-									self.API_REQUEST(API_ACTION = "requestcerts")
-									self.OVERWRITE_TRAYICON = False
-									LAST_requestcerts = 0
-								else:
-									LAST_requestcerts += sleep
-								self.STATUS_ICON_BLINK += 1
-								self.API_COUNTDOWN -= sleep
-							# final step to download certs
-							self.STATE_CERTDL = "getcerts"
-							if self.API_REQUEST(API_ACTION = "getcerts"):
-								self.STATE_CERTDL = "extract"
-								if self.extract_ovpn():
-									self.timer_check_certdl_running = False
-									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
-									self.OVPN_SERVER = list()
-									if self.load_ovpn_server() == True:
-										self.rebuild_mainwindow()
-									return True
-								else:
-									self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
-							else:
-								self.msgwarn(_("Failed to download certificates"),_("Error: def inThread_timer_check_certdl"))
-							# finish downloading certs
+						if self.extract_ovpn():
+							self.timer_check_certdl_running = False
+							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
+							self.OVPN_SERVER = list()
+							if self.load_ovpn_server() == True:
+								self.rebuild_mainwindow()
+							return True
 						else:
-							self.msgwarn(_("Failed to request certificates!"),_("Error: def inThread_timer_check_certdl"))
+							self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
 					else:
 						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
 				else:
@@ -3658,6 +3627,7 @@ class Systray:
 				self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
 				return False
 			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.VPN_DIR)
+			""" *delete me later*
 			self.ovpn_server_dir = "%s\\%s" % (self.VPN_CFG,self.ovpn_server_LOWER)
 			self.ovpn_cert_ca = "%s\\%s.crt" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_tls_key = "%s\\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
@@ -3671,12 +3641,14 @@ class Systray:
 					self.msgwarn(_("Files missing: '%s'") % (self.ovpn_server_dir),_("Error: Certs not found!"))
 					self.reset_ovpn_values_disconnected()
 					return False
+			"""
 			try:
-				ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
+				#OVPN_STRING = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
+				OVPN_STRING = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.WIN_TAP_DEVICE)
 				if self.DEBUG == True:
-					self.ovpn_string = '%s --log "%s"' % (ovpn_string,self.ovpn_sessionlog)
+					self.OVPN_STRING = '%s --log "%s"' % (OVPN_STRING,self.ovpn_sessionlog)
 				else:
-					self.ovpn_string = ovpn_string
+					self.OVPN_STRING = OVPN_STRING
 				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
 				thread_spawn_openvpn_process.start()
 				self.OVPN_THREADID = threading.currentThread()
@@ -3724,7 +3696,7 @@ class Systray:
 		self.inThread_jump_server_running = False
 		self.win_enable_ext_interface()
 		try:
-			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
+			exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True,stdout=None,stderr=None)
 		except:
 			self.debug(1,"def inThread_spawn_openvpn_process: exited")
 		self.win_disable_ext_interface()
@@ -3750,6 +3722,7 @@ class Systray:
 		self.OVPN_PING_LAST = 0
 		self.OVPN_PING = list()
 		self.UPDATE_SWITCH = True
+		self.OVPN_STRING = False
 		try:
 			if os.path.isfile(self.ovpn_sessionlog):
 				os.remove(self.ovpn_sessionlog)
@@ -4857,9 +4830,9 @@ class Systray:
 		try:
 			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):
 				z1file = zipfile.ZipFile(self.zip_cfg)
-				z2file = zipfile.ZipFile(self.zip_crt)
+				#z2file = zipfile.ZipFile(self.zip_crt)
 				if os.path.isdir(self.VPN_CFG):
-					self.debug(1,"def extract_ovpn: os.path.isdir(%s)"%(self.VPN_CFG))
+					self.debug(1,"def extract_ovpn: os.path.isdir(%s), delete"%(self.VPN_CFG))
 					self.delete_dir(self.VPN_CFG)
 				if not os.path.isdir(self.VPN_CFG):
 					try:
@@ -4869,7 +4842,7 @@ class Systray:
 						self.debug(1,"def extract_ovpn: %s not found, create failed."%(self.VPN_CFG))
 				try:
 					z1file.extractall(self.VPN_CFG)
-					z2file.extractall(self.VPN_CFG)
+					#z2file.extractall(self.VPN_CFG)
 					if self.write_last_update():
 						self.debug(1,"Certificates and Configs extracted.")
 						return True
