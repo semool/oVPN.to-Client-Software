@@ -34,10 +34,10 @@ def signtool_verify(DEBUG,file):
 	debug(1,"[signtool.py] def signtool_verify(%s)"%(file),DEBUG,True)
 	signtool = find_signtool(DEBUG)
 	if os.path.isfile(file):
-		cscertsha1 = "E08110E5ECFE4194B846C53EB157965EFE0ECEFF"
+		cscertsha1 = "21F94C255A8B20D21A323CA5ACB8EBF284E09037"
 		#if devmode() == True:
 		#	cscertsha1 = "1234000012340000123400001234000012340000"
-		string1 = '"%s" verify /v /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
+		#string1 = '"%s" verify /v /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
 		string1 = '"%s" verify /q /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
 		debug(1,"[signtool.py] def signtool_verify: string1 = '%s'"%(string1),DEBUG,True)
 		exitcode1 = 1
@@ -54,6 +54,7 @@ def signtool_verify(DEBUG,file):
 			if devmode() == False:
 				return False
 			else:
+				return False
 				debug(1,"[signtool.py] def signtool_verify: file = '%s' check signature CA hash"%(file),DEBUG,True)
 				cacertsha1 = "92C1588E85AF2201CE7915E8538B492F605B80C6"
 				string2 = '"%s" verify /v /a /all /pa /tw /ca %s "%s"' % (signtool,cacertsha1,file)
