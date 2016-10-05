@@ -225,9 +225,9 @@ def check_files(DEBUG,OPENVPN_DIR):
 
 def check_file_hashs(DEBUG,OPENVPN_DIR,type):
 	debug(1,"[openvpn.py] def check_file_hashs(%s)"%(type),DEBUG,True)
-	if devmode() == True:
-		debug(1,"[openvpn.py] def check_file_hashs: DEVMODE ! force signature check",DEBUG,True)
-		return False
+	#if devmode() == True:
+	#	debug(1,"[openvpn.py] def check_file_hashs: DEVMODE ! force signature check",DEBUG,True)
+	#	return False
 	types = [ ".exe", ".dll" ]
 	if not type in types:
 		debug(1,"[openvpn.py] def check_file_hashs: type '%s' invalid"%(type),DEBUG,True)
