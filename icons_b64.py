@@ -1,3 +1,4 @@
+# -*- coding: utf-8
 def base64_icons(icon):
 
 	# else/app_icons/app_icon.ico

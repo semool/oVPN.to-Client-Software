@@ -32,6 +32,7 @@ import signtool
 import hashings
 import request_api
 
+"""
 if DEVMODE == True:
 	try:
 		reload(sys)
@@ -41,10 +42,11 @@ if DEVMODE == True:
 		print "locale.getpreferredencoding() = %s" % locale.getpreferredencoding()
 		print "sys.getfilesystemencoding() = %s" %sys.getfilesystemencoding()
 		print "os.environ PYTHONIOENCODING = %s" % (os.environ["PYTHONIOENCODING"])
-		time.sleep(10)
+		time.sleep(3)
 	except:
 		print "print encoding failed"
 		time.sleep(3)
+"""
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)

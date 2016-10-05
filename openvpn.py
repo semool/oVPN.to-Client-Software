@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, time, subprocess, sys
+import os, time, subprocess, sys, json
 from datetime import datetime
 
 # .py file imports
@@ -184,7 +184,7 @@ def list_openvpn_files(DEBUG,OPENVPN_DIR,type):
 				if file.endswith(type):
 					list.append(file)
 			if len(list) >= 1:
-				debug(1,"[openvpn.py] def list_openvpn_files: dir '%s', files = '%s'" % (dir,len(list)),DEBUG,True)
+				debug(1,"[openvpn.py] def list_openvpn_files: dir '%s', files = '%s', list = '%s'" % (dir,len(list),list),DEBUG,True)
 				return list
 		else:
 			debug(1,"[openvpn.py] def list_openvpn_files: dir '%s' not found!" % (dir),DEBUG,True)
@@ -242,25 +242,28 @@ def check_file_hashs(DEBUG,OPENVPN_DIR,type):
 				hashs = values(DEBUG)["OPENVPN_FILEHASHS"][filename]
 			except:
 				return False
-			debug(1,"[openvpn.py] filename = '%s' hashs = '%s'"%(filename,hashs),DEBUG,True)
+			#debug(1,"[openvpn.py] filename = '%s' hashs = '%s'"%(filename,hashs),DEBUG,True)
 		except:
 			debug(1,"[openvpn.py] def check_file_hashs: filename/hashs failed",DEBUG,True)
 			sys.exit()
 		
-		debug(2,"def check_file_hashs: hashs = '%s'" % (hashs),DEBUG,True)
+		#debug(2,"[openvpn.py] def check_file_hashs: hashs = '%s'" % (hashs),DEBUG,True)
 		for file in content:
-			if file.endswith(type):
-				filepath = "%s\\%s" % (OPENVPN_DIR,file)
-				hasha = hashings.hash_sha512_file(DEBUG,filepath)
-				try:
-					hashb = hashs[file]
-				except:
-					return False
-				if hasha == hashb:
-					debug(1,"[openvpn.py] def check_file_hashs: hash file = '%s' OK!" % (file),DEBUG,True)
-				else:
-					debug(1,"[openvpn.py] def check_file_hashs: hash file = '%s' failed" % (file),DEBUG,True)
-					return False
+			debug(1,"[openvpn.py] def check_file_hashs: file = '%s'" % (file),DEBUG,True)
+			filepath = "%s\\%s" % (OPENVPN_DIR,file)
+			hasha = hashings.hash_sha512_file(DEBUG,filepath)
+			debug(1,"[openvpn.py] def check_file_hashs: hasha = '%s'" % (hasha),DEBUG,True)
+			try:
+				hashb = hashs[file]
+			except:
+				return False
+			if hasha == hashb:
+				debug(1,"[openvpn.py] def check_file_hashs: hash OK!",DEBUG,True)
+				#debug(1,"[openvpn.py] def check_file_hashs: hash file = '%s' OK!" % (file),DEBUG,True)
+			else:
+				debug(1,"[openvpn.py] def check_file_hashs: hash file failed",DEBUG,True)
+				#debug(1,"[openvpn.py] def check_file_hashs: hash file = '%s' failed" % (file),DEBUG,True)
+				return False
 		return True
 	except:
 		debug(1,"[openvpn.py] def check_file_hashs: failed",DEBUG,True)

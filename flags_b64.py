@@ -1,3 +1,4 @@
+# -*- coding: utf-8
 """
 #!/bin/bash
 FILE=flags_b64.py.txt; echo -n "flags = {" > ${FILE}; for png in `ls *.png`; do b64=`cat $png | base64 -w0`; echo -en "'$png':\"\"\"$b64\"\"\",\n" >> ${FILE}; done; echo -n "}" >> ${FILE}

@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8
 import os, shutil, struct
 from _winreg import *
 BITS = struct.calcsize("P") * 8
