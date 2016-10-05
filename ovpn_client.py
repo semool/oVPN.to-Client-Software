@@ -1,6 +1,8 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import debug
 DEVMODE = debug.devmode()
 if DEVMODE == True:
@@ -995,7 +997,7 @@ class Systray:
 		self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG)
 		if len(self.INTERFACES) < 2:
 			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
-		newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
+		newdata = winregs.get_tapadapters(self.DEBUG,self.OPENVPN_EXE,self.INTERFACES)
 		self.INTERFACES = newdata["INTERFACES"]
 		self.WIN_TAP_DEVS = newdata["TAP_DEVS"]
 		self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
@@ -1885,46 +1887,15 @@ class Systray:
 				if self.check_last_server_update(self.curldata):
 					self.STATE_CERTDL = "getconfigs"
 					if self.API_REQUEST(API_ACTION = "getconfigs"):
-						self.STATE_CERTDL = "requestcerts"
-						if self.API_REQUEST(API_ACTION = "requestcerts"):
-							self.STATUS_ICON_BLINK = 0
-							self.STATE_CERTDL = "wait"
-							self.API_COUNTDOWN = 180
-							LAST_requestcerts = 0
-							while not self.body == "ready":
-								if self.API_COUNTDOWN <= 0:
-									self.timer_check_certdl_running = False
-									self.msgwarn(_("Update took too long...aborted!\nPlease retry in few minutes..."),_("Error: Update Timeout"))
-									return False
-								sleep = 0.5
-								time.sleep(sleep)
-								if LAST_requestcerts > 16:
-									self.OVERWRITE_TRAYICON = self.systray_icon_syncupdate3
-									self.API_REQUEST(API_ACTION = "requestcerts")
-									self.OVERWRITE_TRAYICON = False
-									LAST_requestcerts = 0
-								else:
-									LAST_requestcerts += sleep
-								self.STATUS_ICON_BLINK += 1
-								self.API_COUNTDOWN -= sleep
-							# final step to download certs
-							self.STATE_CERTDL = "getcerts"
-							if self.API_REQUEST(API_ACTION = "getcerts"):
-								self.STATE_CERTDL = "extract"
-								if self.extract_ovpn():
-									self.timer_check_certdl_running = False
-									self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
-									self.OVPN_SERVER = list()
-									if self.load_ovpn_server() == True:
-										self.rebuild_mainwindow()
-									return True
-								else:
-									self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
-							else:
-								self.msgwarn(_("Failed to download certificates"),_("Error: def inThread_timer_check_certdl"))
-							# finish downloading certs
+						if self.extract_ovpn():
+							self.timer_check_certdl_running = False
+							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
+							self.OVPN_SERVER = list()
+							if self.load_ovpn_server() == True:
+								self.rebuild_mainwindow()
+							return True
 						else:
-							self.msgwarn(_("Failed to request certificates!"),_("Error: def inThread_timer_check_certdl"))
+							self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
 					else:
 						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
 				else:
@@ -3598,6 +3569,7 @@ class Systray:
 			if os.path.isfile(self.WIN_TASKKILL_EXE):
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				string = '"%s" /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
+				string.encode('cp1252')
 				exitcode = subprocess.check_call("%s" % (string),shell=True)
 				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
 		except:
@@ -3658,11 +3630,13 @@ class Systray:
 				self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
 				return False
 			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.VPN_DIR)
+			"""
 			self.ovpn_server_dir = "%s\\%s" % (self.VPN_CFG,self.ovpn_server_LOWER)
 			self.ovpn_cert_ca = "%s\\%s.crt" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_tls_key = "%s\\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
 			self.ovpn_cli_crt = "%s\\client%s.crt" % (self.ovpn_server_dir,self.USERID)
 			self.ovpn_cli_key = "%s\\client%s.key" % (self.ovpn_server_dir,self.USERID)
+			
 			if not os.path.isdir(self.ovpn_server_dir) or \
 				not os.path.isfile(self.ovpn_cert_ca) or \
 				not os.path.isfile(self.ovpn_tls_key) or \
@@ -3671,12 +3645,14 @@ class Systray:
 					self.msgwarn(_("Files missing: '%s'") % (self.ovpn_server_dir),_("Error: Certs not found!"))
 					self.reset_ovpn_values_disconnected()
 					return False
+			"""
 			try:
-				ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
+				#ovpn_string = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
+				ovpn_string = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.WIN_TAP_DEVICE)
 				if self.DEBUG == True:
-					self.ovpn_string = '%s --log "%s"' % (ovpn_string,self.ovpn_sessionlog)
+					self.OVPN_STRING = '%s --log "%s"' % (ovpn_string,self.ovpn_sessionlog)
 				else:
-					self.ovpn_string = ovpn_string
+					self.OVPN_STRING = ovpn_string
 				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
 				thread_spawn_openvpn_process.start()
 				self.OVPN_THREADID = threading.currentThread()
@@ -3724,7 +3700,10 @@ class Systray:
 		self.inThread_jump_server_running = False
 		self.win_enable_ext_interface()
 		try:
-			exitcode = subprocess.check_call("%s" % (self.ovpn_string),shell=True,stdout=None,stderr=None)
+			self.debug(1,"def inThread_spawn_openvpn_process: call '%s'"%(self.OVPN_STRING))
+			self.OVPN_STRING = self.OVPN_STRING.encode('cp1252')
+			exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True,stdout=None,stderr=None)
+			self.debug(1,"def inThread_spawn_openvpn_process: QUIT")
 		except:
 			self.debug(1,"def inThread_spawn_openvpn_process: exited")
 		self.win_disable_ext_interface()
@@ -3740,6 +3719,7 @@ class Systray:
 		self.win_clear_ipv6()
 		self.debug(1,"def reset_ovpn_values_after()")
 		self.STATE_OVPN = False
+		self.OVPN_STRING = False
 		self.inThread_jump_server_running = False
 		self.OVPN_CONNECTEDto = False
 		self.OVPN_CONNECTEDtoIP = False
@@ -3750,6 +3730,7 @@ class Systray:
 		self.OVPN_PING_LAST = 0
 		self.OVPN_PING = list()
 		self.UPDATE_SWITCH = True
+
 		try:
 			if os.path.isfile(self.ovpn_sessionlog):
 				os.remove(self.ovpn_sessionlog)
@@ -3838,10 +3819,15 @@ class Systray:
 			self.debug(1,"def get_ovpn_ping: failed")
 
 	def read_gateway_from_interface(self):
-		try:
+		self.debug(1,"def read_gateway_from_interface()")
+		y = True
+		if y:
+		#try:
 			GATEWAY_LOCAL = False
 			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
+			self.debug(1,"DEVICE_GUID = '%s'"%(DEVICE_GUID))
 			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
+			self.debug(1,"DEVICE_DATA = '%s'"%(DEVICE_DATA))
 			try:
 				GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
 			except:
@@ -3856,8 +3842,8 @@ class Systray:
 					self.GATEWAY_LOCAL = GATEWAY_LOCAL
 					self.debug(1,"def read_gateway_from_interface: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
 					return True
-		except:
-			self.debug(1,"def read_gateway_from_interface: failed")
+		#except:
+		#	self.debug(1,"def read_gateway_from_interface: failed")
 
 	def read_gateway_from_routes(self):
 		self.debug(1,"def read_gateway_from_routes()")
@@ -3910,6 +3896,7 @@ class Systray:
 					#print ipv6addr
 					if ipv6addr.startswith("fd48:8bea:68a5:"):
 						string = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
+						string = string.encode('cp1252')
 						try:
 							cmd = subprocess.check_output("%s" % (string),shell=True)
 							self.debug(1,"def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,string))
@@ -4291,9 +4278,11 @@ class Systray:
 		self.debug(1,"def win_return_netsh_cmd()")
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
+			netshcmd = netshcmd.encode('cp1252')
 			try: 
 				read = subprocess.check_output('%s' % (netshcmd),shell=True)
-				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
+				#output = read.strip().decode('windows-1252','ignore').strip(' ').split('\r\n')
+				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
 			except:
@@ -4307,6 +4296,8 @@ class Systray:
 			i=0
 			for cmd in self.NETSH_CMDLIST:
 				netshcmd = '"%s" %s' % (self.WIN_NETSH_EXE,cmd)
+				netshcmd = netshcmd.encode('cp1252')
+				#print locale.getpreferredencoding()
 				try: 
 					exitcode = subprocess.call('%s' % (netshcmd),shell=True)
 					if exitcode == 0:
@@ -4329,9 +4320,11 @@ class Systray:
 		self.debug(1,"def win_return_route_cmd()")
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
+			routecmd = routecmd.encode('cp1252')
 			try: 
 				read = subprocess.check_output('%s' % (routecmd),shell=True)
-				output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
+				#output = read.strip().decode('cp1258','ignore').strip(' ').split('\r\n')
+				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_route_cmd: output = '%s'" % (output))
 				return output
 			except:
@@ -4346,6 +4339,7 @@ class Systray:
 			i=0
 			for cmd in self.ROUTE_CMDLIST:
 				routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
+				routecmd = routecmd.encode('cp1252')
 				try: 
 					exitcode = subprocess.call('%s' % (routecmd),shell=True)
 					if exitcode == 0:
@@ -4369,6 +4363,7 @@ class Systray:
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
 				cmdstring = '"%s" /flushdns' % (self.WIN_IPCONFIG_EXE)
+				cmdstring = cmdstring.encode('cp1252')
 				exitcode = subprocess.call("%s" % (cmdstring),shell=True)
 				if exitcode == 0:
 					self.debug(1,"%s: exitcode = %s" % (cmdstring,exitcode))
@@ -4385,6 +4380,7 @@ class Systray:
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
 				cmdstring = '"%s" /displaydns' % (self.WIN_IPCONFIG_EXE)
+				cmdstring = cmdstring.encode('cp1252')
 				out = subprocess.check_output("%s" % (cmdstring),shell=True)
 				return out
 			except:
@@ -4848,30 +4844,38 @@ class Systray:
 		self.debug(1,"def delete_dir()")
 		if self.OS == "win32":
 			string = 'rmdir /S /Q "%s"' % (path)
+			string = string.encode('cp1252')
 			self.debug(1,"def delete_dir: %s" % (string))
-			subprocess.check_output("%s" % (string),shell=True)
+			exitcode = subprocess.call("%s" % (string),shell=True)
+			if exitcode == 0:
+				return True
+
+	def remakedir(self,dir):
+		self.debug(1,"def remakedir(%s)" % (dir))
+		if os.path.isdir(dir):
+			self.delete_dir(dir)
+			if os.path.isdir(dir):
+				self.remakedir(dir)
+		try:
+			os.mkdir(dir)
+			if os.path.isdir(dir):
+				return True
+		except:
+			self.debug(1,"def remakedir: create dir '%s' failed")
+			self.remakedir(dir)
+
 
 	""" *fixme* move to openvpn.py """
 	def extract_ovpn(self):
 		self.debug(1,"def extract_ovpn()")
 		try:
-			if os.path.isfile(self.zip_cfg) and os.path.isfile(self.zip_crt):
+			if os.path.isfile(self.zip_cfg):
 				z1file = zipfile.ZipFile(self.zip_cfg)
-				z2file = zipfile.ZipFile(self.zip_crt)
-				if os.path.isdir(self.VPN_CFG):
-					self.debug(1,"def extract_ovpn: os.path.isdir(%s)"%(self.VPN_CFG))
-					self.delete_dir(self.VPN_CFG)
-				if not os.path.isdir(self.VPN_CFG):
-					try:
-						os.mkdir(self.VPN_CFG)
-						self.debug(1,"def extract_ovpn: os.mkdir(%s)"%(self.VPN_CFG))
-					except:
-						self.debug(1,"def extract_ovpn: %s not found, create failed."%(self.VPN_CFG))
+				self.remakedir(self.VPN_CFG)
 				try:
 					z1file.extractall(self.VPN_CFG)
-					z2file.extractall(self.VPN_CFG)
 					if self.write_last_update():
-						self.debug(1,"Certificates and Configs extracted.")
+						self.debug(1,"def extract_ovpn: OK")
 						return True
 				except:
 					self.debug(1,"Error on extracting Certificates and Configs!")
@@ -5344,6 +5348,7 @@ class Systray:
 		else:
 			# popup install
 			netshcmd = '"%s"' % (self.OPENVPN_SAVE_BIN_TO)
+		netshcmd = netshcmd.encode('cp1252')
 		self.debug(1,"def win_install_openvpn: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
 		try: 
 			exitcode = subprocess.call(netshcmd,shell=True)

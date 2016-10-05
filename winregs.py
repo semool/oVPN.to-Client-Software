@@ -1,7 +1,11 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
 import os, sys, time, subprocess, netifaces
 from debug import debug
 from _winreg import *
+
+#import codecs
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 def get_uninstall_progs():
 	aReg = ConnectRegistry(None,HKEY_LOCAL_MACHINE)
@@ -23,10 +27,11 @@ def get_uninstall_progs():
 def get_networkadapter_guids():
 	return netifaces.interfaces()
 
-def get_networkadapterlist_from_netsh():
+def get_networkadapterlist_from_netsh(DEBUG):
+	debug(1,"[winregs.py] def get_networkadapterlist_from_netsh()",DEBUG,True)
 	string = "netsh.exe interface show interface"
 	data = subprocess.check_output("%s" % (string),shell=True)
-	data = data.split('\r\n')
+	data = data.strip().split('\r\n')
 	return data
 
 def get_networkadapterlist_from_guids(DEBUG,iface_guids):
@@ -48,27 +53,39 @@ def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 	#return iface_names
 
 def get_networkadapterlist(DEBUG):
+	debug(1,"[winregs.py] def get_networkadapterlist()",DEBUG,True)
 	newlist = []
 	list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
-	list2 = get_networkadapterlist_from_netsh()
+	list2 = get_networkadapterlist_from_netsh(DEBUG)
 	for name in list1:
+		if name.startswith("isatap"):
+			continue
 		for line in list2:
 			if line.endswith(name):
+				print "YES: %s" % line
 				newlist.append(name)
+			#else:
+			#	print "NO: %s" % line
 	return newlist
 
 def get_networkadapter_guid(DEBUG,adaptername):
+	debug(1,"[winregs.py] def get_networkadapter_guid(%s)"%(adaptername),DEBUG,True)
 	guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["mapguids"]
-	guid = guids[adaptername]
+	print "debug 1"
+	debug(1,"[winregs.py] def get_networkadapter_guid: guids = '%s'"%(guids),DEBUG,True)
+	guid = guids[u'%s'%(adaptername)]
+	print "debug 2"
 	debug(1,"[winregs.py] def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
+	print "debug 3, guid = '%s'" % guid
 	return guid
 	#return get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"][adaptername]
 
-def get_tapadapters(OPENVPN_EXE,INTERFACES):
+def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 	if os.path.isfile(OPENVPN_EXE):
+		debug(1,"[winregs.py] def get_tapadapters()",DEBUG,True)
 		string = '"%s" --show-adapters' % (OPENVPN_EXE)
-		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
-		TAPADAPTERS = TAPADAPTERS.split('\r\n')
+		data = subprocess.check_output("%s" % (string),shell=True)
+		TAPADAPTERS = data.split('\r\n')
 		TAPADAPTERS.pop(0)
 		TAP_DEVS = list()
 		for line in TAPADAPTERS:
