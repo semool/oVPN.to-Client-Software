@@ -2465,7 +2465,7 @@ class Systray:
 						if int(value) == ((2**31)-1):
 							value1 = "Lifetime"
 						else:
-							value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
+							value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S [CE(S)T]')
 					elif key == "003":
 						head = "Balance EUR"
 						value1 = round(int(value),0) / 100
@@ -2473,22 +2473,22 @@ class Systray:
 						head = "Saved Days"
 					elif key == "005":
 						head = "Last Login"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S [CE(S)T]')
 					elif key == "006":
 						head = "Login Count"
 					elif key == "007":
 						head = "Login Fail Count"
 					elif key == "008":
 						head = "Last Failed Login"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S [CE(S)T]')
 					elif key == "009":
 						head = "eMail verified"
 					elif key == "010":
 						head = "Last eMail sent"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S [CE(S)T]')
 					elif key == "020":
 						head = "Last Update Request"
-						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S GMT+1 [CE(S)T]')
+						value1 = datetime.fromtimestamp(int(value)).strftime('%d %b %Y %H:%M:%S [CE(S)T]')
 					elif key == "022":
 						head = "API Counter WIN"
 					elif key == "021":
