@@ -349,6 +349,7 @@ class Systray:
 		else:
 			self.APP_DIR = "%s\\ovpn" % (os_appdata)
 			self.BIN_DIR = "%s\\bin\\client\\dist" % (self.APP_DIR)
+		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.BIN_DIR)
 		if not os.path.exists(self.APP_DIR):
 			self.debug(1,"win_pre1_check_app_dir %s not found, creating." % (self.APP_DIR))
 			os.mkdir(self.APP_DIR)
@@ -375,9 +376,9 @@ class Systray:
 			self.debug(1,"No profiles found")
 			if self.USERID == False:
 				self.debug(1,"spawn popup userid = %s" % (self.USERID))
-				self.debug(1,"def win_pre2_check_profiles_win: L:308")
+				self.debug(1,"def win_pre2_check_profiles_win: before form_ask_userid")
 				self.form_ask_userid()
-				self.debug(1,"def win_pre2_check_profiles_win: L:309")
+				self.debug(1,"def win_pre2_check_profiles_win: after form_ask_userid")
 				if not self.USERID == False and not self.APIKEY == False:
 					self.debug(1,"def win_pre2_check_profiles_win: L:310")
 					return True
@@ -429,7 +430,6 @@ class Systray:
 		if self.load_icons() == False:
 			return False
 		
-		self.CA_FILE = "%s\\cacert_ovpn.pem" % (self.BIN_DIR)
 		if not self.load_ca_cert():
 			return False
 		
@@ -4493,8 +4493,7 @@ class Systray:
 							else:
 								# don't ask if 'auth' is true or false, or expired user have to enter apikey on upgrade again...
 								self.APIKEY = apikey
-								if not self.API_REQUEST("auth"):
-									self.APIKEY = False
+								self.API_REQUEST("auth")
 								
 							self.debug(1,"def response_dialog_apilogin: return True #1")
 							return True
@@ -4890,23 +4889,19 @@ class Systray:
 		if API_ACTION == "getconfigs":
 			if os.path.isfile(self.zip_cfg): 
 				os.remove(self.zip_cfg)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
+			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }
 		
-		""" *fixme* delete me later
-		if API_ACTION == "requestcerts":
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-		
-		if API_ACTION == "getcerts":
-			if os.path.isfile(self.zip_crt): 
-				os.remove(self.zip_crt)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-		"""
 		
 		self.body = False
 		
 		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
 		
 		try:
+		
+			if not self.load_ca_cert():
+				self.debug(1,"def API_REQUEST: load_ca_cert() failed")
+				return False
+		
 			HEADERS = request_api.useragent(self.DEBUG)
 			r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
 			
