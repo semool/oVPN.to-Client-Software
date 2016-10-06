@@ -4492,8 +4492,10 @@ class Systray:
 								self.APIKEY = False
 							else:
 								# don't ask if 'auth' is true or false, or expired user have to enter apikey on upgrade again...
-								self.API_REQUEST("auth")
 								self.APIKEY = apikey
+								if not self.API_REQUEST("auth"):
+									self.APIKEY = False
+								
 							self.debug(1,"def response_dialog_apilogin: return True #1")
 							return True
 				elif not self.API_DIR == False and os.path.isdir(self.API_DIR):
@@ -4890,6 +4892,7 @@ class Systray:
 				os.remove(self.zip_cfg)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }	
 		
+		""" *fixme* delete me later
 		if API_ACTION == "requestcerts":
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 		
@@ -4897,6 +4900,7 @@ class Systray:
 			if os.path.isfile(self.zip_crt): 
 				os.remove(self.zip_crt)
 			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+		"""
 		
 		self.body = False
 		
@@ -4948,6 +4952,7 @@ class Systray:
 				except:
 					return False
 			
+			""" *fixme* delete me later
 			elif API_ACTION == "getcerts":
 				try:
 					fp = open(self.zip_crt, "wb")
@@ -4960,6 +4965,7 @@ class Systray:
 			if API_ACTION == "requestcerts":
 				if self.body == "ready" or self.body == "wait" or self.body == "submitted":
 					return True
+			"""
 
 	def check_inet_connection(self):
 		self.debug(7,"def check_inet_connection()")
