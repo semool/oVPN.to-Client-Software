@@ -3825,6 +3825,9 @@ class Systray:
 			self.debug(1,"def get_ovpn_ping: failed")
 
 	def read_gateway_from_interface(self):
+		if DEVMODE == True:
+			return read_gateway_from_interface_devmode()
+		
 		try:
 			GATEWAY_LOCAL = False
 			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
@@ -3846,6 +3849,36 @@ class Systray:
 		except:
 			self.debug(1,"def read_gateway_from_interface: failed")
 
+	def read_gateway_from_interface_devmode(self):
+		try:
+			GATEWAY_LOCAL = False
+			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
+			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
+			try:
+				""" *fixme* """
+				GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
+				if GATEWAY_LOCAL == "255.255.255.255":
+					GATEWAY_LOCAL = False
+			except:
+				GATEWAY_LOCAL = False
+			if GATEWAY_LOCAL == False:
+				self.debug(1,"def read_gateway_from_interface: read DefaultGateway failed, try dhcp")
+				try:
+					GATEWAY_LOCAL = DEVICE_DATA["DhcpServer"]
+				except:
+					self.debug(1,"def read_gateway_from_interface: try DhcpServer failed")
+			
+			if not GATEWAY_LOCAL == False and not GATEWAY_LOCAL == "255.255.255.255":
+				self.debug(1,"def read_gateway_from_interface: GATEWAY_LOCAL = '%s'" % (GATEWAY_LOCAL))
+				if self.isValueIPv4(GATEWAY_LOCAL):
+					self.GATEWAY_LOCAL = GATEWAY_LOCAL
+					self.debug(1,"def read_gateway_from_interface: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
+					return True
+				else:
+					self.debug(1,"def read_gateway_from_interface: GATEWAY_LOCAL not ipv4 = '%s'" % (GATEWAY_LOCAL))
+		except:
+			self.debug(1,"def read_gateway_from_interface: failed")
+
 	def read_gateway_from_routes(self):
 		self.debug(1,"def read_gateway_from_routes()")
 		try:
@@ -3856,7 +3889,9 @@ class Systray:
 					if self.OVPN_CONNECTEDtoIP in line:
 						self.debug(1,"def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
 						GATEWAY_LOCAL = line.split()[2]
+						""" *fixme* """
 						if self.isValueIPv4(GATEWAY_LOCAL) and GATEWAY_LOCAL == self.GATEWAY_LOCAL:
+						#if self.isValueIPv4(GATEWAY_LOCAL):
 							self.debug(1,"def read_gateway_from_routes: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
 							return True
 						else:
@@ -4187,21 +4222,26 @@ class Systray:
 		if self.NO_WIN_FIREWALL == True:
 			return True
 		self.debug(1,"def win_firewall_add_rule_to_vcp(%s)"%(option))
-		if option == "add":
-			actionstring = "action=allow"
-		elif option == "delete":
-			actionstring = ""
-		url = "https://%s" % (VCP_DOMAIN)
-		ips = ["178.17.170.116",self.GATEWAY_OVPN_IP4A]
-		port = 443
-		protocol = "tcp"
-		for ip in ips:
-			rule_name = "(oVPN) Allow OUT on EXT: %s %s:%s %s" % (url,ip,port,protocol)
-			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out %s" % (option,rule_name,ip,port,protocol,actionstring)
+		try:
+			if option == "add":
+				actionstring = "action=allow"
+			elif option == "delete":
+				actionstring = ""
+			url = "https://%s" % (VCP_DOMAIN)
+			port = 443
+			protocol = "tcp"
+			program = 'program="%s\\ovpn_client.exe"' % (self.BIN_DIR)
+			rule_name = "oVPN.to Client Allow OUT"
+			rule_string = 'advfirewall firewall %s rule name="%s" %s remoteport="%s" protocol="%s" profile=any dir=out %s' % (option,rule_name,program,port,protocol,actionstring)
 			self.NETSH_CMDLIST.append(rule_string)
-		if self.win_join_netsh_cmd():
-			self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
-			return True
+			if self.win_join_netsh_cmd():
+				if option == "add":
+					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
+				elif option == "delete":
+					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = False
+				return True
+		except:
+			self.debug(1,"def win_firewall_add_rule_to_vcp: failed")
 
 	def win_firewall_export_on_start(self):
 		self.debug(1,"def win_firewall_export_on_start()")
@@ -4966,10 +5006,15 @@ class Systray:
 		self.debug(7,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
+		self.LAST_CHECK_INET_FALSE = int(time.time())
 		if not self.try_socket(API_DOMAIN,443) == True:
 			self.debug(1,"def check_inet_connection: failed!")
-			self.LAST_CHECK_INET_FALSE = int(time.time())
-			return False
+			self.win_firewall_add_rule_to_vcp(option="add")
+			if self.try_socket(API_DOMAIN,443) == True:
+				time.sleep(3)
+				if not self.try_socket(API_DOMAIN,443) == True:
+					self.win_firewall_add_rule_to_vcp(option="delete")
+					return False
 		return True
 
 	def try_socket(self,host,port):
@@ -5281,6 +5326,10 @@ class Systray:
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
 			return self.verify_openvpnbin_dl()
 		else:
+			if self.check_inet_connection() == False:
+				self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error: def load_openvpnbin_from_remote: failed"))
+				return False
+
 			self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
 			try:
 				HEADERS = request_api.useragent(self.DEBUG)
@@ -5301,6 +5350,7 @@ class Systray:
 					self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
 				return self.verify_openvpnbin_dl()
 			except:
+				self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error: def load_openvpnbin_from_remote: failed"))
 				self.debug(1,"def load_openvpnbin_from_remote: failed")
 				return False
 
