@@ -3716,10 +3716,15 @@ class Systray:
 		self.call_redraw_mainwindow()
 		self.inThread_jump_server_running = False
 		self.win_enable_ext_interface()
+		self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
+		exitcode = False
 		try:
-			exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True,stdout=None,stderr=None)
+			exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True)
+			#exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True,stdout=None,stderr=None)
 		except:
-			self.debug(1,"def inThread_spawn_openvpn_process: exited")
+			self.debug(1,"def inThread_spawn_openvpn_process: exited with exception")
+		self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
+		self.win_netsh_restore_dns_from_backup()
 		self.win_disable_ext_interface()
 		self.reset_ovpn_values_disconnected()
 		self.call_redraw_mainwindow()
@@ -5727,22 +5732,22 @@ class Systray:
 				if self.WIN_BACKUP_FIREWALL == True and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 					self.win_firewall_restore_on_exit()
 					self.win_firewall_block_on_exit()
-					self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns_from_backup()
 					self.debug(1,"Firewall rules restored and block outbound!")
 					return True
 				elif self.WIN_BACKUP_FIREWALL == True and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_restore_on_exit()
-					self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns_from_backup()
 					self.debug(1,"Firewall: rules restored!")
 					return True
 				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 					self.win_firewall_block_on_exit()
-					self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns_from_backup()
 					self.debug(1,"Firewall: block outbound!")
 					return True
 				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_allowout()
-					self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns_from_backup()
 					self.debug(1,"Firewall: allow outbound!")
 					return True
 			else:
@@ -5774,7 +5779,7 @@ class Systray:
 						dialog.destroy()
 						self.debug(1,"def ask_loadorunload_fw: dialog response = NO '%s'" % (response))
 						self.win_firewall_block_on_exit()
-						self.win_netsh_restore_dns_from_backup()
+						#self.win_netsh_restore_dns_from_backup()
 						return True
 					elif response == Gtk.ResponseType.YES:
 						dialog.destroy()
@@ -5783,7 +5788,7 @@ class Systray:
 							self.win_firewall_restore_on_exit()
 						else:
 							self.win_firewall_allowout()
-						self.win_netsh_restore_dns_from_backup()
+						#self.win_netsh_restore_dns_from_backup()
 						return True
 					else:
 						dialog.destroy()
