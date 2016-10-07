@@ -1878,14 +1878,19 @@ class Systray:
 				thread_certdl.daemon = True
 				thread_certdl.start()
 				threadid_certdl = threading.currentThread()
-				self.debug(1,"def check_remote_update threadid_certdl = %s" %(threadid_certdl))
+				self.debug(1,"def check_remote_update: threadid_certdl = %s" %(threadid_certdl))
 				return True
 			except:
-				self.debug(1,"starting thread_certdl failed")
+				self.debug(1,"def check_remote_update: starting thread_certdl failed")
+		else:
+			self.debug(1,"def check_remote_update: timer_check_certdl_running failed")
 		return False
 
 	def inThread_timer_check_certdl(self):
 		self.debug(1,"def inThread_timer_check_certdl()")
+		if self.check_inet_connection() == False:
+			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed"))
+			return False
 		try:
 			self.timer_check_certdl_running = True
 			try:
@@ -4622,18 +4627,12 @@ class Systray:
 
 	def cb_check_normal_update(self):
 		self.debug(1,"def cb_check_normal_update()")
-		if self.check_inet_connection() == False:
-			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed"))
-			return False
-		if self.check_remote_update():
+		if self.check_remote_update() == True:
 			self.debug(1,"def cb_check_normal_update: self.check_remote_update() == True")
 			return True
 
 	def cb_force_update(self):
 		self.debug(1,"def cb_force_update()")
-		if self.check_inet_connection() == False:
-			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed"))
-			return False
 		if self.reset_last_update() == True:
 			self.debug(1,"def cb_force_update: self.reset_last_update")
 			self.cb_check_normal_update()
