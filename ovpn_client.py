@@ -328,6 +328,8 @@ class Systray:
 						if self.win_pre3_load_profile_dir_vars():
 							if self.check_config_folders():
 								if self.read_options_file():
+									self.win_firewall_add_rule_to_vcp(option="delete")
+									self.win_firewall_add_rule_to_vcp(option="add")
 									if self.win_detect_openvpn():
 										if self.read_interfaces():
 											if self.write_options_file():
@@ -5008,27 +5010,29 @@ class Systray:
 			return False
 		self.LAST_CHECK_INET_FALSE = int(time.time())
 		if not self.try_socket(API_DOMAIN,443) == True:
-			self.debug(1,"def check_inet_connection: failed!")
-			self.win_firewall_add_rule_to_vcp(option="add")
-			if self.try_socket(API_DOMAIN,443) == True:
-				time.sleep(3)
-				if not self.try_socket(API_DOMAIN,443) == True:
-					self.win_firewall_add_rule_to_vcp(option="delete")
-					return False
+			self.debug(1,"def check_inet_connection: failed #1")
+			return False
 		return True
 
 	def try_socket(self,host,port):
 		self.debug(7,"def try_socket()")
-		try:
-			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			s.settimeout(3)
-			result = s.connect_ex((host, port))
-			s.close()
-		except:
-			return False
-		if result == 0:
-			self.debug(7,"def try_socket: %s:%s True" % (host,port))
-			return True
+		i = 1
+		while i <= 15:
+			try:
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				s.settimeout(3)
+				result = s.connect_ex((host, port))
+				s.close()
+				if result == 0:
+					self.debug(1,"def try_socket: %s:%s True" % (host,port))
+					return True
+				else:
+					self.debug(1,"def try_socket: failed, result = '%s'" % (result))
+			except:
+				pass
+			time.sleep(0.5)
+			i += 1
+
 
 	def check_myip(self):
 		self.debug(7,"def check_myip()")
