@@ -2916,12 +2916,9 @@ class Systray:
 	def settings_firewall_switch_backuprestore(self, page):
 		for file in self.FIREWALL_BACKUPS:
 			button = Gtk.Button(label=("%s")%(file))
-			button.connect('clicked', self.cb_settings_firewall_switch_backuprestore, file)
+			button.connect('clicked', self.cb_restore_firewallbackup, file)
 			page.pack_start(button,False,False,0)
 			page.pack_start(Gtk.Label(label=""),False,False,0)
-
-	def cb_settings_firewall_switch_backuprestore(self, file):
-		GLib.idle_add(self.cb_restore_firewallbackup, file)
 
 	def settings_options_switch_updateovpnonstart(self,page):
 		try:
@@ -4879,7 +4876,7 @@ class Systray:
 		self.rebuild_mainwindow()
 		self.UPDATE_SWITCH = True
 
-	def cb_restore_firewallbackup(self,file):
+	def cb_restore_firewallbackup(self,page,file):
 		self.debug(1,"def cb_restore_firewallbackup()")
 		fwbak = "%s\\%s" % (self.pfw_dir,file)
 		if os.path.isfile(fwbak):
@@ -5066,11 +5063,15 @@ class Systray:
 		try:
 			if os.path.exists(self.pfw_dir):
 				content = os.listdir(self.pfw_dir)
+				content.reverse()
 				self.FIREWALL_BACKUPS = list()
+				x = 0
 				for file in content:
-					if file.endswith('.bak.wfw'):
-						filepath = "%s\\%s" % (self.pfw_dir,file)
-						self.FIREWALL_BACKUPS.append(file)
+					if x < 10:
+						if file.endswith('.bak.wfw'):
+							filepath = "%s\\%s" % (self.pfw_dir,file)
+							self.FIREWALL_BACKUPS.append(file)
+							x = x + 1
 		except:
 			self.debug(1,"def load_firewall_backups: failed")
 
