@@ -5008,9 +5008,9 @@ class Systray:
 		self.debug(7,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
-		self.LAST_CHECK_INET_FALSE = int(time.time())
 		if not self.try_socket(API_DOMAIN,443) == True:
 			self.debug(1,"def check_inet_connection: failed #1")
+			self.LAST_CHECK_INET_FALSE = int(time.time())
 			return False
 		return True
 
