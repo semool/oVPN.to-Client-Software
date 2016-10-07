@@ -11,7 +11,7 @@
  Version: 0.7.5
 + update: openVPN 2.3.12-I602
 + update: openVPN CodeSign Fingerprint
-+ update: new config download+
++ update: new config download
 + bugfix: No API Key message
 
 
