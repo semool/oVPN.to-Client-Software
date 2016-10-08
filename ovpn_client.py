@@ -3603,6 +3603,14 @@ class Systray:
 				ca, crt, key, tls = 0, 0, 0, 0
 				if os.path.isfile(self.ovpn_server_config_file):
 					for line in open(self.ovpn_server_config_file):
+						if "<ca>" in line or "</ca>" in line:
+							ca += 1
+						if "<cert>" in line or "</cert>" in line:
+							crt += 1
+						if "<key>" in line or "</key>" in line:
+							key += 1
+						if "<tls-auth>" in line or "</tls-auth>" in line:
+							tls += 1
 						if "remote " in line:
 							print(line)
 							try:
@@ -3623,9 +3631,18 @@ class Systray:
 									self.OVPN_CONNECTEDtoProtocol = proto
 							except:
 								self.debug(1,"Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
+								self.reset_ovpn_values_disconnected()
 								return False
+					list = [ca, crt, key, tls ]
+					for value in list:
+						if not value == 2:
+							self.msgwarn(_("Please update your configurations!"),_("Old configurations detected."))
+							self.reset_ovpn_values_disconnected()
+							GLib.idle_add(self.cb_force_update)
+							return False
 				else:
 					self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
+					self.reset_ovpn_values_disconnected()
 					return False
 				self.OVPN_SESSIONLOG = "%s\\openvpn.log" % (self.VPN_DIR)
 				try:
@@ -4599,12 +4616,14 @@ class Systray:
 			return True
 
 	def cb_check_normal_update(self):
+		# call with GLib.idle_add !
 		self.debug(1,"def cb_check_normal_update()")
 		if self.check_remote_update() == True:
 			self.debug(1,"def cb_check_normal_update: self.check_remote_update() == True")
 			return True
 
 	def cb_force_update(self):
+		# call with GLib.idle_add !
 		self.debug(1,"def cb_force_update()")
 		if self.reset_last_update() == True:
 			self.debug(1,"def cb_force_update: self.reset_last_update")
@@ -4806,7 +4825,7 @@ class Systray:
 			self.rebuild_mainwindow()
 
 	def cb_change_ipmode1(self):
-		self.debug(1,"def cb_change_ipmode1()")
+		self.debug(1,"def cb_change_ipmode1() *GLib*")
 		self.OVPN_CONFIGVERSION = "23x"
 		self.write_options_file()
 		self.read_options_file()
@@ -4819,7 +4838,7 @@ class Systray:
 		self.UPDATE_SWITCH = True
 
 	def cb_change_ipmode2(self):
-		self.debug(1,"def cb_change_ipmode2()")
+		self.debug(1,"def cb_change_ipmode2() *GLib*")
 		self.OVPN_CONFIGVERSION = "23x46"
 		self.write_options_file()
 		self.read_options_file()
@@ -4833,7 +4852,7 @@ class Systray:
 
 	# *** fixme: need isValueIPv6 first! ***
 	def cb_change_ipmode3(self):
-		self.debug(1,"def cb_change_ipmode3()")
+		self.debug(1,"def cb_change_ipmode3() *GLib*")
 		return True
 		self.OVPN_CONFIGVERSION = "23x64"
 		self.write_options_file()
