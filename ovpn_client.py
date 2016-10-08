@@ -1907,7 +1907,7 @@ class Systray:
 		self.debug(1,"def update_mwls()")
 		liststore = self.serverliststore
 		debugupdate_mwls = False
-		t1 = time.time()
+		starttime = time.time()
 		for row in liststore:
 			server = row[2]
 			if server in self.OVPN_SERVER:
@@ -2114,7 +2114,9 @@ class Systray:
 						path = liststore.get_path(iter)
 						liststore.row_changed(path,iter)
 						self.debug(10,"def update_mwls: row_changed server '%s'" % (server))
-		self.debug(1,"def update_mwls: return %s ms" % (int((time.time()-t1)*1000)))
+		runtime = int((time.time()-starttime)*1000)
+		if runtime > 1000:
+			self.debug(1,"def update_mwls: return '%s ms'" % (runtime))
 		return
 
 	def call_redraw_mainwindow(self):
@@ -3586,60 +3588,64 @@ class Systray:
 
 	def openvpn(self,server):
 		self.debug(1,"def openvpn()")
-		while self.timer_check_certdl_running == True:
-			self.debug(1,"def openvpn: sleep while timer_check_certdl_running")
-			time.sleep(1)
+		#while self.timer_check_certdl_running == True:
+		#	self.debug(1,"def openvpn: sleep while timer_check_certdl_running")
+		#	time.sleep(1)
 		self.debug(1,"def openvpn: server = '%s'" % (server))
-		""" *fixme* """
-		#if self.state_openvpn() == False:
-		if self.OVPN_THREADID == False:
-			self.inThread_jump_server_running = True
-			self.ovpn_server_UPPER = server
-			self.ovpn_server_LOWER = server.lower()
-			self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.VPN_CFG,self.ovpn_server_UPPER)
-			if os.path.isfile(self.ovpn_server_config_file):
-				for line in open(self.ovpn_server_config_file):
-					if "remote " in line:
-						print(line)
-						try:
-							ip = line.split()[1]
-							port = int(line.split()[2])
-							# *** fixme *** need ipv6 check here
-							if self.isValueIPv4(ip) and port > 0 and port < 65535:
-								self.OVPN_CONNECTEDtoIP = ip
-								self.OVPN_CONNECTEDtoPort = port
-							#break
-						except:
-							self.debug(1,"Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
-							return False
-					if "proto " in line:
-						try:
-							proto = line.split()[1]
-							if proto.lower()  == "tcp" or proto.lower() == "udp":
-								self.OVPN_CONNECTEDtoProtocol = proto
-						except:
-							self.debug(1,"Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
-							return False
-			else:
-				self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
-				return False
-			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.VPN_DIR)
-			try:
-				OVPN_STRING = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.WIN_TAP_DEVICE)
-				if self.DEBUG == True:
-					self.OVPN_STRING = '%s --log "%s"' % (OVPN_STRING,self.ovpn_sessionlog)
+		try:
+			""" *fixme* """
+			#if self.state_openvpn() == False:
+			if self.OVPN_THREADID == False:
+				self.inThread_jump_server_running = True
+				self.ovpn_server_UPPER = server
+				self.ovpn_server_LOWER = server.lower()
+				self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.VPN_CFG,self.ovpn_server_UPPER)
+				ca, crt, key, tls = 0, 0, 0, 0
+				if os.path.isfile(self.ovpn_server_config_file):
+					for line in open(self.ovpn_server_config_file):
+						if "remote " in line:
+							print(line)
+							try:
+								ip = line.split()[1]
+								port = int(line.split()[2])
+								# *** fixme *** need ipv6 check here
+								if self.isValueIPv4(ip) and port > 0 and port < 65535:
+									self.OVPN_CONNECTEDtoIP = ip
+									self.OVPN_CONNECTEDtoPort = port
+								#break
+							except:
+								self.debug(1,"Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
+								return False
+						if "proto " in line:
+							try:
+								proto = line.split()[1]
+								if proto.lower()  == "tcp" or proto.lower() == "udp":
+									self.OVPN_CONNECTEDtoProtocol = proto
+							except:
+								self.debug(1,"Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
+								return False
 				else:
-					self.OVPN_STRING = OVPN_STRING
-				thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
-				thread_spawn_openvpn_process.start()
-				self.OVPN_THREADID = threading.currentThread()
-				self.debug(1,"Started: oVPN %s on Thread: %s" % (server,self.OVPN_THREADID))
-			except:
-				self.debug(1,"Error: Unable to start thread: oVPN %s " % (server))
-				self.reset_ovpn_values_disconnected()
-				return False
-		else:
-			self.debug(1,"def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
+					self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
+					return False
+				self.OVPN_SESSIONLOG = "%s\\openvpn.log" % (self.VPN_DIR)
+				try:
+					OVPN_STRING = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.WIN_TAP_DEVICE)
+					if self.DEBUG == True:
+						self.OVPN_STRING = '%s --log "%s"' % (OVPN_STRING,self.OVPN_SESSIONLOG)
+					else:
+						self.OVPN_STRING = OVPN_STRING
+					thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
+					thread_spawn_openvpn_process.start()
+					self.OVPN_THREADID = threading.currentThread()
+					self.debug(1,"def openvpn: server '%s', threadid '%s'" % (server,self.OVPN_THREADID))
+				except Exception as e:
+					self.debug(1,"def openvpn: start thread failed, exception '%s'" % (server,e))
+					self.reset_ovpn_values_disconnected()
+					return False
+			else:
+				self.debug(1,"def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
+		except Exception as e:
+			self.debug(1,"def openvpn: failed, exception = '%s'"%(e))
 
 	def inThread_spawn_openvpn_process(self):
 		try:
@@ -3711,8 +3717,8 @@ class Systray:
 		self.UPDATE_SWITCH = True
 		self.OVPN_STRING = False
 		try:
-			if os.path.isfile(self.ovpn_sessionlog):
-				os.remove(self.ovpn_sessionlog)
+			if os.path.isfile(self.OVPN_SESSIONLOG):
+				os.remove(self.OVPN_SESSIONLOG)
 		except:
 			pass
 		self.call_redraw_mainwindow()
