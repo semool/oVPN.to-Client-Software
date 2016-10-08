@@ -3537,10 +3537,10 @@ class Systray:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
 				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID")
-				time.sleep(1)
+				time.sleep(0.01)
 			while not self.timer_ovpn_ping_running == False:
 				self.debug(1,"def cb_jump_openvpn: sleep while self.timer_ovpn_ping_running")
-				time.sleep(1)
+				time.sleep(0.01)
 			self.call_openvpn(server)
 			self.debug(1,"def inThread_jump_server: exit")
 
