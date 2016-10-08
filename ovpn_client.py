@@ -5089,6 +5089,7 @@ class Systray:
 						filepath = "%s\\%s" % (self.VPN_CFG,file)
 						servername = file[:-5]
 						servershort = servername.split(".")[0].upper()
+						i = 0
 						if os.path.isfile(filepath):
 							self.debug(1,"def load_ovpn_server: filepath = '%s'"%(filepath))
 							serverinfo = list()
@@ -5102,6 +5103,7 @@ class Systray:
 										if self.isValueIPv4(ip) and port > 0 and port <= 65535:
 											serverinfo.append(ip)
 											serverinfo.append(port)
+											i += 1
 									except:
 										self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file))
 								elif "proto " in line:
@@ -5111,6 +5113,7 @@ class Systray:
 										if proto.lower()  == "tcp" or proto.lower() == "udp":
 											proto = proto.upper()
 											serverinfo.append(proto)
+											i += 1
 									except:
 										self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (self.ovpn_server_config_file))
 								elif line.startswith("cipher "):
@@ -5123,10 +5126,12 @@ class Systray:
 										elif cipher == "AES-256-CBC":
 											cipher = "AES-256"
 										serverinfo.append(cipher)
+										i += 1
 									except:
 										self.errorquit(text=_("Could not read Servers Cipher from config: %s") % (self.ovpn_server_config_file))
 								if "fragment " in line or "link-mtu " in line:
 									#print line
+									i += 1
 									try:
 										mtu = line.split()[1]
 										serverinfo.append(mtu)
@@ -5135,8 +5140,10 @@ class Systray:
 										serverinfo.append(mtu)
 										self.debug(1,"Could not read mtu from config: %s" % (self.ovpn_server_config_file))
 							# end: for line in open(filepath)
-							self.OVPN_SERVER_INFO[servershort] = serverinfo
-						self.OVPN_SERVER.append(servername)
+							if i == 4:
+								self.OVPN_SERVER_INFO[servershort] = serverinfo
+						if i == 4:
+							self.OVPN_SERVER.append(servername)
 						self.debug(5,"def load_ovpn_server: file = '%s' END" % (file))
 				#*fixme* useless?
 				#self.LAST_OVPN_SERVER_RELOAD = time.time()
