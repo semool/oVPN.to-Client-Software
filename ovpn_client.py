@@ -3515,48 +3515,49 @@ class Systray:
 		self.kill_openvpn()
 
 	def cb_jump_openvpn(self,widget,event,server):
+		if self.inThread_jump_server_running == True:
+			self.debug(1,"def cb_jump_openvpn: inThread_jump_server() running ! return False")
+			return False
 		if (widget == 0 and event == 0) or event.button == 1:
 			self.OVPN_CALL_SRV = server
-			self.debug(1,"def cb_jump_openvpn(%s)"%(server))
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
-			self.debug(1,"def cb_jump_openvpn: %s" % (server))
 			jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
 			jumpthread.daemon = True
 			jumpthread.start()
+			self.debug(1,"def cb_jump_openvpn: %s" % (server))
 
 	def inThread_jump_server(self,server):
 		self.debug(1,"def inThread_jump_server()")
 		if self.inThread_jump_server_running == True:
 			self.debug(1,"def inThread_jump_server: running ! return")
-			return
+			return False
 		else:
+			self.inThread_jump_server_running = True
 			self.UPDATE_SWITCH = True
 			self.debug(1,"def inThread_jump_server: server %s" % (server))
 			if self.state_openvpn() == True:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
 				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID")
-				time.sleep(0.01)
+				time.sleep(0.1)
 			while not self.timer_ovpn_ping_running == False:
 				self.debug(1,"def cb_jump_openvpn: sleep while self.timer_ovpn_ping_running")
-				time.sleep(0.01)
+				time.sleep(0.5)
+			self.inThread_jump_server_running = True
 			self.call_openvpn(server)
 			self.debug(1,"def inThread_jump_server: exit")
 
 	def kill_openvpn(self):
 		self.debug(1,"def kill_openvpn()")
-		if self.state_openvpn() == False:
-			return False
-		#if self.timer_check_certdl_running == True:
-		#	self.msgwarn(_("Update is running."),_("Please wait!"))
-		#	return False
-		self.debug(1,"def kill_openvpn")
 		try:
-			self.del_ovpn_routes()
-		except:
-			pass
-		try:
+			if self.state_openvpn() == False:
+				return False
+			try:
+				self.del_ovpn_routes()
+			except Exception as e:
+				self.debug(1,"def kill_openvpn: self.del_ovpn_routes() failed, exception '%s'"%(e))
+		
 			if os.path.isfile(self.WIN_TASKKILL_EXE):
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				string = '"%s" /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
@@ -3589,7 +3590,9 @@ class Systray:
 			self.debug(1,"def openvpn: sleep while timer_check_certdl_running")
 			time.sleep(1)
 		self.debug(1,"def openvpn: server = '%s'" % (server))
-		if self.state_openvpn() == False:
+		""" *fixme* """
+		#if self.state_openvpn() == False:
+		if self.OVPN_THREADID == False:
 			self.inThread_jump_server_running = True
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
@@ -3662,6 +3665,7 @@ class Systray:
 			self.NEXT_PING_EXEC = 0
 			self.reset_load_remote_timer()
 			self.STATE_OVPN = True
+			self.inThread_jump_server_running = False
 			if self.timer_ovpn_ping_running == False:
 				self.debug(1,"def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
 				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
@@ -3673,7 +3677,7 @@ class Systray:
 			self.call_redraw_mainwindow()
 			self.win_enable_ext_interface()
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
-			self.inThread_jump_server_running = False
+			#self.inThread_jump_server_running = False
 			try:
 				exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True)
 			except Exception as e:
