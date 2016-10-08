@@ -1519,20 +1519,6 @@ class Systray:
 				elif self.STATE_CERTDL == "getconfigs":
 					systraytext = _("Downloading Configurations...")
 					systrayicon = self.systray_icon_syncupdate2
-				elif self.STATE_CERTDL == "requestcerts":
-					systraytext = _("Requesting Certificates...")
-					systrayicon = self.systray_icon_syncupdate1
-				elif self.STATE_CERTDL == "wait":
-						systraytext = _("Please wait... Certificates requested from backend! (%s)") % (int(round(self.API_COUNTDOWN,0)))
-						if not self.OVERWRITE_TRAYICON == False:
-							systrayicon = self.OVERWRITE_TRAYICON
-						elif self.STATUS_ICON_BLINK%2==0:
-							systrayicon = self.systray_icon_syncupdate1
-						else:
-							systrayicon = self.systray_icon_syncupdate2
-				elif self.STATE_CERTDL == "getcerts":
-					systraytext = _("Downloading Certificates...")
-					systrayicon = self.systray_icon_syncupdate1
 				elif self.STATE_CERTDL == "extract":
 					systraytext = _("Extracting Configs and Certs...")
 					systrayicon = self.systray_icon_syncupdate2
@@ -1593,8 +1579,8 @@ class Systray:
 					systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST)
 					#statusbar_text = systraytext
 					systrayicon = self.systray_icon_connected
-				except:
-					self.debug(1,"def systray_timer: systraytext failed")
+				except Exception as e:
+					self.debug(1,"def systray_timer: systraytext failed, exception '%s'"%(e))
 		
 		try:
 			try:
@@ -1602,8 +1588,8 @@ class Systray:
 				if not self.systraytext_from_before == systraytext and not systraytext == False:
 					self.systraytext_from_before = systraytext
 					self.tray.set_tooltip_markup(systraytext)
-			except:
-				self.debug(1,"def systray_timer2: set traytext failed")
+			except Exception as e:
+				self.debug(1,"def systray_timer2: set traytext failed, exception '%s'"%(e))
 				
 			try:
 				# trayicon
@@ -1613,8 +1599,8 @@ class Systray:
 						self.tray.set_from_file(systrayicon)
 					else:
 						self.tray.set_from_pixbuf(systrayicon)
-			except:
-				self.debug(1,"def systray_timer2: set trayicon failed")
+			except Exception as e:
+				self.debug(1,"def systray_timer2: set trayicon failed, exception '%s'"%(e))
 			
 			try:
 				# statusbar
@@ -1622,18 +1608,18 @@ class Systray:
 					if not self.statusbartext_from_before == statusbar_text:
 						self.set_statusbar_text(statusbar_text)
 						self.statusbartext_from_before = statusbar_text
-			except:
-				self.debug(1,"def systray_timer2: set statusbar failed")
-		except:
-			self.debug(1,"def systray_timer2: set 'traytext, trayicon, statusbar' failed")
+			except Exception as e:
+				self.debug(1,"def systray_timer2: set statusbar failed, exception '%s'"%(e))
+		except Exception as e:
+			self.debug(1,"def systray_timer2: set 'traytext, trayicon, statusbar' failed, exception '%s'"%(e))
 		
 		try:
 			if self.timer_load_remote_data_running == False:
 				thread = threading.Thread(target=self.load_remote_data)
 				thread.daemon = True
 				thread.start()
-		except:
-			self.debug(1,"def systray_timer2: thread target=self.load_remote_data failed")
+		except Exception as e:
+			self.debug(1,"def systray_timer2: thread target=self.load_remote_data failed, exception '%s'"%(e))
 		
 		self.systray_timer2_running = False
 		
@@ -3679,60 +3665,62 @@ class Systray:
 			self.debug(1,"def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
 
 	def inThread_spawn_openvpn_process(self):
-		self.debug(1,"def inThread_spawn_openvpn_process")
-		exitcode = False
-		# *fixme* def win_select_networkadapter() fails if anybody changes interface name between start and connect
-		#if not self.win_read_interfaces():
-		#	self.reset_ovpn_values_disconnected()
-		#	return False
-		if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-			self.reset_ovpn_values_disconnected()
-			return False
-		if not self.win_firewall_start():
-			self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
-			self.reset_ovpn_values_disconnected()
-			return False
-		self.win_firewall_modify_rule(option="add")
-		self.win_clear_ipv6()
-		self.OVPN_CONNECTEDtime = int(time.time())
-		self.OVPN_CONNECTEDto = self.OVPN_CALL_SRV
-		self.OVPN_PING_STAT = -1
-		self.OVPN_PING_LAST = -1
-		self.NEXT_PING_EXEC = 0
-		self.reset_load_remote_timer()
-		self.OVERWRITE_TRAYICON = False
-		self.STATE_OVPN = True
-		if self.timer_ovpn_ping_running == False:
-			self.debug(1,"def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
-			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
-			pingthread.daemon = True
-			pingthread.start()
-		if self.TAP_BLOCKOUTBOUND == True:
-			self.win_firewall_tap_blockoutbound()
-		self.win_netsh_set_dns_ovpn()
-		self.call_redraw_mainwindow()
-		self.inThread_jump_server_running = False
-		self.win_enable_ext_interface()
-		self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
-		exitcode = False
 		try:
-			exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True)
+			self.debug(1,"def inThread_spawn_openvpn_process")
+			exitcode = False
+			# *fixme* def win_select_networkadapter() fails if anybody changes interface name between start and connect
+			#if not self.win_read_interfaces():
+			#	self.reset_ovpn_values_disconnected()
+			#	return False
+			if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
+				self.reset_ovpn_values_disconnected()
+				return False
+			if not self.win_firewall_start():
+				self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
+				self.reset_ovpn_values_disconnected()
+				return False
+			self.win_firewall_modify_rule(option="add")
+			self.win_clear_ipv6()
+			self.OVPN_CONNECTEDtime = int(time.time())
+			self.OVPN_CONNECTEDto = self.OVPN_CALL_SRV
+			self.OVPN_PING_STAT = -1
+			self.OVPN_PING_LAST = -1
+			self.NEXT_PING_EXEC = 0
+			self.reset_load_remote_timer()
+			self.OVERWRITE_TRAYICON = False
+			self.STATE_OVPN = True
+			if self.timer_ovpn_ping_running == False:
+				self.debug(1,"def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
+				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
+				pingthread.daemon = True
+				pingthread.start()
+			if self.TAP_BLOCKOUTBOUND == True:
+				self.win_firewall_tap_blockoutbound()
+			self.win_netsh_set_dns_ovpn()
+			self.call_redraw_mainwindow()
+			self.win_enable_ext_interface()
+			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
+			self.inThread_jump_server_running = False
+			try:
+				exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True)
+			except Exception as e:
+				self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
+			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
+			self.win_netsh_restore_dns_from_backup()
+			self.win_disable_ext_interface()
+			self.reset_ovpn_values_disconnected()
+			return False
 		except Exception as e:
-			self.debug(1,"def inThread_spawn_openvpn_process: failed with exception: '%s'"%(e))
-		self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
-		self.win_netsh_restore_dns_from_backup()
-		self.win_disable_ext_interface()
-		self.reset_ovpn_values_disconnected()
-		self.call_redraw_mainwindow()
-		return
+			self.reset_ovpn_values_disconnected()
+			self.debug(1,"def inThread_spawn_openvpn_process(): failed, exception: '%s'"%(e))
 
 	def reset_ovpn_values_disconnected(self):
 		try:
 			self.win_firewall_modify_rule(option="delete")
 		except:
 			self.debug(1,"def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
-		self.win_clear_ipv6()
 		self.debug(1,"def reset_ovpn_values_after()")
+		self.win_clear_ipv6()
 		self.STATE_OVPN = False
 		self.inThread_jump_server_running = False
 		self.OVPN_CONNECTEDto = False
@@ -3750,6 +3738,7 @@ class Systray:
 				os.remove(self.ovpn_sessionlog)
 		except:
 			pass
+		self.call_redraw_mainwindow()
 
 	def inThread_timer_ovpn_ping(self):
 		self.debug(10,"def inThread_timer_ovpn_ping()")
