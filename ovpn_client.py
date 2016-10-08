@@ -1621,7 +1621,8 @@ class Systray:
 			except Exception as e:
 				self.debug(1,"def systray_timer: thread target=self.load_remote_data failed, exception '%s'"%(e))
 			runtime = int((time.time()-starttime)*1000)
-			self.debug(1,"def systray_timer() return runtime = '%s ms'"%(runtime))
+			if runtime > 100:
+				self.debug(1,"def systray_timer() return runtime = '%s ms'"%(runtime))
 			self.systray_timer_running = False
 		except Exception as e:
 			self.debug(1,"def systray_timer: failed, exception '%s'"%(e))
@@ -3535,8 +3536,10 @@ class Systray:
 			if self.state_openvpn() == True:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
-				self.kill_openvpn()
-				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
+				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID")
+				time.sleep(1)
+			while not self.timer_ovpn_ping_running == False:
+				self.debug(1,"def cb_jump_openvpn: sleep while self.timer_ovpn_ping_running")
 				time.sleep(1)
 			self.call_openvpn(server)
 			self.debug(1,"def inThread_jump_server: exit")
@@ -3545,9 +3548,9 @@ class Systray:
 		self.debug(1,"def kill_openvpn()")
 		if self.state_openvpn() == False:
 			return False
-		if self.timer_check_certdl_running == True:
-			self.msgwarn(_("Update is running."),_("Please wait!"))
-			return False
+		#if self.timer_check_certdl_running == True:
+		#	self.msgwarn(_("Update is running."),_("Please wait!"))
+		#	return False
 		self.debug(1,"def kill_openvpn")
 		try:
 			self.del_ovpn_routes()
@@ -3559,8 +3562,8 @@ class Systray:
 				string = '"%s" /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
 				exitcode = subprocess.check_call("%s" % (string),shell=True)
 				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
-		except:
-			self.debug(1,"def kill_openvpn: failed!")
+		except Exception as e:
+			self.debug(1,"def kill_openvpn: failed, exception '%s'"%(e))
 			self.reset_ovpn_values_disconnected()
 
 	def call_openvpn(self,server):
