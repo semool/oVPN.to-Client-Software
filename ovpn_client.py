@@ -3314,7 +3314,7 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_updates_button_normalconf(self,event):
-		self.cb_check_normal_update()
+		GLib.idle_add(self.cb_check_normal_update)
 
 	def settings_updates_button_forceconf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
