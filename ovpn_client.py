@@ -119,9 +119,7 @@ class Systray:
 						self.check_remote_update()
 				else:
 					self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Update failed!"))
-			thread = threading.Thread(target=self.systray_timer)
-			thread.daemon = True
-			thread.start()
+			GLib.timeout_add(1000,self.systray_timer)
 			self.win_firewall_analyze()
 		else:
 			sys.exit()
@@ -165,9 +163,8 @@ class Systray:
 		self.systraytext_from_before = False
 		self.systrayicon_from_before = False
 		self.stop_systray_timer = False
-		self.stop_systray_timer2 = False
 		self.systray_timer_running = False
-		self.systray_timer2_running = False
+		self.systray_timer_running = False
 		self.inThread_jump_server_running = False
 		self.USERID = False
 		self.STATE_OVPN = False
@@ -289,7 +286,6 @@ class Systray:
 		self.DISABLE_SRV_WINDOW = False
 		self.DISABLE_ACC_WINDOW = False
 		self.DISABLE_QUIT_ENTRY = True
-		self.OVERWRITE_TRAYICON = False
 		self.MOUSE_IN_TRAY = 0
 		self.UPDATE_SWITCH = False
 		self.isWRITING_OPTFILE = False
@@ -1321,337 +1317,316 @@ class Systray:
 		except:
 			self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: failed!")
 
-	def systray_timer2(self):
-		self.debug(10,"def systray_timer2()")
-		self.systray_timer2_running = True
-		if self.stop_systray_timer2 == True:
-			self.systray_timer2_running = False
-			return False
-		
-		if not self.systray_menu == False:
-			self.check_hide_popup()
-		
-		try:
-			if self.LAST_MSGWARN_WINDOW > 0 and (int(time.time())-self.LAST_MSGWARN_WINDOW) > 9:
-				GLib.idle_add(self.msgwarn_window.destroy)
-				self.LAST_MSGWARN_WINDOW = 0
-		except:
-			pass
-		
-		if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
-			self.debug(1,"def systray_timer2: UPDATE_SWITCH")
-			
-			# Language changed
-			if self.LANG_FONT_CHANGE == True:
-				try:
-					self.settingsnotebook.remove(self.nbpage0)
-					self.settingsnotebook.remove(self.nbpage1)
-					self.settingsnotebook.remove(self.nbpage2)
-				except:
-					pass
-				try:
-					self.settingsnotebook.remove(self.nbpage3)
-				except:
-					pass
-				try:
-					self.show_hide_security_window()
-					self.show_hide_options_window()
-					self.show_hide_updates_window()
-					self.settingswindow.show_all()
-					self.settingsnotebook.set_current_page(1)
-				except:
-					pass
-				self.LANG_FONT_CHANGE = False
-			
-			if self.state_openvpn() == True:
-				self.switch_fw.set_sensitive(False)
-				self.switch_fwblockonexit.set_sensitive(False)
-				self.switch_fwdontaskonexit.set_sensitive(False)
-				self.switch_fwresetonconnect.set_sensitive(False)
-				self.switch_fwbackupmode.set_sensitive(False)
-				self.switch_nodns.set_sensitive(False)
-				self.button_switch_network_adapter.set_sensitive(False)
-				try:
-					self.settingsnotebook.remove(self.nbpage3)
-				except:
-					pass
-			elif self.NO_WIN_FIREWALL == True:
-				self.switch_fwblockonexit.set_sensitive(False)
-				self.switch_fwdontaskonexit.set_sensitive(False)
-				self.switch_fwresetonconnect.set_sensitive(False)
-				self.switch_fwbackupmode.set_sensitive(False)
-				self.switch_tapblockoutbound.set_sensitive(False)
-			else:
-				self.switch_fw.set_sensitive(True)
-				self.switch_fwblockonexit.set_sensitive(True)
-				self.switch_fwdontaskonexit.set_sensitive(True)
-				self.switch_fwresetonconnect.set_sensitive(True)
-				self.switch_fwbackupmode.set_sensitive(True)
-				self.switch_nodns.set_sensitive(True)
-				self.button_switch_network_adapter.set_sensitive(True)
-				try:
-					self.show_hide_backup_window()
-					self.settingswindow.show_all()
-				except:
-					pass
-			
-			# def settings_firewall_switch_nofw()
-			if self.NO_WIN_FIREWALL == True:
-				self.switch_fw.set_active(False)
-				try:
-					self.settingsnotebook.remove(self.nbpage3)
-				except:
-					pass
-			else:
-				self.switch_fw.set_active(True)
-			
-			# def settings_firewall_switch_tapblockoutbound()
-			if self.TAP_BLOCKOUTBOUND == True:
-				self.switch_tapblockoutbound.set_active(True)
-			else:
-				self.switch_tapblockoutbound.set_active(False)
-			
-			# def settings_firewall_switch_fwblockonexit()
-			if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
-				self.switch_fwblockonexit.set_active(True)
-			else:
-				self.switch_fwblockonexit.set_active(False)
-			
-			# def settings_firewall_switch_fwdontaskonexit()
-			if self.WIN_DONT_ASK_FW_EXIT == True:
-				self.switch_fwdontaskonexit.set_active(True)
-			else:
-				self.switch_fwdontaskonexit.set_active(False)
-			
-			# def settings_firewall_switch_fwresetonconnect()
-			if self.WIN_RESET_FIREWALL == True:
-				self.switch_fwresetonconnect.set_active(True)
-			else:
-				self.switch_fwresetonconnect.set_active(False)
-			
-			# def settings_firewall_switch_fwbackupmode()
-			if self.WIN_BACKUP_FIREWALL == True:
-				self.switch_fwbackupmode.set_active(True)
-			else:
-				self.switch_fwbackupmode.set_active(False)
-			
-			# def settings_network_switch_nodns()
-			if self.NO_DNS_CHANGE == True:
-				self.switch_nodns.set_active(False)
-			else:
-				self.switch_nodns.set_active(True)
-			
-			# settings_network_switch_disableextifondisco
-			if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
-				self.switch_disableextifondisco.set_active(True)
-			else:
-				self.switch_disableextifondisco.set_active(False)
-			
-			# settings_options_switch_autostart
-			if self.AUTOSTART == True:
-				self.switch_autostart.set_active(True)
-				self.combobox_time.set_button_sensitivity(Gtk.SensitivityType.OFF)
-			else:
-				self.switch_autostart.set_active(False)
-				self.combobox_time.set_button_sensitivity(Gtk.SensitivityType.ON)
-			
-			# settings_options_switch_updateovpnonstart
-			if self.UPDATEOVPNONSTART == True:
-				self.switch_updateovpnonstart.set_active(True)
-			else:
-				self.switch_updateovpnonstart.set_active(False)
-			
-			# settings_options_switch_accinfo
-			if self.LOAD_ACCDATA == True and not self.APIKEY == False:
-				self.switch_accinfo.set_active(True)
-			else:
-				self.switch_accinfo.set_active(False)
-			
-			# settings_options_switch_srvinfo
-			if self.LOAD_SRVDATA == True and not self.APIKEY == False:
-				self.switch_srvinfo.set_active(True)
-			else:
-				self.switch_srvinfo.set_active(False)
-			
-			# settings_options_switch_debugmode
-			if self.DEBUG == True:
-				self.switch_debugmode.set_active(True)
-			else:
-				self.switch_debugmode.set_active(False)
-			
-			# settings_options_button_ipv6
-			if self.OVPN_CONFIGVERSION == "23x":
-				self.button_title.set_label(_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
-				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
-			elif self.OVPN_CONFIGVERSION == "23x46":
-				self.button_title.set_label(_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
-				self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
-			
-			# settings_options_combobox_icons
-			if self.ICONS_THEME == "standard":
-				active_item = 0
-			if self.ICONS_THEME == "classic":
-				active_item = 1
-			if self.ICONS_THEME == "classic2":
-				active_item = 2
-			if self.ICONS_THEME == "shield_bluesync":
-				active_item = 3
-			if self.ICONS_THEME == "experimental":
-				active_item = 4
-			if self.ICONS_THEME == "private":
-				active_item = 5
-			self.combobox_icons.set_active(active_item)
-			
-			# resize settings window
-			self.settingswindow.resize(1,1)
-			
-			# end switches update
-			self.UPDATE_SWITCH = False
-		else:
-			self.UPDATE_SWITCH = False
-		
-		systraytext = False
-		if self.timer_check_certdl_running == True:
-			if not self.STATE_CERTDL == False:
-				if self.STATE_CERTDL == "lastupdate":
-					systraytext = _("Checking for Updates!")
-					systrayicon = self.systray_icon_syncupdate1
-				elif self.STATE_CERTDL == "getconfigs":
-					systraytext = _("Downloading Configurations...")
-					systrayicon = self.systray_icon_syncupdate2
-				elif self.STATE_CERTDL == "requestcerts":
-					systraytext = _("Requesting Certificates...")
-					systrayicon = self.systray_icon_syncupdate1
-				elif self.STATE_CERTDL == "wait":
-						systraytext = _("Please wait... Certificates requested from backend! (%s)") % (int(round(self.API_COUNTDOWN,0)))
-						if not self.OVERWRITE_TRAYICON == False:
-							systrayicon = self.OVERWRITE_TRAYICON
-						elif self.STATUS_ICON_BLINK%2==0:
-							systrayicon = self.systray_icon_syncupdate1
-						else:
-							systrayicon = self.systray_icon_syncupdate2
-				elif self.STATE_CERTDL == "getcerts":
-					systraytext = _("Downloading Certificates...")
-					systrayicon = self.systray_icon_syncupdate1
-				elif self.STATE_CERTDL == "extract":
-					systraytext = _("Extracting Configs and Certs...")
-					systrayicon = self.systray_icon_syncupdate2
-				statusbar_text = systraytext
-				
-		elif self.state_openvpn() == False and self.OVERWRITE_TRAYICON == False:
-			systraytext = _("Disconnected! Have a nice and anonymous day!")
-			statusbar_text = systraytext
-			systrayicon = self.systray_icon_disconnected
-			try:
-				if len(self.OVPN_SERVER) == 0 and self.INIT_FIRST_UPDATE == True:
-					self.INIT_FIRST_UPDATE = False
-					self.load_ovpn_server()
-					if not self.APIKEY == False and len(self.OVPN_SERVER) == 0:
-						self.debug(1,"zero server found, initiate first update")
-						self.check_remote_update()
-				elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
-					self.INIT_FIRST_UPDATE = False
-				elif self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
-					self.OVPN_AUTO_CONNECT_ON_START = False
-					self.debug(1,"def systray_timer: self.OVPN_AUTO_CONNECT_ON_START: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
-					self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
-				
-			except:
-				self.debug(1,"def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed")
-		elif self.inThread_jump_server_running == True and self.OVERWRITE_TRAYICON == True:
-			systraytext = _("Connecting to %s") % (self.OVPN_CALL_SRV)
-			systrayicon = self.systray_icon_connect
-			statusbar_text = systraytext
-			self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
-		elif self.state_openvpn() == True:
-			connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
-			self.OVPN_CONNECTEDseconds = connectedseconds
-			if self.OVPN_PING_STAT == -2:
-				self.OVPN_isTESTING = True
-				systraytext = _("Testing connection to %s") % (self.OVPN_CONNECTEDto)
-				systrayicon = self.systray_icon_testing
-				statusbar_text = systraytext
-				self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
-			elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 3:
-				systraytext = _("Connection to %s unstable or failed!") % (self.OVPN_CONNECTEDto)
-				systrayicon = self.systray_icon_testing
-				statusbar_text = systraytext
-				self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
-			elif self.OVPN_PING_STAT > 0:
-				try:
-					if self.OVPN_isTESTING == True:
-						self.OVPN_PING = list()
-						self.OVPN_PING_STAT = self.OVPN_PING_LAST
-						self.OVPN_isTESTING = False
-					m, s = divmod(connectedseconds, 60)
-					h, m = divmod(m, 60)
-					d, h = divmod(h, 24)
-					if self.OVPN_CONNECTEDseconds >= 0:
-						connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-					statusbar_text = _("Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)") % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
-					# systraytext Windows only shows the first 64 characters
-					systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST)
-					#statusbar_text = systraytext
-					systrayicon = self.systray_icon_connected
-				except:
-					self.debug(1,"def systray_timer: systraytext failed")
-		
-		try:
-			try:
-				# traytext
-				if not self.systraytext_from_before == systraytext and not systraytext == False:
-					self.systraytext_from_before = systraytext
-					self.tray.set_tooltip_markup(systraytext)
-			except:
-				self.debug(1,"def systray_timer2: set traytext failed")
-				
-			try:
-				# trayicon
-				if not self.systrayicon_from_before == systrayicon:
-					self.systrayicon_from_before = systrayicon
-					if self.APP_THEME == "private":
-						self.tray.set_from_file(systrayicon)
-					else:
-						self.tray.set_from_pixbuf(systrayicon)
-			except:
-				self.debug(1,"def systray_timer2: set trayicon failed")
-			
-			try:
-				# statusbar
-				if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
-					if not self.statusbartext_from_before == statusbar_text:
-						self.set_statusbar_text(statusbar_text)
-						self.statusbartext_from_before = statusbar_text
-			except:
-				self.debug(1,"def systray_timer2: set statusbar failed")
-		except:
-			self.debug(1,"def systray_timer2: set 'traytext, trayicon, statusbar' failed")
-		
-		try:
-			if self.timer_load_remote_data_running == False:
-				thread = threading.Thread(target=self.load_remote_data)
-				thread.daemon = True
-				thread.start()
-		except:
-			self.debug(1,"def systray_timer2: thread target=self.load_remote_data failed")
-		
-		self.systray_timer2_running = False
-		
-		self.debug(19,"def systray_timer2() return")
-		return
-
 	def systray_timer(self):
-		#self.debug(19,"def systray_timer()")
-		if self.stop_systray_timer == True:
-			return False
-		if self.systray_timer2_running == False:
-			self.debug(19,"def systray_timer: GLib.idle_add(self.systray_timer2)")
-			GLib.idle_add(self.systray_timer2)
-		time.sleep(0.5)
-		thread = threading.Thread(target=self.systray_timer)
-		thread.daemon = True
-		thread.start()
-		return
+		try:
+			self.debug(10,"def systray_timer()")
+			starttime = time.time()
+			self.systray_timer_running = True
+			if self.stop_systray_timer == True:
+				self.systray_timer_running = False
+				return False
+			
+			if not self.systray_menu == False:
+				self.check_hide_popup()
+			
+			try:
+				if self.LAST_MSGWARN_WINDOW > 0 and (int(time.time())-self.LAST_MSGWARN_WINDOW) > 9:
+					GLib.idle_add(self.msgwarn_window.destroy)
+					self.LAST_MSGWARN_WINDOW = 0
+			except:
+				pass
+			
+			if self.UPDATE_SWITCH == True and self.SETTINGSWINDOW_OPEN == True:
+				self.debug(1,"def systray_timer: UPDATE_SWITCH")
+				
+				# Language changed
+				if self.LANG_FONT_CHANGE == True:
+					try:
+						self.settingsnotebook.remove(self.nbpage0)
+						self.settingsnotebook.remove(self.nbpage1)
+						self.settingsnotebook.remove(self.nbpage2)
+					except:
+						pass
+					try:
+						self.settingsnotebook.remove(self.nbpage3)
+					except:
+						pass
+					try:
+						self.show_hide_security_window()
+						self.show_hide_options_window()
+						self.show_hide_updates_window()
+						self.settingswindow.show_all()
+						self.settingsnotebook.set_current_page(1)
+					except:
+						pass
+					self.LANG_FONT_CHANGE = False
+				
+				if self.state_openvpn() == True:
+					self.switch_fw.set_sensitive(False)
+					self.switch_fwblockonexit.set_sensitive(False)
+					self.switch_fwdontaskonexit.set_sensitive(False)
+					self.switch_fwresetonconnect.set_sensitive(False)
+					self.switch_fwbackupmode.set_sensitive(False)
+					self.switch_nodns.set_sensitive(False)
+					self.button_switch_network_adapter.set_sensitive(False)
+					try:
+						self.settingsnotebook.remove(self.nbpage3)
+					except:
+						pass
+				elif self.NO_WIN_FIREWALL == True:
+					self.switch_fwblockonexit.set_sensitive(False)
+					self.switch_fwdontaskonexit.set_sensitive(False)
+					self.switch_fwresetonconnect.set_sensitive(False)
+					self.switch_fwbackupmode.set_sensitive(False)
+					self.switch_tapblockoutbound.set_sensitive(False)
+				else:
+					self.switch_fw.set_sensitive(True)
+					self.switch_fwblockonexit.set_sensitive(True)
+					self.switch_fwdontaskonexit.set_sensitive(True)
+					self.switch_fwresetonconnect.set_sensitive(True)
+					self.switch_fwbackupmode.set_sensitive(True)
+					self.switch_nodns.set_sensitive(True)
+					self.button_switch_network_adapter.set_sensitive(True)
+					try:
+						self.show_hide_backup_window()
+						self.settingswindow.show_all()
+					except:
+						pass
+				
+				# def settings_firewall_switch_nofw()
+				if self.NO_WIN_FIREWALL == True:
+					self.switch_fw.set_active(False)
+					try:
+						self.settingsnotebook.remove(self.nbpage3)
+					except:
+						pass
+				else:
+					self.switch_fw.set_active(True)
+				
+				# def settings_firewall_switch_tapblockoutbound()
+				if self.TAP_BLOCKOUTBOUND == True:
+					self.switch_tapblockoutbound.set_active(True)
+				else:
+					self.switch_tapblockoutbound.set_active(False)
+				
+				# def settings_firewall_switch_fwblockonexit()
+				if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
+					self.switch_fwblockonexit.set_active(True)
+				else:
+					self.switch_fwblockonexit.set_active(False)
+				
+				# def settings_firewall_switch_fwdontaskonexit()
+				if self.WIN_DONT_ASK_FW_EXIT == True:
+					self.switch_fwdontaskonexit.set_active(True)
+				else:
+					self.switch_fwdontaskonexit.set_active(False)
+				
+				# def settings_firewall_switch_fwresetonconnect()
+				if self.WIN_RESET_FIREWALL == True:
+					self.switch_fwresetonconnect.set_active(True)
+				else:
+					self.switch_fwresetonconnect.set_active(False)
+				
+				# def settings_firewall_switch_fwbackupmode()
+				if self.WIN_BACKUP_FIREWALL == True:
+					self.switch_fwbackupmode.set_active(True)
+				else:
+					self.switch_fwbackupmode.set_active(False)
+				
+				# def settings_network_switch_nodns()
+				if self.NO_DNS_CHANGE == True:
+					self.switch_nodns.set_active(False)
+				else:
+					self.switch_nodns.set_active(True)
+				
+				# settings_network_switch_disableextifondisco
+				if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
+					self.switch_disableextifondisco.set_active(True)
+				else:
+					self.switch_disableextifondisco.set_active(False)
+				
+				# settings_options_switch_autostart
+				if self.AUTOSTART == True:
+					self.switch_autostart.set_active(True)
+					self.combobox_time.set_button_sensitivity(Gtk.SensitivityType.OFF)
+				else:
+					self.switch_autostart.set_active(False)
+					self.combobox_time.set_button_sensitivity(Gtk.SensitivityType.ON)
+				
+				# settings_options_switch_updateovpnonstart
+				if self.UPDATEOVPNONSTART == True:
+					self.switch_updateovpnonstart.set_active(True)
+				else:
+					self.switch_updateovpnonstart.set_active(False)
+				
+				# settings_options_switch_accinfo
+				if self.LOAD_ACCDATA == True and not self.APIKEY == False:
+					self.switch_accinfo.set_active(True)
+				else:
+					self.switch_accinfo.set_active(False)
+				
+				# settings_options_switch_srvinfo
+				if self.LOAD_SRVDATA == True and not self.APIKEY == False:
+					self.switch_srvinfo.set_active(True)
+				else:
+					self.switch_srvinfo.set_active(False)
+				
+				# settings_options_switch_debugmode
+				if self.DEBUG == True:
+					self.switch_debugmode.set_active(True)
+				else:
+					self.switch_debugmode.set_active(False)
+				
+				# settings_options_button_ipv6
+				if self.OVPN_CONFIGVERSION == "23x":
+					self.button_title.set_label(_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
+					self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
+				elif self.OVPN_CONFIGVERSION == "23x46":
+					self.button_title.set_label(_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
+					self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
+				
+				# settings_options_combobox_icons
+				if self.ICONS_THEME == "standard":
+					active_item = 0
+				if self.ICONS_THEME == "classic":
+					active_item = 1
+				if self.ICONS_THEME == "classic2":
+					active_item = 2
+				if self.ICONS_THEME == "shield_bluesync":
+					active_item = 3
+				if self.ICONS_THEME == "experimental":
+					active_item = 4
+				if self.ICONS_THEME == "private":
+					active_item = 5
+				self.combobox_icons.set_active(active_item)
+				
+				# resize settings window
+				self.settingswindow.resize(1,1)
+				
+				# end switches update
+				self.UPDATE_SWITCH = False
+			else:
+				self.UPDATE_SWITCH = False
+			
+			systraytext = False
+			if self.timer_check_certdl_running == True:
+				if not self.STATE_CERTDL == False:
+					if self.STATE_CERTDL == "lastupdate":
+						systraytext = _("Checking for Updates!")
+						systrayicon = self.systray_icon_syncupdate1
+					elif self.STATE_CERTDL == "getconfigs":
+						systraytext = _("Downloading Configurations...")
+						systrayicon = self.systray_icon_syncupdate2
+					elif self.STATE_CERTDL == "extract":
+						systraytext = _("Extracting Configs and Certs...")
+						systrayicon = self.systray_icon_syncupdate2
+					statusbar_text = systraytext
+					
+			elif self.inThread_jump_server_running == True:
+				systraytext = _("Connecting to %s") % (self.OVPN_CALL_SRV)
+				systrayicon = self.systray_icon_connect
+				statusbar_text = systraytext
+				self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
+				
+			elif self.state_openvpn() == True:
+				connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
+				self.OVPN_CONNECTEDseconds = connectedseconds
+				if self.OVPN_PING_STAT == -2:
+					self.OVPN_isTESTING = True
+					systraytext = _("Testing connection to %s") % (self.OVPN_CONNECTEDto)
+					systrayicon = self.systray_icon_testing
+					statusbar_text = systraytext
+					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
+				elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 3:
+					systraytext = _("Connection to %s unstable or failed!") % (self.OVPN_CONNECTEDto)
+					systrayicon = self.systray_icon_testing
+					statusbar_text = systraytext
+					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
+				elif self.OVPN_PING_STAT > 0:
+					try:
+						if self.OVPN_isTESTING == True:
+							self.OVPN_PING = list()
+							self.OVPN_PING_STAT = self.OVPN_PING_LAST
+							self.OVPN_isTESTING = False
+						m, s = divmod(connectedseconds, 60)
+						h, m = divmod(m, 60)
+						d, h = divmod(h, 24)
+						if self.OVPN_CONNECTEDseconds >= 0:
+							connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
+						statusbar_text = _("Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)") % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+						# systraytext Windows only shows the first 64 characters
+						systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST)
+						systrayicon = self.systray_icon_connected
+					except Exception as e:
+						self.debug(1,"def systray_timer: systraytext failed, exception '%s'"%(e))
+
+			elif self.state_openvpn() == False:
+				systraytext = _("Disconnected! Have a nice and anonymous day!")
+				self.debug(2,"def systray_timer: cstate = '%s'" % (systraytext))
+				statusbar_text = systraytext
+				systrayicon = self.systray_icon_disconnected
+				try:
+					if len(self.OVPN_SERVER) == 0 and self.INIT_FIRST_UPDATE == True:
+						self.INIT_FIRST_UPDATE = False
+						self.load_ovpn_server()
+						if not self.APIKEY == False and len(self.OVPN_SERVER) == 0:
+							self.debug(1,"zero server found, initiate first update")
+							self.check_remote_update()
+					elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
+						self.INIT_FIRST_UPDATE = False
+					elif self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
+						self.OVPN_AUTO_CONNECT_ON_START = False
+						self.debug(1,"def systray_timer: self.OVPN_AUTO_CONNECT_ON_START: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
+						self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
+					
+				except Exception as e:
+					self.debug(1,"def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed, exception '%s'"%(e))
+
+			try:
+				try:
+					# traytext
+					if not self.systraytext_from_before == systraytext and not systraytext == False:
+						self.systraytext_from_before = systraytext
+						self.tray.set_tooltip_markup(systraytext)
+				except Exception as e:
+					self.debug(1,"def systray_timer: set traytext failed, exception '%s'"%(e))
+					
+				try:
+					# trayicon
+					if not self.systrayicon_from_before == systrayicon:
+						self.systrayicon_from_before = systrayicon
+						if self.APP_THEME == "private":
+							self.tray.set_from_file(systrayicon)
+						else:
+							self.tray.set_from_pixbuf(systrayicon)
+				except Exception as e:
+					self.debug(1,"def systray_timer: set trayicon failed, exception '%s'"%(e))
+				
+				try:
+					# statusbar
+					if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
+						if not self.statusbartext_from_before == statusbar_text:
+							self.set_statusbar_text(statusbar_text)
+							self.statusbartext_from_before = statusbar_text
+				except Exception as e:
+					self.debug(1,"def systray_timer: set statusbar failed, exception '%s'"%(e))
+			except Exception as e:
+				self.debug(1,"def systray_timer: set 'traytext, trayicon, statusbar' failed, exception '%s'"%(e))
+			
+			try:
+				if self.timer_load_remote_data_running == False:
+					thread = threading.Thread(target=self.load_remote_data)
+					thread.daemon = True
+					thread.start()
+			except Exception as e:
+				self.debug(1,"def systray_timer: thread target=self.load_remote_data failed, exception '%s'"%(e))
+			runtime = int((time.time()-starttime)*1000)
+			if runtime > 100:
+				self.debug(1,"def systray_timer() return runtime = '%s ms'"%(runtime))
+			self.systray_timer_running = False
+		except Exception as e:
+			self.debug(1,"def systray_timer: failed, exception '%s'"%(e))
+		return True
 
 	def on_right_click(self, widget, event, event_time):
 		self.debug(1,"def on_right_click()")
@@ -3509,7 +3484,6 @@ class Systray:
 			self.reset_load_remote_timer()
 
 	def reset_load_remote_timer(self):
-		
 		if self.LOAD_SRVDATA == True and self.MAINWINDOW_OPEN == True:
 			if self.LAST_OVPN_SRV_DATA_UPDATE > 0 and self.LAST_OVPN_SRV_DATA_UPDATE < time.time()-60:
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
@@ -3541,54 +3515,56 @@ class Systray:
 		self.kill_openvpn()
 
 	def cb_jump_openvpn(self,widget,event,server):
+		if self.inThread_jump_server_running == True:
+			self.debug(1,"def cb_jump_openvpn: inThread_jump_server() running ! return False")
+			return False
 		if (widget == 0 and event == 0) or event.button == 1:
 			self.OVPN_CALL_SRV = server
-			self.debug(1,"def cb_jump_openvpn(%s)"%(server))
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
-			self.debug(1,"def cb_jump_openvpn: %s" % (server))
 			jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
 			jumpthread.daemon = True
 			jumpthread.start()
+			self.debug(1,"def cb_jump_openvpn: %s" % (server))
 
 	def inThread_jump_server(self,server):
 		self.debug(1,"def inThread_jump_server()")
 		if self.inThread_jump_server_running == True:
 			self.debug(1,"def inThread_jump_server: running ! return")
-			return
+			return False
 		else:
 			self.inThread_jump_server_running = True
-			self.OVERWRITE_TRAYICON = True
 			self.UPDATE_SWITCH = True
 			self.debug(1,"def inThread_jump_server: server %s" % (server))
 			if self.state_openvpn() == True:
 				self.kill_openvpn()
 			while not self.OVPN_THREADID == False:
-				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID not == False")
-				time.sleep(1)
+				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID")
+				time.sleep(0.1)
+			while not self.timer_ovpn_ping_running == False:
+				self.debug(1,"def cb_jump_openvpn: sleep while self.timer_ovpn_ping_running")
+				time.sleep(0.5)
+			self.inThread_jump_server_running = True
 			self.call_openvpn(server)
 			self.debug(1,"def inThread_jump_server: exit")
 
 	def kill_openvpn(self):
 		self.debug(1,"def kill_openvpn()")
-		if self.state_openvpn() == False:
-			return False
-		if self.timer_check_certdl_running == True:
-			self.msgwarn(_("Update is running."),_("Please wait!"))
-			return False
-		self.debug(1,"def kill_openvpn")
 		try:
-			self.del_ovpn_routes()
-		except:
-			pass
-		try:
+			if self.state_openvpn() == False:
+				return False
+			try:
+				self.del_ovpn_routes()
+			except Exception as e:
+				self.debug(1,"def kill_openvpn: self.del_ovpn_routes() failed, exception '%s'"%(e))
+		
 			if os.path.isfile(self.WIN_TASKKILL_EXE):
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				string = '"%s" /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
 				exitcode = subprocess.check_call("%s" % (string),shell=True)
 				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
-		except:
-			self.debug(1,"def kill_openvpn: failed!")
+		except Exception as e:
+			self.debug(1,"def kill_openvpn: failed, exception '%s'"%(e))
 			self.reset_ovpn_values_disconnected()
 
 	def call_openvpn(self,server):
@@ -3614,7 +3590,10 @@ class Systray:
 			self.debug(1,"def openvpn: sleep while timer_check_certdl_running")
 			time.sleep(1)
 		self.debug(1,"def openvpn: server = '%s'" % (server))
-		if self.state_openvpn() == False:
+		""" *fixme* """
+		#if self.state_openvpn() == False:
+		if self.OVPN_THREADID == False:
+			self.inThread_jump_server_running = True
 			self.ovpn_server_UPPER = server
 			self.ovpn_server_LOWER = server.lower()
 			self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.VPN_CFG,self.ovpn_server_UPPER)
@@ -3645,23 +3624,7 @@ class Systray:
 				self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
 				return False
 			self.ovpn_sessionlog = "%s\\ovpn.log" % (self.VPN_DIR)
-			""" *delete me later*
-			self.ovpn_server_dir = "%s\\%s" % (self.VPN_CFG,self.ovpn_server_LOWER)
-			self.ovpn_cert_ca = "%s\\%s.crt" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
-			self.ovpn_tls_key = "%s\\%s.key" % (self.ovpn_server_dir,self.ovpn_server_LOWER)
-			self.ovpn_cli_crt = "%s\\client%s.crt" % (self.ovpn_server_dir,self.USERID)
-			self.ovpn_cli_key = "%s\\client%s.key" % (self.ovpn_server_dir,self.USERID)
-			if not os.path.isdir(self.ovpn_server_dir) or \
-				not os.path.isfile(self.ovpn_cert_ca) or \
-				not os.path.isfile(self.ovpn_tls_key) or \
-				not os.path.isfile(self.ovpn_cli_crt) or \
-				not os.path.isfile(self.ovpn_cli_key):
-					self.msgwarn(_("Files missing: '%s'") % (self.ovpn_server_dir),_("Error: Certs not found!"))
-					self.reset_ovpn_values_disconnected()
-					return False
-			"""
 			try:
-				#OVPN_STRING = '"%s" --config "%s" --ca "%s" --cert "%s" --key "%s" --tls-auth "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.ovpn_cert_ca,self.ovpn_cli_crt,self.ovpn_cli_key,self.ovpn_tls_key,self.WIN_TAP_DEVICE)
 				OVPN_STRING = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.WIN_TAP_DEVICE)
 				if self.DEBUG == True:
 					self.OVPN_STRING = '%s --log "%s"' % (OVPN_STRING,self.ovpn_sessionlog)
@@ -3679,62 +3642,62 @@ class Systray:
 			self.debug(1,"def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
 
 	def inThread_spawn_openvpn_process(self):
-		self.debug(1,"def inThread_spawn_openvpn_process")
-		exitcode = False
-		# *fixme* def win_select_networkadapter() fails if anybody changes interface name between start and connect
-		#if not self.win_read_interfaces():
-		#	self.reset_ovpn_values_disconnected()
-		#	return False
-		if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-			self.reset_ovpn_values_disconnected()
-			return False
-		if not self.win_firewall_start():
-			self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
-			self.reset_ovpn_values_disconnected()
-			return False
-		self.win_firewall_modify_rule(option="add")
-		self.win_clear_ipv6()
-		self.OVPN_CONNECTEDtime = int(time.time())
-		self.OVPN_CONNECTEDto = self.OVPN_CALL_SRV
-		self.OVPN_PING_STAT = -1
-		self.OVPN_PING_LAST = -1
-		self.NEXT_PING_EXEC = 0
-		self.reset_load_remote_timer()
-		self.OVERWRITE_TRAYICON = False
-		self.STATE_OVPN = True
-		if self.timer_ovpn_ping_running == False:
-			self.debug(1,"def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
-			pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
-			pingthread.daemon = True
-			pingthread.start()
-		if self.TAP_BLOCKOUTBOUND == True:
-			self.win_firewall_tap_blockoutbound()
-		self.win_netsh_set_dns_ovpn()
-		self.call_redraw_mainwindow()
-		self.inThread_jump_server_running = False
-		self.win_enable_ext_interface()
-		self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
-		exitcode = False
 		try:
-			child = subprocess.Popen("%s" % (self.OVPN_STRING), stdout=sys.stdout, stderr=sys.stderr)
-			streamdata = child.communicate()
-			exitcode = child.returncode
-		except:
-			self.debug(1,"def inThread_spawn_openvpn_process: exited with exception")
-		self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
-		self.win_netsh_restore_dns_from_backup()
-		self.win_disable_ext_interface()
-		self.reset_ovpn_values_disconnected()
-		self.call_redraw_mainwindow()
-		return
+			self.debug(1,"def inThread_spawn_openvpn_process")
+			exitcode = False
+			# *fixme* def win_select_networkadapter() fails if anybody changes interface name between start and connect
+			#if not self.win_read_interfaces():
+			#	self.reset_ovpn_values_disconnected()
+			#	return False
+			if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
+				self.reset_ovpn_values_disconnected()
+				return False
+			if not self.win_firewall_start():
+				self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
+				self.reset_ovpn_values_disconnected()
+				return False
+			self.win_firewall_modify_rule(option="add")
+			self.win_clear_ipv6()
+			self.OVPN_CONNECTEDtime = int(time.time())
+			self.OVPN_CONNECTEDto = self.OVPN_CALL_SRV
+			self.OVPN_PING_STAT = -1
+			self.OVPN_PING_LAST = -1
+			self.NEXT_PING_EXEC = 0
+			self.reset_load_remote_timer()
+			self.STATE_OVPN = True
+			self.inThread_jump_server_running = False
+			if self.timer_ovpn_ping_running == False:
+				self.debug(1,"def inThread_spawn_openvpn_process: self.inThread_timer_ovpn_ping")
+				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
+				pingthread.daemon = True
+				pingthread.start()
+			if self.TAP_BLOCKOUTBOUND == True:
+				self.win_firewall_tap_blockoutbound()
+			self.win_netsh_set_dns_ovpn()
+			self.call_redraw_mainwindow()
+			self.win_enable_ext_interface()
+			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
+			#self.inThread_jump_server_running = False
+			try:
+				exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True)
+			except Exception as e:
+				self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
+			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
+			self.win_netsh_restore_dns_from_backup()
+			self.win_disable_ext_interface()
+			self.reset_ovpn_values_disconnected()
+			return False
+		except Exception as e:
+			self.reset_ovpn_values_disconnected()
+			self.debug(1,"def inThread_spawn_openvpn_process(): failed, exception: '%s'"%(e))
 
 	def reset_ovpn_values_disconnected(self):
 		try:
 			self.win_firewall_modify_rule(option="delete")
 		except:
 			self.debug(1,"def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
-		self.win_clear_ipv6()
 		self.debug(1,"def reset_ovpn_values_after()")
+		self.win_clear_ipv6()
 		self.STATE_OVPN = False
 		self.inThread_jump_server_running = False
 		self.OVPN_CONNECTEDto = False
@@ -3752,6 +3715,7 @@ class Systray:
 				os.remove(self.ovpn_sessionlog)
 		except:
 			pass
+		self.call_redraw_mainwindow()
 
 	def inThread_timer_ovpn_ping(self):
 		self.debug(10,"def inThread_timer_ovpn_ping()")
@@ -5719,7 +5683,6 @@ class Systray:
 				self.win_firewall_add_rule_to_vcp(option="delete")
 			self.debug(1,"close app")
 			self.stop_systray_timer = True
-			self.stop_systray_timer2 = True
 			self.remove_lock()
 			Gtk.main_quit()
 			sys.exit()
