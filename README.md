@@ -21,17 +21,16 @@ C:\Python27[_64]\Scripts\pip.exe install requests
 C:\Python27\Scripts\pip.exe install netifaces
 ```
 ### 64 Bit:
-+ Download [netifaces-0.10.4-cp27-none-win_amd64.whl](http://www.lfd.uci.edu/~gohlke/pythonlibs/#netifaces) and place it in ```C:\Python27_64\Scripts```
++ Download [netifaces-0.10.5-cp27-cp27m-win_amd64.whl](else/python/netifaces-0.10.5-cp27-cp27m-win_amd64.whl) and place it in ```C:\Python27_64\Scripts```
 ```
 C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
 ```
 
-
 ## Basic Requirements
-+ [PyGObject 3.18.2rev8 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev8-setup.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
++ [PyGObject 3.18.2rev10 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev10-setup_84c21bc2679ff32e73de38cbaa6ef6d30c628ae5.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
 + [Inno Setup 5.5.9](http://www.jrsoftware.org/download.php/is.exe)
-+ [poedit 1.8.8](https://download.poedit.net/Poedit-1.8.8-setup.exe)
++ [poedit 1.8.9](https://download.poedit.net/Poedit-1.8.9-setup.exe)
 
 ## Developer Imports: how to run or build from source
 ### Debug Mode
@@ -78,6 +77,6 @@ C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
 ## Generate locales
 + create a link (name: GENERATE_PO32) to generate_po.bat: edit link, set target:
 + ```'X:\????\ovpn-client\generate_po.bat 32``` and run link normally!
-+ start [poedit 1.8.8](https://download.poedit.net/Poedit-1.8.8-setup.exe)
++ start [poedit 1.8.9](https://download.poedit.net/Poedit-1.8.9-setup.exe)
 + open file ```X:\????\ovpn-client\locale\[lang]\ovpn_client.po```
 + catalog -> update from POT -> './messages.pot'
