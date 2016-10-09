@@ -2797,7 +2797,7 @@ class Systray:
 		if switch.get_active():
 			self.WIN_RESET_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed, exception = '%s'"%(e)))
+				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed"))
 		else:
 			self.WIN_RESET_FIREWALL = False
 		self.write_options_file()
@@ -2827,7 +2827,7 @@ class Systray:
 		if switch.get_active():
 			self.WIN_BACKUP_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed, exception = '%s'"%(e)))
+				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed"))
 		else:
 			self.WIN_BACKUP_FIREWALL = False
 		self.write_options_file()
