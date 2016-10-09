@@ -4932,21 +4932,6 @@ class Systray:
 					return True
 				except:
 					return False
-			
-			""" *fixme* delete me later
-			elif API_ACTION == "getcerts":
-				try:
-					fp = open(self.zip_crt, "wb")
-					fp.write(self.body)
-					fp.close()
-					return True
-				except:
-					return False
-			
-			if API_ACTION == "requestcerts":
-				if self.body == "ready" or self.body == "wait" or self.body == "submitted":
-					return True
-			"""
 
 	def check_inet_connection(self):
 		self.debug(7,"def check_inet_connection()")
@@ -5025,9 +5010,6 @@ class Systray:
 
 	def load_ovpn_server(self):
 		self.debug(1,"def load_ovpn_server()")
-		# *fixme* useless?
-		#if self.LAST_OVPN_SERVER_RELOAD > time.time()-86400:
-		#	return
 		if len(self.OVPN_SERVER) > 0:
 			return
 		try:
@@ -5115,8 +5097,6 @@ class Systray:
 							self.debug(1,"def load_ovpn_server: file = '%s' NOT FOUND" % (file))
 					else:
 						self.debug(1,"def load_ovpn_server: file = '%s' INVALID NAME" % (file))
-				#*fixme* useless?
-				#self.LAST_OVPN_SERVER_RELOAD = time.time()
 				return True
 			else:
 				self.reset_last_update()
@@ -5407,7 +5387,6 @@ class Systray:
 			self.debug(1,"def win_dialog_select_openvpn: response failed")
 			return False
 
-	""" *fixme* moved to openvpn.py """
 	def win_detect_openvpn(self):
 		try:
 			values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
