@@ -289,8 +289,9 @@ class Systray:
 		self.MOUSE_IN_TRAY = 0
 		self.UPDATE_SWITCH = False
 		self.isWRITING_OPTFILE = False
-		self.LAST_HIT_UPDATE_BUTTON1 = 0
-		self.LAST_HIT_UPDATE_BUTTON2 = 0
+		self.LAST_HIT_UPDATE_BUTTON5 = 0
+		self.LAST_CHECK_CFG_UPDATE = 0
+		self.LAST_CHECK_CFG_UPDATE_FORCE = 0
 		self.WHITELIST_PUBLIC_PROFILE = {
 			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
 			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
@@ -1866,7 +1867,7 @@ class Systray:
 	def inThread_timer_check_certdl(self):
 		self.debug(1,"def inThread_timer_check_certdl()")
 		if self.check_inet_connection() == False:
-			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed, exception = '%s'"%(e)))
+			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed!"))
 			return False
 		try:
 			self.timer_check_certdl_running = True
@@ -3314,10 +3315,10 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_updates_button_normalconf(self,event):
-		diff = int((time.time()-self.LAST_HIT_UPDATE_BUTTON1))
-		self.LAST_HIT_UPDATE_BUTTON1 = int(time.time())
-		if diff > 90:
-			GLib.idle_add(self.cb_check_normal_update)
+		diff = int((time.time()-self.LAST_CHECK_CFG_UPDATE))
+		if self.timer_check_certdl_running == False and diff > 30:
+			self.LAST_CHECK_CFG_UPDATE = time.time()
+			self.cb_check_normal_update()
 
 	def settings_updates_button_forceconf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
@@ -3326,10 +3327,11 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_updates_button_forceconf(self,event):
-		diff = int((time.time()-self.LAST_HIT_UPDATE_BUTTON2))
-		self.LAST_HIT_UPDATE_BUTTON2 = int(time.time())
-		if diff > 90:
-			GLib.idle_add(self.cb_force_update)
+		diff1 = int((time.time()-self.LAST_CHECK_CFG_UPDATE_FORCE))
+		diff2 = int((time.time()-self.LAST_CHECK_CFG_UPDATE))
+		if self.timer_check_certdl_running == False and diff1 > 60 and diff2 > 15:
+			self.LAST_CHECK_CFG_UPDATE_FORCE = time.time()
+			self.cb_force_update()
 
 	def settings_updates_button_apireset(self,page):
 		button = Gtk.Button(label=_("Reset API-Login"))
@@ -3338,7 +3340,10 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_updates_button_apireset(self,event):
-		GLib.idle_add(self.dialog_apikey)
+		diff = int((time.time()-self.LAST_HIT_UPDATE_BUTTON5))
+		if diff > 15:
+			self.LAST_HIT_UPDATE_BUTTON5 = int(time.time())
+			GLib.idle_add(self.dialog_apikey)
 
 	def destroy_settingswindow(self):
 		self.debug(1,"def destroy_settingswindow()")
@@ -4952,7 +4957,7 @@ class Systray:
 	def try_socket(self,host,port):
 		self.debug(7,"def try_socket()")
 		i = 1
-		while i <= 15:
+		while i <= 5:
 			try:
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				s.settimeout(3)
