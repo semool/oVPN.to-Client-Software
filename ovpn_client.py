@@ -5729,7 +5729,6 @@ class Systray:
 					dialog.set_border_width(8)
 					if self.WIN_BACKUP_FIREWALL == True:
 						text = _("Restore previous firewall settings?\n\nPress 'YES' to restore your previous firewall settings!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
-						dialog.set_markup()
 					else:
 						text = _("Allow outgoing connection to internet?\n\nPress 'YES' to set profiles to 'blockinbound,allowoutbound'!\nPress 'NO' to set profiles to 'blockinbound,blockoutbound'!")
 					dialog.set_markup(text)
