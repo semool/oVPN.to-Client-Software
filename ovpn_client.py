@@ -206,7 +206,7 @@ class Systray:
 		self.OVPN_THREADID = False
 		self.OVPN_CONFIGVERSION = "23x"
 		self.OPENVPN_DIR = False
-		
+		self.OVPN_SESSIONLOG = False
 		self.OVPN_PING = list()
 		self.OVPN_isTESTING = False
 		self.OVPN_PING_LAST = -1
@@ -3587,66 +3587,23 @@ class Systray:
 			return True
 
 	def openvpn(self,server):
-		self.debug(1,"def openvpn()")
-		#while self.timer_check_certdl_running == True:
-		#	self.debug(1,"def openvpn: sleep while timer_check_certdl_running")
-		#	time.sleep(1)
 		self.debug(1,"def openvpn: server = '%s'" % (server))
 		try:
-			""" *fixme* """
-			#if self.state_openvpn() == False:
 			if self.OVPN_THREADID == False:
 				self.inThread_jump_server_running = True
-				self.ovpn_server_UPPER = server
-				self.ovpn_server_LOWER = server.lower()
-				self.ovpn_server_config_file = "%s\\%s.ovpn" % (self.VPN_CFG,self.ovpn_server_UPPER)
-				ca, crt, key, tls = 0, 0, 0, 0
-				if os.path.isfile(self.ovpn_server_config_file):
-					for line in open(self.ovpn_server_config_file):
-						if "<ca>" in line or "</ca>" in line:
-							ca += 1
-						if "<cert>" in line or "</cert>" in line:
-							crt += 1
-						if "<key>" in line or "</key>" in line:
-							key += 1
-						if "<tls-auth>" in line or "</tls-auth>" in line:
-							tls += 1
-						if "remote " in line:
-							print(line)
-							try:
-								ip = line.split()[1]
-								port = int(line.split()[2])
-								# *** fixme *** need ipv6 check here
-								if self.isValueIPv4(ip) and port > 0 and port < 65535:
-									self.OVPN_CONNECTEDtoIP = ip
-									self.OVPN_CONNECTEDtoPort = port
-								#break
-							except:
-								self.debug(1,"Could not read Servers Remote-IP:Port from config: %s" % (self.ovpn_server_config_file))
-								return False
-						if "proto " in line:
-							try:
-								proto = line.split()[1]
-								if proto.lower()  == "tcp" or proto.lower() == "udp":
-									self.OVPN_CONNECTEDtoProtocol = proto
-							except:
-								self.debug(1,"Could not read Servers Protocol from config: %s" % (self.ovpn_server_config_file))
-								self.reset_ovpn_values_disconnected()
-								return False
-					list = [ca, crt, key, tls ]
-					for value in list:
-						if not value == 2:
-							self.msgwarn(_("Please update your configurations!"),_("Old configurations detected."))
-							self.reset_ovpn_values_disconnected()
-							GLib.idle_add(self.cb_force_update)
-							return False
+				OVPN_CONFIG_FILE = "%s\\%s.ovpn" % (self.VPN_CFG,server)
+				servershort = server.split(".")[0].upper()
+				if os.path.isfile(OVPN_CONFIG_FILE):
+					self.OVPN_CONNECTEDtoIP = self.OVPN_SERVER_INFO[servershort][0]
+					self.OVPN_CONNECTEDtoPort = self.OVPN_SERVER_INFO[servershort][1]
+					self.OVPN_CONNECTEDtoProtocol = self.OVPN_SERVER_INFO[servershort][2]
 				else:
-					self.debug(1,"Error: Server Config not found: '%s'" % (self.ovpn_server_config_file))
+					self.debug(1,"Error: Server Config not found: '%s'" % (OVPN_CONFIG_FILE))
 					self.reset_ovpn_values_disconnected()
 					return False
 				self.OVPN_SESSIONLOG = "%s\\openvpn.log" % (self.VPN_DIR)
 				try:
-					OVPN_STRING = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,self.ovpn_server_config_file,self.WIN_TAP_DEVICE)
+					OVPN_STRING = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,OVPN_CONFIG_FILE,self.WIN_TAP_DEVICE)
 					if self.DEBUG == True:
 						self.OVPN_STRING = '%s --log "%s"' % (OVPN_STRING,self.OVPN_SESSIONLOG)
 					else:
@@ -3733,11 +3690,7 @@ class Systray:
 		self.OVPN_PING = list()
 		self.UPDATE_SWITCH = True
 		self.OVPN_STRING = False
-		try:
-			if os.path.isfile(self.OVPN_SESSIONLOG):
-				os.remove(self.OVPN_SESSIONLOG)
-		except:
-			pass
+		self.delete_file(self.OVPN_SESSIONLOG,"def reset_ovpn_values_disconnected")
 		self.call_redraw_mainwindow()
 
 	def inThread_timer_ovpn_ping(self):
@@ -5089,13 +5042,21 @@ class Systray:
 						filepath = "%s\\%s" % (self.VPN_CFG,file)
 						servername = file[:-5]
 						servershort = servername.split(".")[0].upper()
-						i = 0
+						ca, crt, key, tls, i, lines = 0, 0, 0, 0, 0, 0
 						if os.path.isfile(filepath):
 							self.debug(1,"def load_ovpn_server: filepath = '%s'"%(filepath))
 							serverinfo = list()
 							for line in open(filepath):
+								lines += 1
+								if "<ca>" in line or "</ca>" in line:
+									ca += 1
+								if "<cert>" in line or "</cert>" in line:
+									crt += 1
+								if "<key>" in line or "</key>" in line:
+									key += 1
+								if "<tls-auth>" in line or "</tls-auth>" in line:
+									tls += 1
 								if "remote " in line:
-									#print line
 									try:
 										ip = line.split()[1]
 										port = int(line.split()[2])
@@ -5105,7 +5066,7 @@ class Systray:
 											serverinfo.append(port)
 											i += 1
 									except:
-										self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (self.ovpn_server_config_file))
+										self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (file))
 								elif "proto " in line:
 									#print line
 									try:
@@ -5115,9 +5076,8 @@ class Systray:
 											serverinfo.append(proto)
 											i += 1
 									except:
-										self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (self.ovpn_server_config_file))
+										self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (file))
 								elif line.startswith("cipher "):
-									#elif "cipher " in line:
 									#print line
 									try:
 										cipher = line.split()[1]
@@ -5128,7 +5088,7 @@ class Systray:
 										serverinfo.append(cipher)
 										i += 1
 									except:
-										self.errorquit(text=_("Could not read Servers Cipher from config: %s") % (self.ovpn_server_config_file))
+										self.errorquit(text=_("Could not read Servers Cipher from config: %s") % (file))
 								if "fragment " in line or "link-mtu " in line:
 									#print line
 									i += 1
@@ -5138,20 +5098,30 @@ class Systray:
 									except:
 										mtu = 1500
 										serverinfo.append(mtu)
-										self.debug(1,"Could not read mtu from config: %s" % (self.ovpn_server_config_file))
+										self.debug(1,"Could not read mtu from config: %s" % (file))
 							# end: for line in open(filepath)
+							checks = [ca, crt, key, tls ]
+							for value in checks:
+								if not value == 2:
+									self.msgwarn(_("Please update your configurations!"),_("Old configurations detected."))
+									self.reset_ovpn_values_disconnected()
+									GLib.idle_add(self.cb_force_update)
+									return False
 							if i == 4:
 								self.OVPN_SERVER_INFO[servershort] = serverinfo
-						if i == 4:
-							self.OVPN_SERVER.append(servername)
-						self.debug(5,"def load_ovpn_server: file = '%s' END" % (file))
+								self.OVPN_SERVER.append(servername)
+							self.debug(1,"def load_ovpn_server: file = '%s'" % (file))
+						else:
+							self.debug(1,"def load_ovpn_server: file = '%s' NOT FOUND" % (file))
+					else:
+						self.debug(1,"def load_ovpn_server: file = '%s' INVALID NAME" % (file))
 				#*fixme* useless?
 				#self.LAST_OVPN_SERVER_RELOAD = time.time()
 				return True
 			else:
 				self.reset_last_update()
-		except:
-			self.debug(1,"def load_ovpn_server: failed")
+		except Exception as e:
+			self.debug(1,"def load_ovpn_server: failed, exception = '%s'"%(e))
 
 	def load_remote_data(self):
 		if self.timer_load_remote_data_running == True:
@@ -5964,6 +5934,17 @@ class Systray:
 	def base64_icons(self, icon):
 		self.debug(1,"def base64_icons(%s)"%(icon))
 		return icons_b64.base64_icons(icon)
+
+	def delete_file(self,file,sourcef):
+		try:
+			if not file == False:
+				if os.path.isfile(file):
+					os.remove(file)
+				if not os.path.isfile(file):
+					return True
+			return False
+		except Exception as e:
+			self.debug(1,"def delete_file: file = '%s', sourcef = '%s', failed, exception = '%s'"%(file,sourcef,e))
 
 	def debug(self,level,text):
 		try:
