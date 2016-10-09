@@ -48,14 +48,18 @@ def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 	#return iface_names
 
 def get_networkadapterlist(DEBUG):
-	newlist = []
-	list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
-	list2 = get_networkadapterlist_from_netsh()
-	for name in list1:
-		for line in list2:
-			if line.endswith(name):
-				newlist.append(name)
-	return newlist
+	try:
+		newlist = []
+		list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
+		list2 = get_networkadapterlist_from_netsh()
+		for name in list1:
+			for line in list2:
+				if line.endswith(name):
+					newlist.append(name)
+		return newlist
+	except Exception as e:
+		debug(1,"[winregs.py] def get_networkadapterlist: failed, exception = '%s'"%(e),DEBUG,True)
+		return False
 
 def get_networkadapter_guid(DEBUG,adaptername):
 	guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["mapguids"]

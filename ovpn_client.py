@@ -1007,227 +1007,248 @@ class Systray:
 
 	def win_read_interfaces(self):
 		self.debug(1,"def win_read_interfaces()")
-		self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG)
-		if len(self.INTERFACES) < 2:
-			self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
-		newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
-		self.INTERFACES = newdata["INTERFACES"]
-		self.WIN_TAP_DEVS = newdata["TAP_DEVS"]
-		self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
-		self.debug(1,"def win_read_interfaces: self.INTERFACES = '%s'"%(self.INTERFACES))
-		if len(self.WIN_TAP_DEVS) == 0:
-			if self.upgrade_openvpn() == True:
-				if not self.win_detect_openvpn() == True:
-					self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
-		elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
-			self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
-		else:
-			self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
-			self.win_select_tapadapter()
-		if self.WIN_TAP_DEVICE == False:
-			self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]))
-		else:
-			badchars = ["%","&","$"]
-			for char in badchars:
-				if char in self.WIN_TAP_DEVICE:
-					self.errorquit(text=_("Invalid characters in '%s'") % char)
-			self.debug(1,"def win_read_interfaces: Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
-			self.win_enable_tap_interface()
-			self.debug(1,"def win_read_interfaces: remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
-			if len(self.INTERFACES) > 1:
-				if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
-					self.debug(1,"def win_read_interfaces: loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
-					return True
-				else:
-					return self.win_select_networkadapter()
-			elif len(self.INTERFACES) < 1:
-				self.errorquit(text=_("No Network Adapter found!"))
+		try:
+			self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG)
+			try:
+				if len(self.INTERFACES) < 2:
+					self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
+			except TypeError:
+				self.errorquit(text=_("Could not read your Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2"))
+			newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
+			self.INTERFACES = newdata["INTERFACES"]
+			self.WIN_TAP_DEVS = newdata["TAP_DEVS"]
+			self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
+			self.debug(1,"def win_read_interfaces: self.INTERFACES = '%s'"%(self.INTERFACES))
+			if len(self.WIN_TAP_DEVS) == 0:
+				if self.upgrade_openvpn() == True:
+					if not self.win_detect_openvpn() == True:
+						self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
+			elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
+				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 			else:
-				self.WIN_EXT_DEVICE = self.INTERFACES[0]
-				self.debug(1,"def win_read_interfaces: External Interface = %s"%(self.WIN_EXT_DEVICE))
-				return True
+				self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
+				self.win_select_tapadapter()
+			if self.WIN_TAP_DEVICE == False:
+				self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]))
+			else:
+				badchars = ["%","&","$"]
+				for char in badchars:
+					if char in self.WIN_TAP_DEVICE:
+						self.errorquit(text=_("Invalid characters in '%s'") % char)
+				self.debug(1,"def win_read_interfaces: Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
+				self.win_enable_tap_interface()
+				self.debug(1,"def win_read_interfaces: remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
+				if len(self.INTERFACES) > 1:
+					if not self.WIN_EXT_DEVICE == False and self.WIN_EXT_DEVICE in self.INTERFACES:
+						self.debug(1,"def win_read_interfaces: loaded self.WIN_EXT_DEVICE %s from options file"%(self.WIN_EXT_DEVICE))
+						return True
+					else:
+						return self.win_select_networkadapter()
+				elif len(self.INTERFACES) < 1:
+					self.errorquit(text=_("No Network Adapter found!"))
+				else:
+					self.WIN_EXT_DEVICE = self.INTERFACES[0]
+					self.debug(1,"def win_read_interfaces: External Interface = %s"%(self.WIN_EXT_DEVICE))
+					return True
+		except Exception as e:
+			self.debug(1,"def win_read_interfaces: failed, exception = '%s'"%(e))
 
 	def win_select_tapadapter(self):
-		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-		dialogWindow.set_transient_for(self.window)
-		dialogWindow.set_border_width(8)
 		try:
-			dialogWindow.set_icon(self.app_icon)
+			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_border_width(8)
+			try:
+				dialogWindow.set_icon(self.app_icon)
+			except Exception as e:
+				pass
+			text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
+			dialogWindow.set_title(text)
+			dialogWindow.set_markup(text)
+			dialogBox = dialogWindow.get_content_area()
+			liststore = Gtk.ListStore(str)
+			combobox = Gtk.ComboBoxText.new()
+			combobox.pack_start(cell, True)
+			for INTERFACE in self.WIN_TAP_DEVS:
+				self.debug(1,"add tap interface '%s' to combobox" % (INTERFACE))
+				combobox.append_text(INTERFACE)
+			combobox.connect('changed',self.cb_tap_interface_selector_changed)
+			dialogBox.pack_start(combobox,False,False,0)
+			dialogWindow.show_all()
+			dialogWindow.run()
+			dialogWindow.destroy()
 		except Exception as e:
-			pass
-		text = _("Multiple TAPs found!\n\nPlease select your TAP Adapter!")
-		dialogWindow.set_title(text)
-		dialogWindow.set_markup(text)
-		dialogBox = dialogWindow.get_content_area()
-		liststore = Gtk.ListStore(str)
-		combobox = Gtk.ComboBoxText.new()
-		combobox.pack_start(cell, True)
-		for INTERFACE in self.WIN_TAP_DEVS:
-			self.debug(1,"add tap interface '%s' to combobox" % (INTERFACE))
-			combobox.append_text(INTERFACE)
-		combobox.connect('changed',self.cb_tap_interface_selector_changed)
-		dialogBox.pack_start(combobox,False,False,0)
-		dialogWindow.show_all()
-		dialogWindow.run()
-		dialogWindow.destroy()
+			self.debug(1,"def win_select_tapadapter: failed, exception = '%s'"%(e))
 
 	def win_select_networkadapter(self):
-		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-		dialogWindow.set_transient_for(self.window)
-		dialogWindow.set_border_width(8)
 		try:
-			dialogWindow.set_icon(self.app_icon)
+			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_border_width(8)
+			try:
+				dialogWindow.set_icon(self.app_icon)
+			except Exception as e:
+				pass
+			text = _("Choose your External Network Adapter!")
+			dialogWindow.set_title(text)
+			dialogWindow.set_markup(text)
+			dialogBox = dialogWindow.get_content_area()
+			combobox = Gtk.ComboBoxText.new()
+			for INTERFACE in self.INTERFACES:
+				self.debug(1,"add interface %s to combobox" % (INTERFACE))
+				combobox.append_text(INTERFACE)
+			combobox.connect('changed',self.cb_interface_selector_changed)
+			dialogBox.pack_start(combobox,False,False,0)
+			dialogWindow.show_all()
+			self.debug(1,"open interface selector")
+			dialogWindow.run()
+			self.debug(1,"close interface selector")
+			dialogWindow.destroy()
+			if not self.WIN_EXT_DEVICE == False:
+				return True
 		except Exception as e:
-			pass
-		text = _("Choose your External Network Adapter!")
-		dialogWindow.set_title(text)
-		dialogWindow.set_markup(text)
-		dialogBox = dialogWindow.get_content_area()
-		combobox = Gtk.ComboBoxText.new()
-		for INTERFACE in self.INTERFACES:
-			self.debug(1,"add interface %s to combobox" % (INTERFACE))
-			combobox.append_text(INTERFACE)
-		combobox.connect('changed',self.cb_interface_selector_changed)
-		dialogBox.pack_start(combobox,False,False,0)
-		dialogWindow.show_all()
-		self.debug(1,"open interface selector")
-		dialogWindow.run()
-		self.debug(1,"close interface selector")
-		dialogWindow.destroy()
-		if not self.WIN_EXT_DEVICE == False:
-			return True
+			self.debug(1,"def win_select_networkadapter: failed, exception = '%s'"%(e))
 
 	def select_userid(self):
-		self.debug(1,"def select_userid()")
-		dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
-		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-		dialogWindow.set_transient_for(self.window)
-		dialogWindow.set_border_width(8)
 		try:
-			dialogWindow.set_icon(self.app_icon)
+			self.debug(1,"def select_userid()")
+			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,buttons=Gtk.ButtonsType.OK)
+			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
+			dialogWindow.set_transient_for(self.window)
+			dialogWindow.set_border_width(8)
+			try:
+				dialogWindow.set_icon(self.app_icon)
+			except Exception as e:
+				pass
+			text = _("Please select your User-ID!")
+			dialogWindow.set_title(text)
+			dialogWindow.set_markup(text)
+			dialogBox = dialogWindow.get_content_area()
+			liststore = Gtk.ListStore(str)
+			combobox = Gtk.ComboBoxText.new()
+			for userid in self.PROFILES:
+				self.debug(1,"add userid '%s' to combobox" % (userid))
+				combobox.append_text(userid)
+			combobox.connect('changed',self.cb_select_userid)
+			dialogBox.pack_start(combobox,False,False,0)
+			dialogWindow.show_all()
+			self.debug(1,"open userid selector")
+			dialogWindow.run()
+			self.debug(1,"close userid interface selector")
+			dialogWindow.destroy()
+			if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.APP_DIR,self.USERID)):
+				return True
 		except Exception as e:
-			pass
-		text = _("Please select your User-ID!")
-		dialogWindow.set_title(text)
-		dialogWindow.set_markup(text)
-		dialogBox = dialogWindow.get_content_area()
-		liststore = Gtk.ListStore(str)
-		combobox = Gtk.ComboBoxText.new()
-		for userid in self.PROFILES:
-			self.debug(1,"add userid '%s' to combobox" % (userid))
-			combobox.append_text(userid)
-		combobox.connect('changed',self.cb_select_userid)
-		dialogBox.pack_start(combobox,False,False,0)
-		dialogWindow.show_all()
-		self.debug(1,"open userid selector")
-		dialogWindow.run()
-		self.debug(1,"close userid interface selector")
-		dialogWindow.destroy()
-		if self.USERID > 1 and os.path.isdir("%s\\%s" % (self.APP_DIR,self.USERID)):
-			return True
+			self.debug(1,"def select_userid: failed, exception = '%s'"%(e))
 
 	def on_right_click_mainwindow(self, treeview, event):
-		self.debug(1,"def on_right_click_mainwindow()")
-		#self.IDLE_TIME = 0
-		self.destroy_systray_menu()
-		# get selection, also when treeview is sorted by a row
-		servername = False
-		pthinfo = self.treeview.get_path_at_pos(int(event.x), int(event.y))
-		if pthinfo is not None:
-			tree_selection = self.treeview.get_selection()
-			(model, pathlist) = tree_selection.get_selected_rows()
-			for path in pathlist:
-				tree_iter = model.get_iter(path)
-				servername = model.get_value(tree_iter,2)
-		else:
-			return False
-		if servername:
-			if event.button == 1:
-				self.debug(1,"mainwindow left click (%s)" % (servername))
-			elif event.button == 3:
-				self.make_context_menu_servertab(servername)
-				self.debug(1,"mainwindow right click (%s)" % (servername))
+		try:
+			self.debug(1,"def on_right_click_mainwindow()")
+			#self.IDLE_TIME = 0
+			self.destroy_systray_menu()
+			# get selection, also when treeview is sorted by a row
+			servername = False
+			pthinfo = self.treeview.get_path_at_pos(int(event.x), int(event.y))
+			if pthinfo is not None:
+				tree_selection = self.treeview.get_selection()
+				(model, pathlist) = tree_selection.get_selected_rows()
+				for path in pathlist:
+					tree_iter = model.get_iter(path)
+					servername = model.get_value(tree_iter,2)
+			else:
+				return False
+			if servername:
+				if event.button == 1:
+					self.debug(1,"mainwindow left click (%s)" % (servername))
+				elif event.button == 3:
+					self.make_context_menu_servertab(servername)
+					self.debug(1,"mainwindow right click (%s)" % (servername))
+		except Exception as e:
+			self.debug(1,"def on_right_click_mainwindow: failed, exception = '%s'"%(e))
 
 	def make_context_menu_servertab(self,servername):
 		self.debug(1,"def make_context_menu_servertab: %s" % (servername))
-		context_menu_servertab = Gtk.Menu()
-		self.context_menu_servertab = context_menu_servertab
-		
-		if self.OVPN_CONNECTEDto == servername:
-			disconnect = Gtk.MenuItem(_("Disconnect %s")%(self.OVPN_CONNECTEDto))
-			context_menu_servertab.append(disconnect)
-			disconnect.connect('button-release-event', self.cb_kill_openvpn)
-		else:
-			connect = Gtk.MenuItem(_("Connect to %s")%(servername))
-			context_menu_servertab.append(connect)
-			connect.connect('button-release-event',self.cb_jump_openvpn,servername)
-		
-		sep = Gtk.SeparatorMenuItem()
-		context_menu_servertab.append(sep)
-		
-		if self.OVPN_FAV_SERVER == servername:
-			delfavorite = Gtk.MenuItem(_("Remove AutoConnect: %s")%(servername))
-			delfavorite.connect('button-release-event',self.cb_del_ovpn_favorite_server,servername)
-			context_menu_servertab.append(delfavorite)
-		else:
-			setfavorite = Gtk.MenuItem(_("Set AutoConnect: %s")%(servername))
-			setfavorite.connect('button-release-event',self.cb_set_ovpn_favorite_server,servername)
-			context_menu_servertab.append(setfavorite)
-		
-		sep = Gtk.SeparatorMenuItem()
-		context_menu_servertab.append(sep)
-		
-		self.make_context_menu_servertab_d0wns_dnsmenu(servername)
-		
-		sep = Gtk.SeparatorMenuItem()
-		context_menu_servertab.append(sep)
-		
-		if self.DISABLE_SRV_WINDOW == False:
-			try:
-				if self.LOAD_SRVDATA == True:
-					opt = _("[enabled]")
-				else:
-					opt = _("[disabled]")
-				extserverview = Gtk.MenuItem(_("Load Server Information %s") %(opt))
-				extserverview.connect('button-release-event', self.cb_extserverview)
-				context_menu_servertab.append(extserverview)
-			except Exception as e:
-				self.debug(1,"def make_context_menu_servertab: extserverview failed, exception = '%s'"%(e))
+		try:
+			context_menu_servertab = Gtk.Menu()
+			self.context_menu_servertab = context_menu_servertab
+			
+			if self.OVPN_CONNECTEDto == servername:
+				disconnect = Gtk.MenuItem(_("Disconnect %s")%(self.OVPN_CONNECTEDto))
+				context_menu_servertab.append(disconnect)
+				disconnect.connect('button-release-event', self.cb_kill_openvpn)
+			else:
+				connect = Gtk.MenuItem(_("Connect to %s")%(servername))
+				context_menu_servertab.append(connect)
+				connect.connect('button-release-event',self.cb_jump_openvpn,servername)
+			
+			sep = Gtk.SeparatorMenuItem()
+			context_menu_servertab.append(sep)
+			
+			if self.OVPN_FAV_SERVER == servername:
+				delfavorite = Gtk.MenuItem(_("Remove AutoConnect: %s")%(servername))
+				delfavorite.connect('button-release-event',self.cb_del_ovpn_favorite_server,servername)
+				context_menu_servertab.append(delfavorite)
+			else:
+				setfavorite = Gtk.MenuItem(_("Set AutoConnect: %s")%(servername))
+				setfavorite.connect('button-release-event',self.cb_set_ovpn_favorite_server,servername)
+				context_menu_servertab.append(setfavorite)
+			
+			sep = Gtk.SeparatorMenuItem()
+			context_menu_servertab.append(sep)
+			
+			self.make_context_menu_servertab_d0wns_dnsmenu(servername)
+			
+			sep = Gtk.SeparatorMenuItem()
+			context_menu_servertab.append(sep)
+			
+			if self.DISABLE_SRV_WINDOW == False:
+				try:
+					if self.LOAD_SRVDATA == True:
+						opt = _("[enabled]")
+					else:
+						opt = _("[disabled]")
+					extserverview = Gtk.MenuItem(_("Load Server Information %s") %(opt))
+					extserverview.connect('button-release-event', self.cb_extserverview)
+					context_menu_servertab.append(extserverview)
+				except Exception as e:
+					self.debug(1,"def make_context_menu_servertab: extserverview failed, exception = '%s'"%(e))
 
-			try:
-				if self.LOAD_SRVDATA == True:
-					hidecells = Gtk.MenuItem(_("Hide unwanted cells"))
-					hidecells.connect('button-release-event', self.cb_hide_cells)
-					context_menu_servertab.append(hidecells)
-			except Exception as e:
-				self.debug(1,"def make_context_menu_servertab: hidecells failed, exception = '%s'"%(e))
+				try:
+					if self.LOAD_SRVDATA == True:
+						hidecells = Gtk.MenuItem(_("Hide unwanted cells"))
+						hidecells.connect('button-release-event', self.cb_hide_cells)
+						context_menu_servertab.append(hidecells)
+				except Exception as e:
+					self.debug(1,"def make_context_menu_servertab: hidecells failed, exception = '%s'"%(e))
 
-			try:
-				if self.LOAD_SRVDATA == True:
-					WIDTH = self.SRV_WIDTH
-					HEIGHT = self.SRV_HEIGHT
-				else:
-					WIDTH = self.SRV_LIGHT_WIDTH
-					HEIGHT = self.SRV_LIGHT_HEIGHT
-				extserverviewsize = Gtk.MenuItem(_("Set Server-View Size [%sx%s]") %(int(WIDTH),int(HEIGHT)))
-				extserverviewsize.connect('button-release-event', self.cb_extserverview_size)
-				context_menu_servertab.append(extserverviewsize)
-			except Exception as e:
-				self.debug(1,"def make_context_menu_servertab: extserverviewsize failed, exception = '%s'"%(e))
-				
-			try:
-				loaddataevery = Gtk.MenuItem(_("Update every: %s seconds") %(self.LOAD_DATA_EVERY))
-				loaddataevery.connect('button-release-event', self.cb_set_loaddataevery)
-				context_menu_servertab.append(loaddataevery)
-			except Exception as e:
-				self.debug(1,"def make_context_menu_servertab: loaddataevery failed, exception = '%s'"%(e))
+				try:
+					if self.LOAD_SRVDATA == True:
+						WIDTH = self.SRV_WIDTH
+						HEIGHT = self.SRV_HEIGHT
+					else:
+						WIDTH = self.SRV_LIGHT_WIDTH
+						HEIGHT = self.SRV_LIGHT_HEIGHT
+					extserverviewsize = Gtk.MenuItem(_("Set Server-View Size [%sx%s]") %(int(WIDTH),int(HEIGHT)))
+					extserverviewsize.connect('button-release-event', self.cb_extserverview_size)
+					context_menu_servertab.append(extserverviewsize)
+				except Exception as e:
+					self.debug(1,"def make_context_menu_servertab: extserverviewsize failed, exception = '%s'"%(e))
+					
+				try:
+					loaddataevery = Gtk.MenuItem(_("Update every: %s seconds") %(self.LOAD_DATA_EVERY))
+					loaddataevery.connect('button-release-event', self.cb_set_loaddataevery)
+					context_menu_servertab.append(loaddataevery)
+				except Exception as e:
+					self.debug(1,"def make_context_menu_servertab: loaddataevery failed, exception = '%s'"%(e))
 
-		context_menu_servertab.show_all()
-		context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
-		self.debug(1,"def make_context_menu_servertab: return")
-		return
+			context_menu_servertab.show_all()
+			context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
+			self.debug(1,"def make_context_menu_servertab: return")
+			return
+		except Exception as e:
+			self.debug(1,"def make_context_menu_servertab: failed, exception = '%s'"%(e))
 
 	def make_context_menu_servertab_d0wns_dnsmenu(self,servername):
 		try:
