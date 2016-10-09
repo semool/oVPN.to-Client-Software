@@ -1391,6 +1391,10 @@ class Systray:
 					self.switch_nodns.set_sensitive(True)
 					self.button_switch_network_adapter.set_sensitive(True)
 					try:
+						self.settingsnotebook.remove(self.nbpage3)
+					except Exception as e:
+						pass
+					try:
 						self.show_hide_backup_window()
 						self.settingswindow.show_all()
 					except Exception as e:
