@@ -289,6 +289,8 @@ class Systray:
 		self.MOUSE_IN_TRAY = 0
 		self.UPDATE_SWITCH = False
 		self.isWRITING_OPTFILE = False
+		self.LAST_HIT_UPDATE_BUTTON1 = 0
+		self.LAST_HIT_UPDATE_BUTTON2 = 0
 		self.WHITELIST_PUBLIC_PROFILE = {
 			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
 			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
@@ -3312,7 +3314,10 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_updates_button_normalconf(self,event):
-		GLib.idle_add(self.cb_check_normal_update)
+		diff = int((time.time()-self.LAST_HIT_UPDATE_BUTTON1))
+		self.LAST_HIT_UPDATE_BUTTON1 = int(time.time())
+		if diff > 90:
+			GLib.idle_add(self.cb_check_normal_update)
 
 	def settings_updates_button_forceconf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
@@ -3321,7 +3326,10 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_updates_button_forceconf(self,event):
-		GLib.idle_add(self.cb_force_update)
+		diff = int((time.time()-self.LAST_HIT_UPDATE_BUTTON2))
+		self.LAST_HIT_UPDATE_BUTTON2 = int(time.time())
+		if diff > 90:
+			GLib.idle_add(self.cb_force_update)
 
 	def settings_updates_button_apireset(self,page):
 		button = Gtk.Button(label=_("Reset API-Login"))
