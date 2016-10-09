@@ -5,8 +5,11 @@
 + update: inet connection check
 + update: restore dns always on disconnect
 + update: add wfw rule for client itself if check inet fails
++ update: load ssl crt before every request
++ update: internal debug exceptions
 + bugfix: backup/restore of windows firewall
 + newlibs: pygi-aio-3.18.2_rev10, requests 2.11.1, netifaces 0.10.5
+
 
  Version: 0.7.5
 + update: openVPN 2.3.12-I602
