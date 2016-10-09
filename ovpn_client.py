@@ -3412,9 +3412,11 @@ class Systray:
 								self.MYDNS[name]["secondary"] = {}
 								self.debug('self.MYDNS[name]["secondary"] = {}')
 						except Exception as e:
-							print "except1a"
+							#print "except1a"
+							pass
 				except Exception as e:
-					print "except1b"
+					#print "except1b"
+					pass
 				
 				try:
 					newsecdns = value["secondary"]["ip4"]
@@ -3425,9 +3427,11 @@ class Systray:
 							if newsecdns == self.MYDNS[name]["primary"]["ip4"]:
 								return False
 						except Exception as e:
-							print "except2a"
+							#print "except2a"
+							pass
 				except Exception as e:
-					print "except2b"
+					#print "except2b"
+					pass
 				
 				try:
 					self.MYDNS[name].update(value)
