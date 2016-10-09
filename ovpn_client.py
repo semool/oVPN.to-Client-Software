@@ -1014,7 +1014,10 @@ class Systray:
 					self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
 			except TypeError:
 				self.errorquit(text=_("Could not read your Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2"))
-			newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
+			try:
+				newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
+			except TypeError:
+				self.errorquit(text=_("Could not read your TAP Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2"))
 			self.INTERFACES = newdata["INTERFACES"]
 			self.WIN_TAP_DEVS = newdata["TAP_DEVS"]
 			self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))

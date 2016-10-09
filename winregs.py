@@ -69,19 +69,23 @@ def get_networkadapter_guid(DEBUG,adaptername):
 	#return get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"][adaptername]
 
 def get_tapadapters(OPENVPN_EXE,INTERFACES):
-	if os.path.isfile(OPENVPN_EXE):
-		string = '"%s" --show-adapters' % (OPENVPN_EXE)
-		TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
-		TAPADAPTERS = TAPADAPTERS.split('\r\n')
-		TAPADAPTERS.pop(0)
-		TAP_DEVS = list()
-		for line in TAPADAPTERS:
-			for INTERFACE in INTERFACES:
-				if line.startswith("'%s' {"%(INTERFACE)):
-					INTERFACES.remove(INTERFACE)
-					TAP_DEVS.append(INTERFACE)
-					break
-		return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
+	try:
+		if os.path.isfile(OPENVPN_EXE):
+			string = '"%s" --show-adapters' % (OPENVPN_EXE)
+			TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
+			TAPADAPTERS = TAPADAPTERS.split('\r\n')
+			TAPADAPTERS.pop(0)
+			TAP_DEVS = list()
+			for line in TAPADAPTERS:
+				for INTERFACE in INTERFACES:
+					if line.startswith("'%s' {"%(INTERFACE)):
+						INTERFACES.remove(INTERFACE)
+						TAP_DEVS.append(INTERFACE)
+						break
+			return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
+	except Exception as e:
+		debug(1,"[winregs.py] def get_tapadapters: failed, exception = '%s'"%(e),DEBUG,True)
+		return False
 
 def get_interface_infos_from_guid(DEBUG,guid):
 	debug(1,"[winregs.py] def get_interface_infos_from_guid: '%s'" % (guid),DEBUG,True)
