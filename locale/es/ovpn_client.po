@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2016-08-13 16:58+0200\n"
-"PO-Revision-Date: 2016-08-13 16:58+0200\n"
+"PO-Revision-Date: 2016-10-09 05:38+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 1.8.8\n"
+"X-Generator: Poedit 1.8.9\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:115
@@ -51,7 +51,7 @@ msgstr "Error: '%s' ¡No encontrado!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:536
 msgid "Error: Icon"
-msgstr ""
+msgstr "Error: icono"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:536
 msgid ""
@@ -60,17 +60,17 @@ msgid ""
 "\n"
 "Missing Icons:\n"
 "%s"
-msgstr ""
+msgstr "Icono de privado no se encuentra en: %s que faltan iconos: %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:549
 msgid "Error: Icon Dir"
-msgstr ""
+msgstr "Error: Icono Dir"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:549
 msgid ""
 "Private Icon Dir not found:\n"
 "%s"
-msgstr ""
+msgstr "Privado icono Dir no encontrado: %s"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:567
 msgid ""
@@ -1362,7 +1362,7 @@ msgstr "Ajustes -> Actualizaciones: 'Cargar ajustes de cuenta' [deshabilitado]"
 msgid ""
 "No data loaded!\n"
 "Retry in few seconds..."
-msgstr ""
+msgstr "¡No se ha cargado ningún dato! Reinténtelo en unos segundos..."
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:2575
 msgid "oVPN Settings - %s"
@@ -1443,7 +1443,7 @@ msgstr ""
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3002
 msgid "Delay in seconds"
-msgstr ""
+msgstr "Actualizar cada segundos"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3042
 msgid "Load Account Info (default: OFF)"
@@ -1538,6 +1538,8 @@ msgid ""
 "Read Gateway from Routes failed:\n"
 "GATEWAY_LOCAL: '%s' != self.GATEWAY_LOCAL: '%s'"
 msgstr ""
+"Read Gateway from Routes failed:\n"
+"GATEWAY_LOCAL: '%s' != self.GATEWAY_LOCAL: '%s'"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:3888
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5524
@@ -1714,7 +1716,7 @@ msgstr "¡No hay Clave API!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5003
 msgid "API Login Error"
-msgstr ""
+msgstr "API Login Error"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5003
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5025
@@ -1725,7 +1727,7 @@ msgstr "¡ID de usuario inválida o Clave API o Cuenta expirada!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5006
 msgid "API Login OK!"
-msgstr ""
+msgstr "API Login OK!"
 
 #: E:\Persoenlich\ovpn-client\.\ovpn_client.py:5013
 msgid "API requests on: %s failed!"
