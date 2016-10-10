@@ -3606,7 +3606,7 @@ class Systray:
 			if os.path.isfile(self.WIN_TASKKILL_EXE):
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				string = '"%s" /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
-				exitcode = subprocess.check_call("%s" % (string),shell=True)
+				exitcode = subprocess.check_call(string,shell=True)
 				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
 		except Exception as e:
 			self.debug(1,"def kill_openvpn: failed, exception '%s'"%(e))
@@ -3702,7 +3702,7 @@ class Systray:
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
 			#self.inThread_jump_server_running = False
 			try:
-				exitcode = subprocess.check_call("%s" % (self.OVPN_STRING),shell=True)
+				exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
 			except Exception as e:
 				self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
 			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
@@ -4355,7 +4355,7 @@ class Systray:
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
 			try: 
-				read = subprocess.check_output('%s' % (routecmd),shell=True)
+				read = subprocess.check_output(routecmd,shell=True)
 				#output = read.strip().decode('cp1252','ignore').strip(' ').split('\r\n')
 				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_route_cmd: output = '%s'" % (output))
@@ -4411,7 +4411,7 @@ class Systray:
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
 				cmdstring = '"%s" /displaydns' % (self.WIN_IPCONFIG_EXE)
-				out = subprocess.check_output("%s" % (cmdstring),shell=True)
+				out = subprocess.check_output(cmdstring,shell=True)
 				return out
 			except Exception as e:
 				self.debug(1,"def win_ipconfig_displaydns: failed" % (cmdstring))
@@ -4873,7 +4873,7 @@ class Systray:
 		if self.OS == "win32":
 			string = 'rmdir /S /Q "%s"' % (path)
 			self.debug(1,"def delete_dir: %s" % (string))
-			subprocess.check_output("%s" % (string),shell=True)
+			subprocess.check_output(string,shell=True)
 
 	""" *fixme* move to openvpn.py """
 	def extract_ovpn(self):
