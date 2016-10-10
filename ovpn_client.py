@@ -3702,7 +3702,7 @@ class Systray:
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
 			#self.inThread_jump_server_running = False
 			try:
-				exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
+				exitcode = subprocess.check_call("%s"%(self.OVPN_STRING),shell=True)
 			except Exception as e:
 				self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
 			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
