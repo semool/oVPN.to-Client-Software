@@ -3606,7 +3606,7 @@ class Systray:
 			if os.path.isfile(self.WIN_TASKKILL_EXE):
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				string = '"%s" /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
-				exitcode = subprocess.check_call(string,shell=True)
+				exitcode = subprocess.check_call(str(string),shell=True)
 				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
 		except Exception as e:
 			self.debug(1,"def kill_openvpn: failed, exception '%s'"%(e))
@@ -3702,7 +3702,7 @@ class Systray:
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
 			#self.inThread_jump_server_running = False
 			try:
-				exitcode = subprocess.check_call("%s"%(self.OVPN_STRING),shell=True)
+				exitcode = subprocess.check_call(str(self.OVPN_STRING),shell=True)
 			except Exception as e:
 				self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
 			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
@@ -3926,7 +3926,7 @@ class Systray:
 					if ipv6addr.startswith("fd48:8bea:68a5:"):
 						cmdstring = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
 						try:
-							cmd = subprocess.check_output(cmdstring,shell=True)
+							cmd = subprocess.check_output(str(cmdstring),shell=True)
 							self.debug(1,"def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,cmdstring))
 						except Exception as e:
 							self.debug(1,"def win_clear_ipv6_dns: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,cmdstring))
@@ -4313,7 +4313,7 @@ class Systray:
 			if DEVMODE == True:
 				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
-				read = subprocess.check_output(netshcmd,shell=True)
+				read = subprocess.check_output(str(netshcmd),shell=True)
 				#output = read.strip().decode('cp1252','ignore').strip(' ').split('\r\n')
 				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
@@ -4333,7 +4333,7 @@ class Systray:
 				if DEVMODE == True:
 					netshcmd = netshcmd.encode(locale.getpreferredencoding())
 				try: 
-					exitcode = subprocess.call(netshcmd,shell=True)
+					exitcode = subprocess.call(str(netshcmd),shell=True)
 					if exitcode == 0:
 						self.debug(1,"netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
 						i+=1
@@ -4355,7 +4355,7 @@ class Systray:
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
 			try: 
-				read = subprocess.check_output(routecmd,shell=True)
+				read = subprocess.check_output(str(routecmd),shell=True)
 				#output = read.strip().decode('cp1252','ignore').strip(' ').split('\r\n')
 				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_route_cmd: output = '%s'" % (output))
@@ -4373,7 +4373,7 @@ class Systray:
 			for cmd in self.ROUTE_CMDLIST:
 				routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
 				try: 
-					exitcode = subprocess.call(routecmd,shell=True)
+					exitcode = subprocess.call(str(routecmd),shell=True)
 					if exitcode == 0:
 						self.debug(1,"routeOK: '%s': exitcode = %s" % (routecmd,exitcode))
 						i+=1
@@ -4395,7 +4395,7 @@ class Systray:
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
 				cmdstring = '%s /flushdns' % (self.WIN_IPCONFIG_EXE)
-				exitcode = subprocess.call(cmdstring,shell=True)
+				exitcode = subprocess.call(str(cmdstring),shell=True)
 				if exitcode == 0:
 					self.debug(1,"%s: exitcode = %s" % (cmdstring,exitcode))
 					return True
@@ -4411,7 +4411,7 @@ class Systray:
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
 				cmdstring = '"%s" /displaydns' % (self.WIN_IPCONFIG_EXE)
-				out = subprocess.check_output(cmdstring,shell=True)
+				out = subprocess.check_output(str(cmdstring),shell=True)
 				return out
 			except Exception as e:
 				self.debug(1,"def win_ipconfig_displaydns: failed" % (cmdstring))
@@ -4873,7 +4873,7 @@ class Systray:
 		if self.OS == "win32":
 			string = 'rmdir /S /Q "%s"' % (path)
 			self.debug(1,"def delete_dir: %s" % (string))
-			subprocess.check_output(string,shell=True)
+			subprocess.check_output(str(string),shell=True)
 
 	""" *fixme* move to openvpn.py """
 	def extract_ovpn(self):
@@ -5391,7 +5391,7 @@ class Systray:
 			netshcmd = '"%s"' % (self.OPENVPN_SAVE_BIN_TO)
 		self.debug(1,"def win_install_openvpn: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
 		try: 
-			exitcode = subprocess.call(netshcmd,shell=True)
+			exitcode = subprocess.call(str(netshcmd),shell=True)
 			if exitcode == 0:
 				if self.OPENVPN_SILENT_SETUP == True:
 					self.debug(1,"def win_install_openvpn: silent OK!")
