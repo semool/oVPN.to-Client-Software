@@ -3924,14 +3924,12 @@ class Systray:
 					ipv6addr = line.split("    ")[2]
 					#print ipv6addr
 					if ipv6addr.startswith("fd48:8bea:68a5:"):
-						string = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
+						cmdstring = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
 						try:
-							cmd = subprocess.check_output("%s" % (string),shell=True)
-							self.debug(1,"def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,string))
-						except subprocess.CalledProcessError as e:
-							self.debug(1,"def win_clear_ipv6_dns: %s %s failed '%s': %s" % (ipv6addr,self.WIN_TAP_DEVICE,string,e.output))
+							cmd = subprocess.check_output(cmdstring,shell=True)
+							self.debug(1,"def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,cmdstring))
 						except Exception as e:
-							self.debug(1,"def win_clear_ipv6_dns: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,string))
+							self.debug(1,"def win_clear_ipv6_dns: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,cmdstring))
 		except Exception as e:
 			self.debug(1,"def win_clear_ipv6_dns: failed, exception = '%s'"%(e))
 
@@ -4315,7 +4313,7 @@ class Systray:
 			if DEVMODE == True:
 				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
-				read = subprocess.check_output('%s' % (netshcmd),shell=True)
+				read = subprocess.check_output(netshcmd,shell=True)
 				#output = read.strip().decode('cp1252','ignore').strip(' ').split('\r\n')
 				output = read.strip().strip(' ').split('\r\n')
 				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
@@ -4330,12 +4328,12 @@ class Systray:
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			i=0
 			for cmd in self.NETSH_CMDLIST:
-				netshcmd = '"%s" %s' % (self.WIN_NETSH_EXE,cmd)
+				netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
 				""" *fixme* encoding"""
 				if DEVMODE == True:
 					netshcmd = netshcmd.encode(locale.getpreferredencoding())
 				try: 
-					exitcode = subprocess.call('%s' % (netshcmd),shell=True)
+					exitcode = subprocess.call(netshcmd,shell=True)
 					if exitcode == 0:
 						self.debug(1,"netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
 						i+=1
@@ -4355,7 +4353,7 @@ class Systray:
 	def win_return_route_cmd(self,cmd):
 		self.debug(1,"def win_return_route_cmd()")
 		if os.path.isfile(self.WIN_ROUTE_EXE):
-			routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
+			routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
 			try: 
 				read = subprocess.check_output('%s' % (routecmd),shell=True)
 				#output = read.strip().decode('cp1252','ignore').strip(' ').split('\r\n')
@@ -4373,9 +4371,9 @@ class Systray:
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			i=0
 			for cmd in self.ROUTE_CMDLIST:
-				routecmd = '"%s" %s' % (self.WIN_ROUTE_EXE,cmd)
+				routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
 				try: 
-					exitcode = subprocess.call('%s' % (routecmd),shell=True)
+					exitcode = subprocess.call(routecmd,shell=True)
 					if exitcode == 0:
 						self.debug(1,"routeOK: '%s': exitcode = %s" % (routecmd,exitcode))
 						i+=1
@@ -4396,8 +4394,8 @@ class Systray:
 		self.debug(1,"def win_ipconfig_flushdns()")
 		if os.path.isfile(self.WIN_IPCONFIG_EXE):
 			try: 
-				cmdstring = '"%s" /flushdns' % (self.WIN_IPCONFIG_EXE)
-				exitcode = subprocess.call("%s" % (cmdstring),shell=True)
+				cmdstring = '%s /flushdns' % (self.WIN_IPCONFIG_EXE)
+				exitcode = subprocess.call(cmdstring,shell=True)
 				if exitcode == 0:
 					self.debug(1,"%s: exitcode = %s" % (cmdstring,exitcode))
 					return True
