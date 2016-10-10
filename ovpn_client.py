@@ -4987,9 +4987,11 @@ class Systray:
 		return True
 
 	def try_socket(self,host,port):
-		self.debug(7,"def try_socket()")
-		i = 1
-		while i <= 5:
+		i = 0
+		while i <= 9:
+			self.debug(1,"def try_socket: i = '%s'" % (i))
+			systraytext = _("Checking internet connection! (%s / 9)"%(i))
+			self.tray.set_tooltip_markup(systraytext)
 			try:
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				s.settimeout(3)
@@ -5002,8 +5004,9 @@ class Systray:
 					self.debug(1,"def try_socket: failed, result = '%s'" % (result))
 			except Exception as e:
 				pass
-			time.sleep(0.5)
+			time.sleep(3)
 			i += 1
+		return False
 
 
 	def check_myip(self):
@@ -5022,7 +5025,7 @@ class Systray:
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
 			except Exception as e:
-				self.debug(1,"def check_myip: False")
+				self.debug(1,"def check_myip: failed, exception = '%s'"%(e))
 				return False
 		else:
 			self.debug(1,"def check_myip: invalid self.OVPN_CONFIGVERSION")
