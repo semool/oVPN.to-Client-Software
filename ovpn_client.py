@@ -5018,26 +5018,23 @@ class Systray:
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
 				return True
 			try:
-				self.debug(1,"def check_myip: debug 01")
+				self.debug(2,"def check_myip: debug 01")
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
 				HEADERS = request_api.useragent(self.DEBUG)
-				self.debug(1,"def check_myip: debug 02")
+				self.debug(2,"def check_myip: debug 02")
 				r = requests.get(url,timeout=3,headers=HEADERS)
-				self.debug(1,"def check_myip: debug 03")
+				self.debug(2,"def check_myip: debug 03")
 				rip = r.content.strip().split()[0].decode('utf8')
-				self.debug(1,"def check_myip: debug 04, rip = '%s', self.OVPN_CONNECTEDtoIP = '%s'"%(rip,self.OVPN_CONNECTEDtoIP))
+				self.debug(2,"def check_myip: debug 04, rip = '%s', self.OVPN_CONNECTEDtoIP = '%s'"%(rip,self.OVPN_CONNECTEDtoIP))
 				if rip == self.OVPN_CONNECTEDtoIP:
-					self.debug(1,"def check_myip: debug 05")
 					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP")
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
-				self.debug(1,"def check_myip: debug 06")
 			except Exception as e:
 				self.debug(1,"def check_myip: failed, exception = '%s'"%(e))
-				return False
 		else:
 			self.debug(1,"def check_myip: invalid self.OVPN_CONFIGVERSION")
-			return False
+		return False
 
 	def load_firewall_backups(self):
 		self.debug(1,"def load_firewall_backups()")
