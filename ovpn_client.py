@@ -195,9 +195,11 @@ class Systray:
 		self.OVPN_AUTO_CONNECT_ON_START = False
 		self.OVPN_CALL_SRV = False
 		self.OVPN_CONNECTEDto = False
+		self.OVPN_CONNECTEDtoIP = False
+		self.OVPN_CONNECTEDtoPort = False
+		self.OVPN_CONNECTEDtoProtocol = False
 		self.OVPN_CONNECTEDtime = False
 		self.OVPN_CONNECTEDseconds = 0
-		self.OVPN_CONNECTEDtoIP = False
 		self.GATEWAY_OVPN_IP4A = "172.16.32.1"
 		self.GATEWAY_OVPN_IP4B = "172.16.48.1"
 		self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4A
@@ -325,7 +327,8 @@ class Systray:
 						if self.win_pre3_load_profile_dir_vars():
 							if self.check_config_folders():
 								if self.read_options_file():
-									self.win_firewall_add_rule_to_vcp(option="delete")
+									while self.win_firewall_add_rule_to_vcp(option="delete"):
+										pass
 									self.win_firewall_add_rule_to_vcp(option="add")
 									if self.win_detect_openvpn():
 										if self.read_interfaces():
@@ -3608,7 +3611,7 @@ class Systray:
 				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
 		except Exception as e:
 			self.debug(1,"def kill_openvpn: failed, exception '%s'"%(e))
-			self.reset_ovpn_values_disconnected()
+			self.reset_ovpn_values()
 
 	def call_openvpn(self,server):
 		self.debug(1,"def call_openvpn()")
@@ -3640,7 +3643,7 @@ class Systray:
 					self.OVPN_CONNECTEDtoProtocol = self.OVPN_SERVER_INFO[servershort][2]
 				else:
 					self.debug(1,"Error: Server Config not found: '%s'" % (OVPN_CONFIG_FILE))
-					self.reset_ovpn_values_disconnected()
+					self.reset_ovpn_values()
 					return False
 				self.OVPN_SESSIONLOG = "%s\\openvpn.log" % (self.VPN_DIR)
 				try:
@@ -3655,7 +3658,7 @@ class Systray:
 					self.debug(1,"def openvpn: server '%s', threadid '%s'" % (server,self.OVPN_THREADID))
 				except Exception as e:
 					self.debug(1,"def openvpn: start thread failed, exception '%s'" % (server,e))
-					self.reset_ovpn_values_disconnected()
+					self.reset_ovpn_values()
 					return False
 			else:
 				self.debug(1,"def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
@@ -3668,14 +3671,14 @@ class Systray:
 			exitcode = False
 			# *fixme* def win_select_networkadapter() fails if anybody changes interface name between start and connect
 			#if not self.win_read_interfaces():
-			#	self.reset_ovpn_values_disconnected()
+			#	self.reset_ovpn_values()
 			#	return False
 			if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-				self.reset_ovpn_values_disconnected()
+				self.reset_ovpn_values()
 				return False
 			if not self.win_firewall_start():
 				self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
-				self.reset_ovpn_values_disconnected()
+				self.reset_ovpn_values()
 				return False
 			self.win_firewall_modify_rule(option="add")
 			self.win_clear_ipv6()
@@ -3708,33 +3711,33 @@ class Systray:
 			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
 			self.win_netsh_restore_dns_from_backup()
 			self.win_disable_ext_interface()
-			self.reset_ovpn_values_disconnected()
+			self.reset_ovpn_values()
 			return False
 		except Exception as e:
-			self.reset_ovpn_values_disconnected()
+			self.reset_ovpn_values()
 			self.debug(1,"def inThread_spawn_openvpn_process(): failed, exception: '%s'"%(e))
 
-	def reset_ovpn_values_disconnected(self):
+	def reset_ovpn_values(self):
 		try:
+			self.debug(1,"def reset_ovpn_values()")
 			self.win_firewall_modify_rule(option="delete")
+			self.win_clear_ipv6()
+			self.STATE_OVPN = False
+			self.inThread_jump_server_running = False
+			self.OVPN_CONNECTEDto = False
+			self.OVPN_CONNECTEDtoIP = False
+			self.OVPN_CONNECTEDtime = 0
+			self.OVPN_CONNECTEDseconds = 0
+			self.OVPN_THREADID = False
+			self.OVPN_PING_STAT = 0
+			self.OVPN_PING_LAST = 0
+			self.OVPN_PING = list()
+			self.UPDATE_SWITCH = True
+			self.OVPN_STRING = False
+			self.delete_file(self.OVPN_SESSIONLOG,"def reset_ovpn_values")
+			self.call_redraw_mainwindow()
 		except Exception as e:
-			self.debug(1,"def inThread_spawn_openvpn_process: self.win_firewall_modify_rule option=delete failed!")
-		self.debug(1,"def reset_ovpn_values_after()")
-		self.win_clear_ipv6()
-		self.STATE_OVPN = False
-		self.inThread_jump_server_running = False
-		self.OVPN_CONNECTEDto = False
-		self.OVPN_CONNECTEDtoIP = False
-		self.OVPN_CONNECTEDtime = 0
-		self.OVPN_CONNECTEDseconds = 0
-		self.OVPN_THREADID = False
-		self.OVPN_PING_STAT = 0
-		self.OVPN_PING_LAST = 0
-		self.OVPN_PING = list()
-		self.UPDATE_SWITCH = True
-		self.OVPN_STRING = False
-		self.delete_file(self.OVPN_SESSIONLOG,"def reset_ovpn_values_disconnected")
-		self.call_redraw_mainwindow()
+			self.debug(1,"def reset_ovpn_values: failed, exception: '%s'"%(e))
 
 	def inThread_timer_ovpn_ping(self):
 		self.debug(10,"def inThread_timer_ovpn_ping()")
@@ -3912,7 +3915,6 @@ class Systray:
 		self.win_clear_ipv6_addr()
 		self.win_clear_ipv6_routes()
 
-	""" *fixme* integrate with win_join_netsh_cmd() """
 	def win_clear_ipv6_dns(self):
 		self.debug(1,"def win_clear_ipv6_dns()")
 		try:
@@ -3926,11 +3928,9 @@ class Systray:
 					#print ipv6addr
 					if ipv6addr.startswith("fd48:8bea:68a5:"):
 						cmdstring = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
-						try:
-							exitcode = subprocess.check_call(cmdstring,shell=True)
-							self.debug(1,"def win_clear_ipv6_dns: removed %s '%s'" % (ipv6addr,cmdstring))
-						except Exception as e:
-							self.debug(1,"def win_clear_ipv6_dns: %s %s failed '%s'" % (ipv6addr,self.WIN_TAP_DEVICE,cmdstring))
+						self.NETSH_CMDLIST.append(netshcmd)
+			if len(self.NETSH_CMDLIST) > 0:
+				self.win_join_netsh_cmd()
 		except Exception as e:
 			self.debug(1,"def win_clear_ipv6_dns: failed, exception = '%s'"%(e))
 
@@ -4295,12 +4295,14 @@ class Systray:
 			self.debug(1,"def win_firewall_modify_rule()")
 			if self.NO_WIN_FIREWALL == True:
 				return True
+			if self.OVPN_CONNECTEDto == False and option == "delete":
+				return True
 			rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
 			if option == "add":
 				rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
 			if option == "delete":
 				rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
-			#self.debug(1,"def pfw: %s"%(rule_string))
+			self.debug(1,"def win_firewall_modify_rule: rule_string = '%s'"%(rule_string))
 			self.NETSH_CMDLIST.append(rule_string)
 			return self.win_join_netsh_cmd()
 		except Exception as e:
@@ -4314,7 +4316,7 @@ class Systray:
 			if TESTENCODING == True:
 				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
-				read = subprocess.check_output(netshcmd,shell=True,universal_newlines=True)
+				read = subprocess.check_output(netshcmd,shell=True)
 				output = read.strip().split('\r\n')
 				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
@@ -4333,7 +4335,7 @@ class Systray:
 				if TESTENCODING == True:
 					netshcmd = netshcmd.encode(locale.getpreferredencoding())
 				try: 
-					exitcode = subprocess.call(netshcmd,shell=True,universal_newlines=True)
+					exitcode = subprocess.call(netshcmd,shell=True)
 					if exitcode == 0:
 						self.debug(1,"netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
 						i+=1
@@ -5130,7 +5132,7 @@ class Systray:
 							for value in checks:
 								if not value == 2:
 									self.msgwarn(_("Please update your configurations!"),_("Old configurations detected."))
-									self.reset_ovpn_values_disconnected()
+									self.reset_ovpn_values()
 									self.cb_force_update
 									return False
 							if i == 4:
