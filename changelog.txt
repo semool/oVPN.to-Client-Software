@@ -1,6 +1,10 @@
 # changelog.txt
 #
 
+ Version: 0.7.7
++ update: python 3.4.4
+
+
  Version: 0.7.6
 + update: inet connection check
 + update: restore dns always on disconnect
