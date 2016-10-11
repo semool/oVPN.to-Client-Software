@@ -792,7 +792,7 @@ class Systray:
 					pass
 					
 				try:
-					MAINWINDOW_SHOWCELLS = json.loads(parser.get('oVPN','mainwindowshowcells'))
+					MAINWINDOW_SHOWCELLS = json.loads(str(parser.get('oVPN','mainwindowshowcells')))
 					if len(MAINWINDOW_SHOWCELLS) > 0:
 						self.MAINWINDOW_SHOWCELLS = MAINWINDOW_SHOWCELLS
 						self.debug(1,"def read_options_file: self.MAINWINDOW_SHOWCELLS = '%s'" % (self.MAINWINDOW_SHOWCELLS))
@@ -852,7 +852,7 @@ class Systray:
 					pass
 				
 				try:
-					MYDNS = json.loads(parser.get('oVPN','mydns'))
+					MYDNS = json.loads(str(parser.get('oVPN','mydns')))
 					if len(MYDNS) > 0:
 						self.MYDNS = MYDNS
 					self.debug(1,"def read_options_file: len(self.MYDNS) == '%s', self.MYDNS == '%s'"%(len(self.MYDNS),self.MYDNS))
@@ -4980,7 +4980,7 @@ class Systray:
 			self.debug(1,"def API_REQUEST: failed, exception = '%s'"%(e))
 
 	def check_inet_connection(self):
-		self.debug(7,"def check_inet_connection()")
+		self.debug(1,"def check_inet_connection()")
 		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 			return False
 		if not self.try_socket(API_DOMAIN,443) == True:
@@ -4993,7 +4993,7 @@ class Systray:
 		i = 0
 		while i <= 9:
 			self.debug(1,"def try_socket: i = '%s'" % (i))
-			systraytext = _("Checking internet connection! (%s / 9)"%(i))
+			systraytext = _("Testing internet connection! (%s / 9)"%(i))
 			self.tray.set_tooltip_markup(systraytext)
 			try:
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -5201,10 +5201,10 @@ class Systray:
 				texta = "%s %s %s" % (texta,key,value)
 			for key,value in sorted(olddata.items()):
 				textb = "%s %s %s" % (textb,key,value)
-			hasha = hashlib.sha256(texta).hexdigest()
-			hashb = hashlib.sha256(textb).hexdigest()
-			self.debug(9,"hasha newdata = '%s'" % (hasha))
-			self.debug(9,"hashb olddata = '%s'" % (hashb))
+			hasha = hashlib.sha256(texta.encode('utf-8')).hexdigest()
+			hashb = hashlib.sha256(textb.encode('utf-8')).hexdigest()
+			self.debug(1,"hasha newdata = '%s'" % (hasha))
+			self.debug(2,"hashb olddata = '%s'" % (hashb))
 			if hasha == hashb:
 				return True
 		except Exception as e:
@@ -5238,9 +5238,9 @@ class Systray:
 			r = requests.post(self.APIURL,data=values,headers=HEADERS,timeout=(3,3))
 			self.debug(1,"def load_serverdata_from_remote: posted")
 			try:
-				if not r.content == "AUTHERROR":
+				if not r.text == "AUTHERROR":
 					#self.debug(1,"r.content = '%s'" % (r.content))
-					OVPN_SRV_DATA = json.loads(r.content)
+					OVPN_SRV_DATA = json.loads(str(r.text))
 					self.debug(9,"OVPN_SRV_DATA = '%s'" % (OVPN_SRV_DATA))
 					if len(OVPN_SRV_DATA) > 1:
 						if not self.check_hash_dictdata(OVPN_SRV_DATA,self.OVPN_SRV_DATA):
@@ -5263,7 +5263,7 @@ class Systray:
 					return False
 			except Exception as e:
 				self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
-				self.debug(1,"def load_serverdata_from_remote: json decode error")
+				self.debug(1,"def load_serverdata_from_remote: json decode failed, exception = '%s'"%(e))
 				return False
 		except Exception as e:
 			self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
@@ -5295,9 +5295,9 @@ class Systray:
 			r = requests.post(self.APIURL,data=values,headers=HEADERS,timeout=(3,3))
 			self.debug(1,"def load_accinfo_from_remote: posted")
 			try:
-				if not r.content == "AUTHERROR":
+				if not r.text == "AUTHERROR":
 					#self.debug(1,"r.content = '%s'" % (r.content))
-					OVPN_ACC_DATA = json.loads(r.content)
+					OVPN_ACC_DATA = json.loads(str(r.text))
 					self.debug(9,"OVPN_ACC_DATA = '%s'" % (OVPN_ACC_DATA))
 					if len(OVPN_ACC_DATA) > 1:
 						if not self.check_hash_dictdata(OVPN_ACC_DATA,self.OVPN_ACC_DATA):
