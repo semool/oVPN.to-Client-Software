@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-
-import sys
 import debug
-DEVMODE = debug.devmode()
-if DEVMODE == True:
-	DEBUG = True
-else:
-	DEBUG = False
+DEBUG = debug.getmode("DEBUG")
+DEVMODE = debug.getmode("DEVMODE")
 DEV_DIR=debug.devdir()
-
+if DEVMODE == True:	DEBUG = True
+	
+import sys
 try:
 	import patches
 	TRAYSIZE = patches.select_gtkdll(DEBUG)

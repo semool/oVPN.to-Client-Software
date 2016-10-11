@@ -12,17 +12,17 @@ def devdir():
 	dir = "E:\\Persoenlich\\ovpn-client"
 	return dir
 
-def devmode():
+def getmode(MODE):
 	if len(sys.argv) > 1:
-		if sys.argv[1] == "DEVMODE":
-			return True
-		else:
-			print "invalid args"
-			print sys.argv
-			print len(sys.argv)
-			sys.exit()
-	else:
-		return False
+		for arg in sys.argv:
+			if arg == MODE:
+				print "sys.argv %s" % MODE
+				return True
+	return False
+
+def devmode():
+	return getmode("DEVMODE")				
+				
 
 def debug(level,text,DEBUG,bindir):
 	if bindir == False:
