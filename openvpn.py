@@ -8,6 +8,7 @@ from debug import devmode
 import release_version
 import hashings
 import signtool
+import shlex
 
 
 def values(DEBUG):
@@ -123,16 +124,20 @@ def win_get_openvpn_version(DEBUG,OPENVPN_DIR):
 		debug(1,"[openvpn.py] def win_get_openvpn_version: OPENVPN_EXE not found",DEBUG,True)
 		return False
 	try:
-		out, err = subprocess.Popen("\"%s\" --version" % (OPENVPN_EXE),shell=True,stdout=subprocess.PIPE).communicate()
-		OVPN_VERSION = out.split('\r\n')[0].split( )[1].replace(".","")
-		OVPN_BUILT = out.split('\r\n')[0].split("built on ",1)[1].split()
+		cmdstring = '"%s" --version' % (OPENVPN_EXE)
+		cmdargs = shlex.split(cmdstring)
+		p = subprocess.Popen(cmdargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		out, err = p.communicate()
+		rc = p.returncode
+		OVPN_VERSION = out.decode('utf-8').split('\r\n')[0].split( )[1].replace(".","")
+		OVPN_BUILT = out.decode('utf-8').split('\r\n')[0].split("built on ",1)[1].split()
 		debug(1,"[openvpn.py] def win_get_openvpn_version: OVPN_VERSION = '%s', OVPN_BUILT = '%s'"%(OVPN_VERSION,OVPN_BUILT),DEBUG,True)
 		return [ OVPN_VERSION, OVPN_BUILT ]
-	except:
-		return False
+	except Exception as e:
+		debug(1,"[openvpn.py] def win_get_openvpn_version: failed, exception = '%s'"%(e),DEBUG,True)
+	return False
 
 def win_detect_openvpn_version(DEBUG,OPENVPN_DIR):
-	# returns True or False
 	try:
 		debug(1,"[openvpn.py] def win_detect_openvpn_version()",DEBUG,True)
 		OVPN_LATEST = values(DEBUG)["LATEST"]
@@ -143,6 +148,7 @@ def win_detect_openvpn_version(DEBUG,OPENVPN_DIR):
 			OVPN_VERSION = DATA[0]
 			OVPN_BUILT = DATA[1]
 		else:
+			debug(1,"[openvpn.py] def win_detect_openvpn_version: failed, DATA == False",DEBUG,True)
 			return False
 		debug(1,"OVPN_VERSION = %s, OVPN_BUILT = %s, OVPN_LATEST_BUILT = %s" % (OVPN_VERSION,OVPN_BUILT,OVPN_LATEST_BUILT),DEBUG,True)
 		if OVPN_VERSION >= OVPN_LATEST:
@@ -242,21 +248,21 @@ def check_file_hashs(DEBUG,OPENVPN_DIR,type):
 				return False
 			
 		except:
-			debug(1,"[openvpn.py] def check_file_hashs: filename/hashs failed",DEBUG,True)
+			debug(2,"[openvpn.py] def check_file_hashs: filename/hashs failed",DEBUG,True)
 			sys.exit()
 		
-		debug(1,"[openvpn.py] filename = '%s' hashs = '%s'"%(filename,hashs),DEBUG,True)
+		debug(2,"[openvpn.py] filename = '%s' hashs = '%s'"%(filename,hashs),DEBUG,True)
 		for file in content:
-			debug(1,"[openvpn.py] def check_file_hashs: file = '%s'" % (file),DEBUG,True)
+			debug(2,"[openvpn.py] def check_file_hashs: file = '%s'" % (file),DEBUG,True)
 			filepath = "%s\\%s" % (OPENVPN_DIR,file)
 			hasha = hashings.hash_sha512_file(DEBUG,filepath)
-			debug(1,"[openvpn.py] def check_file_hashs: hasha = '%s'" % (hasha),DEBUG,True)
+			debug(2,"[openvpn.py] def check_file_hashs: hasha = '%s'" % (hasha),DEBUG,True)
 			try:
 				hashb = hashs[file]
 			except:
 				return False
 			if hasha == hashb:
-				debug(1,"[openvpn.py] def check_file_hashs: hash file = '%s' OK!" % (file),DEBUG,True)
+				debug(2,"[openvpn.py] def check_file_hashs: hash file = '%s' OK!" % (file),DEBUG,True)
 			else:
 				debug(1,"[openvpn.py] def check_file_hashs: hash file = '%s' failed" % (file),DEBUG,True)
 				return False

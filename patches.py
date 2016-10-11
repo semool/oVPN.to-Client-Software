@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys, shutil, struct
-from _winreg import *
+from winreg import *
 from ctypes import *
 from debug import debug
 

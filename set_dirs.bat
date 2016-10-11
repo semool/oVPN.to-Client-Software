@@ -1,6 +1,7 @@
 @echo off
 set PY32=C:\Python27
-set PY64=C:\Python27_64
+::set PY64=C:\Python27_64
+set PY64=C:\Python34_64
 
 set APPDIR=%APPDATA%\ovpn\bin\client\dist
 set INNOCOMPILE="C:\Program Files (x86)\Inno Setup 5\Compil32.exe"
@@ -62,7 +63,7 @@ IF "%BITS%" == "64" (
 
 IF NOT DEFINED PYEXE (echo MISSING BITS && PAUSE && EXIT)
 IF NOT EXIST %PYEXE% (echo PYEXE %PYEXE% NOT FOUND && PAUSE && EXIT)
-IF NOT EXIST %PYINSTALLER% (echo PYINSTALLER %PYINSTALLER% NOT FOUND && PAUSE && EXIT)
+::IF NOT EXIST %PYINSTALLER% (echo PYINSTALLER %PYINSTALLER% NOT FOUND && PAUSE && EXIT)
 
 
 set PY2EXE_LOG=%SOURCEDIR%\py2exe_%BITS%.log

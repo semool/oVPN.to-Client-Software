@@ -39,7 +39,7 @@ class OpenVPN_HashBinsToJson:
 		self.DOWNLOAD_ASC = True
 		
 		self.OPENVPN_ARCHS = ["i686","x86_64"]
-		self.OPENVPN_BINS = [ "2.3.11:I601","2.3.12:I601" ]
+		self.OPENVPN_BINS = [ "2.3.11:I601","2.3.12:I601","2.3.12:I602" ]
 		
 		self.WORKING_DIR = "files"
 		self.STORAGE_DIR = "%s/openvpn" % (self.WORKING_DIR)
@@ -164,6 +164,7 @@ class OpenVPN_HashBinsToJson:
 						print "def files_downloader: saving file to '%s' failed!" % (savefileto)
 				else:
 					print "\nFile '%s' exists, checking...\n" % (savefileto)
+					print "SHA512 = '%s'" % (self.hash_sha512_file(savefileto))
 					return self.gpg_verify_file("%s.asc"%(savefileto))
 			except:
 				print "def files_downloader: downloading '%s' failed!" % (filename)

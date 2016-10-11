@@ -12,7 +12,7 @@ def random_string():
 	return rand
 
 def useragent(DEBUG):
-	debug(99,"def useragent()",DEBUG,True)
+	debug(1,"def useragent()",DEBUG,True)
 	rand = random_string()
 	user_agent = "client/007/%s" % rand
 	try:
@@ -21,15 +21,15 @@ def useragent(DEBUG):
 		
 		try:
 			split = version.split(".")
-			versionint = "%s%s%s" % (split[0],split[1],split[2])
+			versionint = int("%s%s%s" % (split[0],split[1],split[2]))
 		except:
 			debug(1,"[request_api.py] def useragent: version.split failed",DEBUG,True)
 		
 		if versionint > 0:
 			version = versionint
 		user_agent = "client/%s" % (version)
-	except:
-		debug(1,"[request_api.py] def useragent: construct user-agent failed",DEBUG,True)
+	except Exception as e:
+		debug(1,"[request_api.py] def useragent: construct user-agent failed, exception = '%s'"%(e),DEBUG,True)
 	headers = { 'User-Agent':"%s/%s" % (user_agent,rand) }
-	debug(99,"[request_api.py] def useragent: return headers = '%s'" % (headers),DEBUG,True)
+	debug(1,"[request_api.py] def useragent: return headers = '%s'" % (headers),DEBUG,True)
 	return headers

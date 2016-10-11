@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import os, sys, time, subprocess, netifaces
+import os, sys, time, subprocess, netifaces, locale
 from debug import debug
-from _winreg import *
+from winreg import *
 
 def get_uninstall_progs():
 	aReg = ConnectRegistry(None,HKEY_LOCAL_MACHINE)
@@ -12,7 +12,7 @@ def get_uninstall_progs():
 			keyname = EnumKey(aKey, i)
 			asubkey = OpenKey(aKey, keyname)
 			val = QueryValueEx(asubkey, "DisplayName")
-			print val
+			print(val)
 			list.append(val)
 		except WindowsError:
 			pass
@@ -24,10 +24,23 @@ def get_networkadapter_guids():
 	return netifaces.interfaces()
 
 def get_networkadapterlist_from_netsh():
+	#print("get_networkadapterlist_from_netsh")
 	string = "netsh.exe interface show interface"
-	data = subprocess.check_output("%s" % (string),shell=True)
-	data = data.split('\r\n')
-	return data
+	try:
+		datas = subprocess.check_output(string,shell=True)
+		#data = subprocess.check_output(string.decode(locale.getpreferedencoding()),shell=True)
+		#print("##############datas")
+		#print(datas)
+		try:
+			data = datas.decode('utf-8').split('\r\n')
+			#print("###########data")
+			#print(data)
+			return data
+		except:
+			print("ex 1b")
+	except:
+		print("except 1a")
+	
 
 def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 	iface_names = ['(unknown)' for i in range(len(iface_guids))]
@@ -42,20 +55,29 @@ def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 			mapguids[iface_name] = '%s' % (iface_guids[i])
 		except:
 			pass
-	debug(1,"[winregs.py] def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
+	debug(2,"[winregs.py] def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
 	data = { "iface_names":iface_names,"mapguids":mapguids }
 	return data
 	#return iface_names
 
 def get_networkadapterlist(DEBUG):
+	debug(1,"[winregs.py] def get_networkadapterlist()",DEBUG,True)
 	try:
 		newlist = []
+		#print("debug 1")
 		list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
+		#print("debug 2")
 		list2 = get_networkadapterlist_from_netsh()
+		#print("debug 3")
 		for name in list1:
+			#print("debug 4")
 			for line in list2:
-				if line.endswith(name):
-					newlist.append(name)
+				#print("debug 5")
+				eline = line.encode('utf-8')
+				ename = name.encode('utf-8')
+				if eline.endswith(ename):
+					print(line)
+					newlist.append(ename)
 		return newlist
 	except Exception as e:
 		debug(1,"[winregs.py] def get_networkadapterlist: failed, exception = '%s'"%(e),DEBUG,True)
@@ -68,20 +90,49 @@ def get_networkadapter_guid(DEBUG,adaptername):
 	return guid
 	#return get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"][adaptername]
 
-def get_tapadapters(OPENVPN_EXE,INTERFACES):
+def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 	try:
+		print("get_tapadapters debug 00")
 		if os.path.isfile(OPENVPN_EXE):
-			string = '"%s" --show-adapters' % (OPENVPN_EXE)
-			TAPADAPTERS = subprocess.check_output("%s" % (string),shell=True)
-			TAPADAPTERS = TAPADAPTERS.split('\r\n')
+			cmdstring = '"%s" --show-adapters' % (OPENVPN_EXE)
+			print("get_tapadapters debug 01a, cmdstring = '%s'"%(cmdstring))
+			TAPADAPTERS = subprocess.check_output(cmdstring,shell=True)
+			print("get_tapadapters debug 01b, TAPADAPTERS = '%s'"%(TAPADAPTERS))
+			TAPADAPTERS = TAPADAPTERS.decode('utf-8').split('\r\n')
+			print("get_tapadapters debug 01c, TAPADAPTERS = '%s'"%(TAPADAPTERS))
+			for entry in TAPADAPTERS:
+				print(entry)
 			TAPADAPTERS.pop(0)
 			TAP_DEVS = list()
+			print("get_tapadapters debug 01")
 			for line in TAPADAPTERS:
+				if len(line) > 0:
+					print("get_tapadapters debug 02, line = '%s'"%(line))
+					eline = line.encode('utf-8')
+					print("get_tapadapters debug 02, eline = '%s'"%(eline))
+					for INTERFACE in INTERFACES:
+						print("get_tapadapters debug 03, INTERFACE = '%s'"%(INTERFACE))
+						if INTERFACE in eline:
+							print("get_tapadapters debug 03 HIT")
+							INTERFACES.remove(INTERFACE)
+							TAP_DEVS.append(INTERFACE)
+							break
+				"""
 				for INTERFACE in INTERFACES:
-					if line.startswith("'%s' {"%(INTERFACE)):
+					print("get_tapadapters debug 03, INTERFACE = '%s'"%(INTERFACE))
+					
+					
+					search = string.encode('utf-8')
+					eline = line.encode('utf-8')
+					print("get_tapadapters debug 03, eline = '%s'"%(eline))
+
+					#
+					#if line.startswith("'%s' {"%(INTERFACE)):
+					if eline.startswith(search):
 						INTERFACES.remove(INTERFACE)
 						TAP_DEVS.append(INTERFACE)
 						break
+				"""
 			return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
 	except Exception as e:
 		debug(1,"[winregs.py] def get_tapadapters: failed, exception = '%s'"%(e),DEBUG,True)
@@ -106,67 +157,3 @@ def get_interface_infos_from_guid(DEBUG,guid):
 			pass
 	debug(1,"[winregs.py] get_interface_infos_from_guid: '%s'" % (values),DEBUG,True)
 	return values
-
-
-
-
-
-
-
-
-"""
-def _win32_is_nic_enabled(self, lm, guid, interface_key):
-         # Look in the Windows Registry to determine whether the network
-         # interface corresponding to the given guid is enabled.
-         #
-         # (Code contributed by Paul Marks, thanks!)
-         #
-         try:
-             # This hard-coded location seems to be consistent, at least
-             # from Windows 2000 through Vista.
-             connection_key = _winreg.OpenKey(
-                 lm,
-                 r'SYSTEM\CurrentControlSet\Control\Network'
-                 r'\{4D36E972-E325-11CE-BFC1-08002BE10318}'
-                 r'\%s\Connection' % guid)
-
-             try:
-                 # The PnpInstanceID points to a key inside Enum
-                 (pnp_id, ttype) = _winreg.QueryValueEx(
-                     connection_key, 'PnpInstanceID')
-
-                 if ttype != _winreg.REG_SZ:
-                     raise ValueError
-
-                 device_key = _winreg.OpenKey(
-                     lm, r'SYSTEM\CurrentControlSet\Enum\%s' % pnp_id)
-
-                 try:
-                     # Get ConfigFlags for this device
-                     (flags, ttype) = _winreg.QueryValueEx(
-                         device_key, 'ConfigFlags')
-
-                     if ttype != _winreg.REG_DWORD:
-                         raise ValueError
-
-                     # Based on experimentation, bit 0x1 indicates that the
-                     # device is disabled.
-                     return not (flags & 0x1)
-
-                 finally:
-                     device_key.Close()
-             finally:
-                 connection_key.Close()
-         except (EnvironmentError, ValueError):
-             # Pre-vista, enabled interfaces seem to have a non-empty
-             # NTEContextList; this was how dnspython detected enabled
-             # nics before the code above was contributed.  We've retained
-             # the old method since we don't know if the code above works
-             # on Windows 95/98/ME.
-             try:
-                 (nte, ttype) = _winreg.QueryValueEx(interface_key,
-                                                     'NTEContextList')
-                 return nte is not None
-             except WindowsError:
-                 return False
-"""

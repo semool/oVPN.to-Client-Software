@@ -1,4 +1,4 @@
-print "join release_version.py"
+print("join release_version.py")
 
 import struct
 BITS = struct.calcsize("P") * 8
@@ -69,9 +69,9 @@ if len(sys.argv) > 1:
 				fp = open(file, "wb")
 				fp.write(content)
 				fp.close()
-				print "%s written content '%s' to file '%s'" % (key,file,content)
+				print("%s written content '%s' to file '%s'" % (key,file,content))
 			else:
-				print "file '%s' not found" % (file)
+				print("file '%s' not found" % (file))
 		
 		setrelease = {
 			"winb" : { "file" : "set_version.bat", "content" : 'set RELEASE=%s' % (version_data()["VERSION"]) },
@@ -81,4 +81,4 @@ if len(sys.argv) > 1:
 		for key, value in setrelease.items():
 			write_releasefile(key,value["file"],value["content"])
 
-print "leave release_version.py"
+print("leave release_version.py")
