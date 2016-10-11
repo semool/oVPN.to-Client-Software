@@ -34,21 +34,6 @@ import request_api
 import shlex
 
 
-if TESTENCODING == True:
-	try:
-		#reload(sys)
-		#sys.setdefaultencoding('utf_8')
-		print "sys.stdout.encoding = %s" % sys.stdout.encoding
-		print "sys.stdout.isatty() = %s" % sys.stdout.isatty()
-		print "locale.getpreferredencoding() = %s" % locale.getpreferredencoding()
-		print "sys.getfilesystemencoding() = %s" %sys.getfilesystemencoding()
-		print "os.environ PYTHONIOENCODING = %s" % (os.environ["PYTHONIOENCODING"])
-		time.sleep(5)
-	except Exception as e:
-		print "print encoding failed"
-		time.sleep(3)
-
-
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
 
@@ -3703,7 +3688,7 @@ class Systray:
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
 			#self.inThread_jump_server_running = False
 			try:
-				#exitcode = subprocess.check_call(str(self.OVPN_STRING),shell=True)
+				#exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
 				cmdargs = shlex.split(self.OVPN_STRING)
 				exitcode = subprocess.check_call(cmdargs)
 			except Exception as e:
