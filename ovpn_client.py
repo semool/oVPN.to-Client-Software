@@ -13,6 +13,7 @@ try:
 	import patches
 	TRAYSIZE = patches.select_gtkdll(DEBUG)
 except Exception as e:
+	print("traysize failed, exception = '%s'" % (e))
 	sys.exit()
 
 import gi
@@ -20,7 +21,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
 import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string, re
-from ConfigParser import SafeConfigParser
+#from ConfigParser import SafeConfigParser
+from backports import configparser
+from configparser import SafeConfigParser
 # .py files imports
 
 import winregs
@@ -32,7 +35,7 @@ import signtool
 import hashings
 import request_api
 import shlex
-
+from io import BytesIO
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -57,10 +60,10 @@ try:
 			sys.exit()
 	except Exception as e: 
 		BUILT_STRING = "(UNDEFINED)"
-	print BUILT_STRING
+	print(BUILT_STRING)
 
 except Exception as e:
-	print "import release_version failed"
+	print("import release_version failed")
 	sys.exit()
 
 
@@ -109,6 +112,7 @@ class Systray:
 
 	def self_vars(self):
 		self.DEBUG = DEBUG
+		print("self.DEBUG = %s"%(self.DEBUG))
 		self.DEVMODE = DEVMODE
 		self.OS = sys.platform
 		self.ARCH = openvpn.values(self.DEBUG)["ARCH"]
@@ -217,12 +221,12 @@ class Systray:
 							#'expire': '2017-Aug-21'
 							},
 						}
-		for key,value in oVPN_DNS.iteritems():
+		for key,value in oVPN_DNS.items():
 			self.d0wns_DNS[key] = value
 		
 		import flags_b64
 		self.FLAGS_B64 = flags_b64.flagsb64()
-		print "len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64))
+		print("len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64)))
 		#self.COUNTRYNAMES under: def make_systray_server_menu, here is translation not active
 		self.FLAG_CACHE_PIXBUF = {}
 		self.ICON_CACHE_PIXBUF = {}
@@ -330,7 +334,7 @@ class Systray:
 		self.debug(1,"def win_pre1_check_app_dir()")
 		os_appdata = os.getenv('APPDATA')
 		if os.path.exists("appdata"):
-			print "alternative folder found"
+			print("alternative folder found")
 			self.BIN_DIR = os.getcwd()
 			self.APP_DIR = "%s\\appdata\\ovpn" % (self.BIN_DIR)
 		else:
@@ -353,13 +357,13 @@ class Systray:
 		for profile in self.profiles_unclean:
 			if profile.isdigit():
 				self.PROFILES.append(profile)
-		self.PROFILES_COUNT = len(self.PROFILES)
-		self.debug(1,"def list_profiles: profiles_count %s" % (self.PROFILES_COUNT))
+		#self.PROFILES_COUNT = int(len(self.PROFILES))
+		self.debug(1,"def list_profiles: profiles_count %s" % (len(self.PROFILES)))
 
 	def win_pre2_check_profiles_win(self):
 		self.debug(1,"def win_pre2_check_profiles_win()")
 		self.list_profiles()
-		if self.PROFILES_COUNT == 0:
+		if len(self.PROFILES) == 0:
 			self.debug(1,"No profiles found")
 			if self.USERID == False:
 				self.debug(1,"spawn popup userid = %s" % (self.USERID))
@@ -369,10 +373,13 @@ class Systray:
 				if not self.USERID == False and not self.APIKEY == False:
 					self.debug(1,"def win_pre2_check_profiles_win: L:310")
 					return True
-		elif self.PROFILES_COUNT == 1 and self.PROFILES[0] > 1:
-			self.USERID = self.PROFILES[0]
-			return True
-		elif self.PROFILES_COUNT > 1:
+		elif len(self.PROFILES) == 1:
+			userid = int(self.PROFILES[0])
+			print(userid)
+			if userid > 1:
+				self.USERID = userid
+				return True
+		elif len(self.PROFILES) > 1:
 			if not self.select_userid() == True:
 				self.errorquit(text=_("Select User-ID failed!"))
 			return True
@@ -557,8 +564,9 @@ class Systray:
 				except Exception as e:
 					self.errorquit(text=_("Could not remove lock file.\nFile itself locked because another oVPN Client instance running?"))
 			if not os.path.isfile(self.lock_file):
-				self.LOCK = open(self.lock_file,'wb')
-				self.LOCK.write("%s" % (int(time.time())))
+				#self.LOCK = open(self.lock_file,'wb')
+				with open(self.lock_file,'wt') as self.LOCK:
+					self.LOCK.write('1')
 			if not os.path.exists(self.VPN_DIR):
 				os.mkdir(self.VPN_DIR)
 			if not os.path.exists(self.VPN_CFG):
@@ -581,6 +589,7 @@ class Systray:
 			else:
 				self.errorquit(text=_("Creating API-DIRS\n%s \n%s \n%s \n%s \n%s failed!") % (self.API_DIR,self.VPN_DIR,self.prx_dir,self.stu_dir,self.pfw_dir))
 		except Exception as e:
+			self.debug(1,"def check_config_folders: failed, exception = '%s'" % (e))
 			self.errorquit(text=_("Creating config folders failed!"))
 
 	def read_options_file(self):
@@ -865,7 +874,7 @@ class Systray:
 			self.VPN_CFG = self.VPN_CFGip4
 			self.init_localization(None)
 			try:
-				cfg = open(self.OPT_FILE,'wb')
+				cfg = open(self.OPT_FILE,'wt')
 				parser = SafeConfigParser()
 				parser.add_section('oVPN')
 				parser.set('oVPN','apikey','%s'%(self.APIKEY))
@@ -901,11 +910,13 @@ class Systray:
 				parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.MAINWINDOW_SHOWCELLS, ensure_ascii=True)))
 				parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 				parser.set('oVPN','mydns','False')
+				#parser.write(bytes(cfg,locale.getpreferredencoding()))
 				parser.write(cfg)
 				cfg.close()
 				return True
 			except Exception as e:
 				self.debug(1,"def read_options_file: create failed, exception = '%s'"%(e))
+				sys.exit()
 
 	def write_options_file(self):
 		if self.isWRITING_OPTFILE == True:
@@ -921,7 +932,7 @@ class Systray:
 					APIKEY = False
 			else:
 				APIKEY = False
-			cfg = open(self.OPT_FILE,'wb')
+			cfg = open(self.OPT_FILE,'wt')
 			parser = SafeConfigParser()
 			parser.add_section('oVPN')
 			parser.set('oVPN','apikey','%s'%(APIKEY))
@@ -963,6 +974,7 @@ class Systray:
 			return True
 		except Exception as e:
 			self.debug(1,"def write_options_file: failed, exception = '%s'"%(e))
+			sys.exit()
 		self.isWRITING_OPTFILE = False
 
 	def read_interfaces(self):
@@ -994,18 +1006,31 @@ class Systray:
 	def win_read_interfaces(self):
 		self.debug(1,"def win_read_interfaces()")
 		try:
+			print("win_read_interfaces debug 1")
 			self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG)
+			print(self.INTERFACES)
+			print("win_read_interfaces debug 2")
 			try:
-				if len(self.INTERFACES) < 2:
-					self.errorquit(text=_("Could not read your Network Interfaces! Please install OpenVPN or check if your TAP-Adapter is really enabled and driver installed."))
-			except TypeError:
-				self.errorquit(text=_("Could not read your Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2"))
+				print("win_read_interfaces debug 2.1")
+				if not self.INTERFACES == False and len(self.INTERFACES) < 2:
+					print("win_read_interfaces debug 2.2")
+					self.errorquit(text=_("Could not read your Network Interfaces!"))
+				print("win_read_interfaces debug 2.3")
+			except Exception as e:
+				print("win_read_interfaces debug 4")
+				self.errorquit(text=_("Could not read your Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2\nexception:%s"%(e)))
 			try:
-				newdata = winregs.get_tapadapters(self.OPENVPN_EXE,self.INTERFACES)
+				print("win_read_interfaces debug 5")
+				newdata = winregs.get_tapadapters(self.DEBUG,self.OPENVPN_EXE,self.INTERFACES)
+				print("win_read_interfaces debug 6")
 			except TypeError:
+				print("win_read_interfaces debug 7")
 				self.errorquit(text=_("Could not read your TAP Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2"))
+			print("win_read_interfaces debug 8")
 			self.INTERFACES = newdata["INTERFACES"]
+			print("win_read_interfaces debug 9")
 			self.WIN_TAP_DEVS = newdata["TAP_DEVS"]
+			print("win_read_interfaces debug 10")
 			self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS = '%s'" % (self.WIN_TAP_DEVS))
 			self.debug(1,"def win_read_interfaces: self.INTERFACES = '%s'"%(self.INTERFACES))
 			if len(self.WIN_TAP_DEVS) == 0:
@@ -1013,17 +1038,18 @@ class Systray:
 					if not self.win_detect_openvpn() == True:
 						self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
 			elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
-				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
+				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0].decode('utf-8')
 			else:
 				self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 				self.win_select_tapadapter()
+			print("debug 2")
 			if self.WIN_TAP_DEVICE == False:
 				self.errorquit(text=_("No OpenVPN TAP-Adapter found!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]))
 			else:
-				badchars = ["%","&","$"]
-				for char in badchars:
-					if char in self.WIN_TAP_DEVICE:
-						self.errorquit(text=_("Invalid characters in '%s'") % char)
+				#badchars = ["%","&","$"]
+				#for char in badchars:
+				#	if char in self.WIN_TAP_DEVICE:
+				#		self.errorquit(text=_("Invalid characters in '%s'") % char)
 				self.debug(1,"def win_read_interfaces: Selected TAP: '%s'" % (self.WIN_TAP_DEVICE))
 				self.win_enable_tap_interface()
 				self.debug(1,"def win_read_interfaces: remaining INTERFACES = %s (cfg: %s)"%(self.INTERFACES,self.WIN_EXT_DEVICE))
@@ -1036,7 +1062,7 @@ class Systray:
 				elif len(self.INTERFACES) < 1:
 					self.errorquit(text=_("No Network Adapter found!"))
 				else:
-					self.WIN_EXT_DEVICE = self.INTERFACES[0]
+					self.WIN_EXT_DEVICE = self.INTERFACES[0].decode('utf-8')
 					self.debug(1,"def win_read_interfaces: External Interface = %s"%(self.WIN_EXT_DEVICE))
 					return True
 		except Exception as e:
@@ -1275,7 +1301,7 @@ class Systray:
 				secdns = False
 			
 			i=0
-			for name,value in sorted(self.d0wns_DNS.iteritems()):
+			for name,value in sorted(self.d0wns_DNS.items()):
 				try:
 					self.debug(59,"try name = '%s', len(value) = '%s', value = '%s'" % (name,len(value),value))
 					dnsip4 = value['ip4']
@@ -1899,11 +1925,11 @@ class Systray:
 					self.STATE_CERTDL = "getconfigs"
 					if self.API_REQUEST(API_ACTION = "getconfigs"):
 						if self.extract_ovpn():
-							self.timer_check_certdl_running = False
-							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 							self.OVPN_SERVER = list()
 							if self.load_ovpn_server() == True:
 								self.rebuild_mainwindow()
+							self.timer_check_certdl_running = False
+							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 							return True
 						else:
 							self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
@@ -2454,7 +2480,7 @@ class Systray:
 		elif len(self.OVPN_ACC_DATA) > 0:
 			try:
 				self.debug(10,"def accwindow_accinfo: try get values")
-				for key, value in sorted(self.OVPN_ACC_DATA.iteritems()):
+				for key, value in sorted(self.OVPN_ACC_DATA.items()):
 					#print key
 					value1 = False
 					if key == "001":
@@ -2499,7 +2525,7 @@ class Systray:
 					elif key == "030":
 						head = "IPv6 enabled"
 					elif key == "999":
-						for coin,addr in sorted(value.iteritems()):
+						for coin,addr in sorted(value.items()):
 							try:
 								text = "%s: '%s'" % (coin.upper(),addr)
 								#print text
@@ -3386,8 +3412,8 @@ class Systray:
 		if event.button == 1:
 			self.debug(1,"def cb_del_dns()")
 			self.destroy_context_menu_servertab()
-			print "def cb_del_dns: cbdata = '%s'" % (data)
-			for name,value in data.iteritems():
+			print("def cb_del_dns: cbdata = '%s'" % (data))
+			for name,value in data.items():
 				try:
 					if value["primary"]["ip4"] == self.MYDNS[name]["primary"]["ip4"]:
 						try:
@@ -3414,14 +3440,14 @@ class Systray:
 		if event.button == 1:
 			self.debug(1,"def cb_set_dns()")
 			self.destroy_context_menu_servertab()
-			for name,value in data.iteritems():
+			for name,value in data.items():
 				self.debug(1,"def cb_set_dns: name '%s' value: '%s'" % (name,value))
 				try:
 					newpridns = value["primary"]["ip4"]
 					if self.isValueIPv4(newpridns):
-						print " set primary dns"
+						print(" set primary dns")
 						try:
-							print 'try: if newpridns == self.MYDNS[name]["secondary"]["ip4"]'
+							print('try: if newpridns == self.MYDNS[name]["secondary"]["ip4"]')
 							if newpridns == self.MYDNS[name]["secondary"]["ip4"]:
 								self.MYDNS[name]["secondary"] = {}
 								self.debug('self.MYDNS[name]["secondary"] = {}')
@@ -3435,9 +3461,9 @@ class Systray:
 				try:
 					newsecdns = value["secondary"]["ip4"]
 					if self.isValueIPv4(newsecdns):
-						print " set secondary dns"
+						print( " set secondary dns")
 						try:
-							print 'try: if newsecdns == self.MYDNS[name]["primary"]["ip4"]'
+							print('try: if newsecdns == self.MYDNS[name]["primary"]["ip4"]')
 							if newsecdns == self.MYDNS[name]["primary"]["ip4"]:
 								return False
 						except Exception as e:
@@ -3807,7 +3833,7 @@ class Systray:
 
 	def read_gateway_from_interface(self):
 		if DEVMODE == True:
-			return read_gateway_from_interface_devmode()
+			return self.read_gateway_from_interface_devmode()
 		
 		try:
 			GATEWAY_LOCAL = False
@@ -3821,7 +3847,7 @@ class Systray:
 					GATEWAY_LOCAL = DEVICE_DATA["DhcpServer"]
 				except Exception as e:
 					self.debug(1,"def read_gateway_from_interface: try DhcpServer failed, exception = '%s'"%(e))
-			
+			self.debug(1,"def read_gateway_from_interface: GATEWAY_LOCAL = '%s'" % (GATEWAY_LOCAL))
 			if not GATEWAY_LOCAL == False:
 				if self.isValueIPv4(GATEWAY_LOCAL):
 					self.GATEWAY_LOCAL = GATEWAY_LOCAL
@@ -3904,16 +3930,17 @@ class Systray:
 		self.debug(1,"def win_clear_ipv6_dns()")
 		try:
 			netshcmd = 'interface ipv6 show dnsservers "%s"' % (self.WIN_TAP_DEVICE)
-			netsh_output = self.win_return_netsh_cmd(netshcmd)
-			for line in netsh_output:
-				#print line
-				if " fd48:8bea:68a5:" in line:
+			output = self.win_return_netsh_cmd(netshcmd)
+			if not output == False:
+				for line in output:
 					#print line
-					ipv6addr = line.split("    ")[2]
-					#print ipv6addr
-					if ipv6addr.startswith("fd48:8bea:68a5:"):
-						cmdstring = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
-						self.NETSH_CMDLIST.append(netshcmd)
+					if " fd48:8bea:68a5:" in line:
+						#print line
+						ipv6addr = line.split("    ")[2]
+						#print ipv6addr
+						if ipv6addr.startswith("fd48:8bea:68a5:"):
+							cmdstring = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
+							self.NETSH_CMDLIST.append(netshcmd)
 			if len(self.NETSH_CMDLIST) > 0:
 				self.win_join_netsh_cmd()
 		except Exception as e:
@@ -3922,11 +3949,11 @@ class Systray:
 	def win_clear_ipv6_addr(self):
 		self.debug(1,"def win_clear_ipv6_addr()")
 		try:
-			try:
-				netshcmd = 'interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
-				netsh_output = self.win_return_netsh_cmd(netshcmd)
+			netshcmd = 'interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
+			output = self.win_return_netsh_cmd(netshcmd)
+			if not output == False:
 				try:
-					for line in netsh_output:
+					for line in output:
 						if " fd48:8bea:68a5:" in line or " fe80:" in line:
 							self.debug(1,"def win_clear_ipv6_addr: found: line = '%s'" % (line))
 							if not "%" in line:
@@ -3936,9 +3963,7 @@ class Systray:
 					if len(self.NETSH_CMDLIST) > 0:
 						self.win_join_netsh_cmd()
 				except Exception as e:
-					self.debug(1,"def win_clear_ipv6_addr: failed #2")
-			except Exception as e:
-				self.debug(1,"def win_clear_ipv6_addr: failed #1")
+					self.debug(1,"def win_clear_ipv6_addr: failed #2, exception = '%s'"%(e))
 		except Exception as e:
 			self.debug(1,"def win_clear_ipv6_addr: failed, exception = '%s'"%(e))
 
@@ -3946,13 +3971,14 @@ class Systray:
 		self.debug(1,"def win_clear_ipv6_routes()")
 		try:
 			netshcmd = 'interface ipv6 show route'
-			netsh_output = self.win_return_netsh_cmd(netshcmd)
-			for line in netsh_output:
-				if " fd48:8bea:68a5:" in line or " fe80:" in line:
-					self.debug(1,"def win_clear_ipv6_routes: found: line = '%s'" % (line))
-					ipv6 = line.split()[3]
-					output = self.win_return_route_cmd("DELETE %s" % (ipv6))
-					self.debug(1,"def win_clear_ipv6_routes: %s %s" % (ipv6,output))
+			output = self.win_return_netsh_cmd(netshcmd)
+			if not output == False:
+				for line in output:
+					if " fd48:8bea:68a5:" in line or " fe80:" in line:
+						self.debug(1,"def win_clear_ipv6_routes: found: line = '%s'" % (line))
+						ipv6 = line.split()[3]
+						output = self.win_return_route_cmd("DELETE %s" % (ipv6))
+						self.debug(1,"def win_clear_ipv6_routes: %s %s" % (ipv6,output))
 		except Exception as e:
 			self.debug(1,"def win_clear_ipv6_routes: failed, exception = '%s'"%(e))
 
@@ -4183,7 +4209,7 @@ class Systray:
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
-		for entry,value in self.WHITELIST_PUBLIC_PROFILE.iteritems():
+		for entry,value in self.WHITELIST_PUBLIC_PROFILE.items():
 			ip = value["ip"]
 			port = value["port"]
 			protocol = value["proto"]
@@ -4301,12 +4327,22 @@ class Systray:
 			if TESTENCODING == True:
 				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
+				self.debug(2,"win_return_netsh_cmd: netshcmd = '%s'"%(netshcmd))
 				read = subprocess.check_output(netshcmd,shell=True)
-				output = read.strip().split('\r\n')
-				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
-				return output
+				self.debug(2,"win_return_netsh_cmd: read = '%s'"%(read))
+				output0 = str(read)
+				self.debug(2,"def win_return_netsh_cmd: output0 = '%s'" % (output0))
+				output1 = output0.strip()				
+				self.debug(2,"def win_return_netsh_cmd: output1 = '%s'" % (output1))
+				output2 = output1.split('\\r\\n')
+				self.debug(0,"def win_return_netsh_cmd: output2 = '%s'" % (output2))
+				return output2
+				#output = read.strip().split('\r\n')
+				#self.debug(1,"def win_return_netsh_cmd: output = '%s'" % (output))
+				#return output
 			except Exception as e:
 				self.debug(1,"def win_return_netsh_cmd: '%s' failed, exception = '%s'" % (netshcmd,e))
+			return False
 		else:
 			self.errorquit(text=_("Error: netsh.exe not found!"))
 
@@ -4341,11 +4377,18 @@ class Systray:
 		self.debug(1,"def win_return_route_cmd()")
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
+			#routecmd = routecmd.encode('utf-8')
 			try: 
+				self.debug(2,"win_return_route_cmd: routecmd = '%s'"%(routecmd))
 				read = subprocess.check_output(routecmd,shell=True)
-				output = read.strip().split('\r\n')
-				self.debug(5,"def win_return_route_cmd: output = '%s'" % (output))
-				return output
+				self.debug(2,"win_return_route_cmd: read = '%s'"%(read))
+				output0 = str(read)
+				self.debug(2,"def win_return_route_cmd: output0 = '%s'" % (output0))
+				output1 = output0.strip()				
+				self.debug(2,"def win_return_route_cmd: output1 = '%s'" % (output1))
+				output2 = output1.split('\\r\\n')
+				self.debug(0,"def win_return_route_cmd: output2 = '%s'" % (output2))
+				return output2
 			except Exception as e:
 				self.debug(1,"def win_return_route_cmd: '%s' failed, exception = '%s'" % (routecmd,e))
 				return False
@@ -4405,16 +4448,18 @@ class Systray:
 			self.errorquit(text=_("ipconfig.exe not found!"))
 
 	def isValueIPv4(self,value):
-		#self.debug(99,"def isValueIPv4()")
+		self.debug(2,"def isValueIPv4()")
 		try:
 			if len(value.split('.')) == 4:
 				for n in value.split('.'):
-					if n.isdigit():
-						self.debug(50,"def isValueIPv4: n = %s"%(n))
-						if not n >= 0 and not n <= 255:
-							return False
+					ni = int(n)
+					#if ni.isdigit():
+					self.debug(2,"def isValueIPv4: n = %s"%(n))
+					if not ni >= 0 and not ni <= 255:
+						return False
 				return True
 		except Exception as e:
+			self.debug(1,"def isValueIPv4: failed, exception = '%s'"%(e))
 			return False
 
 	# *** fixme ***
@@ -4487,10 +4532,10 @@ class Systray:
 			if self.USERID == False:
 				userid = useridEntry.get_text().rstrip()
 			else:
-				userid = self.USERID
+				userid = int(self.USERID)
 			apikey = apikeyEntry.get_text().rstrip()
 			self.debug(1,"def response_dialog_apilogin: Gtk.ResponseType.OK userid = '%s'"%(userid))
-			if userid.isdigit() and userid > 1 and (len(apikey) == 0 or (len(apikey) == 128 and apikey.isalnum())) and (self.USERID == False or self.USERID == userid):
+			if userid > 1 and (len(apikey) == 0 or (len(apikey) == 128 and apikey.isalnum())) and (self.USERID == False or self.USERID == userid):
 				dialog.destroy()
 				saveph = checkbox.get_active()
 				if saveph == True:
@@ -4675,7 +4720,7 @@ class Systray:
 			response = dialogWindow.run()
 			if response == Gtk.ResponseType.CANCEL:
 				dialogWindow.destroy()
-				print "response: btn cancel %s" % (response)
+				#print "response: btn cancel %s" % (response)
 				return False
 			elif response == Gtk.ResponseType.OK:
 				WIDTH = widthEntry.get_text().rstrip()
@@ -4725,7 +4770,7 @@ class Systray:
 			response = dialogWindow.run()
 			if response == Gtk.ResponseType.CANCEL:
 				dialogWindow.destroy()
-				print "response: btn cancel %s" % (response)
+				#print "response: btn cancel %s" % (response)
 				return False
 			elif response == Gtk.ResponseType.OK:
 				try:
@@ -4773,7 +4818,7 @@ class Systray:
 				x = 0
 				for cellid in self.MAINWINDOW_ALLOWCELLHIDE:
 					cellname = self.MAINWINDOW_CELLINDEX[cellid]
-					print cellname
+					#print cellname
 					button = Gtk.ToggleButton(label=cellname)
 					if cellid in self.MAINWINDOW_SHOWCELLS:
 						button.set_active(True)
@@ -4886,79 +4931,53 @@ class Systray:
 					return False
 		except Exception as e:
 			self.debug(1,"def extract_ovpn: failed, exception = '%s'"%(e))
-	
+
 	def API_REQUEST(self,API_ACTION):
 		self.debug(1,"def API_REQUEST(%s)"%(API_ACTION))
 		if self.APIKEY == False:
-			self.msgwarn(_("No API-Key!"),_("No API-Key!"))
+			self.msgwarn(_("No API Key!"),_("No API Key!"))
 			return False
 		
-		if API_ACTION == "auth":
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+		if not self.load_ca_cert():
+			self.debug(1,"def API_REQUEST: load_ca_cert() failed, exception = '%s'"%(e))
+			return False
 			
-		if API_ACTION == "lastupdate":
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
-		
-		if API_ACTION == "getconfigs":
-			if os.path.isfile(self.zip_cfg): 
-				os.remove(self.zip_cfg)
-			values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }
-		
-		
-		self.body = False
-		
-		self.debug(1,"def API_REQUEST: API_ACTION = %s" % (API_ACTION))
-		
 		try:
-		
-			if not self.load_ca_cert():
-				self.debug(1,"def API_REQUEST: load_ca_cert() failed, exception = '%s'"%(e))
-				return False
-		
 			HEADERS = request_api.useragent(self.DEBUG)
-			r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
-			
-			if API_ACTION == "getconfigs" or API_ACTION == "getcerts":
-				self.body = r.content
-			else:
-				self.body = r.text
-			
-			if self.body == "AUTHERROR":
-				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("API Login Error"))
-				return False
-			elif API_ACTION == "auth" and self.body == "AUTHOK:True":
-				self.msgwarn(_("API Login OK!"),_("API Login OK!"))
-				return True
-			
-			if self.body.isalnum() and len(self.body) <= 128:
-				self.debug(1,"def API_REQUEST: self.body = %s"%(self.body))
-		
-		except Exception as e:
-			self.msgwarn(_("API requests on: %s failed!") % (API_ACTION),_("Error: def API_REQUEST"))
-			return False
-		
-		if not self.body == False:
-			
-			if not self.body == "AUTHERROR":
-				self.curldata = self.body.split(":")
-				if self.curldata[0] == "AUTHOK":
-					self.curldata = self.curldata[1]
-					self.debug(1,"def API_REQUEST: self.curldata = '%s'" % (self.curldata))
+			if API_ACTION == "auth" or API_ACTION == "lastupdate":
+				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+				r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
+				response = r.text
+				if response == "AUTHERROR":
+					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("API Login Error"))
+					self.timer_check_certdl_running = False
+					return False
+				elif response == "AUTHOK:True":
+					self.msgwarn(_("API Login OK!"),_("API Login OK!"))
 					return True
+				elif response.startswith("AUTHOK:1"):
+					data = response.split(":")
+					if data[0] == "AUTHOK":
+						self.curldata = int(data[1])
+						return True
+				else:
+					self.debug(1,"def API_REQUEST: response = '%s'"%(response))
 			else:
-				self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error: def API_REQUEST"))
-				self.body = False
-				self.timer_check_certdl_running = False
-				return False
-			
-			if API_ACTION == "getconfigs":
+				if os.path.isfile(self.zip_cfg):
+					os.remove(self.zip_cfg)
+				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }
+				r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
 				try:
 					fp = open(self.zip_cfg, "wb")
-					fp.write(self.body)
+					fp.write(r.content)
 					fp.close()
 					return True
 				except Exception as e:
+					self.debug(1,"def API_REQUEST: failed write config, exception = '%s'"%(e))
 					return False
+			
+		except Exception as e:
+			self.debug(1,"def API_REQUEST: failed, exception = '%s'"%(e))
 
 	def check_inet_connection(self):
 		self.debug(7,"def check_inet_connection()")
@@ -4992,22 +5011,27 @@ class Systray:
 			i += 1
 		return False
 
-
 	def check_myip(self):
-		self.debug(7,"def check_myip()")
+		self.debug(1,"def check_myip()")
 		# *** fixme *** missing ipv6 support
 		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
 				return True
 			try:
+				self.debug(1,"def check_myip: debug 01")
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
 				HEADERS = request_api.useragent(self.DEBUG)
+				self.debug(1,"def check_myip: debug 02")
 				r = requests.get(url,timeout=3,headers=HEADERS)
-				rip = r.content.strip().split()[0]
+				self.debug(1,"def check_myip: debug 03")
+				rip = r.content.strip().split()[0].decode('utf8')
+				self.debug(1,"def check_myip: debug 04, rip = '%s', self.OVPN_CONNECTEDtoIP = '%s'"%(rip,self.OVPN_CONNECTEDtoIP))
 				if rip == self.OVPN_CONNECTEDtoIP:
+					self.debug(1,"def check_myip: debug 05")
 					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP")
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
+				self.debug(1,"def check_myip: debug 06")
 			except Exception as e:
 				self.debug(1,"def check_myip: failed, exception = '%s'"%(e))
 				return False
@@ -5173,9 +5197,9 @@ class Systray:
 		try:
 			texta = ""
 			textb = ""
-			for key,value in sorted(newdata.iteritems()):
+			for key,value in sorted(newdata.items()):
 				texta = "%s %s %s" % (texta,key,value)
-			for key,value in sorted(olddata.iteritems()):
+			for key,value in sorted(olddata.items()):
 				textb = "%s %s %s" % (textb,key,value)
 			hasha = hashlib.sha256(texta).hexdigest()
 			hashb = hashlib.sha256(textb).hexdigest()
@@ -5308,6 +5332,7 @@ class Systray:
 	def upgrade_openvpn(self):
 		self.debug(1,"def upgrade_openvpn()")
 		if self.load_openvpnbin_from_remote():
+			print("debug 4.1.1")
 			return self.win_install_openvpn()
 
 	""" *fixme* move to openvpn.py """
@@ -5316,6 +5341,7 @@ class Systray:
 		self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.VPN_DIR,openvpn.values(DEBUG)["SETUP_FILENAME"])
 		self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
 		if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
+			print("debug 4.1.2")
 			return self.verify_openvpnbin_dl()
 		else:
 			if self.check_inet_connection() == False:
@@ -5424,9 +5450,14 @@ class Systray:
 			return False
 
 	def win_detect_openvpn(self):
-		try:
+		y = True
+		if y:
+		#try:
+			print("debug 1")
 			values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
+			print("debug 2")
 			if not values == False:
+				print("debug 3")
 				self.OPENVPN_DIR = values["OPENVPN_DIR"]
 				self.OPENVPN_EXE = values["OPENVPN_EXE"]
 				self.debug(1,"def win_detect_openvpn: DIR = '%s', EXE = '%s'"%(self.OPENVPN_DIR,self.OPENVPN_EXE))
@@ -5438,22 +5469,28 @@ class Systray:
 				if self.win_dialog_select_openvpn() == True:
 					if self.win_detect_openvpn == True:
 						return True
-			
+			print("debug 4")
 			if self.upgrade_openvpn() == True:
+				print("debug 4.1")
 				if self.win_detect_openvpn() == True:
+					print("debug 4.2")
 					return True
+				print("debug 4.3")
 			else:
 				if self.verify_openvpnbin_dl() == True:
 					self.msgwarn(_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE),_("Info"))
 				else:
 					self.msgwarn(_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]),_("Error"))
-			
+			print("debug 5")
 			if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-				if openvpn.win_get_openvpn_version(self.DEBUG,self.OPENVPN_DIR)[0] in openvpn.values(self.DEBUG)["ALLOWED_VERSIONS"]:
-					self.debug(1,"def win_detect_openvpn: OVPN_VERSION in openvpn.values(DEBUG)[ALLOWED_VERSIONS]: True")
-					return True
-		except Exception as e:
-			self.debug(1,"def win_detect_openvpn: failed, exception = '%s'"%(e))
+				print("debug 6")
+				return True
+				#if openvpn.win_get_openvpn_version(self.DEBUG,self.OPENVPN_DIR)[0] in openvpn.values(self.DEBUG)["ALLOWED_VERSIONS"]:
+				#	print("debug 7")
+				#	self.debug(1,"def win_detect_openvpn: OVPN_VERSION in openvpn.values(DEBUG)[ALLOWED_VERSIONS]: True")
+				#	return True
+		#except Exception as e:
+		#	self.debug(1,"def win_detect_openvpn: failed, exception = '%s'"%(e))
 		return False
 
 	def check_dns_is_whitelisted(self):
