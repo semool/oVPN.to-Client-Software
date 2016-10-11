@@ -2,8 +2,11 @@
 import debug
 DEBUG = debug.getmode("DEBUG")
 DEVMODE = debug.getmode("DEVMODE")
+TESTENCODING = debug.getmode("TESTENCODING")
+D0WNDNS = debug.getmode("D0WNDNS")
 DEV_DIR=debug.devdir()
-if DEVMODE == True:	DEBUG = True
+if DEVMODE == True:	
+	DEBUG = True
 	
 import sys
 try:
@@ -31,7 +34,7 @@ import request_api
 import shlex
 
 """
-if DEVMODE == True:
+if TESTENCODING == True:
 	try:
 		reload(sys)
 		sys.setdefaultencoding('utf_8')
@@ -71,9 +74,6 @@ try:
 		BUILT_STRING = "(UNDEFINED)"
 	print BUILT_STRING
 
-	if DEVMODE == True:
-		print "DEVMODE sleep 3"
-		time.sleep(3)
 except Exception as e:
 	print "import release_version failed"
 	sys.exit()
@@ -1255,7 +1255,7 @@ class Systray:
 		try:
 			self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
 			
-			if self.DEVMODE == True and len(self.d0wns_DNS) == 0:
+			if D0WNDNS == True and len(self.d0wns_DNS) == 0:
 				self.load_d0wns_dns()
 			
 			dnsmenu = Gtk.Menu()
@@ -4311,7 +4311,7 @@ class Systray:
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
 			""" *fixme* encoding"""
-			if DEVMODE == True:
+			if TESTENCODING == True:
 				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
 				read = subprocess.check_output(netshcmd,shell=True)
@@ -4330,7 +4330,7 @@ class Systray:
 			for cmd in self.NETSH_CMDLIST:
 				netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
 				""" *fixme* encoding"""
-				if DEVMODE == True:
+				if TESTENCODING == True:
 					netshcmd = netshcmd.encode(locale.getpreferredencoding())
 				try: 
 					exitcode = subprocess.call(netshcmd,shell=True)
@@ -5519,7 +5519,7 @@ class Systray:
 
 	def d0wn_dns_entrys(self):
 		dnsdata = False
-		if self.DEVMODE == True:
+		if D0WNDNS == True:
 			if not os.path.isfile(self.dns_d0wntxt):
 				if not self.load_d0wns_dns_from_remote():
 					self.debug(1,"def d0wn_dns_entrys: self.load_d0wns_dns_from_remote() failed!")
@@ -5593,7 +5593,7 @@ class Systray:
 
 	def load_d0wns_dns_from_remote(self):
 		return False
-		if self.DEVMODE == True:
+		if D0WNDNS == True:
 			self.debug(1,"def load_d0wns_dns_from_remote()")
 			try:
 				if not os.path.isfile(self.dns_d0wntxt):
