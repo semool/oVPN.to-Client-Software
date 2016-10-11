@@ -33,21 +33,21 @@ import hashings
 import request_api
 import shlex
 
-"""
+
 if TESTENCODING == True:
 	try:
-		reload(sys)
-		sys.setdefaultencoding('utf_8')
+		#reload(sys)
+		#sys.setdefaultencoding('utf_8')
 		print "sys.stdout.encoding = %s" % sys.stdout.encoding
 		print "sys.stdout.isatty() = %s" % sys.stdout.isatty()
 		print "locale.getpreferredencoding() = %s" % locale.getpreferredencoding()
 		print "sys.getfilesystemencoding() = %s" %sys.getfilesystemencoding()
 		print "os.environ PYTHONIOENCODING = %s" % (os.environ["PYTHONIOENCODING"])
-		time.sleep(3)
+		time.sleep(5)
 	except Exception as e:
 		print "print encoding failed"
 		time.sleep(3)
-"""
+
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -4314,7 +4314,7 @@ class Systray:
 			if TESTENCODING == True:
 				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
-				read = subprocess.check_output(netshcmd,shell=True)
+				read = subprocess.check_output(netshcmd,shell=True,universal_newlines=True)
 				output = read.strip().split('\r\n')
 				self.debug(5,"def win_return_netsh_cmd: output = '%s'" % (output))
 				return output
@@ -4333,7 +4333,7 @@ class Systray:
 				if TESTENCODING == True:
 					netshcmd = netshcmd.encode(locale.getpreferredencoding())
 				try: 
-					exitcode = subprocess.call(netshcmd,shell=True)
+					exitcode = subprocess.call(netshcmd,shell=True,universal_newlines=True)
 					if exitcode == 0:
 						self.debug(1,"netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
 						i+=1
