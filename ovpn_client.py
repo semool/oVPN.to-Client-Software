@@ -6,7 +6,7 @@ DEVMODE = debug.getmode("DEVMODE")
 TESTENCODING = debug.getmode("TESTENCODING")
 D0WNDNS = debug.getmode("D0WNDNS")
 DEV_DIR=debug.devdir()
-if DEVMODE == True:	
+if DEVMODE == True:
 	DEBUG = True
 	
 import sys
@@ -3722,6 +3722,10 @@ class Systray:
 			self.OVPN_PING_LAST = -1
 			self.NEXT_PING_EXEC = 0
 			self.reset_load_remote_timer()
+			if self.TAP_BLOCKOUTBOUND == True:
+				self.win_firewall_tap_blockoutbound()
+			self.win_netsh_set_dns_ovpn()
+			self.win_enable_ext_interface()
 			self.STATE_OVPN = True
 			self.inThread_jump_server_running = False
 			if self.timer_ovpn_ping_running == False:
@@ -3729,17 +3733,12 @@ class Systray:
 				pingthread = threading.Thread(target=self.inThread_timer_ovpn_ping)
 				pingthread.daemon = True
 				pingthread.start()
-			if self.TAP_BLOCKOUTBOUND == True:
-				self.win_firewall_tap_blockoutbound()
-			self.win_netsh_set_dns_ovpn()
 			self.call_redraw_mainwindow()
-			self.win_enable_ext_interface()
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
-			#self.inThread_jump_server_running = False
 			try:
-				#exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
-				cmdargs = shlex.split(self.OVPN_STRING)
-				exitcode = subprocess.check_call(cmdargs)
+				exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
+				#cmdargs = shlex.split(self.OVPN_STRING)
+				#exitcode = subprocess.check_call(cmdargs)
 			except Exception as e:
 				self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
 			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
@@ -4312,7 +4311,7 @@ class Systray:
 	def win_enable_ext_interface(self):
 		self.debug(1,"def win_enable_ext_interface()")
 		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
-		self.win_join_netsh_cmd()
+		return self.win_join_netsh_cmd()
 
 	def win_firewall_analyze(self):
 		return
@@ -4535,7 +4534,7 @@ class Systray:
 		elif response_id == Gtk.ResponseType.OK:
 			self.debug(1,"def response_dialog_apilogin: Gtk.ResponseType.OK self.USERID = '%s'"%(self.USERID))
 			if self.USERID == False:
-				userid = useridEntry.get_text().rstrip()
+				userid = int(useridEntry.get_text().rstrip())
 			else:
 				userid = int(self.USERID)
 			apikey = apikeyEntry.get_text().rstrip()
