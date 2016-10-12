@@ -4363,11 +4363,8 @@ class Systray:
 			i=0
 			for cmd in self.NETSH_CMDLIST:
 				netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
-				""" *fixme* encoding"""
-				if TESTENCODING == True:
-					netshcmd = netshcmd.encode(locale.getpreferredencoding())
 				try: 
-					exitcode = subprocess.call(netshcmd,shell=True)
+					exitcode = subprocess.check_call(netshcmd,shell=True)
 					if exitcode == 0:
 						self.debug(1,"netshOK: '%s': exitcode = %s" % (netshcmd,exitcode))
 						i+=1
@@ -4388,18 +4385,12 @@ class Systray:
 		self.debug(1,"def win_return_route_cmd()")
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
-			#routecmd = routecmd.encode('utf-8')
 			try: 
 				self.debug(2,"win_return_route_cmd: routecmd = '%s'"%(routecmd))
-				read = subprocess.check_output(routecmd,shell=True)
-				self.debug(2,"win_return_route_cmd: read = '%s'"%(read))
-				output0 = str(read)
-				self.debug(2,"def win_return_route_cmd: output0 = '%s'" % (output0))
-				output1 = output0.strip()				
-				self.debug(2,"def win_return_route_cmd: output1 = '%s'" % (output1))
-				output2 = output1.split('\\r\\n')
-				self.debug(0,"def win_return_route_cmd: output2 = '%s'" % (output2))
-				return output2
+				output = subprocess.check_output(routecmd,shell=True)
+				self.debug(2,"win_return_route_cmd: output = '%s'"%(output))
+				output0 = output.decode('utf-8').strip().splitlines()
+				return output0
 			except Exception as e:
 				self.debug(1,"def win_return_route_cmd: '%s' failed, exception = '%s'" % (routecmd,e))
 				return False
