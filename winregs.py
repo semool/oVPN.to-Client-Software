@@ -1,42 +1,15 @@
 # -*- coding: utf-8 -*-
 import os, sys, time, subprocess, netifaces, locale
-from debug import debug
 from winreg import *
+# .py file imports
+from debug import debug
+import encodes
 
-#encoding = locale.getpreferredencoding()
-#encoding = sys.getfilesystemencoding()
-#encoding = 'windows-1252'
-#encoding = sys.stdout.encoding
+
 decoding = 'utf_8'
 # debug(1,"[winregs.py] def abcd1234: failed, exception = '%s'"%(e),DEBUG,True)
 
 
-def logencoding(DEBUG):
-
-	try:
-		debug(1,"[winregs.py] def logencoding: #1 sys.stdout.encoding = %s" % (sys.stdout.encoding),DEBUG,True)
-	except Exception as e:
-		debug(1,"[winregs.py] def logencoding: #1 failed, exception = '%s'"%(e),DEBUG,True)
-
-	try:
-		debug(1,"[winregs.py] def logencoding: #2 sys.stdout.isatty() = %s" % sys.stdout.isatty(),DEBUG,True)
-	except Exception as e:
-		debug(1,"[winregs.py] def logencoding: #2 failed, exception = '%s'"%(e),DEBUG,True)
-
-	try:
-		debug(1,"[winregs.py] def logencoding: #3 locale.getpreferredencoding() = %s" % locale.getpreferredencoding(),DEBUG,True)
-	except Exception as e:
-		debug(1,"[winregs.py] def logencoding: #3 failed, exception = '%s'"%(e),DEBUG,True)
-
-	try:
-		debug(1,"[winregs.py] def logencoding: #4 sys.getfilesystemencoding() = %s" %sys.getfilesystemencoding(),DEBUG,True)
-	except Exception as e:
-		debug(1,"[winregs.py] def logencoding: #4 failed, exception = '%s'"%(e),DEBUG,True)
-
-	try:
-		debug(1,"[winregs.py] def logencoding: #5 os.environ PYTHONIOENCODING = %s" % (os.environ["PYTHONIOENCODING"]),DEBUG,True)
-	except Exception as e:
-		debug(1,"[winregs.py] def logencoding: #5 failed, exception = '%s'"%(e),DEBUG,True)
 
 def get_uninstall_progs():
 	aReg = ConnectRegistry(None,HKEY_LOCAL_MACHINE)
@@ -59,14 +32,13 @@ def get_networkadapter_guids():
 	return netifaces.interfaces()
 
 def get_networkadapterlist_from_netsh(DEBUG):
-	logencoding(DEBUG)
+	encodes.logencoding(DEBUG)
 	debug(1,"[winregs.py] def get_networkadapterlist_from_netsh()",DEBUG,True)
 	cmdstring = "netsh.exe interface show interface"
 	try:
 		output = subprocess.check_output(cmdstring,shell=True)
 		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: output = '%s'"%(output),DEBUG,True)
-		output0 = output.decode(decoding).splitlines()
-		#output0 = output.splitlines()
+		output0 = encodes.code_fiesta(DEBUG,'decode',output,'get_networkadapterlist_from_netsh').strip().splitlines()
 		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: output0 = '%s'"%(output0),DEBUG,True)
 		return output0
 	except Exception as e:
@@ -122,8 +94,11 @@ def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 		print("get_tapadapters debug 00")
 		if os.path.isfile(OPENVPN_EXE):
 			cmdstring = '"%s" --show-adapters' % (OPENVPN_EXE)
-			TAPADAPTERS = subprocess.check_output(cmdstring,shell=True)
-			TAPADAPTERS = TAPADAPTERS.decode(decoding).splitlines()
+			output = subprocess.check_output(cmdstring,shell=True)
+			output0 = encodes.code_fiesta(DEBUG,'decode',output,'get_tapadapters').strip().splitlines()
+			TAPADAPTERS = output0
+			#TAPADAPTERS = TAPADAPTERS.decode(decoding).splitlines()
+			#TAPADAPTERS = TAPADAPTERS.decode(decoding).splitlines()
 			#TAPADAPTERS = TAPADAPTERS.splitlines()
 			TAPADAPTERS.pop(0)
 			TAP_DEVS = list()

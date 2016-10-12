@@ -35,6 +35,7 @@ import openvpn
 import signtool
 import hashings
 import request_api
+import encodes
 
 #from io import BytesIO
 
@@ -4349,8 +4350,7 @@ class Systray:
 				self.debug(2,"win_return_netsh_cmd: netshcmd = '%s'"%(netshcmd))
 				output = subprocess.check_output(netshcmd,shell=True)
 				self.debug(2,"win_return_netsh_cmd: output = '%s'"%(output))
-				output0 = output.decode(decoding).strip().splitlines()
-				#output0 = output.decode(sys.stdout.encoding).strip().splitlines()
+				output0 = encodes.code_fiesta(self.DEBUG,'decode',output,'win_return_netsh_cmd').strip().splitlines()
 				self.debug(2,"def win_return_netsh_cmd: output0 = '%s'" % (output0))
 				return output0
 			except Exception as e:
@@ -4391,8 +4391,8 @@ class Systray:
 				self.debug(2,"win_return_route_cmd: routecmd = '%s'"%(routecmd))
 				output = subprocess.check_output(routecmd,shell=True)
 				self.debug(2,"win_return_route_cmd: output = '%s'"%(output))
-				output0 = output.decode(decoding).strip().splitlines()
-				#output0 = output.decode(sys.stdout.encoding).strip().splitlines()
+				output0 = encodes.code_fiesta(self.DEBUG,'decode',output,'win_return_route_cmd').strip().splitlines()
+				self.debug(2,"win_return_route_cmd: output0 = '%s'"%(output0))
 				return output0
 			except Exception as e:
 				self.debug(1,"def win_return_route_cmd: '%s' failed, exception = '%s'" % (routecmd,e))
