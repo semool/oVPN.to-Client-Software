@@ -3,10 +3,11 @@ import os, sys, time, subprocess, netifaces, locale
 from debug import debug
 from winreg import *
 
-encoding = locale.getpreferredencoding()
-encoding = sys.getfilesystemencoding()
-encoding = 'windows-1252'
-encoding = sys.stdout.encoding
+#encoding = locale.getpreferredencoding()
+#encoding = sys.getfilesystemencoding()
+#encoding = 'windows-1252'
+#encoding = sys.stdout.encoding
+decoding = 'utf_8'
 # debug(1,"[winregs.py] def abcd1234: failed, exception = '%s'"%(e),DEBUG,True)
 
 
@@ -64,7 +65,8 @@ def get_networkadapterlist_from_netsh(DEBUG):
 	try:
 		output = subprocess.check_output(cmdstring,shell=True)
 		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: output = '%s'"%(output),DEBUG,True)
-		output0 = output.decode(encoding).splitlines()
+		output0 = output.decode(decoding).splitlines()
+		#output0 = output.splitlines()
 		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: output0 = '%s'"%(output0),DEBUG,True)
 		return output0
 	except Exception as e:
@@ -121,7 +123,8 @@ def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 		if os.path.isfile(OPENVPN_EXE):
 			cmdstring = '"%s" --show-adapters' % (OPENVPN_EXE)
 			TAPADAPTERS = subprocess.check_output(cmdstring,shell=True)
-			TAPADAPTERS = TAPADAPTERS.decode(encoding).splitlines()
+			TAPADAPTERS = TAPADAPTERS.decode(decoding).splitlines()
+			#TAPADAPTERS = TAPADAPTERS.splitlines()
 			TAPADAPTERS.pop(0)
 			TAP_DEVS = list()
 			for line in TAPADAPTERS:

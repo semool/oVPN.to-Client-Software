@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+decoding = 'utf_8'
 import debug
 DEBUG = debug.getmode("DEBUG")
 DEVMODE = debug.getmode("DEVMODE")
@@ -4348,8 +4349,8 @@ class Systray:
 				self.debug(2,"win_return_netsh_cmd: netshcmd = '%s'"%(netshcmd))
 				output = subprocess.check_output(netshcmd,shell=True)
 				self.debug(2,"win_return_netsh_cmd: output = '%s'"%(output))
-				#output0 = output.decode('utf-8').strip().splitlines()
-				output0 = output.decode(sys.stdout.encoding).strip().splitlines()
+				output0 = output.decode(decoding).strip().splitlines()
+				#output0 = output.decode(sys.stdout.encoding).strip().splitlines()
 				self.debug(2,"def win_return_netsh_cmd: output0 = '%s'" % (output0))
 				return output0
 			except Exception as e:
@@ -4390,8 +4391,8 @@ class Systray:
 				self.debug(2,"win_return_route_cmd: routecmd = '%s'"%(routecmd))
 				output = subprocess.check_output(routecmd,shell=True)
 				self.debug(2,"win_return_route_cmd: output = '%s'"%(output))
-				#output0 = output.decode('utf-8').strip().splitlines()
-				output0 = output.decode(sys.stdout.encoding).strip().splitlines()
+				output0 = output.decode(decoding).strip().splitlines()
+				#output0 = output.decode(sys.stdout.encoding).strip().splitlines()
 				return output0
 			except Exception as e:
 				self.debug(1,"def win_return_route_cmd: '%s' failed, exception = '%s'" % (routecmd,e))
@@ -5033,7 +5034,7 @@ class Systray:
 				self.debug(2,"def check_myip: debug 02")
 				r = requests.get(url,timeout=3,headers=HEADERS)
 				self.debug(2,"def check_myip: debug 03")
-				rip = r.content.strip().split()[0].decode('utf8')
+				rip = r.content.strip().split()[0].decode(decoding)
 				self.debug(2,"def check_myip: debug 04, rip = '%s', self.OVPN_CONNECTEDtoIP = '%s'"%(rip,self.OVPN_CONNECTEDtoIP))
 				if rip == self.OVPN_CONNECTEDtoIP:
 					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP")
