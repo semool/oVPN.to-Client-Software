@@ -3960,7 +3960,7 @@ class Systray:
 						ipv6addr = line.split("    ")[2]
 						#print ipv6addr
 						if ipv6addr.startswith("fd48:8bea:68a5:"):
-							cmdstring = 'netsh.exe interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
+							cmdstring = 'interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
 							self.NETSH_CMDLIST.append(netshcmd)
 			if len(self.NETSH_CMDLIST) > 0:
 				self.win_join_netsh_cmd()
@@ -4344,23 +4344,13 @@ class Systray:
 		self.debug(1,"def win_return_netsh_cmd()")
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
-			""" *fixme* encoding"""
-			if TESTENCODING == True:
-				netshcmd = netshcmd.encode(locale.getpreferredencoding())
 			try: 
 				self.debug(2,"win_return_netsh_cmd: netshcmd = '%s'"%(netshcmd))
-				read = subprocess.check_output(netshcmd,shell=True)
-				self.debug(2,"win_return_netsh_cmd: read = '%s'"%(read))
-				output0 = str(read)
+				output = subprocess.check_output(netshcmd,shell=True)
+				self.debug(2,"win_return_netsh_cmd: output = '%s'"%(output))
+				output0 = output.decode('utf-8').strip().splitlines()
 				self.debug(2,"def win_return_netsh_cmd: output0 = '%s'" % (output0))
-				output1 = output0.strip()
-				self.debug(2,"def win_return_netsh_cmd: output1 = '%s'" % (output1))
-				output2 = output1.split('\\r\\n')
-				self.debug(0,"def win_return_netsh_cmd: output2 = '%s'" % (output2))
-				return output2
-				#output = read.strip().split('\r\n')
-				#self.debug(1,"def win_return_netsh_cmd: output = '%s'" % (output))
-				#return output
+				return output0
 			except Exception as e:
 				self.debug(1,"def win_return_netsh_cmd: '%s' failed, exception = '%s'" % (netshcmd,e))
 			return False
