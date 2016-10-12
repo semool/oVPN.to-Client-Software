@@ -1,10 +1,11 @@
 # -*- coding: utf-8
-import os, shutil, struct
-from _winreg import *
+import os, shutil, struct, time
+from winreg import *
 BITS = struct.calcsize("P") * 8
 
 
 def patch_gtkdll():
+	return True
 	unsigned_dir = "includes\\DLL\\%s\\unsigned" % (BITS)
 	gtkfile = "%s\\libgtk-3-0.dll" % (unsigned_dir)
 	if not os.path.exists(gtkfile):
@@ -22,7 +23,7 @@ def patch_gtkdll():
 		pixel_32 = "\x20"
 		
 		if os.path.exists(gtkfile32):
-			print "delete alread patched file '%s' before patching" % (gtkfile32)
+			print("delete alread patched file '%s' before patching" % (gtkfile32))
 			return False
 		
 		try:
@@ -37,16 +38,17 @@ def patch_gtkdll():
 				f2.seek(offset)
 				checkoffset = f2.read(1)
 				if checkoffset == pixel_16:
-					print "write pixel to file '%s'"  % (gtkfile32tmp)
+					print("write pixel to file '%s'"  % (gtkfile32tmp))
 					f2.seek(offset)
 					f2.write(pixel_32)
 				f2.close()
 			shutil.move(gtkfile32tmp, gtkfile32)
-			print "move tmp file to '%s'"  % (gtkfile32)
-		except:
-			print "patch_gtkdll() failed"
+			print("move tmp file to '%s'"  % (gtkfile32))
+			time.sleep(5)
+		except Exception as e:
+			print("patch_gtkdll() failed, exception = '%s'"%(e))
 	
 	else:
-		print "gtkfile '%s' not found" % (gtkfile)
+		print("gtkfile '%s' not found" % (gtkfile))
 
 patch_gtkdll()

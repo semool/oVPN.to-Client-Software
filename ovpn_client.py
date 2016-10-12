@@ -20,12 +20,12 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
-import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string, re
-#from ConfigParser import SafeConfigParser
-from backports import configparser
-from configparser import SafeConfigParser
-# .py files imports
+import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string, re, shlex
 
+import configparser
+#from configparser import SafeConfigParser
+
+# .py files imports
 import winregs
 import icons_b64
 import schedule_task
@@ -34,8 +34,8 @@ import openvpn
 import signtool
 import hashings
 import request_api
-import shlex
-from io import BytesIO
+
+#from io import BytesIO
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -595,9 +595,13 @@ class Systray:
 	def read_options_file(self):
 		self.debug(1,"def read_options_file()")
 		if os.path.isfile(self.OPT_FILE):
+			self.debug(1,"def read_options_file: debug 01")
 			try:
-				parser = SafeConfigParser()
+				#parser = SafeConfigParser()
+				parser = configparser.ConfigParser()
+				self.debug(1,"def read_options_file: debug 02")
 				parser.read(self.OPT_FILE)
+				self.debug(1,"def read_options_file: debug 03, parser.sections = '%s'"%(parser.sections()))
 				
 				try:
 					APIKEY = parser.get('oVPN','apikey')
@@ -609,14 +613,25 @@ class Systray:
 					else:
 						self.SAVE_APIKEY_INFILE = True
 						self.APIKEY = APIKEY
+					self.debug(1,"def read_options_file: self.APIKEY = '%s'"%(self.APIKEY))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: apikey failed, exception = '%s'"%(e))
+				self.debug(1,"def read_options_file: debug 03.01")
 				
 				try:
-					self.DEBUG = parser.getboolean('oVPN','debugmode')
-					self.debug(1,BUILT_STRING)
+					#self.DEBUG = parser.getboolean('oVPN','debugmode')
+					gDEBUG = parser.get('oVPN','debugmode')
+					self.debug(1,"def read_options_file: debug 03.01.1, gDEBUG = '%s'"%(gDEBUG))
+					if gDEBUG == "True" or DEBUG == True:
+						self.debug(1,"def read_options_file: debug 03.01.2")
+						self.DEBUG = True
+					else:
+						self.debug(1,"def read_options_file: debug 03.01.3")
+						self.DEBUG = False
+					#self.debug(1,BUILT_STRING)
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: debugmode failed, exception = '%s'"%(e))
+				self.debug(1,"def read_options_file: debug 03.02")
 				
 				try:
 					APPLANG = parser.get('oVPN','applanguage')
@@ -630,6 +645,7 @@ class Systray:
 						self.debug(1,"def read_options_file: self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
 				except Exception as e:
 					self.debug(1,"def read_options_file: self.APP_LANGUAGE failed, exception = '%s'"%(e))
+				self.debug(1,"def read_options_file: debug 03.03")
 				
 				try:
 					LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
@@ -659,9 +675,9 @@ class Systray:
 						self.WIN_EXT_DEVICE = False
 					else:
 						self.WIN_EXT_DEVICE = WIN_EXT_DEVICE
-					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
+					self.debug(1,"def read_options_file: self.WIN_EXT_DEVICE = '%s'" % (self.WIN_EXT_DEVICE))
 				except Exception as e:
-					self.debug(1,"def read_options_file: self.WIN_TAP_DEVICE failed, exception = '%s'"%(e))
+					self.debug(1,"def read_options_file: self.WIN_EXT_DEVICE failed, exception = '%s'"%(e))
 				
 				try:
 					WIN_TAP_DEVICE = parser.get('oVPN','wintapdevice')
@@ -681,7 +697,7 @@ class Systray:
 						self.OPENVPN_EXE = OPENVPN_EXE
 					self.debug(1,"def read_options_file: self.OPENVPN_EXE = '%s'" % (self.OPENVPN_EXE))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: openvpnexe failed, exception = '%s'"%(e))
 				
 				try:
 					AUTOSTART_DELAY_TIME = parser.getint('oVPN','autostartdelay')
@@ -735,50 +751,50 @@ class Systray:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
 					self.debug(1,"def read_options_file: self.WIN_RESET_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: winresetfirewall failed, exception = '%s'"%(e))
 				
 				try:
 					self.WIN_BACKUP_FIREWALL = parser.getboolean('oVPN','winbackupfirewall')
 					self.debug(1,"def read_options_file: self.WIN_BACKUP_FIREWALL = '%s'" % (self.WIN_RESET_FIREWALL))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: winbackupfirewall failed, exception = '%s'"%(e))
 				
 				try:
 					self.NO_WIN_FIREWALL = parser.getboolean('oVPN','nowinfirewall')
 					self.debug(1,"def read_options_file: self.NO_WIN_FIREWALL = '%s'" % (self.NO_WIN_FIREWALL))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: nowinfirewall failed, exception = '%s'"%(e))
 				
 				try:
 					self.WIN_DONT_ASK_FW_EXIT = parser.getboolean('oVPN','winnoaskfwonexit')
 					self.debug(1,"def read_options_file: self.WIN_DONT_ASK_FW_EXIT = '%s'" % (self.WIN_DONT_ASK_FW_EXIT))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: winnoaskfwonexit failed, exception = '%s'"%(e))
 				
 				try:
 					self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = parser.getboolean('oVPN','winfwblockonexit')
 					self.debug(1,"def read_options_file: self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = '%s'" % (self.WIN_ALWAYS_BLOCK_FW_ON_EXIT))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: winfwblockonexit failed, exception = '%s'"%(e))
 
 				try:
 					self.WIN_DISABLE_EXT_IF_ON_DISCO = parser.getboolean('oVPN','windisableextifondisco')
 					self.debug(1,"def read_options_file: self.WIN_DISABLE_EXT_IF_ON_DISCO = '%s'" % (self.WIN_DISABLE_EXT_IF_ON_DISCO))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: windisableextifondisco failed, exception = '%s'"%(e))
 				
 				
 				try:
 					self.TAP_BLOCKOUTBOUND = parser.getboolean('oVPN','wintapblockoutbound')
 					self.debug(1,"def read_options_file: self.TAP_BLOCKOUTBOUND = '%s'" % (self.TAP_BLOCKOUTBOUND))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: wintapblockoutbound failed, exception = '%s'"%(e))
 				
 				try:
 					self.NO_DNS_CHANGE = parser.getboolean('oVPN','nodnschange')
 					self.debug(1,"def read_options_file: self.NO_DNS_CHANGE = '%s'" % (self.NO_DNS_CHANGE))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: nodnschange failed, exception = '%s'"%(e))
 
 				try:
 					LOAD_DATA_EVERY = parser.getint('oVPN','loaddataevery')
@@ -789,7 +805,7 @@ class Systray:
 						
 					self.debug(1,"def read_options_file: self.LOAD_DATA_EVERY = '%s'" % (self.LOAD_DATA_EVERY))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: apikey loaddataevery, exception = '%s'"%(e))
 					
 				try:
 					MAINWINDOW_SHOWCELLS = json.loads(str(parser.get('oVPN','mainwindowshowcells')))
@@ -797,19 +813,19 @@ class Systray:
 						self.MAINWINDOW_SHOWCELLS = MAINWINDOW_SHOWCELLS
 						self.debug(1,"def read_options_file: self.MAINWINDOW_SHOWCELLS = '%s'" % (self.MAINWINDOW_SHOWCELLS))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: mainwindowshowcells failed, exception = '%s'"%(e))
 					
 				try:
 					self.LOAD_ACCDATA = parser.getboolean('oVPN','loadaccinfo')
 					self.debug(1,"def read_options_file: self.LOAD_ACCDATA = '%s'" % (self.LOAD_ACCDATA))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: loadaccinfo failed, exception = '%s'"%(e))
 				
 				try:
 					self.LOAD_SRVDATA = parser.getboolean('oVPN','serverviewextend')
 					self.debug(1,"def read_options_file: self.LOAD_SRVDATA = '%s'" % (self.LOAD_SRVDATA))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: serverviewextend failed, exception = '%s'"%(e))
 				
 				try:
 					SRV_LIGHT_WIDTH = parser.getint('oVPN','serverviewlightwidth')
@@ -824,32 +840,32 @@ class Systray:
 						self.debug(1,"def read_options_file: self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT = '%sx%s'" % (self.SRV_LIGHT_WIDTH,self.SRV_LIGHT_HEIGHT))
 						self.debug(1,"def read_options_file: self.SRV_WIDTH,self.SRV_HEIGHT Window Size = '%sx%s'" % (self.SRV_WIDTH,self.SRV_HEIGHT))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: serverviewsize failed, exception = '%s'"%(e))
 				
 				try:
 					self.APP_THEME = parser.get('oVPN','theme')
 					self.debug(1,"def read_options_file: self.APP_THEME = '%s'" % (self.APP_THEME))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: theme failed, exception = '%s'"%(e))
 				
 				try:
 					self.ICONS_THEME = parser.get('oVPN','icons')
 					self.load_icons()
 					self.debug(1,"def read_options_file: self.ICONS_THEME = '%s'" % (self.ICONS_THEME))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: icons failed, exception = '%s'"%(e))
 				
 				try:
 					self.APP_FONT_SIZE = parser.get('oVPN','font')
 					self.debug(1,"def read_options_file: self.APP_FONT_SIZE = '%s'" % (self.APP_FONT_SIZE))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: font failed, exception = '%s'"%(e))
 				
 				try:
 					self.DISABLE_QUIT_ENTRY = parser.getboolean('oVPN','disablequitentry')
 					self.debug(1,"def read_options_file: self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
 				except Exception as e:
-					pass
+					self.debug(1,"def read_options_file: disablequitentry failed, exception = '%s'"%(e))
 				
 				try:
 					MYDNS = json.loads(str(parser.get('oVPN','mydns')))
@@ -860,9 +876,11 @@ class Systray:
 					self.debug(1,"def read_options_file: self.MYDNS = json.loads failed, exception = '%s'"%(e))
 					self.MYDNS = {}
 				
+				self.debug(1,"def read_options_file: debug 04")
 				return True
 			
 			except Exception as e:
+				self.debug(1,"def read_options_file: failed #1, exception = '%s'"%(e))
 				self.msgwarn(_("Read config file failed!"),_("Error: def read_options_file"))
 				try:
 					os.remove(self.OPT_FILE)
@@ -870,12 +888,14 @@ class Systray:
 					pass
 		
 		else:
+			self.debug(1,"def read_options_file: create config")
 			# We have no config file here at first start, set right values
 			self.VPN_CFG = self.VPN_CFGip4
 			self.init_localization(None)
 			try:
 				cfg = open(self.OPT_FILE,'wt')
-				parser = SafeConfigParser()
+				#parser = SafeConfigParser()
+				parser = configparser.ConfigParser()
 				parser.add_section('oVPN')
 				parser.set('oVPN','apikey','%s'%(self.APIKEY))
 				parser.set('oVPN','debugmode','%s'%(self.DEBUG))
@@ -907,7 +927,7 @@ class Systray:
 				parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 				parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
 				parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
-				parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.MAINWINDOW_SHOWCELLS, ensure_ascii=True)))
+				parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(str(self.MAINWINDOW_SHOWCELLS), ensure_ascii=True)))
 				parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 				parser.set('oVPN','mydns','False')
 				#parser.write(bytes(cfg,locale.getpreferredencoding()))
@@ -933,7 +953,8 @@ class Systray:
 			else:
 				APIKEY = False
 			cfg = open(self.OPT_FILE,'wt')
-			parser = SafeConfigParser()
+			#parser = SafeConfigParser()
+			parser = configparser.ConfigParser()
 			parser.add_section('oVPN')
 			parser.set('oVPN','apikey','%s'%(APIKEY))
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
@@ -4981,13 +5002,17 @@ class Systray:
 
 	def check_inet_connection(self):
 		self.debug(1,"def check_inet_connection()")
-		if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
+		try:
+			if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
+				return False
+			if self.try_socket(API_DOMAIN,443) == True:
+				return True
+			else:
+				self.debug(1,"def check_inet_connection: failed #1")
+				self.LAST_CHECK_INET_FALSE = int(time.time())
 			return False
-		if not self.try_socket(API_DOMAIN,443) == True:
-			self.debug(1,"def check_inet_connection: failed #1")
-			self.LAST_CHECK_INET_FALSE = int(time.time())
-			return False
-		return True
+		except Exception as e:
+			self.debug(1,"def check_inet_connection: failed, exception = '%s'"%(e))
 
 	def try_socket(self,host,port):
 		i = 0

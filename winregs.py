@@ -23,18 +23,15 @@ def get_uninstall_progs():
 def get_networkadapter_guids():
 	return netifaces.interfaces()
 
-def get_networkadapterlist_from_netsh():
-	#print("get_networkadapterlist_from_netsh")
+def get_networkadapterlist_from_netsh(DEBUG):
+	debug(1,"[winregs.py] def get_networkadapterlist_from_netsh()",DEBUG,True)
 	string = "netsh.exe interface show interface"
 	try:
-		datas = subprocess.check_output(string,shell=True)
-		#data = subprocess.check_output(string.decode(locale.getpreferedencoding()),shell=True)
-		#print("##############datas")
-		#print(datas)
+		out = subprocess.check_output(string,shell=True)
+		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: data = '%s'"%(data),DEBUG,True)
 		try:
-			data = datas.decode('utf-8').split('\r\n')
-			#print("###########data")
-			#print(data)
+			data = out.decode('utf-8').split('\r\n')
+			debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: data = '%s'"%(data),DEBUG,True)
 			return data
 		except:
 			print("ex 1b")
@@ -64,11 +61,11 @@ def get_networkadapterlist(DEBUG):
 	debug(1,"[winregs.py] def get_networkadapterlist()",DEBUG,True)
 	try:
 		newlist = []
-		#print("debug 1")
+		debug(1,"[winregs.py] def get_networkadapterlist: debug 01",DEBUG,True)
 		list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
-		#print("debug 2")
-		list2 = get_networkadapterlist_from_netsh()
-		#print("debug 3")
+		debug(1,"[winregs.py] def get_networkadapterlist: debug 02, list1 = '%s'"%(list1),DEBUG,True)
+		list2 = get_networkadapterlist_from_netsh(DEBUG)
+		debug(1,"[winregs.py] def get_networkadapterlist: debug 03, list2 = '%s'"%(list2),DEBUG,True)
 		for name in list1:
 			#print("debug 4")
 			for line in list2:
@@ -76,7 +73,7 @@ def get_networkadapterlist(DEBUG):
 				eline = line.encode('utf-8')
 				ename = name.encode('utf-8')
 				if eline.endswith(ename):
-					print(line)
+					debug(1,"[winregs.py] def get_networkadapterlist: HIT",DEBUG,True)
 					newlist.append(ename)
 		return newlist
 	except Exception as e:
