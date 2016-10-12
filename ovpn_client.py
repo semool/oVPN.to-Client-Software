@@ -5008,6 +5008,7 @@ class Systray:
 				s.close()
 				if result == 0:
 					self.debug(1,"def try_socket: %s:%s True" % (host,port))
+					self.systraytext_from_before = False
 					return True
 				else:
 					self.debug(1,"def try_socket: failed, result = '%s'" % (result))
