@@ -1059,7 +1059,7 @@ class Systray:
 					if not self.win_detect_openvpn() == True:
 						self.errorquit(text=_("No OpenVPN TAP-Windows Adapter found!"))
 			elif len(self.WIN_TAP_DEVS) == 1 or self.WIN_TAP_DEVS[0] == self.WIN_TAP_DEVICE:
-				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0].decode('utf-8')
+				self.WIN_TAP_DEVICE = self.WIN_TAP_DEVS[0]
 			else:
 				self.debug(1,"def win_read_interfaces: self.WIN_TAP_DEVS (query) = '%s'" % (self.WIN_TAP_DEVS))
 				self.win_select_tapadapter()
@@ -1083,7 +1083,7 @@ class Systray:
 				elif len(self.INTERFACES) < 1:
 					self.errorquit(text=_("No Network Adapter found!"))
 				else:
-					self.WIN_EXT_DEVICE = self.INTERFACES[0].decode('utf-8')
+					self.WIN_EXT_DEVICE = self.INTERFACES[0]
 					self.debug(1,"def win_read_interfaces: External Interface = %s"%(self.WIN_EXT_DEVICE))
 					return True
 		except Exception as e:
@@ -4353,7 +4353,7 @@ class Systray:
 				self.debug(2,"win_return_netsh_cmd: read = '%s'"%(read))
 				output0 = str(read)
 				self.debug(2,"def win_return_netsh_cmd: output0 = '%s'" % (output0))
-				output1 = output0.strip()				
+				output1 = output0.strip()
 				self.debug(2,"def win_return_netsh_cmd: output1 = '%s'" % (output1))
 				output2 = output1.split('\\r\\n')
 				self.debug(0,"def win_return_netsh_cmd: output2 = '%s'" % (output2))

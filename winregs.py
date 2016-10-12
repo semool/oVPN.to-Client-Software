@@ -28,15 +28,16 @@ def get_networkadapterlist_from_netsh(DEBUG):
 	string = "netsh.exe interface show interface"
 	try:
 		out = subprocess.check_output(string,shell=True)
-		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: data = '%s'"%(data),DEBUG,True)
+		#debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: out = '%s'"%(out),DEBUG,True)
 		try:
 			data = out.decode('utf-8').split('\r\n')
+			#data = out.split('\\r\\n')
 			debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: data = '%s'"%(data),DEBUG,True)
 			return data
-		except:
-			print("ex 1b")
-	except:
-		print("except 1a")
+		except Exception as e:
+			debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: failed #1, exception = '%s'"%(e),DEBUG,True)
+	except Exception as e:
+		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: failed #2, exception = '%s'"%(e),DEBUG,True)
 	
 
 def get_networkadapterlist_from_guids(DEBUG,iface_guids):
@@ -63,18 +64,23 @@ def get_networkadapterlist(DEBUG):
 		newlist = []
 		debug(1,"[winregs.py] def get_networkadapterlist: debug 01",DEBUG,True)
 		list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
-		debug(1,"[winregs.py] def get_networkadapterlist: debug 02, list1 = '%s'"%(list1),DEBUG,True)
+		debug(1,"[winregs.py] def get_networkadapterlist: list1 = '%s'"%(list1),DEBUG,True)
 		list2 = get_networkadapterlist_from_netsh(DEBUG)
-		debug(1,"[winregs.py] def get_networkadapterlist: debug 03, list2 = '%s'"%(list2),DEBUG,True)
+		debug(1,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
 		for name in list1:
-			#print("debug 4")
+			print(name)
 			for line in list2:
-				#print("debug 5")
-				eline = line.encode('utf-8')
-				ename = name.encode('utf-8')
-				if eline.endswith(ename):
-					debug(1,"[winregs.py] def get_networkadapterlist: HIT",DEBUG,True)
-					newlist.append(ename)
+				#print(line)
+				#eline = line.encode('utf-8')
+				#ename = name.encode('utf-8')
+				#if eline.endswith(ename):
+				#eline = line.encode('utf-8')
+				#ename = bytes(name,'utf-8')
+				#if line.endswith(name):
+				if name in line:
+					debug(1,"[winregs.py] def get_networkadapterlist: HIT name = '%s'"%(name),DEBUG,True)
+					newlist.append(name)
+					break
 		return newlist
 	except Exception as e:
 		debug(1,"[winregs.py] def get_networkadapterlist: failed, exception = '%s'"%(e),DEBUG,True)
@@ -97,19 +103,17 @@ def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 			print("get_tapadapters debug 01b, TAPADAPTERS = '%s'"%(TAPADAPTERS))
 			TAPADAPTERS = TAPADAPTERS.decode('utf-8').split('\r\n')
 			print("get_tapadapters debug 01c, TAPADAPTERS = '%s'"%(TAPADAPTERS))
-			for entry in TAPADAPTERS:
-				print(entry)
 			TAPADAPTERS.pop(0)
 			TAP_DEVS = list()
 			print("get_tapadapters debug 01")
 			for line in TAPADAPTERS:
 				if len(line) > 0:
 					print("get_tapadapters debug 02, line = '%s'"%(line))
-					eline = line.encode('utf-8')
-					print("get_tapadapters debug 02, eline = '%s'"%(eline))
+					#eline = line.encode('utf-8')
+					#print("get_tapadapters debug 02, eline = '%s'"%(eline))
 					for INTERFACE in INTERFACES:
 						print("get_tapadapters debug 03, INTERFACE = '%s'"%(INTERFACE))
-						if INTERFACE in eline:
+						if INTERFACE in line:
 							print("get_tapadapters debug 03 HIT")
 							INTERFACES.remove(INTERFACE)
 							TAP_DEVS.append(INTERFACE)
