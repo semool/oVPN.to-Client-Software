@@ -4348,7 +4348,8 @@ class Systray:
 				self.debug(2,"win_return_netsh_cmd: netshcmd = '%s'"%(netshcmd))
 				output = subprocess.check_output(netshcmd,shell=True)
 				self.debug(2,"win_return_netsh_cmd: output = '%s'"%(output))
-				output0 = output.decode('utf-8').strip().splitlines()
+				#output0 = output.decode('utf-8').strip().splitlines()
+				output0 = output.decode(sys.stdout.encoding).strip().splitlines()
 				self.debug(2,"def win_return_netsh_cmd: output0 = '%s'" % (output0))
 				return output0
 			except Exception as e:
@@ -4389,7 +4390,8 @@ class Systray:
 				self.debug(2,"win_return_route_cmd: routecmd = '%s'"%(routecmd))
 				output = subprocess.check_output(routecmd,shell=True)
 				self.debug(2,"win_return_route_cmd: output = '%s'"%(output))
-				output0 = output.decode('utf-8').strip().splitlines()
+				#output0 = output.decode('utf-8').strip().splitlines()
+				output0 = output.decode(sys.stdout.encoding).strip().splitlines()
 				return output0
 			except Exception as e:
 				self.debug(1,"def win_return_route_cmd: '%s' failed, exception = '%s'" % (routecmd,e))
@@ -5205,8 +5207,8 @@ class Systray:
 				texta = "%s %s %s" % (texta,key,value)
 			for key,value in sorted(olddata.items()):
 				textb = "%s %s %s" % (textb,key,value)
-			hasha = hashlib.sha256(texta.encode('utf-8')).hexdigest()
-			hashb = hashlib.sha256(textb.encode('utf-8')).hexdigest()
+			hasha = hashlib.sha256(locale.getpreferredencoding()).hexdigest()
+			hashb = hashlib.sha256(locale.getpreferredencoding()).hexdigest()
 			self.debug(1,"hasha newdata = '%s'" % (hasha))
 			self.debug(2,"hashb olddata = '%s'" % (hashb))
 			if hasha == hashb:
