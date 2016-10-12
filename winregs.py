@@ -25,15 +25,20 @@ def get_networkadapter_guids():
 
 def get_networkadapterlist_from_netsh(DEBUG):
 	debug(1,"[winregs.py] def get_networkadapterlist_from_netsh()",DEBUG,True)
-	cmdstring = "netsh.exe interface show interface"
+	string = "netsh.exe interface show interface"
 	try:
-		output = subprocess.check_output(cmdstring,shell=True)
-		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: output = '%s'"%(output),DEBUG,True)
-		output0 = output.decode('utf-8').splitlines()
-		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: output0 = '%s'"%(output0),DEBUG,True)
-		return output0
+		out = subprocess.check_output(string,shell=True)
+		#debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: out = '%s'"%(out),DEBUG,True)
+		try:
+			data = out.decode('utf-8').split('\r\n')
+			#data = out.split('\\r\\n')
+			debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: data = '%s'"%(data),DEBUG,True)
+			return data
+		except Exception as e:
+			debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: failed #1, exception = '%s'"%(e),DEBUG,True)
 	except Exception as e:
-		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: failed, exception = '%s'"%(e),DEBUG,True)
+		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: failed #2, exception = '%s'"%(e),DEBUG,True)
+	
 
 def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 	iface_names = ['(unknown)' for i in range(len(iface_guids))]
@@ -48,9 +53,10 @@ def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 			mapguids[iface_name] = '%s' % (iface_guids[i])
 		except:
 			pass
-	debug(1,"[winregs.py] def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
+	debug(2,"[winregs.py] def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
 	data = { "iface_names":iface_names,"mapguids":mapguids }
 	return data
+	#return iface_names
 
 def get_networkadapterlist(DEBUG):
 	debug(1,"[winregs.py] def get_networkadapterlist()",DEBUG,True)
@@ -62,9 +68,15 @@ def get_networkadapterlist(DEBUG):
 		list2 = get_networkadapterlist_from_netsh(DEBUG)
 		debug(1,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
 		for name in list1:
-			debug(1,"[winregs.py] def get_networkadapterlist: for name '%s' in list1"%(name),DEBUG,True)
+			print(name)
 			for line in list2:
-				debug(1,"[winregs.py] def get_networkadapterlist: for line '%s' in list2"%(line),DEBUG,True)
+				#print(line)
+				#eline = line.encode('utf-8')
+				#ename = name.encode('utf-8')
+				#if eline.endswith(ename):
+				#eline = line.encode('utf-8')
+				#ename = bytes(name,'utf-8')
+				#if line.endswith(name):
 				if name in line:
 					debug(1,"[winregs.py] def get_networkadapterlist: HIT name = '%s'"%(name),DEBUG,True)
 					newlist.append(name)
@@ -79,24 +91,49 @@ def get_networkadapter_guid(DEBUG,adaptername):
 	guid = guids[adaptername]
 	debug(1,"[winregs.py] def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
 	return guid
+	#return get_networkadapterlist_from_guids(get_networkadapter_guids())["mapguids"][adaptername]
 
 def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 	try:
 		print("get_tapadapters debug 00")
 		if os.path.isfile(OPENVPN_EXE):
 			cmdstring = '"%s" --show-adapters' % (OPENVPN_EXE)
+			print("get_tapadapters debug 01a, cmdstring = '%s'"%(cmdstring))
 			TAPADAPTERS = subprocess.check_output(cmdstring,shell=True)
-			TAPADAPTERS = TAPADAPTERS.decode('utf-8').splitlines()
+			print("get_tapadapters debug 01b, TAPADAPTERS = '%s'"%(TAPADAPTERS))
+			TAPADAPTERS = TAPADAPTERS.decode('utf-8').split('\r\n')
+			print("get_tapadapters debug 01c, TAPADAPTERS = '%s'"%(TAPADAPTERS))
 			TAPADAPTERS.pop(0)
 			TAP_DEVS = list()
+			print("get_tapadapters debug 01")
 			for line in TAPADAPTERS:
 				if len(line) > 0:
+					print("get_tapadapters debug 02, line = '%s'"%(line))
+					#eline = line.encode('utf-8')
+					#print("get_tapadapters debug 02, eline = '%s'"%(eline))
 					for INTERFACE in INTERFACES:
+						print("get_tapadapters debug 03, INTERFACE = '%s'"%(INTERFACE))
 						if INTERFACE in line:
 							print("get_tapadapters debug 03 HIT")
 							INTERFACES.remove(INTERFACE)
 							TAP_DEVS.append(INTERFACE)
 							break
+				"""
+				for INTERFACE in INTERFACES:
+					print("get_tapadapters debug 03, INTERFACE = '%s'"%(INTERFACE))
+					
+					
+					search = string.encode('utf-8')
+					eline = line.encode('utf-8')
+					print("get_tapadapters debug 03, eline = '%s'"%(eline))
+
+					#
+					#if line.startswith("'%s' {"%(INTERFACE)):
+					if eline.startswith(search):
+						INTERFACES.remove(INTERFACE)
+						TAP_DEVS.append(INTERFACE)
+						break
+				"""
 			return { "INTERFACES":INTERFACES,"TAP_DEVS":TAP_DEVS }
 	except Exception as e:
 		debug(1,"[winregs.py] def get_tapadapters: failed, exception = '%s'"%(e),DEBUG,True)
