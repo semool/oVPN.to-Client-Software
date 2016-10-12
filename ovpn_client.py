@@ -5207,8 +5207,8 @@ class Systray:
 				texta = "%s %s %s" % (texta,key,value)
 			for key,value in sorted(olddata.items()):
 				textb = "%s %s %s" % (textb,key,value)
-			hasha = hashlib.sha256(locale.getpreferredencoding()).hexdigest()
-			hashb = hashlib.sha256(locale.getpreferredencoding()).hexdigest()
+			hasha = hashlib.sha256(texta.encode(locale.getpreferredencoding())).hexdigest()
+			hashb = hashlib.sha256(textb.encode(locale.getpreferredencoding())).hexdigest()
 			self.debug(1,"hasha newdata = '%s'" % (hasha))
 			self.debug(2,"hashb olddata = '%s'" % (hashb))
 			if hasha == hashb:
