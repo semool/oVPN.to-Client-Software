@@ -3606,8 +3606,8 @@ class Systray:
 		if self.inThread_jump_server_running == True:
 			self.debug(1,"def cb_jump_openvpn: inThread_jump_server() running ! return False")
 			return False
-		self.OVPN_STOP = True
 		if (widget == 0 and event == 0) or event.button == 1:
+			self.OVPN_STOP = True
 			self.OVPN_CALL_SRV = server
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
