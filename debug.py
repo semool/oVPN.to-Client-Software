@@ -67,8 +67,8 @@ def debug(level,text,DEBUG,bindir):
 		if len(tempdebuglist) > 0:
 			for entry in tempdebuglist:
 				print(entry)
+				debug_cache(entry,'add')
 				if DEBUG == True:
-					debug_cache(entry,'add')
 					write_debug(level,entry,timefromboot,logfile)
 	except Exception as e:
 		print("[debug.py] debug failed, exception = '%s'" % (e))
