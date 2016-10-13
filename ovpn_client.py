@@ -314,8 +314,7 @@ class Systray:
 	def preboot(self):
 		self.debug(1,"def preboot()")
 		self.self_vars()
-		if DEBUG == True:
-			self.debug_window()
+		self.debug_window()
 		if self.OS == "win32":
 				if self.win_pre1_check_app_dir():
 					if self.win_pre2_check_profiles_win():
@@ -6039,12 +6038,13 @@ class Systray:
 		except Exception as e:
 			bindir = False
 		CDEBUG(level,text,istrue,bindir)
+		
 		if self.DEBUGWINDOW_OPEN == True:
 			cache = debug.debug_cache(False,'get')
 			cachesize = len(cache)
 			if not cachesize == self.DEBUGCACHESIZE:
-				newbuffer = "%s\n" % int(time.time())
-				for entry in cache:
+				newbuffer = "%s\n" % datetime.fromtimestamp(int(time.time())).strftime('%d %b %Y %H:%M:%S')
+				for entry in cache[::-1]:
 					newbuffer = "%s\n%s" % (newbuffer,entry)
 				GLib.idle_add(self.debug_textbuffer.set_text,newbuffer)
 			self.DEBUGCACHESIZE = cachesize
@@ -6054,7 +6054,7 @@ class Systray:
 		if self.DEBUGWINDOW_OPEN == False:
 			self.debug(1,"def debug_window()")
 			self.debug_window = Gtk.Window(title="DEBUG")
-			self.debug_window.set_default_size(720, 256)
+			self.debug_window.set_default_size(700, 700)
 			self.debug_window.connect("destroy",self.cb_destroy_debugwindow)
 			self.debug_grid = Gtk.Grid()
 			self.debug_window.add(self.debug_grid)

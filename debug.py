@@ -84,7 +84,8 @@ def debug_cache(entry,query):
 		cachesize = 0
 	
 	if cachesize >= 4096:
-		DEBUGcache.pop(0)
+		#DEBUGcache.pop(0)
+		DEBUGcache = list()
 	
 	if query == "add":
 		DEBUGcache.append(entry)
