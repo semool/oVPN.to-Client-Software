@@ -18,18 +18,18 @@ C:\Python34[_64]\Scripts\pip.exe install --upgrade pip
 C:\Python34[_64]\Scripts\pip.exe install requests
 C:\Python34[_64]\Scripts\pip.exe install requests[security]
 C:\Python34[_64]\Scripts\pip.exe install py2exe
-C:\Python34[_64]\Scripts\pip.exe install netifaces
 ```
 
 ### 32 Bit:
 ```
--
+C:\Python34\Scripts\pip.exe install netifaces
 ```
 
 
 ### 64 Bit:
++ Download [netifaces-0.10.5-cp34-cp34m-win_amd64.whl](else/python/netifaces-0.10.5-cp34-cp34m-win_amd64.whl) and place it in ```C:\Python34_64\Scripts```
 ```
--
+C:\Python34_64\Scripts\pip.exe install netifaces-0.10.5-cp34-cp34m-win_amd64.whl
 ```
 
 ## Basic Requirements
