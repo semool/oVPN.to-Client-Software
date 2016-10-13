@@ -3581,6 +3581,7 @@ class Systray:
 
 	def cb_kill_openvpn(self,widget,event):
 		if event.button == 1:
+			self.OVPN_STOP = True
 			self.destroy_context_menu_servertab()
 			self.destroy_systray_menu()
 			self.debug(1,"def cb_kill_openvpn()")
@@ -3702,7 +3703,7 @@ class Systray:
 	def inThread_spawn_openvpn_process(self):
 		try:
 			self.debug(1,"def inThread_spawn_openvpn_process")
-			exitcode = False
+			
 			# *fixme* def win_select_networkadapter() fails if anybody changes interface name between start and connect
 			#if not self.win_read_interfaces():
 			#	self.reset_ovpn_values()
@@ -3735,16 +3736,22 @@ class Systray:
 				pingthread.start()
 			self.call_redraw_mainwindow()
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
-			try:
-				exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
-				#cmdargs = shlex.split(self.OVPN_STRING)
-				#exitcode = subprocess.check_call(cmdargs)
-			except Exception as e:
-				self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
-			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
-			self.win_netsh_restore_dns_from_backup()
+			exitcode = False
+			while True:
+				try:
+					exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
+					#cmdargs = shlex.split(self.OVPN_STRING)
+					#exitcode = subprocess.check_call(cmdargs)
+				except Exception as e:
+					if self.OVPN_STOP == True:
+						break
+					else:
+						self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
+						#return True
 			self.win_disable_ext_interface()
+			self.win_netsh_restore_dns_from_backup()
 			self.reset_ovpn_values()
+			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
 			return False
 		except Exception as e:
 			self.reset_ovpn_values()
@@ -3755,6 +3762,7 @@ class Systray:
 			self.debug(1,"def reset_ovpn_values()")
 			self.win_firewall_modify_rule(option="delete")
 			self.win_clear_ipv6()
+			self.OVPN_STOP = False
 			self.STATE_OVPN = False
 			self.inThread_jump_server_running = False
 			self.OVPN_CONNECTEDto = False
