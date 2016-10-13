@@ -2,33 +2,40 @@
 # oVPN.to Client Software for Windows
 
 ## Setup 32/64 Bit Dev-Env
+### 
+
 ### 32 Bit Downloads
-+ [Python 2.7.12 win32](https://www.python.org/ftp/python/2.7.12/python-2.7.12.msi) (install to C:\Python27)
-+ [py2exe 0.6.9 win32](http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win32-py2.7.exe/download)
++ [Python 3.4.4 win32](https://www.python.org/ftp/python/3.4.4/python-3.4.4.msi) (install to C:\Python34)
 
 ### 64 Bit Downloads
-+ [Python 2.7.12 win64](https://www.python.org/ftp/python/2.7.12/python-2.7.12.amd64.msi) (install to C:\Python27_64)
-+ [py2exe 0.6.9 win64](http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win64-py2.7.amd64.exe/download)
++ [Python 3.4.4 win64](https://www.python.org/ftp/python/3.4.4/python-3.4.4.amd64.msi) (install to C:\Python34_64)
+
 
 ### 32 and 64 Bit
 + open cmd.exe as admin:
 ```
-C:\Python27[_64]\Scripts\pip.exe install --upgrade pip
-C:\Python27[_64]\Scripts\pip.exe install requests
+C:\Python34[_64]\Scripts\pip.exe install --upgrade pip
+C:\Python34[_64]\Scripts\pip.exe install requests
+C:\Python34[_64]\Scripts\pip.exe install requests[security]
+C:\Python34[_64]\Scripts\pip.exe install py2exe
+C:\Python34[_64]\Scripts\pip.exe install netifaces
 ```
+
 ### 32 Bit:
 ```
-C:\Python27\Scripts\pip.exe install netifaces
+-
 ```
+
+
 ### 64 Bit:
-+ Download [netifaces-0.10.5-cp27-cp27m-win_amd64.whl](else/python/netifaces-0.10.5-cp27-cp27m-win_amd64.whl) and place it in ```C:\Python27_64\Scripts```
 ```
-C:\Python27_64\Scripts\pip.exe install netifaces-0.10.4-cp27-none-win_amd64.whl
+-
 ```
 
 ## Basic Requirements
 + [PyGObject 3.18.2rev10 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev10-setup_84c21bc2679ff32e73de38cbaa6ef6d30c628ae5.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
++ [Visual C++ 2010 Express] (http://www.chip.de/downloads/Visual-C-2010-Express_24081894.html)
 + [Inno Setup 5.5.9](http://www.jrsoftware.org/download.php/is.exe)
 + [poedit 1.8.9](https://download.poedit.net/Poedit-1.8.9-setup.exe)
 

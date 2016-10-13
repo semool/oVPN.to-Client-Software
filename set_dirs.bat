@@ -1,5 +1,6 @@
 @echo off
-set PY32=C:\Python27
+::set PY32=C:\Python27
+set PY32=C:\Python34
 ::set PY64=C:\Python27_64
 set PY64=C:\Python34_64
 
