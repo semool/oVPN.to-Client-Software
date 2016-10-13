@@ -9,6 +9,7 @@ set INNOCOMPILE="C:\Program Files (x86)\Inno Setup 5\Compil32.exe"
 set EXE7Z="%PROGRAMFILES%\7-Zip\7z.exe"
 
 set BITS=%~1
+set PYCACHE=%SOURCEDIR%\__pycache__
 set INCLUDESDIR=%SOURCEDIR%\includes
 set LOCALEDIR=%SOURCEDIR%\locale
 set DISTDIR=%SOURCEDIR%\dist%BITS%

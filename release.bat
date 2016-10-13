@@ -23,7 +23,7 @@ copy /Y "%SOURCEDIR%\ovpn_client.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\*.py" "%DEVDIST%\"
 copy /Y "%SOURCEDIR%\*.bat" "%DEVDIST%\"
 del "%SOURCEDIR%\%EXESTRING%"
-del "%SOURCEDIR%\*.pyo"
+rmdir /S/Q %PYCACHE%\
 
 set BUILDDEVFILE=%DEVSDIR%\build-dev-%VERSION%.7z
 IF EXIST %BUILDDEVFILE% (del %BUILDDEVFILE%)
