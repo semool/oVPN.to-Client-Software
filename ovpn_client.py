@@ -315,7 +315,7 @@ class Systray:
 		self.debug(1,"def preboot()")
 		self.self_vars()
 		if DEBUG == True:
-			self.debug_window()
+			self.show_debug_window()
 		if self.OS == "win32":
 				if self.win_pre1_check_app_dir():
 					if self.win_pre2_check_profiles_win():
@@ -3154,7 +3154,7 @@ class Systray:
 			self.DEBUG = True
 			self.msgwarn(_("Logfile:\n'%s'") % (self.DEBUG_LOGFILE),_("Debug Mode Enabled"))
 			if self.DEBUGWINDOW_OPEN == False:
-				self.debug_window()
+				self.show_debug_window()
 		else:
 			self.DEBUG = False
 			if self.DEBUGWINDOW_OPEN == True:
@@ -6054,20 +6054,23 @@ class Systray:
 				GLib.idle_add(self.debug_textbuffer.set_text,newbuffer)
 			self.DEBUGCACHESIZE = cachesize
 		return
-		
-	def debug_window(self):
-		if self.DEBUGWINDOW_OPEN == False:
-			self.debug(1,"def debug_window()")
-			self.debug_window = Gtk.Window(title="DEBUG")
-			self.debug_window.set_default_size(700, 700)
-			self.debug_window.connect("destroy",self.cb_destroy_debugwindow)
-			self.debug_grid = Gtk.Grid()
-			self.debug_window.add(self.debug_grid)
-			self.debug_create_textview()
-			self.debug_window.show_all()
-			self.DEBUGWINDOW_OPEN = True
-		else:
-			self.destroy_debugwindow()
+
+	def show_debug_window(self):
+		self.debug(1,"def show_debug_window()")
+		try:
+			if self.DEBUGWINDOW_OPEN == False:
+				self.debug_window = Gtk.Window(title="DEBUG")
+				self.debug_window.set_default_size(700, 700)
+				self.debug_window.connect("destroy",self.cb_destroy_debugwindow)
+				self.debug_grid = Gtk.Grid()
+				self.debug_window.add(self.debug_grid)
+				self.debug_create_textview()
+				self.debug_window.show_all()
+				self.DEBUGWINDOW_OPEN = True
+			else:
+				self.destroy_debugwindow()
+		except Exception as e:
+			self.debug(1,"def show_debug_window: failed, exception = '%s'"%(e))
 
 	def debug_create_textview(self):
 		scrolledwindow = Gtk.ScrolledWindow()
