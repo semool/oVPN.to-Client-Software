@@ -314,7 +314,8 @@ class Systray:
 	def preboot(self):
 		self.debug(1,"def preboot()")
 		self.self_vars()
-		self.debug_window()
+		if DEBUG == True:
+			self.debug_window()
 		if self.OS == "win32":
 				if self.win_pre1_check_app_dir():
 					if self.win_pre2_check_profiles_win():
@@ -3152,8 +3153,12 @@ class Systray:
 		if switch.get_active():
 			self.DEBUG = True
 			self.msgwarn(_("Logfile:\n'%s'") % (self.DEBUG_LOGFILE),_("Debug Mode Enabled"))
+			if self.DEBUGWINDOW_OPEN == False:
+				self.debug_window()
 		else:
 			self.DEBUG = False
+			if self.DEBUGWINDOW_OPEN == True:
+				self.destroy_debugwindow()
 			if os.path.isfile(self.DEBUG_LOGFILE):
 				os.remove(self.DEBUG_LOGFILE)
 		self.write_options_file()
