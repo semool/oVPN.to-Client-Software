@@ -12,7 +12,7 @@ def random_string():
 	return rand
 
 def useragent(DEBUG):
-	debug(1,"def useragent()",DEBUG,True)
+	debug(2,"def useragent()",DEBUG,True)
 	rand = random_string()
 	user_agent = "client/007/%s" % rand
 	try:
@@ -31,5 +31,5 @@ def useragent(DEBUG):
 	except Exception as e:
 		debug(1,"[request_api.py] def useragent: construct user-agent failed, exception = '%s'"%(e),DEBUG,True)
 	headers = { 'User-Agent':"%s/%s" % (user_agent,rand) }
-	debug(1,"[request_api.py] def useragent: return headers = '%s'" % (headers),DEBUG,True)
+	debug(2,"[request_api.py] def useragent: return headers = '%s'" % (headers),DEBUG,True)
 	return headers

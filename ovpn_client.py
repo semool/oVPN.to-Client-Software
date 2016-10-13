@@ -5021,7 +5021,7 @@ class Systray:
 		return False
 
 	def check_myip(self):
-		self.debug(1,"def check_myip()")
+		self.debug(2,"def check_myip()")
 		# *** fixme *** missing ipv6 support
 		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
