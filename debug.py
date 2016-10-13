@@ -21,12 +21,12 @@ def getmode(MODE):
 	return False
 
 def devmode():
-	return getmode("DEVMODE")				
-				
+	return getmode("DEVMODE")
+
 
 def debug(level,text,DEBUG,bindir):
 	try:
-		if bindir == False:
+		if bindir == False or level <= 0:
 			print("DEBUG: %s" % (text))
 			return False
 		bindir = os.getcwd()
@@ -46,39 +46,52 @@ def debug(level,text,DEBUG,bindir):
 				return False
 		
 		timefromboot = round(time.time() - BOOTTIME,3)
-		debugstringsht = False
-		debugstringsht1 = False
-		debugstringsht2 = False
+		tempdebuglist = list()
 		if DEBUGcount > 0 and not DEBUGfrombefore == text:
 			debugstringsht1 = "(%s):(d1) %s (repeat: %s)" % (timefromboot, DEBUGfrombefore,DEBUGcount)
 			debugstringsht2 = "(%s):(d2) %s" % (timefromboot,text)
-			if level > 0:
-				print(debugstringsht1)
-				print(debugstringsht2)
+			tempdebuglist.append(debugstringsht1)
+			tempdebuglist.append(debugstringsht2)
 			DEBUGcount = 0
 		elif DEBUGcount >= 4096 and DEBUGfrombefore == text:
 			debugstringsht = "(%s):(d3) %s (repeated: %s e2)" % (timefromboot, DEBUGfrombefore,DEBUGcount)
-			if level > 0:
-				print(debugstringsht)
+			tempdebuglist.append(debugstringsht)
 			DEBUGcount = 0
 		elif DEBUGfrombefore == text:
 			DEBUGcount += 1
 			return
 		elif not DEBUGfrombefore == text:
 			debugstringsht = "(%s):(d4) %s"%(timefromboot,text)
-			if level > 0:
-				print(debugstringsht)
+			tempdebuglist.append(debugstringsht)
 		DEBUGfrombefore = text
-		if DEBUG == True:
-			if not debugstringsht == False:
-				write_debug(level,debugstringsht,timefromboot,logfile)
-			if not debugstringsht1 == False:
-				write_debug(level,debugstringsht1,timefromboot,logfile)
-			if not debugstringsht2 == False:
-				write_debug(level,debugstringsht2,timefromboot,logfile)
+		if len(tempdebuglist) > 0:
+			for entry in tempdebuglist:
+				print(entry)
+				if DEBUG == True:
+					debug_cache(entry,'add')
+					write_debug(level,entry,timefromboot,logfile)
 	except Exception as e:
 		print("[debug.py] debug failed, exception = '%s'" % (e))
-		
+
+def debug_cache(entry,query):
+	global DEBUGcache
+	
+	try:
+		cachesize = len(DEBUGcache)
+	except Exception as e:
+		print("creating debug cache")
+		DEBUGcache = list()
+		cachesize = 0
+	
+	if cachesize >= 4096:
+		DEBUGcache.pop(0)
+	
+	if query == "add":
+		DEBUGcache.append(entry)
+		#print("added debug entry to cache")
+	if query == "get":
+		return DEBUGcache
+
 def write_debug(level,string,timefromboot,logfile):
 	try:
 		localtime = time.asctime(time.localtime(time.time()))
