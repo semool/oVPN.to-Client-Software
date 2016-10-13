@@ -75,7 +75,7 @@ def debug(level,text,DEBUG,bindir):
 
 def debug_cache(entry,query):
 	global DEBUGcache
-	
+
 	try:
 		cachesize = len(DEBUGcache)
 	except Exception as e:
@@ -89,6 +89,7 @@ def debug_cache(entry,query):
 	if query == "add":
 		DEBUGcache.append(entry)
 		#print("added debug entry to cache")
+	
 	if query == "get":
 		return DEBUGcache
 

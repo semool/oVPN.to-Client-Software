@@ -114,6 +114,8 @@ class Systray:
 
 	def self_vars(self):
 		self.DEBUG = DEBUG
+		self.DEBUGWINDOW_OPEN = False
+		self.DEBUGCACHESIZE = 0
 		print("self.DEBUG = %s"%(self.DEBUG))
 		self.DEVMODE = DEVMODE
 		self.OS = sys.platform
@@ -312,6 +314,8 @@ class Systray:
 	def preboot(self):
 		self.debug(1,"def preboot()")
 		self.self_vars()
+		if DEBUG == True:
+			self.debug_window()
 		if self.OS == "win32":
 				if self.win_pre1_check_app_dir():
 					if self.win_pre2_check_profiles_win():
@@ -2315,7 +2319,7 @@ class Systray:
 			self.debug(1,"def cell_sort_mbps: failed, exception = '%s'"%(e))
 
 	def mainwindow_ovpn_server(self):
-		self.debug(1,"def mainwindow_ovpn_server: go")
+		self.debug(1,"def mainwindow_ovpn_server()")
 		self.mainwindow_vbox = Gtk.VBox(False,1)
 		self.mainwindow.add(self.mainwindow_vbox)
 		
@@ -2445,12 +2449,15 @@ class Systray:
 	def destroy_mainwindow(self):
 		self.debug(1,"def destroy_mainwindow()")
 		GLib.idle_add(self.mainwindow.destroy)
-		#self.mainwindow.destroy()
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
 		self.statusbar_text = False
-		self.debug(1,"def destroy_mainwindow")
 
+	def destroy_debugwindow(self):
+		self.debug(1,"def destroy_debugwindow()")
+		GLib.idle_add(self.debug_window.destroy)
+		self.DEBUGWINDOW_OPEN = False
+		
 	def call_redraw_accwindow(self):
 		self.debug(1,"def call_redraw_accwindow()")
 		if self.ACCWINDOW_OPEN == True:
@@ -3421,6 +3428,9 @@ class Systray:
 		self.debug(1,"def cb_destroy_mainwindow")
 		self.MAINWINDOW_OPEN = False
 		self.MAINWINDOW_HIDE = False
+
+	def cb_destroy_debugwindow(self,event):
+		self.DEBUGWINDOW_OPEN = False
 
 	def cb_destroy_hidecellswindow(self,event):
 		self.debug(1,"def cb_destroy_hidecellswindow")
@@ -6018,6 +6028,7 @@ class Systray:
 			self.debug(1,"def delete_file: file = '%s', sourcef = '%s', failed, exception = '%s'"%(file,sourcef,e))
 
 	def debug(self,level,text):
+		#print("def debug()")
 		try:
 			istrue = self.DEBUG
 		except Exception as e:
@@ -6028,7 +6039,43 @@ class Systray:
 		except Exception as e:
 			bindir = False
 		CDEBUG(level,text,istrue,bindir)
+		if self.DEBUGWINDOW_OPEN == True:
+			cache = debug.debug_cache(False,'get')
+			cachesize = len(cache)
+			if not cachesize == self.DEBUGCACHESIZE:
+				newbuffer = "%s\n" % int(time.time())
+				for entry in cache:
+					newbuffer = "%s\n%s" % (newbuffer,entry)
+				GLib.idle_add(self.debug_textbuffer.set_text,newbuffer)
+			self.DEBUGCACHESIZE = cachesize
 		return
+		
+	def debug_window(self):
+		if self.DEBUGWINDOW_OPEN == False:
+			self.debug(1,"def debug_window()")
+			self.debug_window = Gtk.Window(title="DEBUG")
+			self.debug_window.set_default_size(720, 256)
+			self.debug_window.connect("destroy",self.cb_destroy_debugwindow)
+			self.debug_grid = Gtk.Grid()
+			self.debug_window.add(self.debug_grid)
+			self.debug_create_textview()
+			self.debug_window.show_all()
+			self.DEBUGWINDOW_OPEN = True
+		else:
+			self.destroy_debugwindow()
+
+	def debug_create_textview(self):
+		scrolledwindow = Gtk.ScrolledWindow()
+		scrolledwindow.set_hexpand(True)
+		scrolledwindow.set_vexpand(True)
+		self.debug_grid.attach(scrolledwindow, 0, 1, 3, 1)
+
+		self.debug_textview = Gtk.TextView()
+		self.debug_textview.set_editable(False)
+		self.debug_textbuffer = self.debug_textview.get_buffer()
+		self.debug_textbuffer.set_text("DEBUG")
+		scrolledwindow.add(self.debug_textview)
+
 
 def app():
 	Systray()
