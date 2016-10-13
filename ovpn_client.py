@@ -3709,12 +3709,10 @@ class Systray:
 			#	self.reset_ovpn_values()
 			#	return False
 			if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-				self.reset_ovpn_values()
-				return False
+				return self.reset_ovpn_values()
 			if not self.win_firewall_start():
 				self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
-				self.reset_ovpn_values()
-				return False
+				return self.reset_ovpn_values()
 			self.win_firewall_modify_rule(option="add")
 			self.win_clear_ipv6()
 			self.OVPN_CONNECTEDtime = int(time.time())
@@ -3736,23 +3734,31 @@ class Systray:
 				pingthread.start()
 			self.call_redraw_mainwindow()
 			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
-			exitcode = False
+			""" launch openvpn in loop """
 			while True:
+				exitcode = False
 				try:
 					exitcode = subprocess.check_call(self.OVPN_STRING,shell=True)
-					#cmdargs = shlex.split(self.OVPN_STRING)
-					#exitcode = subprocess.check_call(cmdargs)
 				except Exception as e:
-					if self.OVPN_STOP == True:
-						break
+					if self.OVPN_STOP == False:
+						time.sleep(0.1)
+						if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
+							return self.reset_ovpn_values()
+						else:
+							self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
+							self.OVPN_CONNECTEDtime = int(time.time())
+							self.OVPN_PING_DEAD_COUNT = 9
+							self.OVPN_PING_LAST = -2
+							self.NEXT_PING_EXEC = 9
+							self.msgwarn(_("OpenVPN process crashed! Restarting..."),_("Error: def inThread_spawn_openvpn_process"))
+							""" no return loops daemon """
 					else:
-						self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
-						#return True
+						break
+			""" exited openvpn """
 			self.win_disable_ext_interface()
 			self.win_netsh_restore_dns_from_backup()
-			self.reset_ovpn_values()
 			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
-			return False
+			return self.reset_ovpn_values()
 		except Exception as e:
 			self.reset_ovpn_values()
 			self.debug(1,"def inThread_spawn_openvpn_process(): failed, exception: '%s'"%(e))
@@ -3777,6 +3783,7 @@ class Systray:
 			self.OVPN_STRING = False
 			self.delete_file(self.OVPN_SESSIONLOG,"def reset_ovpn_values")
 			self.call_redraw_mainwindow()
+			return False
 		except Exception as e:
 			self.debug(1,"def reset_ovpn_values: failed, exception: '%s'"%(e))
 
