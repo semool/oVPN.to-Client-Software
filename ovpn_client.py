@@ -1619,9 +1619,9 @@ class Systray:
 						d, h = divmod(h, 24)
 						if self.OVPN_CONNECTEDseconds >= 0:
 							connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-						statusbar_text = _("Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)") % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST,self.OVPN_PING_STAT)
+						statusbar_text = _("Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)") % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,int(self.OVPN_PING_LAST),int(self.OVPN_PING_STAT))
 						# systraytext Windows only shows the first 64 characters
-						systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,self.OVPN_PING_LAST)
+						systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,int(self.OVPN_PING_LAST))
 						systrayicon = self.systray_icon_connected
 					except Exception as e:
 						self.debug(1,"def systray_timer: systraytext failed, exception '%s'"%(e))
