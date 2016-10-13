@@ -566,9 +566,8 @@ class Systray:
 				except Exception as e:
 					self.errorquit(text=_("Could not remove lock file.\nFile itself locked because another oVPN Client instance running?"))
 			if not os.path.isfile(self.lock_file):
-				#self.LOCK = open(self.lock_file,'wb')
-				with open(self.lock_file,'wt') as self.LOCK:
-					self.LOCK.write('1')
+				self.LOCK = open(self.lock_file,'wt')
+				self.LOCK.write('1')
 			if not os.path.exists(self.VPN_DIR):
 				os.mkdir(self.VPN_DIR)
 			if not os.path.exists(self.VPN_CFG):
