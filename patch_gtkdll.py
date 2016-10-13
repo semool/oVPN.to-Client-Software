@@ -25,9 +25,7 @@ def patch_gtkdll():
 			print("delete already patched file '%s' before patching" % (gtkfile32))
 			return False
 
-		x = True
-		if x == True:
-		#try:
+		try:
 			with open(gtkfile,'r+b') as f1:
 				f1.seek(offset)
 				checkoffset = f1.read(1).decode('utf-8')
@@ -49,8 +47,8 @@ def patch_gtkdll():
 				time.sleep(5)
 			else:
 				print("gtkfile '%s' not found" % (gtkfile32tmp))
-		#except Exception as e:
-		#	print("patch_gtkdll() failed, exception = '%s'"%(e))
+		except Exception as e:
+			print("patch_gtkdll() failed, exception = '%s'"%(e))
 
 	else:
 		print("gtkfile '%s' not found" % (gtkfile))
