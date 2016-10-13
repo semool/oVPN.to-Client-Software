@@ -617,7 +617,6 @@ class Systray:
 					else:
 						self.SAVE_APIKEY_INFILE = True
 						self.APIKEY = APIKEY
-					self.debug(1,"def read_options_file: self.APIKEY = '%s'"%(self.APIKEY))
 				except Exception as e:
 					self.debug(1,"def read_options_file: apikey failed, exception = '%s'"%(e))
 				self.debug(1,"def read_options_file: debug 03.01")
