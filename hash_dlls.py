@@ -15,18 +15,18 @@ import struct
 SBITS = struct.calcsize("P") * 8
 
 if not SBITS == 32 and not SBITS == 64:
-	print "read bits from sys.argv[1]"
+	print("read bits from sys.argv[1]")
 	if len(sys.argv) > 1:
 		if sys.argv[1] == "32":
 			BITS = 32
 		elif sys.argv[1] == "64":
 			BITS = 64
 		else:
-			print "HASH_DLLS: missing bits"
+			print("HASH_DLLS: missing bits")
 			sys.exit()
 else:
 	BITS = SBITS
-	print "read bits %s from struct" % (BITS)
+	print("read bits %s from struct" % (BITS))
 
 class HASH_DLLS:
 	def __init__(self):
@@ -40,7 +40,7 @@ class HASH_DLLS:
 					if self.write_hash_dbf():
 						sys.exit()
 		else:
-			print "init failed"
+			print("init failed")
 			sys.exit()
 
 	def self_vars(self):
@@ -55,20 +55,20 @@ class HASH_DLLS:
 		self.DLL_HASH_DBS = { "UNSIGNED":self.DLL_DBF_HASH_UNSIGNED,"SIGNED":self.DLL_DBF_HASH_SIGNED }
 		try:
 			if not os.path.isdir(self.DLL_DIR):
-				print "please create dir '%s'" % (self.DLL_DIR)
+				print("please create dir '%s'" % (self.DLL_DIR))
 				return False
 				
 			if not os.path.isdir(self.DLL_DIR_SIGNED):
-				print "please create dir '%s'" % (self.DLL_DIR_SIGNED)
+				print("please create dir '%s'" % (self.DLL_DIR_SIGNED))
 				return False
 				
 			if not os.path.isdir(self.DLL_DIR_UNSIGNED):
-				print "please create dir '%s'" % (self.DLL_DIR_UNSIGNED)
+				print("please create dir '%s'" % (self.DLL_DIR_UNSIGNED))
 				return False
 		except:
-			print "could not create working dirs"
+			print("could not create working dirs")
 			sys.exit()
-		print "def self_vars: return True"
+		print("def self_vars: return True")
 		return True
 
 	def load_hash_dbf(self):
@@ -80,9 +80,9 @@ class HASH_DLLS:
 				fp.close()
 				if len(HASHS_DB[key]) > 0:
 					self.HASHS_DB[key] = HASHS_DB[key]
-					print "def load_hash_dbf: key '%s', file = '%s' len = '%s' OK" % (key,file,len(self.HASHS_DB[key]))
+					print("def load_hash_dbf: key '%s', file = '%s' len = '%s' OK" % (key,file,len(self.HASHS_DB[key])))
 			else:
-				print "def load_hash_dbf: key '%s', file = '%s' not found" % (key,file)
+				print("def load_hash_dbf: key '%s', file = '%s' not found" % (key,file))
 		return True
 
 	def write_hash_dbf(self):
@@ -98,9 +98,9 @@ class HASH_DLLS:
 							for line in fin:
 								fout.write(line.replace(',', ',\n'))
 					os.remove(tmpfile)
-					print "def write_hash_dbf: write key '%s', file = '%s' OK" % (key,file)
+					print("def write_hash_dbf: write key '%s', file = '%s' OK" % (key,file))
 			except:
-				print "def write_hash_dbf: write key '%s', file = '%s' failed!" % (key,file)
+				print("def write_hash_dbf: write key '%s', file = '%s' failed!" % (key,file))
 				return False
 		return True
 
@@ -130,16 +130,16 @@ class HASH_DLLS:
 				files = {}
 				hash_files = self.list_files(dir)
 				if len(hash_files) > 0:
-					print "def hash_files: dir = '%s'" % (dir)
+					print("def hash_files: dir = '%s'" % (dir))
 					for file in hash_files:
 						if os.path.isfile(file):
 							hash = self.hash_sha512_file(file)
 							if len(hash) == 128:
-								print "def hash_files: hashed file = '%s' hash = '%s'" % (file,hash)
+								print("def hash_files: hashed file = '%s' hash = '%s'" % (file,hash))
 								file = file.split("\\")[-1]
 								files[file] = hash
 							else:
-								print "def hash_files: filepath '%s' failed" % (filepath)
+								print("def hash_files: filepath '%s' failed" % (filepath))
 								sys.exit()
 				self.HASHS_DB[key] = files
 		return True
@@ -156,14 +156,14 @@ class HASH_DLLS:
 					verify_files_store = {}
 				
 				if len(verify_files_indir) > 0:
-					print "\ndef verify_files: dir = '%s' vs. file '%s'" % (dir,self.DLL_HASH_DBS[key])
+					print("\ndef verify_files: dir = '%s' vs. file '%s'" % (dir,self.DLL_HASH_DBS[key]))
 					
 					for file in verify_files_store:
 						fileshort = file.split("\\")[-1]
 						filepath = "%s\\%s" % (dir,file)
 						if not filepath in verify_files_indir:
 							notfound +=1
-							print "def verify_files: file = '%s' FILE NOTFOUND" % (filepath)
+							print("def verify_files: file = '%s' FILE NOTFOUND" % (filepath))
 					
 					for file in verify_files_indir:
 						fileshort = file.split("\\")[-1]
@@ -171,14 +171,14 @@ class HASH_DLLS:
 							hash = self.hash_sha512_file(file)
 							if self.HASHS_DB[key][fileshort] == hash:
 								verified += 1
-								#print "def verify_files: file = '%s' hash = '%s' HASH OK" % (file,hash)
+								#print("def verify_files: file = '%s' hash = '%s' HASH OK" % (file,hash))
 							else:
 								failed += 1
-								print "def verify_files: file = '%s' hash = '%s' HASH FAILED" % (file,hash)
+								print("def verify_files: file = '%s' hash = '%s' HASH FAILED" % (file,hash))
 						else:
 							missing += 1
-							print "def verify_files: file = '%s' MISSING JSON" % (file)
-				print "def verify_files: key '%s' dir = '%s' filesindir = '%s' filesjson = '%s' missing = '%s' notfound = '%s' failed = '%s' verified = '%s'" % (key, dir, len(verify_files_indir), len(verify_files_store), missing, notfound, failed, verified)
+							print("def verify_files: file = '%s' MISSING JSON" % (file))
+				print("def verify_files: key '%s' dir = '%s' filesindir = '%s' filesjson = '%s' missing = '%s' notfound = '%s' failed = '%s' verified = '%s'" % (key, dir, len(verify_files_indir), len(verify_files_store), missing, notfound, failed, verified))
 		return True
 
 def app():

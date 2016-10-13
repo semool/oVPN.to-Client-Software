@@ -1,3 +1,0 @@
-b23f31cc40b7e20a044e338e6947ae4439fba0529cd47c9eac088f4df13c63df  ovpn_client_v0.6.1-gtk3_win32_setup.exe
-11027472        ovpn_client_v0.6.1-gtk3_win32_setup.exe
-11M     ovpn_client_v0.6.1-gtk3_win32_setup.exe
