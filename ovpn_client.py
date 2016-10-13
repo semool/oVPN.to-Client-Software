@@ -3642,7 +3642,7 @@ class Systray:
 			if os.path.isfile(self.WIN_TASKKILL_EXE):
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				cmdstring = '%s /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
-				exitcode = subprocess.check_call(cmdstring,shell=True)				
+				exitcode = subprocess.check_call(cmdstring,shell=True)
 				self.debug(1,"def kill_openvpn: exitcode = %s" % (exitcode))
 		except Exception as e:
 			self.debug(1,"def kill_openvpn: failed, exception '%s'"%(e))
