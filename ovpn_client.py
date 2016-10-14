@@ -3153,7 +3153,7 @@ class Systray:
 		self.debug(1,"def cb_switch_debugmode()")
 		if switch.get_active():
 			self.DEBUG = True
-			#self.msgwarn(_("Logfile:\n'%s'") % (self.DEBUG_LOGFILE),_("Debug Mode Enabled"))
+			self.debug(1,"DEBUG Logfile = '%s'"% (self.DEBUG_LOGFILE))
 			self.show_debug_window()
 		else:
 			self.DEBUG = False
