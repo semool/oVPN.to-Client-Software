@@ -6156,7 +6156,7 @@ class Systray:
 				self.debug_window = Gtk.Window(title="DEBUG")
 				self.debug_window.set_default_size(700, 700)
 				self.debug_window.connect("destroy",self.cb_destroy_debugwindow)
-				self.debug_window.connect("key_release_event", lambda w, e: self.cb_destroy_debugwindow(None) if e.keyval == 65307 else None)
+				self.debug_window.connect("key_release_event", lambda w, e: GLib.idle_add(self.debug_window.destroy) if e.keyval == 65307 else None)
 				self.debug_grid = Gtk.Grid()
 				self.debug_window.add(self.debug_grid)
 				self.debug_create_textview()
