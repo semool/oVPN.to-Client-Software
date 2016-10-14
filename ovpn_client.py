@@ -6040,28 +6040,26 @@ class Systray:
 
 	def msgwarn_glib(self,text,title):
 		try:
-			self.msgwarn_window.destroy()
+			GLib.idle_add(self.msgwarn_window.destroy)
 		except Exception as e:
 			pass
 		self.debug(1,"def msgwarn: %s"% (text))
 		try:
 			self.LAST_MSGWARN_WINDOW = int(time.time())
 			self.debug(1,"def msgwarn: %s"% (text))
-			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
-			self.msgwarn_window = dialogWindow
+			self.msgwarn_window = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			self.msgwarn_window.connect("key_release_event", lambda w, e: GLib.idle_add(self.msgwarn_window.destroy) if e.keyval == 65307 else None)
-
-			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
-			dialogWindow.set_title(title)
-			dialogWindow.set_transient_for(self.window)
-			dialogWindow.set_border_width(8)
+			self.msgwarn_window.set_position(Gtk.WindowPosition.CENTER)
+			self.msgwarn_window.set_title(title)
+			self.msgwarn_window.set_transient_for(self.window)
+			self.msgwarn_window.set_border_width(8)
 			try:
-				dialogWindow.set_icon(self.app_icon)
+				self.msgwarn_window.set_icon(self.app_icon)
 			except Exception as e:
 				pass
-			dialogWindow.set_markup("%s"%(text))
-			dialogWindow.run()
-			dialogWindow.destroy()
+			self.msgwarn_window.set_markup("%s"%(text))
+			self.msgwarn_window.run()
+			self.msgwarn_window.destroy()
 		except Exception as e:
 			self.debug(1,"def msgwarn_glib: failed, exception = '%s'"%(e))
 
