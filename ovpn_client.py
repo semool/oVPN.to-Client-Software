@@ -4220,7 +4220,7 @@ class Systray:
 		return True
 
 	def select_dns(self):
-		self.debug(1,"def select_dns()")
+		self.debug(2,"def select_dns()")
 		try:
 			if self.GATEWAY_DNS1 == "127.0.0.1":
 				return ["127.0.0.1"]
@@ -4234,9 +4234,11 @@ class Systray:
 					secdns = self.MYDNS[servername]["secondary"]["ip4"]
 					dnslist.append(secdns)
 				except Exception as e:
-					self.debug(1,"def select_dns: secdns not found")
+					if self.STATE_OVPN == False:
+						self.debug(1,"def select_dns: secdns not found")
 			except Exception as e:
-				self.debug(1,"def select_dns: pridns not found")
+				if self.STATE_OVPN == False:
+					self.debug(1,"def select_dns: pridns not found")
 			
 
 			if len(dnslist) == 0:
