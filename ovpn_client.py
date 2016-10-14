@@ -629,6 +629,7 @@ class Systray:
 					if gDEBUG == "True" or DEBUG == True:
 						self.debug(1,"def read_options_file: debug 03.01.2")
 						self.DEBUG = True
+						self.show_debug_window()
 					else:
 						self.debug(1,"def read_options_file: debug 03.01.3")
 						self.DEBUG = False
@@ -3152,13 +3153,11 @@ class Systray:
 		self.debug(1,"def cb_switch_debugmode()")
 		if switch.get_active():
 			self.DEBUG = True
-			self.msgwarn(_("Logfile:\n'%s'") % (self.DEBUG_LOGFILE),_("Debug Mode Enabled"))
-			if self.DEBUGWINDOW_OPEN == False:
-				self.show_debug_window()
+			#self.msgwarn(_("Logfile:\n'%s'") % (self.DEBUG_LOGFILE),_("Debug Mode Enabled"))
+			self.show_debug_window()
 		else:
 			self.DEBUG = False
-			if self.DEBUGWINDOW_OPEN == True:
-				self.destroy_debugwindow()
+			self.show_debug_window()
 			if os.path.isfile(self.DEBUG_LOGFILE):
 				os.remove(self.DEBUG_LOGFILE)
 		self.write_options_file()
@@ -6157,7 +6156,7 @@ class Systray:
 				self.debug_grid = Gtk.Grid()
 				self.debug_window.add(self.debug_grid)
 				self.debug_create_textview()
-				self.debug_window.show_all()
+				GLib.idle_add(self.debug_window.show_all)
 				self.DEBUGWINDOW_OPEN = True
 			else:
 				self.destroy_debugwindow()
