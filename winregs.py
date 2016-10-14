@@ -28,7 +28,7 @@ def get_uninstall_progs():
 
 """ NETWORK ADAPTER """
 
-def get_networkadapter_guids():
+def get_networkadapter_guids(DEBUG):
 	return netifaces.interfaces()
 
 def get_networkadapterlist_from_netsh(DEBUG):
@@ -44,7 +44,7 @@ def get_networkadapterlist_from_netsh(DEBUG):
 	except Exception as e:
 		debug(1,"[winregs.py] def get_networkadapterlist_from_netsh: failed, exception = '%s'"%(e),DEBUG,True)
 
-def get_networkadapterlist_from_guids(DEBUG,iface_guids):
+def get_networkadapterlist_from_guids(DEBUG,iface_guids,silent):
 	iface_names = ['(unknown)' for i in range(len(iface_guids))]
 	mapguids = {}
 	reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
@@ -57,16 +57,17 @@ def get_networkadapterlist_from_guids(DEBUG,iface_guids):
 			mapguids[iface_name] = '%s' % (iface_guids[i])
 		except:
 			pass
-	debug(1,"[winregs.py] def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
+	if silent == False:
+		debug(1,"[winregs.py] def get_networkadapterlist_from_guid: mapguids = '%s'" % (mapguids),DEBUG,True)
 	data = { "iface_names":iface_names,"mapguids":mapguids }
 	return data
 
-def get_networkadapterlist(DEBUG):
+def get_networkadapterlist(DEBUG,silent):
 	debug(1,"[winregs.py] def get_networkadapterlist()",DEBUG,True)
 	try:
 		newlist = []
 		debug(1,"[winregs.py] def get_networkadapterlist: debug 01",DEBUG,True)
-		list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["iface_names"]
+		list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG),silent)["iface_names"]
 		debug(1,"[winregs.py] def get_networkadapterlist: list1 = '%s'"%(list1),DEBUG,True)
 		list2 = get_networkadapterlist_from_netsh(DEBUG)
 		debug(1,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
@@ -83,10 +84,11 @@ def get_networkadapterlist(DEBUG):
 		debug(1,"[winregs.py] def get_networkadapterlist: failed, exception = '%s'"%(e),DEBUG,True)
 		return False
 
-def get_networkadapter_guid(DEBUG,adaptername):
-	guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids())["mapguids"]
+def get_networkadapter_guid(DEBUG,adaptername,silent):
+	guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG),silent)["mapguids"]
 	guid = guids[adaptername]
-	debug(1,"[winregs.py] def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
+	if silent == False:
+		debug(1,"[winregs.py] def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
 	return guid
 
 def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
@@ -115,8 +117,9 @@ def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 		debug(1,"[winregs.py] def get_tapadapters: failed, exception = '%s'"%(e),DEBUG,True)
 		return False
 
-def get_interface_infos_from_guid(DEBUG,guid):
-	debug(1,"[winregs.py] def get_interface_infos_from_guid: '%s'" % (guid),DEBUG,True)
+def get_interface_infos_from_guid(DEBUG,guid,silent):
+	if silent == False:
+		debug(1,"[winregs.py] def get_interface_infos_from_guid: '%s'" % (guid),DEBUG,True)
 	"""
 	winregs.get_interface_infos_from_guid("{XXXXXXXX-YYYY-ZZZZ-AAAA-CCCCDDDDEEEE}")
 	return = {
@@ -132,5 +135,6 @@ def get_interface_infos_from_guid(DEBUG,guid):
 			values[keyname] = QueryValueEx(key, keyname)[0]
 		except:
 			pass
-	debug(1,"[winregs.py] get_interface_infos_from_guid: '%s'" % (values),DEBUG,True)
+	if silent == False:
+		debug(1,"[winregs.py] get_interface_infos_from_guid: '%s'" % (values),DEBUG,True)
 	return values
