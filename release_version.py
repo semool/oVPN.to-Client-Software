@@ -53,7 +53,7 @@ def setup_data():
 			"DIST_DIR2" : "dist_check_bin%s"%(BITS),
 			"DIST_DIR3" : "dist_cmd%s"%(BITS),
 			"py2exe_excludes" : [ 'backports','ndg','tcl','tcl8.5','tk8.5','win32pipe','win32wnet','_tkinter','Tkinter','Tk','_testcapi','six.moves.urllib.parse' ],
-			"py2exe_includes" : [ 'gi','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','base64','zlib','netifaces','ctypes' ],
+			"py2exe_includes" : [ 'gi','win32process','requests','cairo','types','os','platform','sys','hashlib','random','time','zipfile','subprocess','threading','socket','random','gettext','locale','base64','zlib','netifaces','ctypes' ],
 			"py2exe_includes_cmd" : [ 'hashlib', 'os', 'requests', 'subprocess', 'sys', 'struct', 'time', 'zipfile' ],
 			"dll_excludes" : [ 'libgstreamer-1.0-0.dll','MSVCR100.dll','pywintypes27.dll','crypt32.dll','tcl85.dll', 'tk85.dll','DNSAPI.DLL','USP10.DLL','MPR.DLL','MSIMG32.DLL','API-MS-Win-Core-LocalRegistry-L1-1-0.dll','IPHLPAPI.DLL','w9xpopen.exe','mswsock.dll','powrprof.dll'],
 		}
