@@ -1,8 +1,17 @@
 # changelog.txt
 #
 
+ Version: 0.7.8
++ update: check dns and reset on change
+
+
  Version: 0.7.7
 + update: python 3.4.4
++ bugfix: server jump issues, introduced with last testing release
++ bugfix: windows auto-start
++ bugfix: high dpi icon scaling
++ bugfix: python related stuff
++ update: adds debug window with debug switch
 
 
  Version: 0.7.6
