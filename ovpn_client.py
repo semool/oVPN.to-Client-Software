@@ -2218,7 +2218,7 @@ class Systray:
 					self.mainwindow_ovpn_server()
 					self.fill_mainwindow_with_server()
 					self.update_mwls()
-					self.mainwindow.show_all()
+					GLib.idle_add(self.mainwindow.show_all)
 					self.debug(1,"def rebuild_mainwindow_glib: filled window with data")
 				except Exception as e:
 					self.debug(1,"def rebuild_mainwindow_glib: fill window failed, exception = '%s'"%(e))
@@ -2582,7 +2582,7 @@ class Systray:
 						self.debug(1,"def accwindow_accinfo: accdata vbox.pack_start entry failed!")
 			except Exception as e:
 				self.debug(1,"def accwindow_accinfo: self.OVPN_ACC_DATA failed, exception = '%s'"%(e))
-		self.accwindow.show_all()
+		GLib.idle_add(self.accwindow.show_all)
 		return
 
 	def destroy_accwindow(self):
@@ -2611,7 +2611,7 @@ class Systray:
 				self.show_hide_updates_window()
 				
 				self.UPDATE_SWITCH = True
-				self.settingswindow.show_all()
+				GLib.idle_add(self.settingswindow.show_all)
 				self.SETTINGSWINDOW_OPEN = True
 				return True
 			except Exception as e:
