@@ -165,6 +165,7 @@ class Systray:
 		self.NEXT_PING_EXEC = 0
 		self.LAST_CHECK_INET_FALSE = 0
 		self.LAST_MSGWARN_WINDOW = 0
+		self.LAST_MSGWARN_WINDOW_DNS = 0
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
 		self.GATEWAY_DNS2 = False
@@ -3819,9 +3820,13 @@ class Systray:
 					if not self.win_check_dns():
 						self.debug(1,"def inThread_timer_ovpn_ping: dns changed")
 						if self.win_netsh_set_dns_ovpn():
-							self.msgwarn(_("DNS changed but reset ok!"),_("DNS reset!"))
+							if self.LAST_MSGWARN_WINDOW_DNS < int(time.time())-30:
+								self.LAST_MSGWARN_WINDOW_DNS = int(time.time())
+								self.msgwarn(_("DNS changed but reset ok!"),_("DNS reset!"))
 						else:
-							self.msgwarn(_("DNS changed and reseting failed!"),_("DNS change failed!"))
+							if self.LAST_MSGWARN_WINDOW_DNS < int(time.time())-30:
+								self.LAST_MSGWARN_WINDOW_DNS = int(time.time())
+								self.msgwarn(_("DNS changed and reseting failed!"),_("DNS change failed!"))
 					if self.NEXT_PING_EXEC < int(time.time()) and self.OVPN_CONNECTEDseconds > 5:
 						PING = self.get_ovpn_ping()
 						if PING > 0 and PING < 1:
