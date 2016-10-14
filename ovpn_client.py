@@ -177,7 +177,6 @@ class Systray:
 		self.NO_WIN_FIREWALL = False
 		self.NO_DNS_CHANGE = False
 		self.MYDNS = {}
-		self.NETSH_CMDLIST = list()
 		self.ROUTE_CMDLIST = list()
 		self.API_DIR = False
 		self.OPENVPN_EXE = False
@@ -1032,7 +1031,7 @@ class Systray:
 		self.debug(1,"def win_read_interfaces()")
 		try:
 			print("win_read_interfaces debug 1")
-			self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG)
+			self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG,False)
 			print(self.INTERFACES)
 			print("win_read_interfaces debug 2")
 			try:
@@ -3817,6 +3816,12 @@ class Systray:
 		elif self.STATE_OVPN == True:
 			try:
 				try:
+					if not self.win_check_dns():
+						self.debug(1,"def inThread_timer_ovpn_ping: dns changed")
+						if self.win_netsh_set_dns_ovpn():
+							self.msgwarn(_("DNS changed but reset ok!"),_("DNS reset!"))
+						else:
+							self.msgwarn(_("DNS changed and reseting failed!"),_("DNS change failed!"))
 					if self.NEXT_PING_EXEC < int(time.time()) and self.OVPN_CONNECTEDseconds > 5:
 						PING = self.get_ovpn_ping()
 						if PING > 0 and PING < 1:
@@ -3887,8 +3892,8 @@ class Systray:
 		
 		try:
 			GATEWAY_LOCAL = False
-			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
-			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
+			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE,self.STATE_OVPN)
+			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID,self.STATE_OVPN)
 			try:
 				GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
 			except Exception as e:
@@ -3909,8 +3914,8 @@ class Systray:
 	def read_gateway_from_interface_devmode(self):
 		try:
 			GATEWAY_LOCAL = False
-			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE)
-			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
+			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,self.WIN_EXT_DEVICE,self.STATE_OVPN)
+			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID,self.STATE_OVPN)
 			try:
 				""" *fixme* """
 				GATEWAY_LOCAL = DEVICE_DATA["DefaultGateway"][0]
@@ -3963,10 +3968,11 @@ class Systray:
 		try:
 			if self.read_gateway_from_routes():
 				if not self.GATEWAY_LOCAL == False:
-					self.ROUTE_CMDLIST.append("DELETE %s MASK 255.255.255.255 %s" % (self.OVPN_CONNECTEDtoIP,self.GATEWAY_LOCAL))
-					self.ROUTE_CMDLIST.append("DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
-					self.ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
-					return self.win_join_route_cmd()
+					ROUTE_CMDLIST = list()
+					ROUTE_CMDLIST.append("DELETE %s MASK 255.255.255.255 %s" % (self.OVPN_CONNECTEDtoIP,self.GATEWAY_LOCAL))
+					ROUTE_CMDLIST.append("DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
+					ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
+					return self.win_join_route_cmd(ROUTE_CMDLIST)
 		except Exception as e:
 			self.debug(1,"def del_ovpn_routes: failed, exception = '%s'"%(e))
 
@@ -3979,6 +3985,7 @@ class Systray:
 	def win_clear_ipv6_dns(self):
 		self.debug(1,"def win_clear_ipv6_dns()")
 		try:
+			NETSH_CMDLIST = list()
 			netshcmd = 'interface ipv6 show dnsservers "%s"' % (self.WIN_TAP_DEVICE)
 			output = self.win_return_netsh_cmd(netshcmd)
 			if not output == False:
@@ -3990,15 +3997,16 @@ class Systray:
 						#print ipv6addr
 						if ipv6addr.startswith("fd48:8bea:68a5:"):
 							cmdstring = 'interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
-							self.NETSH_CMDLIST.append(netshcmd)
-			if len(self.NETSH_CMDLIST) > 0:
-				self.win_join_netsh_cmd()
+							NETSH_CMDLIST.append(netshcmd)
+			if len(NETSH_CMDLIST) > 0:
+				self.win_join_netsh_cmd(NETSH_CMDLIST)
 		except Exception as e:
 			self.debug(1,"def win_clear_ipv6_dns: failed, exception = '%s'"%(e))
 
 	def win_clear_ipv6_addr(self):
 		self.debug(1,"def win_clear_ipv6_addr()")
 		try:
+			NETSH_CMDLIST = list()
 			netshcmd = 'interface ipv6 show addresses "%s"' % (self.WIN_TAP_DEVICE)
 			output = self.win_return_netsh_cmd(netshcmd)
 			if not output == False:
@@ -4009,9 +4017,9 @@ class Systray:
 							if not "%" in line:
 								ipv6addr = line.split()[1]
 								netshcmd = 'interface ipv6 delete address address="%s" interface="%s" store=active' % (ipv6addr,self.WIN_TAP_DEVICE)
-								self.NETSH_CMDLIST.append(netshcmd)
-					if len(self.NETSH_CMDLIST) > 0:
-						self.win_join_netsh_cmd()
+								NETSH_CMDLIST.append(netshcmd)
+					if len(NETSH_CMDLIST) > 0:
+						self.win_join_netsh_cmd(NETSH_CMDLIST)
 				except Exception as e:
 					self.debug(1,"def win_clear_ipv6_addr: failed #2, exception = '%s'"%(e))
 		except Exception as e:
@@ -4033,6 +4041,30 @@ class Systray:
 			self.debug(1,"def win_clear_ipv6_routes: failed, exception = '%s'"%(e))
 
 	def win_netsh_set_dns_ovpn(self):
+		self.debug(1,"def win_netsh_set_dns_ovpn()")
+		if self.NO_DNS_CHANGE == True:
+			self.debug(1,"def win_netsh_set_dns_ovpn: self.NO_DNS_CHANGE")
+			return True
+		if self.check_dns_is_whitelisted() == True:
+			return True
+		DNSS = self.select_dns()
+		NETSH_CMDLIST = list()
+		if len(DNSS) == 1:
+			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
+			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
+		if len(DNSS) == 2:
+			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
+			NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,DNSS[1]))
+			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
+			NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,DNSS[1]))
+		if self.win_join_netsh_cmd(NETSH_CMDLIST) == True:
+			self.WIN_DNS_CHANGED = True
+			return True
+		else:
+			self.debug(1,"def win_netsh_set_dns_ovpn: failed!")
+
+	"""
+	def win_netsh_set_dns_ovpn_old(self):
 		self.debug(1,"def win_netsh_set_dns_ovpn()")
 		if self.NO_DNS_CHANGE == True:
 			self.debug(1,"def win_netsh_set_dns_ovpn: self.NO_DNS_CHANGE")
@@ -4066,6 +4098,7 @@ class Systray:
 			return True
 		else:
 			self.debug(1,"def win_netsh_set_dns_ovpn: failed!")
+	"""
 
 	def win_netsh_restore_dns_from_backup(self):
 		self.debug(1,"def win_netsh_restore_dns_from_backup()")
@@ -4076,10 +4109,12 @@ class Systray:
 				return True
 			if self.check_dns_is_whitelisted() == True:
 				return True
+			NETSH_CMDLIST = list()
 			try:
+				
 				if self.WIN_EXT_DHCP_DNS == True:
-					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
-					if self.win_join_netsh_cmd():
+					NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
+					if self.win_join_netsh_cmd(NETSH_CMDLIST):
 						self.debug(1,"DNS restored to DHCP.")
 						return True
 					else:
@@ -4089,14 +4124,14 @@ class Systray:
 			
 			try:
 				if not self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4A:
-					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
-					if self.win_join_netsh_cmd():
+					NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
+					if self.win_join_netsh_cmd(NETSH_CMDLIST):
 						self.debug(1,"Primary DNS restored to: %s"%(self.GATEWAY_DNS1))
 						if self.GATEWAY_DNS2 == False:
 							return True
 						else:
-							self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
-							if self.win_join_netsh_cmd():
+							NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
+							if self.win_join_netsh_cmd(NETSH_CMDLIST):
 								self.debug(1,"Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
 								return True
 							else:
@@ -4106,8 +4141,8 @@ class Systray:
 						self.msgwarn(_("Error: Restore Primary DNS to %s failed.") % (self.GATEWAY_DNS1),_("Error: DNS restore 1st"))
 						return False
 				else:
-					self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
-					if self.win_join_netsh_cmd():
+					NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
+					if self.win_join_netsh_cmd(NETSH_CMDLIST):
 						self.debug(1,"DNS restored to DHCP")
 						return True
 					else:
@@ -4118,20 +4153,23 @@ class Systray:
 			self.debug(1,"def win_netsh_restore_dns_from_backup: failed, exception = '%s'"%(e))
 
 	def win_read_dns_from_interface(self,adaptername):
-		self.debug(1,"def win_read_dns_from_interface(adaptername='%s')"%(adaptername))
+		if self.STATE_OVPN == False:
+			self.debug(1,"def win_read_dns_from_interface(adaptername='%s')"%(adaptername))
 		DNS1 = False
 		DNS2 = False
 		try:
-			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,adaptername)
-			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID)
+			DEVICE_GUID = winregs.get_networkadapter_guid(self.DEBUG,adaptername,self.STATE_OVPN)
+			DEVICE_DATA = winregs.get_interface_infos_from_guid(self.DEBUG,DEVICE_GUID,self.STATE_OVPN)
 			try:
 				DNS1 = DEVICE_DATA['NameServer'].split(",")[0]
 				if self.isValueIPv4(DNS1):
-					self.debug(1,"def win_read_dns_from_interface(%s): 1st DNS '%s' backuped" % (adaptername,DNS1))
+					if self.STATE_OVPN == False:
+						self.debug(1,"def win_read_dns_from_interface(%s): 1st DNS '%s' backuped" % (adaptername,DNS1))
 					try:
 						DNS2 = DEVICE_DATA['NameServer'].split(",")[1]
 						if self.isValueIPv4(DNS2):
-							self.debug(1,"def win_read_dns_from_interface(%s): 2nd DNS '%s' backuped" % (adaptername,DNS2))
+							if self.STATE_OVPN == False:
+								self.debug(1,"def win_read_dns_from_interface(%s): 2nd DNS '%s' backuped" % (adaptername,DNS2))
 					except Exception as e:
 						pass
 			except Exception as e:
@@ -4164,8 +4202,46 @@ class Systray:
 		except Exception as e:
 			return False
 
-	def win_compare_dns(self):
-		self.debug(1,"def win_compare_dns()")
+	def win_check_dns(self):
+		if self.OVPN_STOP == True:
+			return True
+		self.debug(1,"def win_check_dns()")
+		DNSI = self.win_read_dns_from_interface(self.WIN_EXT_DEVICE)
+		DNSS = self.select_dns()
+		self.debug(1,"def win_check_dns: DNSI = '%s', DNSS = '%s'"%(DNSI,DNSS))
+		for key,DNS in DNSI.items():
+			if not DNS in DNSS:
+				self.debug(1,"def win_check_dns: DNS '%s' not in DNSS '%s'"%(DNS,DNSS))
+				return False
+		return True
+
+	def select_dns(self):
+		self.debug(1,"def select_dns()")
+		try:
+			if self.GATEWAY_DNS1 == "127.0.0.1":
+				return ["127.0.0.1"]
+				
+			dnslist = list()
+			servername = self.OVPN_CONNECTEDto
+			try:
+				pridns = self.MYDNS[servername]["primary"]["ip4"]
+				dnslist.append(pridns)
+				try:
+					secdns = self.MYDNS[servername]["secondary"]["ip4"]
+					dnslist.append(secdns)
+				except Exception as e:
+					self.debug(1,"def select_dns: secdns not found")
+			except Exception as e:
+				self.debug(1,"def select_dns: pridns not found")
+			
+
+			if len(dnslist) == 0:
+				dnslist.append(self.GATEWAY_OVPN_IP4A)
+			return dnslist
+		
+		except Exception as e:
+			self.debug(1,"def select_dns, failed exception = '%s'"%(e))
+
 
 	def load_ca_cert(self):
 		self.debug(1,"def load_ca_cert()")
@@ -4191,26 +4267,28 @@ class Systray:
 			return True
 		if self.NO_DNS_CHANGE == False:
 			self.win_ipconfig_flushdns()
+		NETSH_CMDLIST = list()
 		if self.WIN_RESET_FIREWALL == True:
-			self.NETSH_CMDLIST.append("advfirewall reset")
-		#self.NETSH_CMDLIST.append("advfirewall set privateprofile logging filename \"%s\"" % (self.pfw_private_log))
-		#self.NETSH_CMDLIST.append("advfirewall set publicprofile logging filename \"%s\"" % (self.pfw_public_log))
-		#self.NETSH_CMDLIST.append("advfirewall set domainprofile logging filename \"%s\"" % (self.pfw_domain_log))
-		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
-		self.NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
-		self.NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
+			NETSH_CMDLIST.append("advfirewall reset")
+		#NETSH_CMDLIST.append("advfirewall set privateprofile logging filename \"%s\"" % (self.pfw_private_log))
+		#NETSH_CMDLIST.append("advfirewall set publicprofile logging filename \"%s\"" % (self.pfw_public_log))
+		#NETSH_CMDLIST.append("advfirewall set domainprofile logging filename \"%s\"" % (self.pfw_domain_log))
+		NETSH_CMDLIST.append("advfirewall set allprofiles state on")
+		NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
+		NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
 		if self.TAP_BLOCKOUTBOUND == True:
 			opt = "blockoutbound"
 		else:
 			opt = "allowoutbound"
-		self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,%s" % (opt))
-		if self.win_join_netsh_cmd():
+		NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,%s" % (opt))
+		if self.win_join_netsh_cmd(NETSH_CMDLIST):
 			self.WIN_FIREWALL_STARTED = True
 			return True
 
 	def win_firewall_tap_blockoutbound(self):
 		self.win_firewall_tap_blockoutbound_running = True
 		self.debug(1,"def win_firewall_tap_blockoutbound()")
+		NETSH_CMDLIST = list()
 		try:
 			if self.NO_WIN_FIREWALL == True:
 				self.win_firewall_tap_blockoutbound_running = False
@@ -4218,11 +4296,11 @@ class Systray:
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
 				self.win_firewall_whitelist_ovpn_on_tap(option="add")
-				self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
+				NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
 			else:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
-				self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
-			self.win_join_netsh_cmd()
+				NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
+			self.win_join_netsh_cmd(NETSH_CMDLIST)
 			self.debug(1,"Block outbound on TAP!\n\nAllow Whitelist to Internal oVPN Services\n\n'%s'\n\nSee all Rules:\n Windows Firewall with Advanced Security\n --> Outgoing Rules" % (self.WHITELIST_PUBLIC_PROFILE))
 		except Exception as e:
 			self.debug(1,"def win_firewall_tap_blockoutbound: failed!")
@@ -4231,12 +4309,13 @@ class Systray:
 	def win_firewall_allowout(self):
 		self.debug(1,"def win_firewall_allowout()")
 		if self.NO_WIN_FIREWALL == True:
-			return True	
-		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
-		self.NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
-		self.NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,allowoutbound")
-		self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
-		if self.win_join_netsh_cmd():
+			return True
+		NETSH_CMDLIST = list()
+		NETSH_CMDLIST.append("advfirewall set allprofiles state on")
+		NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound")
+		NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,allowoutbound")
+		NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound")
+		if self.win_join_netsh_cmd(NETSH_CMDLIST):
 			self.WIN_FIREWALL_STARTED = True
 			return True
 
@@ -4244,11 +4323,12 @@ class Systray:
 		self.debug(1,"def win_firewall_block_on_exit()")
 		if self.NO_WIN_FIREWALL == True:
 			return True
-		self.NETSH_CMDLIST.append("advfirewall set allprofiles state on")
-		self.NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
-		self.NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
-		self.NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
-		return self.win_join_netsh_cmd()
+		NETSH_CMDLIST = list()
+		NETSH_CMDLIST.append("advfirewall set allprofiles state on")
+		NETSH_CMDLIST.append("advfirewall set privateprofile firewallpolicy blockinbound,blockoutbound")
+		NETSH_CMDLIST.append("advfirewall set domainprofile firewallpolicy blockinbound,blockoutbound")
+		NETSH_CMDLIST.append("advfirewall set publicprofile firewallpolicy blockinbound,blockoutbound")
+		return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def win_firewall_whitelist_ovpn_on_tap(self,option):
 		self.debug(1,"def win_firewall_whitelist_ovpn_on_tap()")
@@ -4259,6 +4339,7 @@ class Systray:
 			actionstring = "action=allow"
 		elif option == "delete":
 			actionstring = ""
+		NETSH_CMDLIST = list()
 		for entry,value in self.WHITELIST_PUBLIC_PROFILE.items():
 			ip = value["ip"]
 			port = value["port"]
@@ -4266,10 +4347,9 @@ class Systray:
 			
 			rule_name = "(oVPN) Allow OUT on TAP: %s %s:%s %s" % (entry,ip,port,protocol)
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=public dir=out %s" % (option,rule_name,ip,port,protocol,actionstring)
-			self.NETSH_CMDLIST.append(rule_string)
+			NETSH_CMDLIST.append(rule_string)
 			self.debug(1,"Whitelist: %s %s %s %s" % (entry,ip,port,protocol))
-		self.win_join_netsh_cmd()
-		return True
+		return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def win_firewall_add_rule_to_vcp(self,option):
 		if self.NO_WIN_FIREWALL == True:
@@ -4286,8 +4366,9 @@ class Systray:
 			program = 'program="%s\\ovpn_client.exe"' % (self.BIN_DIR)
 			rule_name = "oVPN.to Client Allow OUT"
 			rule_string = 'advfirewall firewall %s rule name="%s" %s remoteport="%s" protocol="%s" profile=any dir=out %s' % (option,rule_name,program,port,protocol,actionstring)
-			self.NETSH_CMDLIST.append(rule_string)
-			if self.win_join_netsh_cmd():
+			NETSH_CMDLIST = list()
+			NETSH_CMDLIST.append(rule_string)
+			if self.win_join_netsh_cmd(NETSH_CMDLIST):
 				if option == "add":
 					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
 				elif option == "delete":
@@ -4307,8 +4388,9 @@ class Systray:
 		self.debug(1,"def win_firewall_export_on_start() call")
 		if os.path.isfile(self.pfw_bak):
 			os.remove(self.pfw_bak)
-		self.NETSH_CMDLIST.append('advfirewall export "%s"' % (self.pfw_bak))
-		return self.win_join_netsh_cmd()
+		NETSH_CMDLIST = list()
+		NETSH_CMDLIST.append('advfirewall export "%s"' % (self.pfw_bak))
+		return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def win_firewall_restore_on_exit(self):
 		self.debug(1,"def win_firewall_restore_on_exit()")
@@ -4320,26 +4402,30 @@ class Systray:
 			return True
 		if self.WIN_FIREWALL_STARTED == True:
 			self.debug(1,"def win_firewall_restore_on_exit() call")
-			self.NETSH_CMDLIST.append("advfirewall reset")
+			NETSH_CMDLIST = list()
+			NETSH_CMDLIST.append("advfirewall reset")
 			if os.path.isfile(self.pfw_bak):
-				self.NETSH_CMDLIST.append('advfirewall import "%s"' % (self.pfw_bak))
-			return self.win_join_netsh_cmd()
+				NETSH_CMDLIST.append('advfirewall import "%s"' % (self.pfw_bak))
+			return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def win_enable_tap_interface(self):
 		self.debug(1,"def win_enable_tap_interface()")
-		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_TAP_DEVICE))
-		return self.win_join_netsh_cmd()
+		NETSH_CMDLIST = list()
+		NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_TAP_DEVICE))
+		return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def win_disable_ext_interface(self):
 		self.debug(1,"def win_disable_ext_interface()")
 		if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
-			self.NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
-			return self.win_join_netsh_cmd()
+			NETSH_CMDLIST = list()
+			NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
+			return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def win_enable_ext_interface(self):
 		self.debug(1,"def win_enable_ext_interface()")
-		self.NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
-		return self.win_join_netsh_cmd()
+		NETSH_CMDLIST = list()
+		NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
+		return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def win_firewall_analyze(self):
 		return
@@ -4364,8 +4450,9 @@ class Systray:
 			if option == "delete":
 				rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
 			self.debug(1,"def win_firewall_modify_rule: rule_string = '%s'"%(rule_string))
-			self.NETSH_CMDLIST.append(rule_string)
-			return self.win_join_netsh_cmd()
+			NETSH_CMDLIST = list()
+			NETSH_CMDLIST.append(rule_string)
+			return self.win_join_netsh_cmd(NETSH_CMDLIST)
 		except Exception as e:
 			self.debug(1,"def win_firewall_modify_rule: option = '%s' failed, exception = '%s'" % (option,e))
 
@@ -4386,11 +4473,11 @@ class Systray:
 		else:
 			self.errorquit(text=_("Error: netsh.exe not found!"))
 
-	def win_join_netsh_cmd(self):
+	def win_join_netsh_cmd(self,NETSH_CMDLIST):
 		self.debug(1,"def win_join_netsh_cmd()")
 		if os.path.isfile(self.WIN_NETSH_EXE):
 			i=0
-			for cmd in self.NETSH_CMDLIST:
+			for cmd in NETSH_CMDLIST:
 				netshcmd = '%s %s' % (self.WIN_NETSH_EXE,cmd)
 				try: 
 					exitcode = subprocess.check_call(netshcmd,shell=True)
@@ -4401,12 +4488,8 @@ class Systray:
 						self.debug(1,"netshERROR: '%s': exitcode = %s" % (netshcmd,exitcode))
 				except Exception as e:
 					self.debug(1,"def win_join_netsh_cmd: '%s' failed, exception = '%s'" % (netshcmd,e))
-			if len(self.NETSH_CMDLIST) == i:
-				self.NETSH_CMDLIST = list()
+			if len(NETSH_CMDLIST) == i:
 				return True
-			else:
-				self.NETSH_CMDLIST = list()
-				return False
 		else:
 			self.errorquit(text=_("Error: netsh.exe not found!"))
 
@@ -4427,11 +4510,11 @@ class Systray:
 		else:
 			self.errorquit(text=_("Error: route.exe not found!"))
 
-	def win_join_route_cmd(self):
+	def win_join_route_cmd(self,ROUTE_CMDLIST):
 		self.debug(1,"def win_join_route_cmd()")
 		if os.path.isfile(self.WIN_ROUTE_EXE):
 			i=0
-			for cmd in self.ROUTE_CMDLIST:
+			for cmd in ROUTE_CMDLIST:
 				routecmd = '%s %s' % (self.WIN_ROUTE_EXE,cmd)
 				try:
 					exitcode = subprocess.check_call(routecmd,shell=True)
@@ -4442,12 +4525,9 @@ class Systray:
 						self.debug(1,"routeERROR: '%s': exitcode = %s" % (routecmd,exitcode))
 				except Exception as e:
 					self.debug(1,"def win_join_route_cmd: '%s' failed, exception = '%s'" % (routecmd,e))
-			if len(self.ROUTE_CMDLIST) == i:
-				self.ROUTE_CMDLIST = list()
+			if len(ROUTE_CMDLIST) == i:
+				ROUTE_CMDLIST = list()
 				return True
-			else:
-				self.ROUTE_CMDLIST = list()
-				return False
 		else:
 			self.errorquit(text=_("Error: route.exe not found!"))
 
@@ -4928,8 +5008,9 @@ class Systray:
 		if os.path.isfile(fwbak):
 			self.debug(1,"def cb_restore_firewallbackup: %s" % (fwbak))
 			self.win_firewall_export_on_start()
-			self.NETSH_CMDLIST.append('advfirewall import "%s"' % (fwbak))
-			return self.win_join_netsh_cmd()
+			NETSH_CMDLIST = list()
+			NETSH_CMDLIST.append('advfirewall import "%s"' % (fwbak))
+			return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
 	def delete_dir(self,path):
 		self.debug(1,"def delete_dir()")
