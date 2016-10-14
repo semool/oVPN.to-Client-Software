@@ -9,7 +9,7 @@ import release_version
 import hashings
 import signtool
 import shlex
-
+import win32process
 
 def values(DEBUG):
 	debug(9,"[openvpn.py] def values()",DEBUG,True)
@@ -126,7 +126,7 @@ def win_get_openvpn_version(DEBUG,OPENVPN_DIR):
 	try:
 		cmdstring = '"%s" --version' % (OPENVPN_EXE)
 		cmdargs = shlex.split(cmdstring)
-		p = subprocess.Popen(cmdargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		p = subprocess.Popen(cmdargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,creationflags = win32process.CREATE_NO_WINDOW)
 		out, err = p.communicate()
 		rc = p.returncode
 		OVPN_VERSION = out.decode('utf-8').split('\r\n')[0].split( )[1].replace(".","")

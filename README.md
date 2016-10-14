@@ -18,6 +18,7 @@ C:\Python34[_64]\Scripts\pip.exe install --upgrade pip
 C:\Python34[_64]\Scripts\pip.exe install requests
 C:\Python34[_64]\Scripts\pip.exe install requests[security]
 C:\Python34[_64]\Scripts\pip.exe install py2exe
+C:\Python34[_64]\Scripts\pip.exe install pypiwin32
 ```
 
 ### 32 Bit:
