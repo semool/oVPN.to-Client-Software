@@ -3433,6 +3433,7 @@ class Systray:
 
 	def cb_destroy_debugwindow(self,event):
 		self.DEBUGWINDOW_OPEN = False
+		GLib.idle_add(self.debug_window.destroy)
 
 	def cb_destroy_hidecellswindow(self,event):
 		self.debug(1,"def cb_destroy_hidecellswindow")
@@ -6048,6 +6049,8 @@ class Systray:
 			self.debug(1,"def msgwarn: %s"% (text))
 			dialogWindow = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			self.msgwarn_window = dialogWindow
+			self.msgwarn_window.connect("key_release_event", lambda w, e: GLib.idle_add(self.msgwarn_window.destroy) if e.keyval == 65307 else None)
+
 			dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 			dialogWindow.set_title(title)
 			dialogWindow.set_transient_for(self.window)
@@ -6153,6 +6156,7 @@ class Systray:
 				self.debug_window = Gtk.Window(title="DEBUG")
 				self.debug_window.set_default_size(700, 700)
 				self.debug_window.connect("destroy",self.cb_destroy_debugwindow)
+				self.debug_window.connect("key_release_event", lambda w, e: self.cb_destroy_debugwindow(None) if e.keyval == 65307 else None)
 				self.debug_grid = Gtk.Grid()
 				self.debug_window.add(self.debug_grid)
 				self.debug_create_textview()
