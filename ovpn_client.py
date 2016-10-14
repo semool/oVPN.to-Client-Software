@@ -4205,11 +4205,15 @@ class Systray:
 	def win_check_dns(self):
 		if self.OVPN_STOP == True:
 			return True
+		if self.NO_DNS_CHANGE == True:
+			return True
 		self.debug(1,"def win_check_dns()")
 		DNSI = self.win_read_dns_from_interface(self.WIN_EXT_DEVICE)
 		DNSS = self.select_dns()
 		self.debug(1,"def win_check_dns: DNSI = '%s', DNSS = '%s'"%(DNSI,DNSS))
 		for key,DNS in DNSI.items():
+			if key == "DNS2" and DNS == False:
+				continue
 			if not DNS in DNSS:
 				self.debug(1,"def win_check_dns: DNS '%s' not in DNSS '%s'"%(DNS,DNSS))
 				return False
