@@ -289,6 +289,7 @@ class Systray:
 		self.LAST_HIT_UPDATE_BUTTON5 = 0
 		self.LAST_CHECK_CFG_UPDATE = 0
 		self.LAST_CHECK_CFG_UPDATE_FORCE = 0
+		self.nbpage0, self.nbpage1, self.nbpage2, self.nbpage3 = False, False, False, False
 		self.WHITELIST_PUBLIC_PROFILE = {
 			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
 			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
@@ -1399,8 +1400,9 @@ class Systray:
 				self.check_hide_popup()
 			
 			try:
+				self.debug(10,"self.LAST_MSGWARN_WINDOW = '%s'" % (self.LAST_MSGWARN_WINDOW))
 				if self.LAST_MSGWARN_WINDOW > 0 and (int(time.time())-self.LAST_MSGWARN_WINDOW) > 9:
-					GLib.idle_add(self.msgwarn_window.destroy)
+					self.msgwarn_window.destroy()
 					self.LAST_MSGWARN_WINDOW = 0
 			except Exception as e:
 				pass
@@ -1410,16 +1412,13 @@ class Systray:
 				
 				# Language changed
 				if self.LANG_FONT_CHANGE == True:
-					try:
-						self.settingsnotebook.remove(self.nbpage0)
-						self.settingsnotebook.remove(self.nbpage1)
-						self.settingsnotebook.remove(self.nbpage2)
-					except Exception as e:
-						pass
-					try:
-						self.settingsnotebook.remove(self.nbpage3)
-					except Exception as e:
-						pass
+					self.debug(1,"def systray_timer: self.LANG_FONT_CHANGE == True")
+					pages = [self.nbpage0, self.nbpage1, self.nbpage2, self.nbpage3]
+					for page in pages:
+						try:
+							self.settingsnotebook.remove(page)
+						except Exception as e:
+							self.debug(1,"def systray_timer: remove page '%s' failed, exception = '%s'"%(page,e))
 					try:
 						self.show_hide_security_window()
 						self.show_hide_options_window()
@@ -1427,7 +1426,7 @@ class Systray:
 						self.settingswindow.show_all()
 						self.settingsnotebook.set_current_page(1)
 					except Exception as e:
-						pass
+						self.debug(1,"def systray_timer: settingswindow failed, exception = '%s'"%(page,e))
 					self.LANG_FONT_CHANGE = False
 				
 				if self.state_openvpn() == True:
@@ -5997,8 +5996,9 @@ class Systray:
 			except Exception as e:
 				self.debug(1,"def msgwarn_glib: failed #1, exception = '%s'"%(e))
 				return False
-		
 		try:
+			self.MSGWARN_WINDOW_OPEN = True
+			self.LAST_MSGWARN_WINDOW = int(time.time())
 			self.msgwarn_window = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			self.msgwarn_window.connect("key_release_event", lambda w, e: GLib.idle_add(self.msgwarn_window.destroy) if e.keyval == 65307 else None)
 			self.msgwarn_window.set_position(Gtk.WindowPosition.CENTER)
@@ -6012,8 +6012,6 @@ class Systray:
 				pass
 			self.msgwarn_window.run()
 			self.msgwarn_window.destroy()
-			self.MSGWARN_WINDOW_OPEN = True
-			self.LAST_MSGWARN_WINDOW = int(time.time())
 		except Exception as e:
 			self.debug(1,"def msgwarn_glib: failed #2, exception = '%s'"%(e))
 
