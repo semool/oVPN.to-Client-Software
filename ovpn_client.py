@@ -5069,9 +5069,10 @@ class Systray:
 
 	def try_socket(self,host,port):
 		i = 0
-		while i <= 9:
+		tries = 4
+		while i <= tries:
 			self.debug(1,"def try_socket: i = '%s'" % (i))
-			systraytext = _("Testing internet connection! (%s / 9)"%(i))
+			systraytext = _("Testing internet connection! (%s / %s)"%(i,tries))
 			self.tray.set_tooltip_markup(systraytext)
 			try:
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
