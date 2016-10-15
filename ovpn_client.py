@@ -166,6 +166,7 @@ class Systray:
 		self.LAST_CHECK_INET_FALSE = 0
 		self.LAST_MSGWARN_WINDOW = 0
 		self.LAST_MSGWARN_WINDOW_DNS = 0
+		self.MSGWARN_WINDOW_OPEN = False
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
 		self.GATEWAY_DNS2 = False
@@ -1285,7 +1286,7 @@ class Systray:
 					self.debug(1,"def make_context_menu_servertab: loaddataevery failed, exception = '%s'"%(e))
 
 			context_menu_servertab.show_all()
-			context_menu_servertab.popup(None, None, None, 3, int(time.time()), 0)
+			GLib.idle_add(context_menu_servertab.popup,None, None, None, 3, 0, 0)
 			self.debug(1,"def make_context_menu_servertab: return")
 			return
 		except Exception as e:
@@ -1761,7 +1762,7 @@ class Systray:
 			
 			self.systray_menu.connect('enter-notify-event', self.systray_notify_event_enter,"systray_menu")
 			self.systray_menu.show_all()
-			self.systray_menu.popup(None, None, None, event, 0, 0)
+			GLib.idle_add(self.systray_menu.popup, None, None, None, event, 0, 0)
 		except Exception as e:
 			self.destroy_systray_menu()
 			self.debug(1,"def make_systray_menu: failed, exception = '%s'"%(e))
@@ -6039,29 +6040,32 @@ class Systray:
 		GLib.idle_add(self.msgwarn_glib,text,title)
 
 	def msgwarn_glib(self,text,title):
-		try:
-			GLib.idle_add(self.msgwarn_window.destroy)
-		except Exception as e:
-			pass
 		self.debug(1,"def msgwarn: %s"% (text))
+		if self.MSGWARN_WINDOW_OPEN == True:
+			try:
+				self.msgwarn_window.destroy()
+			except Exception as e:
+				self.debug(1,"def msgwarn_glib: failed #1, exception = '%s'"%(e))
+				return False
+		
 		try:
-			self.LAST_MSGWARN_WINDOW = int(time.time())
-			self.debug(1,"def msgwarn: %s"% (text))
 			self.msgwarn_window = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
 			self.msgwarn_window.connect("key_release_event", lambda w, e: GLib.idle_add(self.msgwarn_window.destroy) if e.keyval == 65307 else None)
 			self.msgwarn_window.set_position(Gtk.WindowPosition.CENTER)
 			self.msgwarn_window.set_title(title)
 			self.msgwarn_window.set_transient_for(self.window)
 			self.msgwarn_window.set_border_width(8)
+			self.msgwarn_window.set_markup("%s"%(text))
 			try:
 				self.msgwarn_window.set_icon(self.app_icon)
 			except Exception as e:
 				pass
-			self.msgwarn_window.set_markup("%s"%(text))
 			self.msgwarn_window.run()
 			self.msgwarn_window.destroy()
+			self.MSGWARN_WINDOW_OPEN = True
+			self.LAST_MSGWARN_WINDOW = int(time.time())
 		except Exception as e:
-			self.debug(1,"def msgwarn_glib: failed, exception = '%s'"%(e))
+			self.debug(1,"def msgwarn_glib: failed #2, exception = '%s'"%(e))
 
 	def decode_icon(self,icon):
 		#self.debug(49,"def decode_icon()")
