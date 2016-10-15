@@ -44,6 +44,7 @@ class notify:
 				if TRAYSIZE == 32 or WINVER10 == True:
 					RT_ICON_SIZE = 10
 					#RT_ICON_SIZE = 14
+				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
 			except Exception as e:
@@ -66,6 +67,7 @@ class notify:
 				except Exception as e:
 					debug(222,"[win_notification.py] def send_notify: LoadImage() #2 failed, exception = '%s'"%(e),DEBUG,True)
 					try:
+						""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648072(v=vs.85).aspx """
 						hicon = LoadIcon(0, IDI_INFORMATION)
 						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3",DEBUG,True)
 					except Exception as e:
