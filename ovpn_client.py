@@ -175,13 +175,19 @@ class Systray:
 		self.LAST_CHECK_INET_FALSE = 0
 		self.LAST_MSGWARN_WINDOW = 0
 		self.LAST_MSGWARN_WINDOW_DNS = 0
+		self.LAST_OVPN_PING_DEAD_MESSAGE = 0
+		self.CONNECTION_ESTABLISHED = False
 		self.MSGWARN_WINDOW_OPEN = False
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
 		self.GATEWAY_DNS2 = False
 		self.WIN_TAP_DEVICE = False
 		self.WIN_TAP_DEVS = list()
+		
+		""" *fixme* add cfg option and switches """
 		self.WIN_ENABLE_NOTIFICATIONS = True
+		self.DISABLE_ALL_NOTIFICATIONS = False
+		
 		self.TAP_BLOCKOUTBOUND = False
 		self.win_firewall_tap_blockoutbound_running = False
 		self.WIN_EXT_DEVICE = False
@@ -1616,11 +1622,16 @@ class Systray:
 					systrayicon = self.systray_icon_testing
 					statusbar_text = systraytext
 					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
-				elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 3:
-					systraytext = _("Connection to %s unstable or failed!") % (self.OVPN_CONNECTEDto)
+					
+				elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 1:
+					systraytext = _("Connection unstable or failed! (%s)") % (self.OVPN_PING_DEAD_COUNT)
 					systrayicon = self.systray_icon_testing
 					statusbar_text = systraytext
 					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
+					if (int(time.time())-self.LAST_OVPN_PING_DEAD_MESSAGE) > 120:
+						self.send_notify_glib(_("Connection unstable or failed!"),_("oVPN"))
+						self.LAST_OVPN_PING_DEAD_MESSAGE = int(time.time())
+						
 				elif self.OVPN_PING_STAT > 0:
 					try:
 						if self.OVPN_isTESTING == True:
@@ -1667,6 +1678,7 @@ class Systray:
 					if not self.systraytext_from_before == systraytext and not systraytext == False:
 						self.systraytext_from_before = systraytext
 						self.tray.set_tooltip_markup(systraytext)
+						self.debug(2,"def systray_timer: update systraytext = '%s'"%(systraytext))
 				except Exception as e:
 					self.debug(1,"def systray_timer: set traytext failed, exception '%s'"%(e))
 					
@@ -3393,6 +3405,8 @@ class Systray:
 		if self.timer_check_certdl_running == False and diff > 30:
 			self.LAST_CHECK_CFG_UPDATE = time.time()
 			self.cb_check_normal_update()
+		else:
+			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
 
 	def settings_updates_button_forceconf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
@@ -3406,6 +3420,8 @@ class Systray:
 		if self.timer_check_certdl_running == False and diff1 > 60 and diff2 > 15:
 			self.LAST_CHECK_CFG_UPDATE_FORCE = time.time()
 			self.cb_force_update()
+		else:
+			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
 
 	def settings_updates_button_apireset(self,page):
 		button = Gtk.Button(label=_("Reset API-Login"))
@@ -3418,6 +3434,8 @@ class Systray:
 		if diff > 15:
 			self.LAST_HIT_UPDATE_BUTTON5 = int(time.time())
 			GLib.idle_add(self.dialog_apikey)
+		else:
+			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
 
 	def destroy_settingswindow(self):
 		self.debug(1,"def destroy_settingswindow()")
@@ -3748,7 +3766,8 @@ class Systray:
 				pingthread.daemon = True
 				pingthread.start()
 			self.call_redraw_mainwindow()
-			self.debug(1,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
+			self.debug(1,"def inThread_spawn_openvpn_process: start")
+			self.debug(2,"def inThread_spawn_openvpn_process: self.OVPN_STRING = '%s'"%(self.OVPN_STRING))
 			""" launch openvpn in loop """
 			while True:
 				exitcode = False
@@ -3796,6 +3815,8 @@ class Systray:
 			self.OVPN_PING = list()
 			self.UPDATE_SWITCH = True
 			self.OVPN_STRING = False
+			self.CONNECTION_ESTABLISHED = False
+			self.LAST_OVPN_PING_DEAD_MESSAGE = 0
 			self.delete_file(self.OVPN_SESSIONLOG,"def reset_ovpn_values")
 			self.call_redraw_mainwindow()
 			return False
@@ -3836,7 +3857,7 @@ class Systray:
 						elif PING > 1:
 							PING = int(round(PING,0))
 						if PING > 0 and self.check_myip() == True:
-							randint = random.randint(15,30)
+							randint = random.randint(10,20)
 							self.NEXT_PING_EXEC = int(time.time())+randint
 							pingsum = 0
 							if PING > 0:
@@ -3869,27 +3890,33 @@ class Systray:
 	def set_ovpn_ping_dead(self):
 		self.OVPN_PING_LAST = -2
 		self.NEXT_PING_EXEC = int(time.time())+5
+		self.CONNECTION_ESTABLISHED = False
 		self.OVPN_PING_DEAD_COUNT += 1
 
 	def get_ovpn_ping(self):
 		self.debug(7,"def get_ovpn_ping()")
 		try:
-			ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,"443",socket.AF_UNSPEC,socket.SOCK_STREAM)
-			for (family, socktype, proto, canon, sockaddr) in ai_list:
-				try:
-					t1 = time.time()
-					s = socket.socket(family, socktype)
-					s.connect(sockaddr)
-					t2 = time.time()
-					s.close()
-					PING = (t2-t1)*1000
-					if PING > 3000:
-						PING = -2
-					self.debug(7,"def get_ovpn_ping: %s ms" % (PING))
-					return PING
-				except Exception as e:
-					self.OVPN_PING_LAST = -2
-					return -2
+			ports = [ 53, 443, 1080, 8080 ]
+			for port in ports:
+				self.debug(7,"def get_ovpn_ping: try port %s"%(port))
+				ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,port,socket.AF_UNSPEC,socket.SOCK_STREAM)
+				for (family, socktype, proto, canon, sockaddr) in ai_list:
+					try:
+						t1 = time.time()
+						s = socket.socket(family, socktype)
+						s.settimeout(3)
+						s.connect(sockaddr)
+						t2 = time.time()
+						s.close()
+						PING = (t2-t1)*1000
+						if PING > 3000:
+							PING = -2
+						self.debug(7,"def get_ovpn_ping: %s ms" % (PING))
+						return PING
+					except Exception as e:
+						self.debug(7,"def get_ovpn_ping: port %s failed, exception = '%s'"%(port,e))
+			self.OVPN_PING_LAST = -2
+			return self.OVPN_PING_LAST
 		except Exception as e:
 			self.debug(1,"def get_ovpn_ping: failed, exception = '%s'"%(e))
 
@@ -5142,7 +5169,11 @@ class Systray:
 				rip = r.content.strip().split()[0].decode(decoding)
 				self.debug(2,"def check_myip: debug 04, rip = '%s', self.OVPN_CONNECTEDtoIP = '%s'"%(rip,self.OVPN_CONNECTEDtoIP))
 				if rip == self.OVPN_CONNECTEDtoIP:
-					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP")
+					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP, self.OVPN_PING_DEAD_COUNT = '%s'"%(self.OVPN_PING_DEAD_COUNT))
+					self.OVPN_PING_DEAD_COUNT = 0
+					if self.CONNECTION_ESTABLISHED == False and self.OVPN_PING_DEAD_COUNT == 0:
+						self.send_notify(_("Connection established!"),_("oVPN"))
+						self.CONNECTION_ESTABLISHED = True
 					self.LAST_CHECK_MYIP = int(time.time())
 					return True
 			except Exception as e:
@@ -5315,8 +5346,8 @@ class Systray:
 				textb = "%s %s %s" % (textb,key,value)
 			hasha = hashlib.sha256(texta.encode(locale.getpreferredencoding())).hexdigest()
 			hashb = hashlib.sha256(textb.encode(locale.getpreferredencoding())).hexdigest()
-			self.debug(1,"hasha newdata = '%s'" % (hasha))
-			self.debug(2,"hashb olddata = '%s'" % (hashb))
+			self.debug(2,"def check_hash_dictdata: hasha newdata = '%s'" % (hasha))
+			self.debug(2,"def check_hash_dictdata: hashb olddata = '%s'" % (hashb))
 			if hasha == hashb:
 				return True
 		except Exception as e:
@@ -6022,6 +6053,9 @@ class Systray:
 			self.debug(1,"def init_localization: failed, exception = '%s'"%(e))
 
 	def msgwarn(self,text,title):
+		if self.DISABLE_ALL_NOTIFICATIONS == True:
+			self.debug(1,"def msgwarn('%s','%s')"%(text,title))
+			return True
 		if WIN_NOTIFY == False or self.WIN_ENABLE_NOTIFICATIONS == False:
 			GLib.idle_add(self.msgwarn_glib,text,title)
 		else:
@@ -6029,10 +6063,19 @@ class Systray:
 
 	def send_notify(self,text,title):
 		self.debug(1,"def send_notify('%s','%s')"%(text,title))
+		if self.DISABLE_ALL_NOTIFICATIONS == True or self.WIN_ENABLE_NOTIFICATIONS == False:
+			return True
+		try:
+			GLib.idle_add(self.notification.send_notify,self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
+		except Exception as e:
+			self.debug(1,"def send_notify: failed, exception = '%s'"%(e))
+
+	def send_notify_glib(self,text,title):
+		""" only call send_notify_glib() from already GLib'ed functions! """
 		try:
 			self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
 		except Exception as e:
-			self.debug(1,"def send_notify: failed, exception = '%s'"%(e))
+			self.debug(1,"def send_notify_glib: failed, exception = '%s'"%(e))
 
 	def msgwarn_glib(self,text,title):
 		self.debug(1,"def msgwarn: %s"% (text))
