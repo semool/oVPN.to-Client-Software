@@ -29,6 +29,9 @@ class notify:
 
 	def send_notify(self,DEBUG,TRAYSIZE,DEV_DIR,text,title):
 		try:
+			
+			while not self.isDestroyed() == False:
+				sleep(0.01)
 			debug(1,"[win_notification.py] def send_notify: [Win10 = %s]" % (WINVER10),DEBUG,True)
 			style = WS_OVERLAPPED | WS_SYSMENU
 			self.hwnd = CreateWindow(self.classAtom, "Taskbar", style,0, 0, CW_USEDEFAULT,CW_USEDEFAULT,0, 0, self.hinst, None)
@@ -77,6 +80,7 @@ class notify:
 			#debug(1,"[win_notification.py] def send_notify: UnregisterClass() returned = '%s'"%(anyreturn),DEBUG,True)
 
 			debug(1,"[win_notification.py] def send_notify: [Win10 = %s] return" % (WINVER10),DEBUG,True)
+			self.destroyed = True
 			return None
 		except Exception as e:
 			debug(1,"[win_notification.py] def send_notify: failed, exception = '%s'"%(e),DEBUG,True)
@@ -89,4 +93,7 @@ class notify:
 		return None
 
 	def isDestroyed(self):
-		return self.destroyed
+		try:
+			return self.destroyed
+		except:
+			return False
