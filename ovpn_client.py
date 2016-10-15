@@ -111,6 +111,9 @@ class Systray:
 			self.win_firewall_analyze()
 		else:
 			sys.exit()
+	
+	def dummy_func(self):
+		self.debug(1,"def dummy_func()")
 
 	def self_vars(self):
 		self.DEBUG = DEBUG
@@ -1700,7 +1703,6 @@ class Systray:
 
 	def on_right_click(self, widget, event, event_time):
 		self.debug(1,"def on_right_click()")
-		#self.IDLE_TIME = 0
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
@@ -1708,7 +1710,6 @@ class Systray:
 
 	def on_left_click(self, widget):
 		self.debug(1,"def on_left_click()")
-		#self.IDLE_TIME = 0
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
@@ -2362,7 +2363,7 @@ class Systray:
 		cellnumber = 2
 		for cellid,cellname in self.MAINWINDOW_CELLINDEX.items():
 			if not cellnumber == 26:
-				self.debug(0,"def cellname = '%s'" % (cellname))
+				self.debug(2,"def cellname = '%s'" % (cellname))
 				align=0.5
 				if cellnumber in [ 9, 23, 24 ]:
 					align=1
@@ -2635,7 +2636,7 @@ class Systray:
 			self.settings_network_switch_nodns(self.nbpage0)
 			self.settings_firewall_switch_tapblockoutbound(self.nbpage0)
 			self.settings_network_switch_disableextifondisco(self.nbpage0)
-
+			
 			self.settingsnotebook.append_page(self.nbpage0, Gtk.Label(_(" Security ")))
 		except Exception as e:
 			self.debug(1,"def show_settingswindow: nbpage0 failed, exception = '%s'"%(e))
@@ -2644,21 +2645,21 @@ class Systray:
 		try:
 			self.nbpage1 = Gtk.VBox(False,spacing=2)
 			self.nbpage1.set_border_width(8)
-
+			
 			##
 			self.nbpage1_h0 = Gtk.HBox(False, spacing=2)
 			
 			self.nbpage1_h0_v1 = Gtk.VBox(False, spacing=0)
 			self.nbpage1_h0.pack_start(self.nbpage1_h0_v1,True,True,0)
 			self.settings_options_switch_autostart(self.nbpage1_h0_v1)
-
+			
 			self.nbpage1_h0_v2 = Gtk.VBox(False, spacing=0)
 			self.nbpage1_h0.pack_start(self.nbpage1_h0_v2,True,True,0)
 			self.settings_options_combobox_time(self.nbpage1_h0_v2)
-
+			
 			self.nbpage1.pack_start(self.nbpage1_h0,False,False,0)
 			##
-
+			
 			##
 			self.settings_options_switch_updateovpnonstart(self.nbpage1)
 			self.settings_options_switch_accinfo(self.nbpage1)
@@ -2666,7 +2667,7 @@ class Systray:
 			self.settings_options_switch_disablequit(self.nbpage1)
 			self.settings_options_switch_debugmode(self.nbpage1)
 			##
-
+			
 			##
 			self.nbpage1_h1 = Gtk.HBox(False, spacing=2)
 			
@@ -2680,10 +2681,10 @@ class Systray:
 			
 			self.nbpage1.pack_start(self.nbpage1_h1,False,False,0)
 			##
-
+			
 			##
 			self.nbpage1_h2 = Gtk.HBox(False, spacing=2)
-
+			
 			self.nbpage1_h2_v1 = Gtk.VBox(False, spacing=0)
 			self.nbpage1_h2.pack_start(self.nbpage1_h2_v1,True,True,0)
 			self.settings_options_combobox_fontsize(self.nbpage1_h2_v1)
@@ -2691,10 +2692,10 @@ class Systray:
 			self.nbpage1_h2_v2 = Gtk.VBox(False, spacing=0)
 			self.nbpage1_h2.pack_start(self.nbpage1_h2_v2,True,True,0)
 			self.settings_options_combobox_language(self.nbpage1_h2_v2)
-
+			
 			self.nbpage1.pack_start(self.nbpage1_h2,False,False,0)
 			##
-
+			
 			self.settingsnotebook.append_page(self.nbpage1, Gtk.Label(_(" Options ")))
 		except Exception as e:
 			self.debug(1,"def show_settingswindow: nbpage1 failed, exception = '%s'"%(e))
@@ -2703,13 +2704,13 @@ class Systray:
 		try:
 			self.nbpage2 = Gtk.VBox(False,spacing=2)
 			self.nbpage2.set_border_width(8)
-
+			
 			self.settings_updates_button_normalconf(self.nbpage2)
 			self.settings_updates_button_forceconf(self.nbpage2)
 			self.settings_options_button_ipv6(self.nbpage2)
 			self.settings_options_button_networkadapter(self.nbpage2)
 			self.settings_updates_button_apireset(self.nbpage2)
-
+			
 			self.settingsnotebook.append_page(self.nbpage2, Gtk.Label(_(" Updates ")))
 		except Exception as e:
 			self.debug(1,"def show_settingswindow: nbpage2 failed, exception = '%s'"%(e))
@@ -3205,7 +3206,6 @@ class Systray:
 			self.debug(1,"def settings_options_combobox_theme()")
 			combobox_title = Gtk.Label(label=_("Change App Theme"))
 			combobox = Gtk.ComboBoxText.new()
-
 			item = 0
 			THEME_DIR_CHECK = "%s\\share\\themes" % (self.BIN_DIR)
 			if not os.path.isdir(THEME_DIR_CHECK):
@@ -3217,7 +3217,6 @@ class Systray:
 					if self.APP_THEME == theme:
 						combobox.set_active(item)
 					item = item + 1
-
 			combobox.connect('changed',self.cb_theme_switcher_changed)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
@@ -3244,14 +3243,12 @@ class Systray:
 			combobox_title = Gtk.Label(label=_("Change App Icons"))
 			combobox = Gtk.ComboBoxText.new()
 			self.combobox_icons = combobox
-
 			item = 0
 			for icons in self.INSTALLED_ICONS:
 				combobox.append_text(icons)
 				if self.ICONS_THEME == icons:
 					combobox.set_active(item)
 				item = item + 1
-
 			combobox.connect('changed',self.cb_icons_switcher_changed)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
@@ -3281,14 +3278,12 @@ class Systray:
 			self.debug(1,"def settings_options_combobox_fontsize()")
 			combobox_title = Gtk.Label(label=_("Change App Font Size"))
 			combobox = Gtk.ComboBoxText.new()
-			
 			item = 0
 			for size in self.APP_FONT_SIZE_AVAIABLE:
 				combobox.append_text(size)
 				if self.APP_FONT_SIZE == size:
 					combobox.set_active(item)
 				item = item + 1
-
 			combobox.connect('changed',self.cb_settings_options_combobox_fontsize)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
@@ -3316,7 +3311,6 @@ class Systray:
 			self.debug(1,"def settings_options_combobox_theme()")
 			combobox_title = Gtk.Label(label=_("Change App Language"))
 			combobox = Gtk.ComboBoxText.new()
-
 			item = 0
 			LANGUAGE_DIR_CHECK = "%s\\locale" % (self.BIN_DIR)
 			if not os.path.isdir(LANGUAGE_DIR_CHECK):
@@ -3334,7 +3328,6 @@ class Systray:
 						if self.APP_LANGUAGE == lang:
 							combobox.set_active(item)
 						item = item + 1
-
 			combobox.connect('changed',self.cb_settings_options_combobox_language)
 			page.pack_start(combobox_title,False,False,0)
 			page.pack_start(combobox,False,False,0)
@@ -3652,7 +3645,6 @@ class Systray:
 				self.del_ovpn_routes()
 			except Exception as e:
 				self.debug(1,"def kill_openvpn: self.del_ovpn_routes() failed, exception '%s'"%(e))
-		
 			if os.path.isfile(self.WIN_TASKKILL_EXE):
 				ovpn_exe = self.OPENVPN_EXE.split("\\")[-1]
 				cmdstring = '%s /F /IM %s' % (self.WIN_TASKKILL_EXE,ovpn_exe)
@@ -4069,43 +4061,6 @@ class Systray:
 		else:
 			self.debug(1,"def win_netsh_set_dns_ovpn: failed!")
 
-	"""
-	def win_netsh_set_dns_ovpn_old(self):
-		self.debug(1,"def win_netsh_set_dns_ovpn()")
-		if self.NO_DNS_CHANGE == True:
-			self.debug(1,"def win_netsh_set_dns_ovpn: self.NO_DNS_CHANGE")
-			return True
-		if self.check_dns_is_whitelisted() == True:
-			return True
-		
-		servername = self.OVPN_CONNECTEDto
-		self.debug(1,"def win_netsh_set_dns_ovpn: servername = '%s'" % (servername))
-		try:
-			pridns = self.MYDNS[servername]["primary"]["ip4"]
-			self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,pridns))
-			self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,pridns))
-			try:
-				secdns = self.MYDNS[servername]["secondary"]["ip4"]
-				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,secdns))
-				self.NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,secdns))
-			except Exception as e:
-				self.debug(1,"def win_netsh_set_dns_ovpn: secdns not found")
-		except Exception as e:
-			self.debug(1,"def win_netsh_set_dns_ovpn: pridns not found")
-			if len(self.NETSH_CMDLIST) == 0:
-				if self.GATEWAY_DNS1 == "127.0.0.1":
-					setdns = "127.0.0.1"
-				else:
-					setdns = self.GATEWAY_OVPN_IP4A
-				self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,setdns))
-				self.NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,setdns))
-		if self.win_join_netsh_cmd() == True:
-			self.WIN_DNS_CHANGED = True
-			return True
-		else:
-			self.debug(1,"def win_netsh_set_dns_ovpn: failed!")
-	"""
-
 	def win_netsh_restore_dns_from_backup(self):
 		self.debug(1,"def win_netsh_restore_dns_from_backup()")
 		try:
@@ -4230,7 +4185,6 @@ class Systray:
 		try:
 			if self.GATEWAY_DNS1 == "127.0.0.1":
 				return ["127.0.0.1"]
-				
 			dnslist = list()
 			servername = self.OVPN_CONNECTEDto
 			try:
@@ -4245,15 +4199,12 @@ class Systray:
 			except Exception as e:
 				if self.STATE_OVPN == False:
 					self.debug(1,"def select_dns: pridns not found")
-			
-
 			if len(dnslist) == 0:
 				dnslist.append(self.GATEWAY_OVPN_IP4A)
 			return dnslist
 		
 		except Exception as e:
 			self.debug(1,"def select_dns, failed exception = '%s'"%(e))
-
 
 	def load_ca_cert(self):
 		self.debug(1,"def load_ca_cert()")
@@ -4356,7 +4307,6 @@ class Systray:
 			ip = value["ip"]
 			port = value["port"]
 			protocol = value["proto"]
-			
 			rule_name = "(oVPN) Allow OUT on TAP: %s %s:%s %s" % (entry,ip,port,protocol)
 			rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=public dir=out %s" % (option,rule_name,ip,port,protocol,actionstring)
 			NETSH_CMDLIST.append(rule_string)
