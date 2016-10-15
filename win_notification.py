@@ -9,8 +9,8 @@ import time
 # Comment Line 250 with #
 # Now all works fine
 
-from win32api import GetModuleHandle, PostQuitMessage, LoadResource
-from win32con import CW_USEDEFAULT, IMAGE_ICON, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
+from win32api import GetSystemMetrics, GetModuleHandle, PostQuitMessage, LoadResource
+from win32con import SM_CXSMICON, SM_CYSMICON, CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
 from win32gui import CreateIconFromResource, CreateWindow, DestroyWindow, LoadIcon, LoadImage, NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_MODIFY, RegisterClass, UnregisterClass, Shell_NotifyIcon, UpdateWindow, WNDCLASS
 
 WINVER10 = False
@@ -33,7 +33,7 @@ class notify:
 			while not self.isDestroyed() == True:
 				sleep(0.01)
 			self.destroyed = False
-			debug(1,"[win_notification.py] def send_notify: [Win10 = %s]" % (WINVER10),DEBUG,True)
+			debug(222,"[win_notification.py] def send_notify: [Win10 = %s]" % (WINVER10),DEBUG,True)
 			style = WS_OVERLAPPED | WS_SYSMENU
 			self.hwnd = CreateWindow(self.classAtom, "Taskbar", style,0, 0, CW_USEDEFAULT,CW_USEDEFAULT,0, 0, self.hinst, None)
 			UpdateWindow(self.hwnd)
@@ -49,14 +49,24 @@ class notify:
 			except Exception as e:
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1 failed, exception = '%s'"%(e),DEBUG,True)
 				try:
+					raise Exception
 					icon_path = "%s\\else\\app_icons\\shield_exe.ico" % (DEV_DIR)
+					#icon_path = "%s\\else\\app_icons\\app_layer.ico" % (DEV_DIR)
+					#icon_path = "%s\\else\\app_icons\\shield_exe_48.ico" % (DEV_DIR)
+					#icon_path = "%s\\else\\app_icons\\shield_exe_64.ico" % (DEV_DIR)
+					#icon_path = "%s\\else\\some_icons\\shield_256.bmp" % (DEV_DIR)
+					#icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
 					icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
-					hicon = LoadImage(self.hinst, icon_path,IMAGE_ICON, 0, 0, icon_flags)
+					ico_x = GetSystemMetrics(SM_CXSMICON)
+					ico_y = GetSystemMetrics(SM_CYSMICON)
+					debug(1,"[win_notification.py] def send_notify: ico_x = '%s' ico_y = '%s'"%(ico_x,ico_y),DEBUG,True)
+					""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648045(v=vs.85).aspx """
+					hicon = LoadImage(self.hinst, icon_path,IMAGE_ICON, ico_x, ico_y, icon_flags)
 					debug(222,"[win_notification.py] def send_notify: LoadImage() #2",DEBUG,True)
 				except Exception as e:
 					debug(222,"[win_notification.py] def send_notify: LoadImage() #2 failed, exception = '%s'"%(e),DEBUG,True)
 					try:
-						hicon = LoadIcon(0, IDI_APPLICATION)
+						hicon = LoadIcon(0, IDI_INFORMATION)
 						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3",DEBUG,True)
 					except Exception as e:
 						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3 failed, exception = '%s'"%(e),DEBUG,True)
