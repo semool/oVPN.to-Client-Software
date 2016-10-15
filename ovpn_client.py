@@ -181,6 +181,7 @@ class Systray:
 		self.GATEWAY_DNS2 = False
 		self.WIN_TAP_DEVICE = False
 		self.WIN_TAP_DEVS = list()
+		self.WIN_ENABLE_NOTIFICATIONS = True
 		self.TAP_BLOCKOUTBOUND = False
 		self.win_firewall_tap_blockoutbound_running = False
 		self.WIN_EXT_DEVICE = False
@@ -6021,11 +6022,17 @@ class Systray:
 			self.debug(1,"def init_localization: failed, exception = '%s'"%(e))
 
 	def msgwarn(self,text,title):
-		if WIN_NOTIFY == False:
+		if WIN_NOTIFY == False or self.WIN_ENABLE_NOTIFICATIONS == False:
 			GLib.idle_add(self.msgwarn_glib,text,title)
 		else:
-			if self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title) == False:
-				GLib.idle_add(self.msgwarn_glib,text,title)
+			GLib.idle_add(self.send_notify,text,title)
+
+	def send_notify(self,text,title):
+		self.debug(1,"def send_notify('%s','%s')"%(text,title))
+		try:
+			self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
+		except Exception as e:
+			self.debug(1,"def send_notify: failed, exception = '%s'"%(e))
 
 	def msgwarn_glib(self,text,title):
 		self.debug(1,"def msgwarn: %s"% (text))
