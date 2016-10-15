@@ -30,8 +30,9 @@ class notify:
 	def send_notify(self,DEBUG,TRAYSIZE,DEV_DIR,text,title):
 		try:
 			
-			while not self.isDestroyed() == False:
+			while not self.isDestroyed() == True:
 				sleep(0.01)
+			self.destroyed = False
 			debug(1,"[win_notification.py] def send_notify: [Win10 = %s]" % (WINVER10),DEBUG,True)
 			style = WS_OVERLAPPED | WS_SYSMENU
 			self.hwnd = CreateWindow(self.classAtom, "Taskbar", style,0, 0, CW_USEDEFAULT,CW_USEDEFAULT,0, 0, self.hinst, None)
@@ -96,4 +97,4 @@ class notify:
 		try:
 			return self.destroyed
 		except:
-			return False
+			return True
