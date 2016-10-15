@@ -2,6 +2,13 @@
 #
 
  Version: 0.7.8
++ bugfix: try_socket only 4 times
++ bugfix: added more GLib calls
++ bugfix: Popen spawned cmdline window on start
++ update: added client update check
++ update: removed message: no config update needed
++ update: 'ESC' to close DEBUG and warnings/update window
++ update: removed version tag from windows
 + update: check dns and reset on change
 
 
