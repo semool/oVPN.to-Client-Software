@@ -45,37 +45,37 @@ class notify:
 					RT_ICON_SIZE = 10
 					#RT_ICON_SIZE = 14
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
-				debug(1,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
+				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
 			except Exception as e:
-				debug(1,"[win_notification.py] def send_notify: CreateIconFromResource() #1 failed, exception = '%s'"%(e),DEBUG,True)
+				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1 failed, exception = '%s'"%(e),DEBUG,True)
 				try:
 					icon_path = "%s\\else\\app_icons\\shield_exe.ico" % (DEV_DIR)
 					icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
 					hicon = LoadImage(self.hinst, icon_path,IMAGE_ICON, 0, 0, icon_flags)
-					debug(1,"[win_notification.py] def send_notify: LoadImage() #2",DEBUG,True)
+					debug(222,"[win_notification.py] def send_notify: LoadImage() #2",DEBUG,True)
 				except Exception as e:
-					debug(1,"[win_notification.py] def send_notify: LoadImage() #2 failed, exception = '%s'"%(e),DEBUG,True)
+					debug(222,"[win_notification.py] def send_notify: LoadImage() #2 failed, exception = '%s'"%(e),DEBUG,True)
 					try:
 						hicon = LoadIcon(0, IDI_APPLICATION)
-						debug(1,"[win_notification.py] def send_notify: LoadIcon() #3",DEBUG,True)
+						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3",DEBUG,True)
 					except Exception as e:
-						debug(1,"[win_notification.py] def send_notify: LoadIcon() #3 failed, exception = '%s'"%(e),DEBUG,True)
+						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3 failed, exception = '%s'"%(e),DEBUG,True)
 						return False
 			
 			flags = NIF_ICON | NIF_MESSAGE | NIF_TIP
 			nid = (self.hwnd, 0, flags, WM_USER + 20, hicon, "Tooltip")
 			
 			anyreturn = Shell_NotifyIcon(NIM_ADD, nid)
-			debug(1,"[win_notification.py] def send_notify: Shell_NotifyIcon() #1 returned = '%s'"%(anyreturn),DEBUG,True)
+			debug(222,"[win_notification.py] def send_notify: Shell_NotifyIcon() #1 returned = '%s'"%(anyreturn),DEBUG,True)
 			
 			anyreturn = Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "Balloon Tooltip", text, 200,title))
-			debug(1,"[win_notification.py] def send_notify: Shell_NotifyIcon() #2 returned = '%s'"%(anyreturn),DEBUG,True)
+			debug(222,"[win_notification.py] def send_notify: Shell_NotifyIcon() #2 returned = '%s'"%(anyreturn),DEBUG,True)
 			
 			if WINVER10 == False:
 				time.sleep(10)
 			
 			anyreturn = DestroyWindow(self.hwnd)
-			debug(1,"[win_notification.py] def send_notify: DestroyWindow() returned = '%s'"%(anyreturn),DEBUG,True)
+			debug(222,"[win_notification.py] def send_notify: DestroyWindow() returned = '%s'"%(anyreturn),DEBUG,True)
 
 			#anyreturn = UnregisterClass(self.classAtom, self.hinst)
 			#debug(1,"[win_notification.py] def send_notify: UnregisterClass() returned = '%s'"%(anyreturn),DEBUG,True)
@@ -90,7 +90,7 @@ class notify:
 		nid = (self.hwnd, 0)
 		Shell_NotifyIcon(NIM_DELETE, nid)
 		PostQuitMessage(0)
-		debug(1,"[win_notification.py] def send_notify_destroy: return",True,True)
+		debug(222,"[win_notification.py] def send_notify_destroy: return",True,True)
 		return None
 
 	def isDestroyed(self):
