@@ -1049,7 +1049,7 @@ class Systray:
 				print("win_read_interfaces debug 2.3")
 			except Exception as e:
 				print("win_read_interfaces debug 4")
-				self.errorquit(text=_("Could not read your Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2\nexception:%s"%(e)))
+				self.errorquit(text=_("Could not read your Network Interfaces!\nPlease rename your network adapters to:\nlan1, lan2, wifi1, wifi1, vpn1, vpn2\nexception: %s") % (e))
 			try:
 				print("win_read_interfaces debug 5")
 				newdata = winregs.get_tapadapters(self.DEBUG,self.OPENVPN_EXE,self.INTERFACES)
@@ -5047,7 +5047,7 @@ class Systray:
 						if int(response) > intversion:
 							self.debug(1,"def API_REQUEST: winrelease update available, response = '%s'"%(response))
 							if self.API_REQUEST("winrelease_url"):
-								self.msgwarn(_("URL: %s")%self.UPDATE_URL,_("Client Update available!"))
+								self.msgwarn("URL: %s" %self.UPDATE_URL, _("Client Update available!"))
 								return True
 					else:
 						self.debug(1,"def API_REQUEST: winrelease invalid response")
@@ -5100,7 +5100,7 @@ class Systray:
 		tries = 4
 		while i <= tries:
 			self.debug(1,"def try_socket: i = '%s'" % (i))
-			systraytext = _("Testing internet connection! (%s / %s)"%(i,tries))
+			systraytext = _("Testing internet connection! (%s / %s)") % (i,tries)
 			self.tray.set_tooltip_markup(systraytext)
 			try:
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
