@@ -22,9 +22,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
 import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string, re, shlex
-
 import configparser
-#from configparser import SafeConfigParser
 
 # .py files imports
 import winregs
@@ -39,10 +37,11 @@ import encodes
 try:
 	import win_notification
 	WIN_NOTIFY = True
-except:
+except Exception as e:
+	print("import win_notification failed, exception = '%s'"%(e))
+	sys.exit()
 	WIN_NOTIFY = False
 
-#from io import BytesIO
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -1973,7 +1972,7 @@ class Systray:
 						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
 				else:
 					self.timer_check_certdl_running = False
-					#self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
+					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
 					self.debug(1,"def inThread_timer_check_certdl: no config update available")
 					return True
 		except Exception as e:
@@ -5538,7 +5537,7 @@ class Systray:
 	""" *fixme* move to openvpn.py """
 	def win_dialog_select_openvpn(self):
 		self.debug(1,"def win_dialog_select_openvpn()")
-		#self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
+		self.msgwarn(_("OpenVPN not found!\n\nPlease select openvpn.exe on next window!\n\nIf you did not install openVPN yet: click cancel on next window!"),_("Setup: openVPN"))
 		dialogWindow = Gtk.FileChooserDialog(_("Select openvpn.exe or Cancel to install openVPN"),None,Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 		dialogWindow.set_position(Gtk.WindowPosition.CENTER)
 		dialogWindow.set_default_response(Gtk.ResponseType.OK)
@@ -6025,7 +6024,8 @@ class Systray:
 		if WIN_NOTIFY == False:
 			GLib.idle_add(self.msgwarn_glib,text,title)
 		else:
-			self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
+			if self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title) == False:
+				GLib.idle_add(self.msgwarn_glib,text,title)
 
 	def msgwarn_glib(self,text,title):
 		self.debug(1,"def msgwarn: %s"% (text))
