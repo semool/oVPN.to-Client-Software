@@ -1,7 +1,7 @@
 # changelog.txt
 #
 
- Version: 0.7.8
+Version: 0.7.8
 + bugfix: try_socket only 4 times
 + bugfix: added more GLib calls
 + bugfix: Popen spawned cmdline window on start
@@ -12,7 +12,7 @@
 + update: check dns and reset on change
 
 
- Version: 0.7.7
+Version: 0.7.7
 + update: python 3.4.4
 + bugfix: server jump issues, introduced with last testing release
 + bugfix: windows auto-start
@@ -21,7 +21,7 @@
 + update: adds debug window with debug switch
 
 
- Version: 0.7.6
+Version: 0.7.6
 + update: inet connection check
 + update: restore dns always on disconnect
 + update: add wfw rule for client itself if check inet fails
@@ -31,41 +31,41 @@
 + newlibs: pygi-aio-3.18.2_rev10, requests 2.11.1, netifaces 0.10.5
 
 
- Version: 0.7.5
+Version: 0.7.5
 + update: openVPN 2.3.12-I602
 + update: openVPN CodeSign Fingerprint
 + update: new config download
 + bugfix: No API Key message
 
 
- Version: 0.7.4
+Version: 0.7.4
 + bugfix: networkadapter did not reset on quit if 'DHCP' in use
 + bugfix: timezones for account dates updated
 
 
- Version: 0.7.3
+Version: 0.7.3
 + bugfix: hidden mainwindow did not reload on change: destroy hidden mainwindow before filling, rebuild on open
 + update: DNS Servers
-+ redirect unencrypted DNS queries to dnscrypt mappings: http://172.16.32.1/dnscrypt.txt
++ redirect unencrypted DNS queries to dnscrypt mappings: 172.16.32.1/dnscrypt.txt
 
 
- Version: 0.7.2
+Version: 0.7.2
 + add openVPN 2.3.12
 
 
- Version: 0.7.1
+Version: 0.7.1
 + bugfix: server sorting
 
 
- Version: 0.7.0
+Version: 0.7.0
 + bugfix: internal server database string cut problem
 
 
- Version: 0.6.9
+Version: 0.6.9
 + bugfix: client failed to start with DHCP... shame... tested with static ips only...
 
 
- Version: 0.6.8
+Version: 0.6.8
 + bugfix servercache: did not reload server / clear cache on button 'use ipv4/6 exit server'
 + read gateway from registry
 + rewrite of openvpn detection and verification
@@ -76,66 +76,66 @@
 ** force openvpn signature check with signtool.exe: add DEVMODE to exe-link ( client in DEVMODE will start with 15 seconds delay!)
 
 
- Version: 0.6.7
+Version: 0.6.7
 + added themes and language selection on setup
 
 
- Version: 0.6.6
+Version: 0.6.6
 + some more debugs
 + fixed problem: 64 Bit build failed to start with "netifaces DLL load error"
 
 
- Version: 0.6.5
+Version: 0.6.5
 + some more debugs
 + added useragent string to API_REQUESTs: does not contain your user-id, only version! so we can easier opt-out older clients if we do any hard API changes
 + fixed freshly introduced bug: always updates configs on start if update on start is enabled
 
 
- Version: 0.6.4
+Version: 0.6.4
 + fixes and debugs
 + added another theme
 + better GLib.idle_add() calls
 + added check if API Login is OK
 + added option to hide unwanted serverwindow cells
-+ added option to create and remove windows taskscheduler autostart job with 10 - 60s delay (thx²semool)
++ added option to create and remove windows taskscheduler autostart job with 10 - 60s delay (thx?semool)
 
 
- Version: 0.6.3
+Version: 0.6.3
 + another fix for high dpi icon scaling
 + changed function: read dns to backup
 + internal debugs
 
 
- Version: 0.6.2
+Version: 0.6.2
 + fixed bug on reading nameservers from registry, client 0.6.0 / 0.6.1 fail if there was only 1 dns set.
 + readded high dpi icon scaling patch with prepatched and presigned dlls
 
 
- Version: 0.6.1
- + 0.6.0 about window did not show correct version string
+Version: 0.6.1
++ 0.6.0 about window did not show correct version string
 
 
- Version: 0.6.0
+Version: 0.6.0
 + new way to read interfaces/adapters and nameservers from registry. hopefully works on all possible windows OS languages, instead of reading netsh.exe output
 + added cache for ovpn servers, to not read configfiles every systray call etc. from disk
 + updated to latest PyGObject 3.18.2rev8 AIO release
 + lots of internal build process changes
 
 
- Version: 0.5.9
+Version: 0.5.9
 changes:
 + added more debugs for french OS language
 + release digitally signed with our "Code Signing Certificate" from our own Certificate Authority: setup.exe, ovpn_client.exe and almost all DLLs are signed, libgtk-3-0.dll is not.
 + to verify releases: add our CA to your "Trusted CA" Store and allow purposes only to "codesign" !
 
 
- Version: 0.5.8
+Version: 0.5.8
 + fixed app-crash bug on serverwindow reload after config update
 + updated language, countrynames and ms-windows theme
 + some high resolution DPI fixes
 
 
- Version: 0.5.7-gtk3
+Version: 0.5.7-gtk3
 + inno_setup: added AppMutex to detect if Client is running on setup: please disconnect and close "oVPN.to Client" before installing new release!
 + inno_setup: added SetupMutex to start setup only once
 + new 'portable mode' or normal setup with uninstall routine
@@ -156,11 +156,11 @@ changes:
 + hardcoded d0wns DNS from dns.txt
 + more debugs and new debug function with loglevels
 + added ISO index of all countrynames
-+ memory (RAM) usage: ~20 MB with all 3 windows open, may drop or not if all windows closed, normally  updates -> reset api-login
++ memory (RAM) usage: ~20 MB with all 3 windows open, may drop or not if all windows closed, normally updates -> reset api-login
 + some language updates
 
 
- Version: 0.5.4-gtk3
+Version: 0.5.4-gtk3
 + fixed problem with autoconnect on start
 + fixed problem with MYDNS view in serverwindow
 + moved DebugMode and ThemeSwitcher to settings window
@@ -169,7 +169,7 @@ changes:
 + some language fixes
 
 
- Version: 0.5.3-gtk3
+Version: 0.5.3-gtk3
 + dropped SFX binary. we go with "inno_setup" only!
 + added german language
 + systray cleaned up and added new settings window
@@ -177,8 +177,142 @@ changes:
 + lots of internal improvements!
 
 
- Version: 0.5.2-gtk3
+Version: 0.5.2-gtk3
 + fixed bug which could crash app if mouse idles in systray_menu!
 + added theme selector
 + 2 packages now: self-extracting and setup/installer binary!
 
+Version: 0.4.9 - May 25th 2016 - Jun 23rd 2016
++ fixed 'Update on Start' to not update if internet connection unavailable
++ added some more checks if vcp/internet is available
++ modified 'Option -> IPv6' download configs to different folders. no more need to update everytime after switching from or to IPv6
++ workaround against gtk memory growing bug: changed statusbar text to change only if mainwindow is open. systray ballon shows no more connected time or ping ms
++ new DNS menu: set Primary / Secondary DNS per server. you may disable 'DNS Leak Protection' and use own DNS or DNScrypt
++ fixed: updating configs
++ made message 'failed to verify files' more clearly
++ fixed: openvpn auto reconnect
++ DNS menu should now show up
++ load acc info and server data only if ovpn is connected and more than 30s. lazy dns timeouts on windows and requests library may freeze timer for bit too long...
++ acc data may update every hour. serverdata every 10 minutes.
++ may be portbale now, if you place a folder "appdata" into extracted 'dist' folder and start open_client.exe as admin manually.
++ fixed problem with systraymenu not working after updating to new Sweden Servers because of missing countryname for group...
+you can fix problem by deleting files SE1.ovpn.to.ovpn + SE2.ovpn.to.ovpn from '%appdata%\ovpn\xxxxx\openvpn\config\' -> folders 'ip4' and 'ip46/' and don't update configs anymore... bug of sudden death!
++ added all flag icons, so we don't need to download them
++ redraw mainwindow if got new serverdata
++ fixed mainwindow text, was bugged if connectedtime > 24h
++ added more debugs to "def ask_loadorunload_fw: failed"
++ fixed mainwindow text, was bugged if connectedtime > 24h
++ added more debugs to "def ask_loadorunload_fw: failed"
++ changed dns restore to DHCP if dns is 172.16.32.1 on quit
++ quit dialog changed to YES_NO instead CANCEL_OK
++ updated d0wns dns.txt
++ fixed 'mainwindow failed' with extended server-view enabled
++ added: always try to remove our assigned internal fd48:8bea:68a5: ipv6 from TAP to avoid problems on switching back from ipv6 to ipv4.
++ added country text for new Servers in Lithuania
++ made message more clearly: 'could not verify files in openvpn/bin'
++ fixed windows theme
++ added MTU to server window
++ added more infos to extended server-view (cpu ovpn, sshd, sock, http, tinc and pings from server to google.com)
++ update accinfo with serverdata every 10 minutes
+
+
+Version: 0.4.8 - May 21st 2016
++ may be fixed issues finding openvpn.exe on clean install
++ added "ipconfig /flushdns" on connect
++ added small account info tab with option to enable/disable load of remote data
+
+
+Version: 0.4.7 - May 20th 2016
++ may fix issues 'openvpn.exe not found' or 'could not verify files' if openvpn installed to different path
++ fixed option extended server-view to not forget login data on disable
++ added hicolor theme to 7z sfx archive, may resolv silly error message 'gtk icon not found...' on exit
+
+
+Version: 0.4.6 _ May 17th 2016
++ added 'TAP Adapter block outbound' with whitelist to ovpn internal services: commit
++ option to clear passphrase from ram or cfg
++ update on start if autoconnect is enabled
++ maybe fixed auto-reconnect issue on disconnect
++ fixed extended server-view option
++ quit and about dialog should not open multiple times
++ something here, something there, new bugs everywhere! :D 
+
+
+Version: 0.4.5 - May 16th 2016
++ cleaned firewall menu
++ added new connected ipv4 check
+
+
+Version: 0.4.4 - May 16th 2016
++ update to python 2.7.11 + 7z 16.00 SFX
++ added more options for windows firewall and quit question (but set wrong debug info text...ayayay. disable DEBUG and you won't see them ;) )
++ added static sha512 hashs to check files in openvpn\bin (*.exe|*.dll) with soft-fail warning (script: github.com/ovpn-to/OpenVPN-Hash-Bins-to-JSON)
+
+
+Version: 0.4.3 - May 14th 2016
++ added option to not use windows firewall
++ added option to disable DNS Leak Protection
++ modified openvpn binary updater
++ tray menu reorganized
++ tray menu hide after few seconds idle
++ some code movements
+
+
+Version: 0.4.2 - May 12th 2016
++ download openvpn binary and verify hash: if not installed, not latest hardcoded version or no tap-adapter found.
+
+
+Version: 0.4.1 - May 8th 2016
++ firewall behaviour is back as in 0.3.8 with some more options added, please try and report your feelings!
+
+
+Version: 0.4.0 - May 1st 2016
++ fixed ssl cert hashing problems on start
+
+
+Version: 0.3.9 - Apr 30th 2016
++ fixed backup firewall settings on client start and restore on quit
++ do not overwrite dnscrypt, if dns is set to 127.0.0.1
++ added option: enable DEBUG mode
+
+
+Version: 0.3.8 - Jan 21st 2016
++ some fixes
+
+
+Version: 0.3.7 - Jan 9th 2016
++ update to openvpn 2.3.10
++ debugmode moved to options.cfg
++ fixed bug with 'reset api login' option
+
+
+Version: 0.3.6 - Jan 5th 2016
++ maybe fixed another bug with TAP selector
+
+
+Version: 0.3.5 - Jan 4th 2016
++ maybe fixed bug with TAP selector
++ prep. for new DNS menu
+
+
+Version: 0.3.4 - Jan 3rd 2016
++ added TAP selector
++ added IPv6 options
+
+
+Version: 0.3.3 - Dec 23rd 2015
++ fixed openvpn version bug
+
+
+Version: 0.3.2 - Nov 27th 2015
++ some smaller fixes
+
+
+Version: 0.3.1 - Nov 21st 2015
++ enable extended full view option
++ enable config update on start option
++ reset external device option
++ reset User-ID / API-Key option
++ fixed problems with invalid apidata/logic issues on expired and re-enabled accs
++ ssl ca.crt sha512 hardcoded
++ flag img files sha256 hardcoded remote download if not found for new location
