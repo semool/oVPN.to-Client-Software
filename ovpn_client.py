@@ -2236,7 +2236,7 @@ class Systray:
 				self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
 				self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
-				self.mainwindow.set_title(_("oVPN Server - %s") % (CLIENT_STRING))
+				self.mainwindow.set_title(_("Server"))
 				self.mainwindow.set_icon(self.app_icon)
 				self.rebuild_mainwindow()
 				self.MAINWINDOW_OPEN = True
@@ -2478,7 +2478,7 @@ class Systray:
 				self.accwindow.set_position(Gtk.WindowPosition.CENTER)
 				self.accwindow.connect("destroy",self.cb_destroy_accwindow)
 				self.accwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
-				self.accwindow.set_title(_("oVPN Account - %s") % (CLIENT_STRING))
+				self.accwindow.set_title(_("Account"))
 				try:
 					self.accwindow.set_icon(self.app_icon)
 				except Exception as e:
@@ -2599,7 +2599,7 @@ class Systray:
 				self.settingswindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 				self.settingswindow.set_position(Gtk.WindowPosition.CENTER)
 				self.settingswindow.connect("destroy",self.cb_destroy_settingswindow)
-				self.settingswindow.set_title(_("oVPN Settings - %s") % (CLIENT_STRING))
+				self.settingswindow.set_title(_("Settings"))
 				try:
 					self.settingswindow.set_icon(self.app_icon)
 				except Exception as e:
@@ -6104,6 +6104,12 @@ class Systray:
 		try:
 			if self.DEBUGWINDOW_OPEN == False:
 				self.debug_window = Gtk.Window(title="DEBUG")
+				self.debug_window.set_position(Gtk.WindowPosition.CENTER)
+				self.debug_window.set_title("DEBUG")
+				try:
+					self.debug_window.set_icon(self.app_icon)
+				except Exception as e:
+					pass
 				self.debug_window.set_default_size(700, 700)
 				self.debug_window.connect("destroy",self.cb_destroy_debugwindow)
 				self.debug_window.connect("key_release_event", lambda w, e: GLib.idle_add(self.debug_window.destroy) if e.keyval == 65307 else None)
