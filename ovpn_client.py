@@ -1946,6 +1946,8 @@ class Systray:
 				self.debug(1,"def inThread_timer_check_certdl: self.load_ovpn_server() failed, exception = '%s'"%(e))
 			self.debug(1,"def inThread_timer_check_certdl()")
 			self.STATE_CERTDL = "lastupdate"
+			if self.API_REQUEST(API_ACTION = "winrelease"):
+				pass
 			if self.API_REQUEST(API_ACTION = "lastupdate"):
 				self.debug(1,"def inThread_timer_check_certdl: API_ACTION lastupdate")
 				if self.check_last_server_update(self.curldata):
@@ -1964,7 +1966,8 @@ class Systray:
 						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
 				else:
 					self.timer_check_certdl_running = False
-					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
+					#self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
+					self.debug(1,"def inThread_timer_check_certdl: no config update available")
 					return True
 		except Exception as e:
 			self.msgwarn(_("Failed to check for updates!"),_("Error: def inThread_timer_check_certdl"))
@@ -5018,8 +5021,11 @@ class Systray:
 			
 		try:
 			HEADERS = request_api.useragent(self.DEBUG)
-			if API_ACTION == "auth" or API_ACTION == "lastupdate":
-				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
+			if API_ACTION == "auth" or API_ACTION == "lastupdate" or API_ACTION == "winrelease" or API_ACTION == "winrelease_url":
+				if API_ACTION == "winrelease" or API_ACTION == "winrelease_url":
+					values = { 'action' : API_ACTION, 'bits' : BITS }
+				else:
+					values = { 'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 				r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
 				response = r.text
 				if response == "AUTHERROR":
@@ -5034,9 +5040,29 @@ class Systray:
 					if data[0] == "AUTHOK":
 						self.curldata = int(data[1])
 						return True
+				elif API_ACTION == "winrelease": 
+					if int(response) >= 78:
+						version = release_version.setup_data()["version"]
+						intversion = int(version.replace(".",""))
+						if int(response) > intversion:
+							self.debug(1,"def API_REQUEST: winrelease update available, response = '%s'"%(response))
+							if self.API_REQUEST("winrelease_url"):
+								self.msgwarn(_("URL: %s")%self.UPDATE_URL,_("Client Update available!"))
+								return True
+					else:
+						self.debug(1,"def API_REQUEST: winrelease invalid response")
+				elif API_ACTION == "winrelease_url":
+					data = json.loads(str(response))
+					self.debug(1,"def API_REQUEST: winrelease_url data = '%s'"%(data))
+					self.UPDATE_URL = data["URL"]
+					self.UPDATE_HASH = data["SHA512"]
+					return True
+					if len(HASH) == 128 and URL.startswith("https://"):
+						return data
 				else:
-					self.debug(1,"def API_REQUEST: response = '%s'"%(response))
-			else:
+					self.debug(1,"def API_REQUEST: unknown response = '%s'"%(response))
+			
+			elif API_ACTION == "getconfigs":
 				if os.path.isfile(self.zip_cfg):
 					os.remove(self.zip_cfg)
 				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }
@@ -5050,6 +5076,8 @@ class Systray:
 					self.debug(1,"def API_REQUEST: failed write config, exception = '%s'"%(e))
 					return False
 			
+
+				
 		except Exception as e:
 			self.debug(1,"def API_REQUEST: failed, exception = '%s'"%(e))
 
