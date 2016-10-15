@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os, time, subprocess, sys, json
 from datetime import datetime
+import shlex
+import win32process
 
 # .py file imports
 from debug import debug
@@ -8,8 +10,8 @@ from debug import devmode
 import release_version
 import hashings
 import signtool
-import shlex
-import win32process
+import encodes
+
 
 def values(DEBUG):
 	debug(9,"[openvpn.py] def values()",DEBUG,True)
@@ -127,10 +129,12 @@ def win_get_openvpn_version(DEBUG,OPENVPN_DIR):
 		cmdstring = '"%s" --version' % (OPENVPN_EXE)
 		cmdargs = shlex.split(cmdstring)
 		p = subprocess.Popen(cmdargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,creationflags = win32process.CREATE_NO_WINDOW)
-		out, err = p.communicate()
+		output, err = p.communicate()
 		rc = p.returncode
-		OVPN_VERSION = out.decode('utf-8').split('\r\n')[0].split( )[1].replace(".","")
-		OVPN_BUILT = out.decode('utf-8').split('\r\n')[0].split("built on ",1)[1].split()
+		#OVPN_VERSION = out.decode('utf-8').split('\r\n')[0].split( )[1].replace(".","")
+		OVPN_VERSION = encodes.code_fiesta(DEBUG,'decode',output,'win_get_openvpn_version').splitlines()[0].split( )[1].replace(".","")
+		#OVPN_BUILT = out.decode('utf-8').split('\r\n')[0].split("built on ",1)[1].split()
+		OVPN_BUILT = encodes.code_fiesta(DEBUG,'decode',output,'win_get_openvpn_version').splitlines()[0].split("built on ",1)[1].split()
 		debug(1,"[openvpn.py] def win_get_openvpn_version: OVPN_VERSION = '%s', OVPN_BUILT = '%s'"%(OVPN_VERSION,OVPN_BUILT),DEBUG,True)
 		return [ OVPN_VERSION, OVPN_BUILT ]
 	except Exception as e:
