@@ -36,6 +36,11 @@ import signtool
 import hashings
 import request_api
 import encodes
+try:
+	import win_notification
+	WIN_NOTIFY = True
+except:
+	WIN_NOTIFY = False
 
 #from io import BytesIO
 
@@ -85,6 +90,8 @@ Join https://webirc.ovpn.to into Channel #help !
 
 class Systray:
 	def __init__(self):
+		if WIN_NOTIFY == True:
+			self.notification = win_notification.notify()
 		self.self_vars()
 		self.tray = Gtk.StatusIcon()
 		self.tray.is_embedded()
@@ -6015,7 +6022,10 @@ class Systray:
 			self.debug(1,"def init_localization: failed, exception = '%s'"%(e))
 
 	def msgwarn(self,text,title):
-		GLib.idle_add(self.msgwarn_glib,text,title)
+		if WIN_NOTIFY == False:
+			GLib.idle_add(self.msgwarn_glib,text,title)
+		else:
+			self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
 
 	def msgwarn_glib(self,text,title):
 		self.debug(1,"def msgwarn: %s"% (text))
