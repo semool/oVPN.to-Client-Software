@@ -38,7 +38,7 @@ C:\Python34_64\Scripts\pip.exe install netifaces-0.10.5-cp34-cp34m-win_amd64.whl
 + [Microsoft Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
 + [Visual C++ 2010 Express] (http://www.chip.de/downloads/Visual-C-2010-Express_24081894.html)
 + [Inno Setup 5.5.9](http://www.jrsoftware.org/download.php/is.exe)
-+ [poedit 1.8.9](https://download.poedit.net/Poedit-1.8.9-setup.exe)
++ [poedit 1.8.10](https://download.poedit.net/Poedit-1.8.10-setup.exe)
 
 ## Developer Imports: how to run or build from source
 ### Debug Mode
@@ -85,6 +85,6 @@ C:\Python34_64\Scripts\pip.exe install netifaces-0.10.5-cp34-cp34m-win_amd64.whl
 ## Generate locales
 + create a link (name: GENERATE_PO32) to generate_po.bat: edit link, set target:
 + ```'X:\????\ovpn-client\generate_po.bat 32``` and run link normally!
-+ start [poedit 1.8.9](https://download.poedit.net/Poedit-1.8.9-setup.exe)
++ start [poedit 1.8.10](https://download.poedit.net/Poedit-1.8.10-setup.exe)
 + open file ```X:\????\ovpn-client\locale\[lang]\ovpn_client.po```
 + catalog -> update from POT -> './messages.pot'
