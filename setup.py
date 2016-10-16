@@ -11,11 +11,11 @@ BITS = struct.calcsize("P") * 8
 appversion = release_version.setup_data()["version"]
 cpu = 'x86'
 inno = 'win32'
-crt = 'Microsoft.VC90.CRT_win32'
+crt = 'Microsoft.VC100.CRT_win32'
 if BITS == 64:
 	cpu = 'amd64'
 	inno = 'win64'
-	crt = 'Microsoft.VC90.CRT_win64'
+	crt = 'Microsoft.VC100.CRT_win64'
 
 manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" manifestVersion="1.0">
@@ -52,18 +52,6 @@ manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 			/>
 		</dependentAssembly>
 	</dependency>
-	<dependency>
-		<dependentAssembly>
-			<assemblyIdentity
-				type="win32"
-				name="Microsoft.VC90.CRT"
-				version="9.0.30729.4940"
-				processorArchitecture="{CPU}"
-				publicKeyToken="1fc8b3b9a1e18e3b"
-				language="*"
-			/>
-		</dependentAssembly>
-	</dependency>
 </assembly>
 '''.format(APPVERSION=appversion, CPU=cpu)
 
@@ -93,7 +81,7 @@ for dll in gtk_dlls:
 	shutil.copy(dll, tmpdlldir)
 
 setup_dict = dict(
-	data_files = [('Microsoft.VC90.CRT',['includes/'+crt+'/Microsoft.VC90.CRT.manifest','includes/'+crt+'/msvcp90.dll','includes/'+crt+'/msvcr90.dll']),],
+	data_files = [('',['includes/'+crt+'/msvcp100.dll','includes/'+crt+'/msvcr100.dll']),],
 	zipfile = 'ovpn_client.lib',
 	windows=[
 		{
@@ -184,7 +172,6 @@ lines.append('Type: filesandordirs; Name: {app}\lib\;')
 lines.append('Type: filesandordirs; Name: {app}\locale\;')
 lines.append('Type: filesandordirs; Name: {app}\share\;')
 lines.append('Type: filesandordirs; Name: {app}\ico\;')
-lines.append('Type: filesandordirs; Name: {app}\Microsoft.VC90.CRT\;')
 lines.append('Type: files; Name: {app}\*.dll;')
 lines.append('Type: files; Name: {app}\*.pyd;')
 lines.append('Type: files; Name: {app}\*.lib;')
@@ -234,7 +221,6 @@ lines.append('Source: "%s\*"; DestDir: "{app}"; Flags:replacesameversion' % (DIS
 lines.append('Source: "%s\\appdata\*"; DestDir: "{app}\\appdata\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR))
 lines.append('Source: "%s\etc\*"; DestDir: "{app}\etc\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR))
 lines.append('Source: "%s\lib\*"; DestDir: "{app}\lib\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR))
-lines.append('Source: "%s\Microsoft.VC90.CRT\*"; DestDir: "{app}\Microsoft.VC90.CRT\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR))
 lines.append('Source: "%s\share\glib-2.0\*"; DestDir: "{app}\share\glib-2.0\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR))
 lines.append('Source: "%s\share\icons\*"; DestDir: "{app}\share\icons\"; Flags:replacesameversion recursesubdirs' % (DIST_DIR))
 lines.append('Source: "%s\share\locale\locale.alias"; DestDir: "{app}\share\locale\"; Flags:replacesameversion' % (DIST_DIR))
