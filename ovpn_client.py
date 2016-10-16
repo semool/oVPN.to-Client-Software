@@ -1669,7 +1669,7 @@ class Systray:
 					if not self.systraytext_from_before == systraytext and not systraytext == False:
 						self.systraytext_from_before = systraytext
 						self.tray.set_tooltip_markup(systraytext)
-						self.debug(2,"def systray_timer: update systraytext = '%s'"%(systraytext))
+						self.debug(111,"def systray_timer: update systraytext = '%s'"%(systraytext))
 				except Exception as e:
 					self.debug(1,"def systray_timer: set traytext failed, exception '%s'"%(e))
 					
@@ -4188,10 +4188,9 @@ class Systray:
 			return True
 		if self.NO_DNS_CHANGE == True:
 			return True
-		self.debug(2,"def win_check_dns()")
 		DNSI = self.win_read_dns_from_interface(self.WIN_EXT_DEVICE)
 		DNSS = self.select_dns()
-		self.debug(2,"def win_check_dns: DNSI = '%s', DNSS = '%s'"%(DNSI,DNSS))
+		self.debug(111,"def win_check_dns: DNSI = '%s', DNSS = '%s'"%(DNSI,DNSS))
 		for key,DNS in DNSI.items():
 			if key == "DNS2" and DNS == False:
 				continue
@@ -4201,7 +4200,7 @@ class Systray:
 		return True
 
 	def select_dns(self):
-		self.debug(2,"def select_dns()")
+		self.debug(111,"def select_dns()")
 		try:
 			if self.GATEWAY_DNS1 == "127.0.0.1":
 				return ["127.0.0.1"]
@@ -4554,13 +4553,13 @@ class Systray:
 			self.errorquit(text=_("ipconfig.exe not found!"))
 
 	def isValueIPv4(self,value):
-		self.debug(2,"def isValueIPv4()")
+		self.debug(111,"def isValueIPv4()")
 		try:
 			if len(value.split('.')) == 4:
 				for n in value.split('.'):
 					ni = int(n)
 					#if ni.isdigit():
-					self.debug(2,"def isValueIPv4: n = %s"%(n))
+					self.debug(111,"def isValueIPv4: n = %s"%(n))
 					if not ni >= 0 and not ni <= 255:
 						return False
 				return True
@@ -5132,7 +5131,7 @@ class Systray:
 
 	def try_socket(self,host,port,tries,i=1):
 		while i <= tries:
-			self.debug(1,"def try_socket: host = '%s', port = '%s', i = '%s'" % (host,port,i))
+			self.debug(2,"def try_socket: host = '%s', port = '%s', i = '%s'" % (host,port,i))
 			systraytext = _("Testing internet connection!")
 			self.tray.set_tooltip_markup(systraytext)
 			try:
