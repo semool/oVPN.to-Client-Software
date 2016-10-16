@@ -1703,7 +1703,7 @@ class Systray:
 			except Exception as e:
 				self.debug(1,"def systray_timer: thread target=self.load_remote_data failed, exception '%s'"%(e))
 			runtime = int((time.time()-starttime)*1000)
-			if runtime > 100:
+			if runtime > 10000:
 				self.debug(1,"def systray_timer() return runtime = '%s ms'"%(runtime))
 			self.systray_timer_running = False
 		except Exception as e:
@@ -2199,7 +2199,7 @@ class Systray:
 						liststore.row_changed(path,iter)
 						self.debug(10,"def update_mwls: row_changed server '%s'" % (server))
 		runtime = int((time.time()-starttime)*1000)
-		if runtime > 1000:
+		if runtime > 10000:
 			self.debug(1,"def update_mwls: return '%s ms'" % (runtime))
 		return
 

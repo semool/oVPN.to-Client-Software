@@ -1,8 +1,18 @@
 @echo off
-::set PY32=C:\Python27
-set PY32=C:\Python34
-::set PY64=C:\Python27_64
-set PY64=C:\Python34_64
+echo set_dirs.bat
+echo %SOURCEDIR%
+
+set PYRAMDISK=%SOURCEDIR%\pyram.y
+
+IF NOT EXIST %PYRAMDISK% (
+	set PY32=C:\Python34
+	set PY64=C:\Python34_64
+	set RAM=0
+) ELSE IF EXIST %PYRAMDISK% (
+	set PY32=P:\Python34
+	set PY64=P:\Python34_64
+	set RAM=1
+)
 
 set APPDIR=%APPDATA%\ovpn\bin\client\dist
 set INNOCOMPILE="C:\Program Files (x86)\Inno Setup 5\Compil32.exe"
