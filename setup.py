@@ -40,6 +40,18 @@ manifest = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 			<dpiAware>true/PM</dpiAware>
 		</asmv3:windowsSettings>
 	</asmv3:application>
+	<dependency>
+		<dependentAssembly>
+			<assemblyIdentity
+				type="win32"
+				name="Microsoft.Windows.Common-Controls"
+				version="6.0.0.0"
+				processorArchitecture="{CPU}"
+				publicKeyToken="6595b64144ccf1df"
+				language="*"
+			/>
+		</dependentAssembly>
+	</dependency>
 </assembly>
 '''.format(APPVERSION=appversion, CPU=cpu)
 
