@@ -87,14 +87,14 @@ IF EXIST inno_setup.iss del inno_setup.iss
 pause
 
 call release.bat
-echo release.bat finished, close or hit to backup RAM DISK
-pause
-
-IF %RAM% == 1 (
+IF %RAM% == 0 ( 
+	echo release.bat finished, hit to close
+	pause
+	exit
+) ELSE IF %RAM% == 1 (
+	echo release.bat finished, close or hit to backup RAM DISK
+	pause
 	call ram_backup.bat
 	echo ram_backup done, hit to close
-	pause
-) ELSE (
-	echo no ram flag, hit to close
 	pause
 )
