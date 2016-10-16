@@ -2,18 +2,6 @@
 import os, sys, time, locale
 BOOTTIME = time.time()
 
-if getmode("DEBUG2"):
-	LOGLEVEL = 2
-elif getmode("DEBUG10"):
-	LOGLEVEL = 10
-elif getmode("DEBUG100"):
-	LOGLEVEL = 100
-elif getmode("DEBUG999"):
-	LOGLEVEL = 999
-else:
-	LOGLEVEL = 1
-	LOGLEVELS = []
-
 DEBUGcount = 0
 DEBUGfrombefore = False
 
@@ -29,9 +17,20 @@ def getmode(MODE):
 				return True
 	return False
 
+if getmode("DEBUG2"):
+	LOGLEVEL = 2
+elif getmode("DEBUG10"):
+	LOGLEVEL = 10
+elif getmode("DEBUG100"):
+	LOGLEVEL = 100
+elif getmode("DEBUG999"):
+	LOGLEVEL = 999
+else:
+	LOGLEVEL = 1
+	LOGLEVELS = []
+
 def devmode():
 	return getmode("DEVMODE")
-
 
 def debug(level,text,DEBUG,bindir):
 	try:
