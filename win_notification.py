@@ -2,12 +2,6 @@
 from debug import debug
 import os, platform, time
 
-# ATTENTION
-# win32api include in py2exe 0.9.2.2 give a import error pywintypes with python3.4.4. To fix it edit the Hooks file from py2exe:
-# C:\Program Files\Python34_64\Lib\site-packages\py2exe\hooks.py
-# Comment Line 250 with #
-# Now all works fine
-
 from win32api import GetSystemMetrics, GetModuleHandle, PostQuitMessage, LoadResource
 from win32con import SM_CXICONSPACING, SM_CXSMICON, SM_CYSMICON, SM_CXICON, SM_CYICON, CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
 from win32gui import CreateIconFromResource, CreateWindow, DestroyWindow, LoadIcon, LoadImage, NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_MODIFY, RegisterClass, UnregisterClass, Shell_NotifyIcon, UpdateWindow, WNDCLASS
@@ -38,11 +32,9 @@ class notify:
 			UpdateWindow(self.hwnd)
 
 			try:
-				RT_ICON_SIZE = 11
-				#RT_ICON_SIZE = 15
+				RT_ICON_SIZE = 15
 				if TRAYSIZE == 32 or WINVER10 == True:
-					RT_ICON_SIZE = 10
-					#RT_ICON_SIZE = 14
+					RT_ICON_SIZE = 14
 				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
@@ -50,9 +42,8 @@ class notify:
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1 failed, exception = '%s'"%(e),DEBUG,True)
 				try:
 					icon_path = False
-					icon_path1 = "%s\\share\\icons\\shield_exe_32px_32bpp.ico" % (os.getcwd())
-					icon_path2 = "%s\\else\\app_icons\\shield_exe_32px_32bpp.ico" % (DEV_DIR)
-					files = [ icon_path1, icon_path2 ]
+					icon_path1 = "%s\\else\\app_icons\\app_icon.ico" % (DEV_DIR)
+					files = [ icon_path1 ]
 					for file in files:
 							if os.path.isfile(file):
 								icon_path = file
@@ -86,10 +77,10 @@ class notify:
 			Shell_NotifyIcon(NIM_ADD, nid)
 			
 			icontype = 0 # bad blurry icon
-			icontype = 1 # blue info
-			icontype = 2 # yellow exclamation
-			icontype = 3 # red cross
-			icontype = 4 # icon from filepath
+			#icontype = 1 # blue info
+			#icontype = 2 # yellow exclamation
+			#icontype = 3 # red cross
+			#icontype = 4 # icon from filepath
 			
 			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "Balloon Tooltip", text, 200,title, icontype))
 			
