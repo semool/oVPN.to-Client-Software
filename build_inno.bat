@@ -28,7 +28,7 @@ IF EXIST inno_setup.iss del inno_setup.iss
 
 ::echo hit to compile py2exe: %BINARY%
 ::pause
-echo compiling...
+echo compiling py2exe...
 %PYEXE% -OO setup.py py2exe 1> %PY2EXE_LOG% 2> %PY2EXE_ERR%
 IF NOT %errorlevel% == 0 (
 	echo py2exe compiled with exitcode %errorlevel%: logfile: %PY2EXE_LOG%
@@ -74,6 +74,7 @@ IF "%~2" == "SIGN" (
 	call sign_dll.bat
 	)
 
+echo launch %INNOCOMPILE%
 %INNOCOMPILE% /cc "%SOURCEDIR%\inno_setup.iss"
 set INNORETURN=%errorlevel%
 
