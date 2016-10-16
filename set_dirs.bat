@@ -7,12 +7,11 @@ set PYRAMDISK=%SOURCEDIR%\pyram.y
 IF NOT EXIST %PYRAMDISK% (
 	set PY32=C:\Python34
 	set PY64=C:\Python34_64
-	echo noramdisk
+	set RAM=0
 ) ELSE IF EXIST %PYRAMDISK% (
 	set PY32=P:\Python34
 	set PY64=P:\Python34_64
-	echo useramdisk
-	pause
+	set RAM=1
 )
 
 set APPDIR=%APPDATA%\ovpn\bin\client\dist
