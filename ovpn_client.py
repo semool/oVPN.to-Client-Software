@@ -5164,6 +5164,7 @@ class Systray:
 				pass
 			time.sleep(3)
 			i += 1
+		self.systraytext_from_before = False
 		return False
 
 	def check_myip(self):
