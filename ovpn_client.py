@@ -342,7 +342,6 @@ class Systray:
 							if self.check_config_folders():
 								if self.read_options_file():
 									self.win_firewall_clear_vcp_rules()
-									#self.win_firewall_set_vcp_rules(option="add")
 									if self.win_detect_openvpn():
 										if self.read_interfaces():
 											if self.write_options_file():
@@ -1976,24 +1975,24 @@ class Systray:
 							self.OVPN_SERVER = list()
 							if self.load_ovpn_server() == True:
 								self.rebuild_mainwindow()
-							self.timer_check_certdl_running = False
 							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
 							self.win_firewall_clear_vcp_rules()
+							self.timer_check_certdl_running = False
 							return True
 						else:
 							self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
 					else:
 						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
 				else:
-					self.timer_check_certdl_running = False
 					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
 					self.debug(1,"def inThread_timer_check_certdl: no config update available")
 					self.win_firewall_clear_vcp_rules()
+					self.timer_check_certdl_running = False
 					return True
 		except Exception as e:
 			self.msgwarn(_("Failed to check for updates!"),_("Error: def inThread_timer_check_certdl"))
-		self.timer_check_certdl_running = False
 		self.win_firewall_clear_vcp_rules()
+		self.timer_check_certdl_running = False
 		return False
 
 	def update_mwls(self):
@@ -5144,7 +5143,6 @@ class Systray:
 				self.win_firewall_set_vcp_rules("add")
 				time.sleep(5)
 				if self.try_socket(API_DOMAIN,443) == True:
-					self.win_firewall_clear_vcp_rules()
 					return True
 				self.win_firewall_clear_vcp_rules()
 				self.LAST_CHECK_INET_FALSE = int(time.time())
