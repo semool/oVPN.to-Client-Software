@@ -51,6 +51,8 @@ echo cleanup
 if exist %WORKPATH% rmdir /S/Q %WORKPATH%\
 if exist %SOURCEDIR%\tmp\ rmdir /S/Q %SOURCEDIR%\tmp\
 IF EXIST %PY2EXE_LOG% del %PY2EXE_LOG%
+IF EXIST %PY2EXE_ERR% del %PY2EXE_ERR%
+rmdir /S/Q %PYCACHE%\
 del "%SOURCEDIR%\*.pyc" 2> nul
 del "%SOURCEDIR%\*.pyo" 2> nul
 
