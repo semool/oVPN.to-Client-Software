@@ -11,7 +11,7 @@
 + [Python 3.4.4 win64](https://www.python.org/ftp/python/3.4.4/python-3.4.4.amd64.msi) (install to C:\Python34_64)
 
 ### 32 and 64 Bit
-+ !!! When both Envirenments should be installed at the same time it is important that you first install 32 Bit, then 64 Bit and 32 Bit again!!!
++ !!! When both Envirenments should be installed at the same time it is important that you first install [Python 3.4.4 win32](https://www.python.org/ftp/python/3.4.4/python-3.4.4.msi), then [Python 3.4.4 win64](https://www.python.org/ftp/python/3.4.4/python-3.4.4.amd64.msi) and [Python 3.4.4 win32](https://www.python.org/ftp/python/3.4.4/python-3.4.4.msi) again!!!
 + open cmd.exe as admin:
 ```
 C:\Python34[_64]\Scripts\pip.exe install --upgrade pip
