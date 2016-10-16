@@ -80,11 +80,11 @@ set INNORETURN=%errorlevel%
 
 echo Inno Setup %EXESTRING% return %INNORETURN%
 echo Close or hit to make release
+if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
+IF EXIST inno_setup.iss del inno_setup.iss
 pause
 
 call release.bat
-if exist %DISTDIR% rmdir /S/Q %DISTDIR%\
-IF EXIST inno_setup.iss del inno_setup.iss
 echo release.bat finished, close or hit to backup RAM DISK
 pause
 
