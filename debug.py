@@ -27,7 +27,7 @@ elif getmode("DEBUG999"):
 	LOGLEVEL = 999
 else:
 	LOGLEVEL = 1
-	LOGLEVELS = []
+LOGLEVELS = []
 
 def devmode():
 	return getmode("DEVMODE")
