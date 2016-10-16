@@ -2,14 +2,23 @@
 import os, sys, time, locale
 BOOTTIME = time.time()
 
-LOGLEVEL = 1
-LOGLEVELS = []
+if getmode("DEBUG2"):
+	LOGLEVEL = 2
+elif getmode("DEBUG10"):
+	LOGLEVEL = 10
+elif getmode("DEBUG100"):
+	LOGLEVEL = 100
+elif getmode("DEBUG999"):
+	LOGLEVEL = 999
+else:
+	LOGLEVEL = 1
+	LOGLEVELS = []
 
 DEBUGcount = 0
 DEBUGfrombefore = False
 
 def devdir():
-	dir = "E:\\Persoenlich\\ovpn-client"
+	dir = "Q:\\ovpn-client"
 	return dir
 
 def getmode(MODE):
