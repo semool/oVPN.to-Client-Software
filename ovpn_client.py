@@ -177,6 +177,7 @@ class Systray:
 		self.LAST_MSGWARN_WINDOW_DNS = 0
 		self.LAST_OVPN_PING_DEAD_MESSAGE = 0
 		self.CONNECTION_ESTABLISHED = False
+		self.CONNECTION_FAILED_TIME = 0
 		self.MSGWARN_WINDOW_OPEN = False
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
@@ -340,9 +341,8 @@ class Systray:
 						if self.win_pre3_load_profile_dir_vars():
 							if self.check_config_folders():
 								if self.read_options_file():
-									while self.win_firewall_add_rule_to_vcp(option="delete"):
-										pass
-									self.win_firewall_add_rule_to_vcp(option="add")
+									self.win_firewall_clear_vcp_rules()
+									#self.win_firewall_set_vcp_rules(option="add")
 									if self.win_detect_openvpn():
 										if self.read_interfaces():
 											if self.write_options_file():
@@ -1978,6 +1978,7 @@ class Systray:
 								self.rebuild_mainwindow()
 							self.timer_check_certdl_running = False
 							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
+							self.win_firewall_clear_vcp_rules()
 							return True
 						else:
 							self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
@@ -1987,10 +1988,12 @@ class Systray:
 					self.timer_check_certdl_running = False
 					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
 					self.debug(1,"def inThread_timer_check_certdl: no config update available")
+					self.win_firewall_clear_vcp_rules()
 					return True
 		except Exception as e:
 			self.msgwarn(_("Failed to check for updates!"),_("Error: def inThread_timer_check_certdl"))
 		self.timer_check_certdl_running = False
+		self.win_firewall_clear_vcp_rules()
 		return False
 
 	def update_mwls(self):
@@ -3746,6 +3749,7 @@ class Systray:
 			if not self.win_firewall_start():
 				self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
 				return self.reset_ovpn_values()
+			self.win_firewall_clear_vcp_rules()
 			self.win_firewall_modify_rule(option="add")
 			self.win_clear_ipv6()
 			self.OVPN_CONNECTEDtime = int(time.time())
@@ -3871,8 +3875,8 @@ class Systray:
 							self.OVPN_PING_LAST = PING
 							self.OVPN_PING_DEAD_COUNT = 0
 							self.debug(7,"def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
-						else:
-							self.set_ovpn_ping_dead()
+						#else:
+						#	self.set_ovpn_ping_dead()
 				except Exception as e:
 					self.set_ovpn_ping_dead()
 			except Exception as e:
@@ -3892,6 +3896,8 @@ class Systray:
 		self.NEXT_PING_EXEC = int(time.time())+5
 		self.CONNECTION_ESTABLISHED = False
 		self.OVPN_PING_DEAD_COUNT += 1
+		if self.CONNECTION_FAILED_TIME == 0:
+			self.CONNECTION_FAILED_TIME = int(time.time())
 
 	def get_ovpn_ping(self):
 		self.debug(7,"def get_ovpn_ping()")
@@ -3915,7 +3921,7 @@ class Systray:
 						return PING
 					except Exception as e:
 						self.debug(7,"def get_ovpn_ping: port %s failed, exception = '%s'"%(port,e))
-			self.OVPN_PING_LAST = -2
+			self.set_ovpn_ping_dead()
 			return self.OVPN_PING_LAST
 		except Exception as e:
 			self.debug(1,"def get_ovpn_ping: failed, exception = '%s'"%(e))
@@ -4348,24 +4354,35 @@ class Systray:
 			NETSH_CMDLIST.append(rule_string)
 			self.debug(1,"Whitelist: %s %s %s %s" % (entry,ip,port,protocol))
 		return self.win_join_netsh_cmd(NETSH_CMDLIST)
-
-	def win_firewall_add_rule_to_vcp(self,option):
+	
+	def win_firewall_clear_vcp_rules(self):
+		if self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True:
+			while self.win_firewall_set_vcp_rules(option="delete"):
+				pass
+	
+	def win_firewall_set_vcp_rules(self,option):
 		if self.NO_WIN_FIREWALL == True:
 			return True
-		self.debug(1,"def win_firewall_add_rule_to_vcp(%s)"%(option))
+		if self.state_openvpn() == True and option == "add":
+			return True
+		self.debug(1,"def win_firewall_set_vcp_rules(%s)"%(option))
 		try:
 			if option == "add":
 				actionstring = "action=allow"
 			elif option == "delete":
 				actionstring = ""
 			url = "https://%s" % (VCP_DOMAIN)
-			port = 443
-			protocol = "tcp"
 			program = 'program="%s\\ovpn_client.exe"' % (self.BIN_DIR)
-			rule_name = "oVPN.to Client Allow OUT"
-			rule_string = 'advfirewall firewall %s rule name="%s" %s remoteport="%s" protocol="%s" profile=any dir=out %s' % (option,rule_name,program,port,protocol,actionstring)
+			rule_name1 = "oVPN.to Client Allow OUT"
+			rule_name2 = "oVPN.to Client Allow DNS udp"
+			rule_name3 = "oVPN.to Client Allow DNS tcp"
+			rule_string1 = 'advfirewall firewall %s rule name="%s" %s remoteport=443 protocol=tcp profile=any dir=out %s' % (option,rule_name1,program,actionstring)
+			rule_string2 = 'advfirewall firewall %s rule name="%s" remoteport=53 protocol=udp profile=any dir=out %s' % (option,rule_name2,actionstring)
+			rule_string3 = 'advfirewall firewall %s rule name="%s" remoteport=53 protocol=tcp profile=any dir=out %s' % (option,rule_name3,actionstring)
 			NETSH_CMDLIST = list()
-			NETSH_CMDLIST.append(rule_string)
+			NETSH_CMDLIST.append(rule_string1)
+			NETSH_CMDLIST.append(rule_string2)
+			NETSH_CMDLIST.append(rule_string3)
 			if self.win_join_netsh_cmd(NETSH_CMDLIST):
 				if option == "add":
 					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
@@ -4373,7 +4390,7 @@ class Systray:
 					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = False
 				return True
 		except Exception as e:
-			self.debug(1,"def win_firewall_add_rule_to_vcp: failed, exception = '%s'"%(e))
+			self.debug(1,"def win_firewall_set_vcp_rules: failed, exception = '%s'"%(e))
 
 	def win_firewall_export_on_start(self):
 		self.debug(1,"def win_firewall_export_on_start()")
@@ -5124,6 +5141,12 @@ class Systray:
 				return True
 			else:
 				self.debug(1,"def check_inet_connection: failed #1")
+				self.win_firewall_set_vcp_rules("add")
+				time.sleep(5)
+				if self.try_socket(API_DOMAIN,443) == True:
+					self.win_firewall_clear_vcp_rules()
+					return True
+				self.win_firewall_clear_vcp_rules()
 				self.LAST_CHECK_INET_FALSE = int(time.time())
 			return False
 		except Exception as e:
@@ -5160,21 +5183,17 @@ class Systray:
 			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
 				return True
 			try:
-				self.debug(2,"def check_myip: debug 01")
 				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
 				HEADERS = request_api.useragent(self.DEBUG)
-				self.debug(2,"def check_myip: debug 02")
-				r = requests.get(url,timeout=3,headers=HEADERS)
-				self.debug(2,"def check_myip: debug 03")
+				r = requests.get(url,timeout=5,headers=HEADERS)
 				rip = r.content.strip().split()[0].decode(decoding)
-				self.debug(2,"def check_myip: debug 04, rip = '%s', self.OVPN_CONNECTEDtoIP = '%s'"%(rip,self.OVPN_CONNECTEDtoIP))
+				self.LAST_CHECK_MYIP = int(time.time())
 				if rip == self.OVPN_CONNECTEDtoIP:
-					self.debug(1,"def check_myip: rip == self.OVPN_CONNECTEDtoIP, self.OVPN_PING_DEAD_COUNT = '%s'"%(self.OVPN_PING_DEAD_COUNT))
-					self.OVPN_PING_DEAD_COUNT = 0
-					if self.CONNECTION_ESTABLISHED == False and self.OVPN_PING_DEAD_COUNT == 0:
-						self.send_notify(_("Connection established!"),_("oVPN"))
+					if self.CONNECTION_ESTABLISHED == False:
 						self.CONNECTION_ESTABLISHED = True
-					self.LAST_CHECK_MYIP = int(time.time())
+						self.OVPN_PING_DEAD_COUNT = 0
+						self.CONNECTION_FAILED_TIME = 0
+						self.send_notify(_("Connection established!"),_("oVPN"))
 					return True
 			except Exception as e:
 				self.debug(1,"def check_myip: failed, exception = '%s'"%(e))
@@ -5877,7 +5896,7 @@ class Systray:
 			if self.TAP_BLOCKOUTBOUND == True:
 				self.win_firewall_whitelist_ovpn_on_tap(option="delete")
 			if self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True:
-				self.win_firewall_add_rule_to_vcp(option="delete")
+				self.win_firewall_clear_vcp_rules()
 			self.debug(1,"close app")
 			self.stop_systray_timer = True
 			self.remove_lock()
