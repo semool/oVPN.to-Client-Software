@@ -2,12 +2,6 @@
 from debug import debug
 import os, platform, time
 
-# ATTENTION
-# win32api include in py2exe 0.9.2.2 give a import error pywintypes with python3.4.4. To fix it edit the Hooks file from py2exe:
-# C:\Program Files\Python34_64\Lib\site-packages\py2exe\hooks.py
-# Comment Line 250 with #
-# Now all works fine
-
 from win32api import GetSystemMetrics, GetModuleHandle, PostQuitMessage, LoadResource
 from win32con import SM_CXICONSPACING, SM_CXSMICON, SM_CYSMICON, SM_CXICON, SM_CYICON, CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
 from win32gui import CreateIconFromResource, CreateWindow, DestroyWindow, LoadIcon, LoadImage, NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_MODIFY, RegisterClass, UnregisterClass, Shell_NotifyIcon, UpdateWindow, WNDCLASS
@@ -38,11 +32,9 @@ class notify:
 			UpdateWindow(self.hwnd)
 
 			try:
-				RT_ICON_SIZE = 11
-				#RT_ICON_SIZE = 15
+				RT_ICON_SIZE = 15
 				if TRAYSIZE == 32 or WINVER10 == True:
-					RT_ICON_SIZE = 10
-					#RT_ICON_SIZE = 14
+					RT_ICON_SIZE = 14
 				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
