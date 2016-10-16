@@ -93,13 +93,13 @@ for dll in gtk_dlls:
 	shutil.copy(dll, tmpdlldir)
 
 setup_dict = dict(
-	version = release_version.setup_data()["version"],
-	name = release_version.setup_data()["name"],
-	description = release_version.setup_data()["description"],
 	data_files = [('Microsoft.VC90.CRT',['includes/'+crt+'/Microsoft.VC90.CRT.manifest','includes/'+crt+'/msvcp90.dll','includes/'+crt+'/msvcr90.dll']),],
 	zipfile = 'ovpn_client.lib',
 	windows=[
 		{
+			"version":release_version.setup_data()["version"],
+			"product_name":release_version.setup_data()["name"],
+			"description":release_version.setup_data()["description"],
 			"script":release_version.setup_data()["script"],
 			"icon_resources" : [(1, 'else\\app_icons\\shield_exe.ico')],
 			"copyright" : "Copyright %s" % (release_version.setup_data()["copyright"]),
@@ -265,7 +265,7 @@ if not os.path.exists(innoscript):
 	sys.exit()
 
 
-setup(**setup_dict)
+#setup(**setup_dict)
 setup(**setup_dict)
 
 if not os.path.exists(DIST_DIR):

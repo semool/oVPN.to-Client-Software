@@ -9,7 +9,6 @@ copy /Y "%INCLUDESDIR%\cacert_ovpn.pem" "%DISTDIR%\"
 copy /Y "%SIGNTOOL%" "%DISTDIR%\"
 xcopy /Y /E "%LOCALEDIR%" "%DISTDIR%\locale\"
 xcopy /Y /E "%INCLUDESDIR%\themes" "%DISTDIR%\share\themes\"
-copy /Y "else\app_icons\shield_exe_32px_32bpp.ico" "%DISTDIR%\share\icons\"
 
 set GTKDLL32=libgtk-3-0.dll
 set GTKDLL32PX=libgtk-3-0-32.dll
