@@ -42,9 +42,8 @@ class notify:
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1 failed, exception = '%s'"%(e),DEBUG,True)
 				try:
 					icon_path = False
-					icon_path1 = "%s\\share\\icons\\shield_exe_32px_32bpp.ico" % (os.getcwd())
-					icon_path2 = "%s\\else\\app_icons\\shield_exe_32px_32bpp.ico" % (DEV_DIR)
-					files = [ icon_path1, icon_path2 ]
+					icon_path1 = "%s\\else\\app_icons\\app_icon.ico" % (DEV_DIR)
+					files = [ icon_path1 ]
 					for file in files:
 							if os.path.isfile(file):
 								icon_path = file
@@ -78,10 +77,10 @@ class notify:
 			Shell_NotifyIcon(NIM_ADD, nid)
 			
 			icontype = 0 # bad blurry icon
-			icontype = 1 # blue info
-			icontype = 2 # yellow exclamation
-			icontype = 3 # red cross
-			icontype = 4 # icon from filepath
+			#icontype = 1 # blue info
+			#icontype = 2 # yellow exclamation
+			#icontype = 3 # red cross
+			#icontype = 4 # icon from filepath
 			
 			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "Balloon Tooltip", text, 200,title, icontype))
 			
