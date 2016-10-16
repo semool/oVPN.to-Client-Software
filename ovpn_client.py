@@ -475,7 +475,7 @@ class Systray:
 		return True
 
 	def load_icons(self):
-		self.debug(1,"def load_icons()")
+		self.debug(2,"def load_icons()")
 		# called from: 
 		"""
 			def win_pre3_load_profile_dir_vars()
@@ -617,13 +617,10 @@ class Systray:
 	def read_options_file(self):
 		self.debug(1,"def read_options_file()")
 		if os.path.isfile(self.OPT_FILE):
-			self.debug(1,"def read_options_file: debug 01")
 			try:
 				#parser = SafeConfigParser()
 				parser = configparser.ConfigParser()
-				self.debug(1,"def read_options_file: debug 02")
 				parser.read(self.OPT_FILE)
-				self.debug(1,"def read_options_file: debug 03, parser.sections = '%s'"%(parser.sections()))
 				
 				try:
 					APIKEY = parser.get('oVPN','apikey')
@@ -637,23 +634,19 @@ class Systray:
 						self.APIKEY = APIKEY
 				except Exception as e:
 					self.debug(1,"def read_options_file: apikey failed, exception = '%s'"%(e))
-				self.debug(1,"def read_options_file: debug 03.01")
 				
 				try:
-					#self.DEBUG = parser.getboolean('oVPN','debugmode')
 					gDEBUG = parser.get('oVPN','debugmode')
 					self.debug(1,"def read_options_file: debug 03.01.1, gDEBUG = '%s'"%(gDEBUG))
-					if gDEBUG == "True" or DEBUG == True:
-						self.debug(1,"def read_options_file: debug 03.01.2")
+					if gDEBUG == "True":
 						self.DEBUG = True
-						self.show_debug_window()
+						if self.DEBUGWINDOW_OPEN == False:
+							self.show_debug_window()
 					else:
-						self.debug(1,"def read_options_file: debug 03.01.3")
 						self.DEBUG = False
-					#self.debug(1,BUILT_STRING)
+					self.debug(1,BUILT_STRING)
 				except Exception as e:
 					self.debug(1,"def read_options_file: debugmode failed, exception = '%s'"%(e))
-				self.debug(1,"def read_options_file: debug 03.02")
 				
 				try:
 					APPLANG = parser.get('oVPN','applanguage')
@@ -667,7 +660,6 @@ class Systray:
 						self.debug(1,"def read_options_file: self.APP_LANGUAGE = '%s'" % (self.APP_LANGUAGE))
 				except Exception as e:
 					self.debug(1,"def read_options_file: self.APP_LANGUAGE failed, exception = '%s'"%(e))
-				self.debug(1,"def read_options_file: debug 03.03")
 				
 				try:
 					LAST_CFG_UPDATE = parser.getint('oVPN','lastcfgupdate')
@@ -6167,7 +6159,7 @@ class Systray:
 			self.debug(1,"def decode_flag: '%s' failed"%(flag))
 
 	def base64_icons(self, icon):
-		self.debug(1,"def base64_icons(%s)"%(icon))
+		self.debug(2,"def base64_icons(%s)"%(icon))
 		return icons_b64.base64_icons(icon)
 
 	def delete_file(self,file,sourcef):
