@@ -5,14 +5,11 @@ set BINSDIR=%RELEASEDIR%\bins\%RELEASE%
 set DEVSDIR=%RELEASEDIR%\devs\%RELEASE%
 set DEVDIST=%DEVSDIR%\%VERSION%
 
-IF NOT EXIST %BINSDIR% ( 
-	mkdir %BINSDIR% 
-	) ELSE (
-		copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
-		del "%SOURCEDIR%\%EXESTRING%"
-		echo released %EXESTRING%
-		echo copied binary to: '%BINSDIR%\%EXESTRING%'
-	)
+IF NOT EXIST %BINSDIR% ( mkdir %BINSDIR% )
+copy /Y "%SOURCEDIR%\%EXESTRING%" "%BINSDIR%\%EXESTRING%"
+del "%SOURCEDIR%\%EXESTRING%"
+echo released %EXESTRING%
+echo copied binary to: '%BINSDIR%\%EXESTRING%'
 
 ::mkdir %DEVSDIR%
 ::mkdir %DEVDIST%
