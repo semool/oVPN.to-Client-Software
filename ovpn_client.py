@@ -3891,31 +3891,18 @@ class Systray:
 			self.CONNECTION_FAILED_TIME = int(time.time())
 
 	def get_ovpn_ping(self):
-		self.debug(7,"def get_ovpn_ping()")
+		self.debug(2,"def get_ovpn_ping()")
 		try:
-			ports = [ 53, 443, 1080, 8080 ]
+			ports = [ 53, 5353, 443, 1080, 8080 ]
 			for port in ports:
-				self.debug(7,"def get_ovpn_ping: try port %s"%(port))
-				ai_list = socket.getaddrinfo(self.GATEWAY_OVPN_IP4A,port,socket.AF_UNSPEC,socket.SOCK_STREAM)
-				for (family, socktype, proto, canon, sockaddr) in ai_list:
-					try:
-						t1 = time.time()
-						s = socket.socket(family, socktype)
-						s.settimeout(3)
-						s.connect(sockaddr)
-						t2 = time.time()
-						s.close()
-						PING = (t2-t1)*1000
-						if PING > 3000:
-							PING = -2
-						self.debug(7,"def get_ovpn_ping: %s ms" % (PING))
-						return PING
-					except Exception as e:
-						self.debug(7,"def get_ovpn_ping: port %s failed, exception = '%s'"%(port,e))
+				self.debug(2,"def get_ovpn_ping: try port %s"%(port))
+				PING = self.try_socket(self.GATEWAY_OVPN_IP4A,port,1)
+				if not PING == False:
+					return PING
 			self.set_ovpn_ping_dead()
 			return self.OVPN_PING_LAST
 		except Exception as e:
-			self.debug(1,"def get_ovpn_ping: failed, exception = '%s'"%(e))
+			self.debug(2,"def get_ovpn_ping: failed, exception = '%s'"%(e))
 
 	def read_gateway_from_interface(self):
 		if DEVMODE == True:
@@ -4375,6 +4362,7 @@ class Systray:
 			NETSH_CMDLIST.append(rule_string2)
 			NETSH_CMDLIST.append(rule_string3)
 			if self.win_join_netsh_cmd(NETSH_CMDLIST):
+				time.sleep(3)
 				if option == "add":
 					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
 				elif option == "delete":
@@ -5128,41 +5116,45 @@ class Systray:
 		try:
 			if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 				return False
-			if self.try_socket(API_DOMAIN,443) == True:
+			if not self.try_socket(API_DOMAIN,443,1) == False:
 				return True
 			else:
 				self.debug(1,"def check_inet_connection: failed #1")
 				self.win_firewall_set_vcp_rules("add")
-				time.sleep(5)
-				if self.try_socket(API_DOMAIN,443) == True:
+				if not self.try_socket(API_DOMAIN,443,2) == False:
 					return True
 				self.win_firewall_clear_vcp_rules()
 				self.LAST_CHECK_INET_FALSE = int(time.time())
+				self.debug(1,"def check_inet_connection: failed #2")
 			return False
 		except Exception as e:
 			self.debug(1,"def check_inet_connection: failed, exception = '%s'"%(e))
 
-	def try_socket(self,host,port):
-		i = 0
-		tries = 4
+	def try_socket(self,host,port,tries,i=1):
 		while i <= tries:
-			self.debug(1,"def try_socket: i = '%s'" % (i))
-			systraytext = _("Testing internet connection! (%s / %s)") % (i,tries)
+			self.debug(1,"def try_socket: host = '%s', port = '%s', i = '%s'" % (host,port,i))
+			systraytext = _("Testing internet connection!")
 			self.tray.set_tooltip_markup(systraytext)
 			try:
-				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				s.settimeout(3)
-				result = s.connect_ex((host, port))
-				s.close()
-				if result == 0:
-					self.debug(1,"def try_socket: %s:%s True" % (host,port))
-					self.systraytext_from_before = False
-					return True
-				else:
-					self.debug(1,"def try_socket: failed, result = '%s'" % (result))
+				ai_list = socket.getaddrinfo(host,port,socket.AF_UNSPEC,socket.SOCK_STREAM)
+				for (family, socktype, proto, canon, sockaddr) in ai_list:
+					try:
+						t1 = time.time()
+						s = socket.socket(family, socktype)
+						s.settimeout(5)
+						s.connect(sockaddr)
+						t2 = time.time()
+						s.close()
+						PING = (t2-t1)*1000
+						self.systraytext_from_before = False
+						self.debug(2,"def try_socket: %s ms" % (PING))
+						return PING
+					except Exception as e:
+						self.debug(2,"def try_socket: port %s failed, exception = '%s'"%(port,e))
+						if self.isValueIPv4(host):
+							time.sleep(3)
 			except Exception as e:
-				pass
-			time.sleep(3)
+				self.debug(1,"def try_socket: failed, exception = '%s'" % (e))
 			i += 1
 		self.systraytext_from_before = False
 		return False
