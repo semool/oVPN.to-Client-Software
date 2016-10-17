@@ -183,11 +183,8 @@ class Systray:
 		self.GATEWAY_DNS2 = False
 		self.WIN_TAP_DEVICE = False
 		self.WIN_TAP_DEVS = list()
-		
-		""" *fixme* add cfg option and switches """
 		self.WIN_ENABLE_NOTIFICATIONS = True
 		self.DISABLE_ALL_NOTIFICATIONS = False
-		
 		self.TAP_BLOCKOUTBOUND = False
 		self.win_firewall_tap_blockoutbound_running = False
 		self.WIN_EXT_DEVICE = False
@@ -875,6 +872,12 @@ class Systray:
 					self.debug(1,"def read_options_file: font failed, exception = '%s'"%(e))
 				
 				try:
+					self.WIN_ENABLE_NOTIFICATIONS = parser.getboolean('oVPN','winnotify')
+					self.debug(1,"def read_options_file: self.WIN_ENABLE_NOTIFICATIONS '%s'" % (self.WIN_ENABLE_NOTIFICATIONS))
+				except Exception as e:
+					self.debug(1,"def read_options_file: winnotify failed, exception = '%s'"%(e))
+				
+				try:
 					self.DISABLE_QUIT_ENTRY = parser.getboolean('oVPN','disablequitentry')
 					self.debug(1,"def read_options_file: self.DISABLE_QUIT_ENTRY '%s'" % (self.DISABLE_QUIT_ENTRY))
 				except Exception as e:
@@ -942,6 +945,7 @@ class Systray:
 				parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
 				parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(str(self.MAINWINDOW_SHOWCELLS), ensure_ascii=True)))
 				parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
+				parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
 				parser.set('oVPN','mydns','False')
 				#parser.write(bytes(cfg,locale.getpreferredencoding()))
 				parser.write(cfg)
@@ -1001,6 +1005,7 @@ class Systray:
 			parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
 			parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.MAINWINDOW_SHOWCELLS, ensure_ascii=True)))
 			parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
+			parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
 			parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
 			parser.write(cfg)
 			cfg.close()
@@ -1419,7 +1424,8 @@ class Systray:
 					pages = [self.nbpage0, self.nbpage1, self.nbpage2, self.nbpage3]
 					for page in pages:
 						try:
-							self.settingsnotebook.remove(page)
+							if not page == False:
+								self.settingsnotebook.remove(page)
 						except Exception as e:
 							self.debug(1,"def systray_timer: remove page '%s' failed, exception = '%s'"%(page,e))
 					try:
@@ -2676,8 +2682,22 @@ class Systray:
 			
 			##
 			self.settings_options_switch_updateovpnonstart(self.nbpage1)
-			self.settings_options_switch_accinfo(self.nbpage1)
-			self.settings_options_switch_srvinfo(self.nbpage1)
+			
+			##
+			self.nbpage1_h3 = Gtk.HBox(False, spacing=2)
+			
+			self.nbpage1_h3_v1 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h3.pack_start(self.nbpage1_h3_v1,True,True,0)
+			self.settings_options_switch_accinfo(self.nbpage1_h3_v1)
+			
+			self.nbpage1_h3_v2 = Gtk.VBox(False, spacing=0)
+			self.nbpage1_h3.pack_start(self.nbpage1_h3_v2,True,True,0)
+			self.settings_options_switch_srvinfo(self.nbpage1_h3_v2)
+			
+			self.nbpage1.pack_start(self.nbpage1_h3,False,False,0)
+			##
+			
+			self.settings_options_switch_winnotify(self.nbpage1)
 			self.settings_options_switch_disablequit(self.nbpage1)
 			self.settings_options_switch_debugmode(self.nbpage1)
 			##
@@ -3079,7 +3099,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_accinfo = switch
-			checkbox_title = Gtk.Label(label=_("Load Account Info (default: OFF)"))
+			checkbox_title = Gtk.Label(label=_("Account Info"))
 			if self.LOAD_ACCDATA == True and not self.APIKEY == False:
 				switch.set_active(True)
 			else:
@@ -3119,7 +3139,7 @@ class Systray:
 		try:
 			switch = Gtk.Switch()
 			self.switch_srvinfo = switch
-			checkbox_title = Gtk.Label(label=_("Load Server Info (default: OFF)"))
+			checkbox_title = Gtk.Label(label=_("Server Info"))
 			if self.LOAD_SRVDATA == True and not self.APIKEY == False:
 				switch.set_active(True)
 			else:
@@ -3363,6 +3383,30 @@ class Systray:
 			if self.init_localization(self.APP_LANGUAGE) == True:
 				self.debug(1,"def cb_settings_options_combobox_language: selected lang = '%s'" % (self.APP_LANGUAGE))
 		return
+
+	def settings_options_switch_winnotify(self,page):
+		try:
+			switch = Gtk.Switch()
+			self.switch_winnotify = switch
+			checkbox_title = Gtk.Label(label=_("Use Windows Notification System (default: ON)"))
+			if self.WIN_ENABLE_NOTIFICATIONS == True:
+				switch.set_active(True)
+			else:
+				switch.set_active(False)
+			switch.connect("notify::state", self.cb_settings_options_switch_winnotify)
+			page.pack_start(checkbox_title,False,False,0)
+			page.pack_start(switch,False,False,0)
+			page.pack_start(Gtk.Label(label=""),False,False,0)
+		except Exception as e:
+			self.debug(1,"def settings_options_switch_winnotify: failed, exception = '%s'"%(e))
+
+	def cb_settings_options_switch_winnotify(self,switch,gparam ):
+		self.debug(1,"def cb_settings_options_switch_winnotify()")
+		if switch.get_active():
+			self.WIN_ENABLE_NOTIFICATIONS = True
+		else:
+			self.WIN_ENABLE_NOTIFICATIONS = False
+		self.write_options_file()
 
 	def settings_options_switch_disablequit(self,page):
 		try:
