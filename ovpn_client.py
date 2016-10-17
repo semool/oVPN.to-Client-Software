@@ -109,7 +109,7 @@ class Systray:
 						self.request_UPDATE = True
 						GLib.idle_add(self.dialog_apikey)
 					else:
-						self.check_remote_update()
+						self.check_remote_update("config")
 				else:
 					self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Update failed!"))
 			GLib.timeout_add(1000,self.systray_timer)
@@ -117,8 +117,8 @@ class Systray:
 		else:
 			sys.exit()
 	
-	def dummy_func(self):
-		self.debug(1,"def dummy_func()")
+	def dummy_func(self,srcf):
+		self.debug(1,"def dummy_func(), srcf = '%s'"%(srcf))
 
 	def self_vars(self):
 		self.DEBUG = DEBUG
@@ -1664,7 +1664,7 @@ class Systray:
 						self.load_ovpn_server()
 						if not self.APIKEY == False and len(self.OVPN_SERVER) == 0:
 							self.debug(1,"zero server found, initiate first update")
-							self.check_remote_update()
+							self.check_remote_update("config")
 					elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
 						self.INIT_FIRST_UPDATE = False
 					elif self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
@@ -1936,12 +1936,13 @@ class Systray:
 		if self.MOUSE_IN_TRAY < time.time():
 			self.destroy_systray_menu()
 
-	def check_remote_update(self):
-		self.debug(1,"def check_remote_update()")
+	def check_remote_update(self,option):
+		self.debug(1,"def check_remote_update(option=%s)"%(option))
 		if self.timer_check_certdl_running == False:
 			self.debug(1,"def check_remote_update: check_inet_connection() == True")
 			try:
-				thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
+				thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_update)
+				thread_certdl = threading.Thread(target=lambda option=option: self.inThread_timer_check_update(option))
 				thread_certdl.daemon = True
 				thread_certdl.start()
 				threadid_certdl = threading.currentThread()
@@ -1953,51 +1954,50 @@ class Systray:
 			self.debug(1,"def check_remote_update: timer_check_certdl_running failed, exception = '%s'"%(e))
 		return False
 
-	def inThread_timer_check_certdl(self):
-		self.debug(1,"def inThread_timer_check_certdl()")
+	def inThread_timer_check_update(self,option):
+		self.debug(1,"def inThread_timer_check_update(option=%s)"%(option))
 		if self.check_inet_connection() == False:
-			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed!"))
+			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),"oVPN Error")
 			return False
 		try:
+			self.STATE_CERTDL = "lastupdate"
 			self.timer_check_certdl_running = True
 			try:
 				self.load_ovpn_server()
 				if len(self.OVPN_SERVER) == 0:
 					self.reset_last_update()
 			except Exception as e:
-				self.debug(1,"def inThread_timer_check_certdl: self.load_ovpn_server() failed, exception = '%s'"%(e))
-			self.debug(1,"def inThread_timer_check_certdl()")
-			self.STATE_CERTDL = "lastupdate"
-			if self.API_REQUEST(API_ACTION = "winrelease"):
-				pass
-			if self.API_REQUEST(API_ACTION = "lastupdate"):
-				self.debug(1,"def inThread_timer_check_certdl: API_ACTION lastupdate")
+				self.debug(1,"def inThread_timer_check_update: self.load_ovpn_server() failed, exception = '%s'"%(e))
+			if option == "client":
+				if self.API_REQUEST(API_ACTION = "winrelease_url"):
+					return self.thread_finish_check_update(True)
+			elif option == "config" and self.API_REQUEST(API_ACTION = self.STATE_CERTDL):
 				if self.check_last_server_update(self.curldata):
 					self.STATE_CERTDL = "getconfigs"
-					if self.API_REQUEST(API_ACTION = "getconfigs"):
+					if self.API_REQUEST(API_ACTION = self.STATE_CERTDL):
 						if self.extract_ovpn():
 							self.OVPN_SERVER = list()
 							if self.load_ovpn_server() == True:
 								self.rebuild_mainwindow()
-							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
-							self.win_firewall_clear_vcp_rules()
-							self.timer_check_certdl_running = False
-							return True
+							self.msgwarn(_("Configurations updated!"),"oVPN Success")
+							return self.thread_finish_check_update(True)
 						else:
-							self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
+							self.msgwarn(_("Extraction failed!"),"oVPN Error")
 					else:
-						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
+						self.msgwarn(_("Download failed!"),"oVPN Error")
 				else:
-					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
-					self.debug(1,"def inThread_timer_check_certdl: no config update available")
-					self.win_firewall_clear_vcp_rules()
-					self.timer_check_certdl_running = False
-					return True
+					self.msgwarn(_("No config update available!"),"oVPN Success")
+					return self.thread_finish_check_update(True)
 		except Exception as e:
-			self.msgwarn(_("Failed to check for updates!"),_("Error: def inThread_timer_check_certdl"))
+			self.msgwarn(_("Update failed with Exception '%s'!"),"oVPN Error")
+		return self.thread_finish_check_update(False)
+		
+	def thread_finish_check_update(self,retval):
 		self.win_firewall_clear_vcp_rules()
 		self.timer_check_certdl_running = False
-		return False
+		self.STATE_CERTDL = False
+		self.debug(1,"def thread_finish_check_update(retval=%s)"%(retval))
+		return retval
 
 	def update_mwls(self):
 		self.debug(1,"def update_mwls()")
@@ -2746,6 +2746,7 @@ class Systray:
 			self.nbpage2 = Gtk.VBox(False,spacing=2)
 			self.nbpage2.set_border_width(8)
 			
+			self.settings_updates_button_clientupdate(self.nbpage2)
 			self.settings_updates_button_normalconf(self.nbpage2)
 			self.settings_updates_button_forceconf(self.nbpage2)
 			self.settings_options_button_ipv6(self.nbpage2)
@@ -3438,6 +3439,20 @@ class Systray:
 		else:
 			self.DISABLE_QUIT_ENTRY = False
 		self.write_options_file()
+
+	def settings_updates_button_clientupdate(self,page):
+		button = Gtk.Button(label=_("Check Client Update"))
+		button.connect('clicked', self.cb_settings_updates_button_clientupdate)
+		page.pack_start(button,False,False,0)
+		page.pack_start(Gtk.Label(label=""),False,False,0)
+
+	def cb_settings_updates_button_clientupdate(self,event):
+		diff = int((time.time()-self.LAST_CHECK_CFG_UPDATE))
+		if self.timer_check_certdl_running == False and diff > 30:
+			self.LAST_CHECK_CFG_UPDATE = time.time()
+			self.cb_check_client_update()
+		else:
+			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
 
 	def settings_updates_button_normalconf(self,page):
 		button = Gtk.Button(label=_("Normal Config Update"))
@@ -4744,7 +4759,7 @@ class Systray:
 				self.request_LOAD_ACCDATA = False
 			if self.request_UPDATE == True:
 				self.request_UPDATE = False
-				self.check_remote_update()
+				self.check_remote_update("config")
 		self.UPDATE_SWITCH = True
 
 	def cb_interface_selector_changed(self, combobox):
@@ -4799,8 +4814,15 @@ class Systray:
 	def cb_check_normal_update(self):
 		# call with GLib.idle_add !
 		self.debug(1,"def cb_check_normal_update()")
-		if self.check_remote_update() == True:
+		if self.check_remote_update("config") == True:
 			self.debug(1,"def cb_check_normal_update: self.check_remote_update() == True")
+			return True
+
+	def cb_check_client_update(self):
+		# call with GLib.idle_add !
+		self.debug(1,"def cb_check_client_update()")
+		if self.check_remote_update("client") == True:
+			self.debug(1,"def cb_check_client_update: self.cb_check_client_update() == True")
 			return True
 
 	def cb_force_update(self):
@@ -5104,7 +5126,8 @@ class Systray:
 			HEADERS = request_api.useragent(self.DEBUG)
 			if API_ACTION == "auth" or API_ACTION == "lastupdate" or API_ACTION == "winrelease" or API_ACTION == "winrelease_url":
 				if API_ACTION == "winrelease" or API_ACTION == "winrelease_url":
-					values = { 'action' : API_ACTION, 'bits' : BITS }
+					MYBITS = int(BUILT_STRING.split()[7])
+					values = { 'action' : API_ACTION, 'bits' : MYBITS }
 				else:
 					values = { 'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 				r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
@@ -5121,25 +5144,19 @@ class Systray:
 					if data[0] == "AUTHOK":
 						self.curldata = int(data[1])
 						return True
-				elif API_ACTION == "winrelease": 
-					if int(response) >= 78:
-						version = release_version.setup_data()["version"]
-						intversion = int(version.replace(".",""))
-						if int(response) > intversion:
-							self.debug(1,"def API_REQUEST: winrelease update available, response = '%s'"%(response))
-							if self.API_REQUEST("winrelease_url"):
-								self.msgwarn("URL: %s" %self.UPDATE_URL, _("Client Update available!"))
-								return True
-					else:
-						self.debug(1,"def API_REQUEST: winrelease invalid response")
 				elif API_ACTION == "winrelease_url":
+					MYRELEASETIME = int(BUILT_STRING.split()[6].split('(')[1].split(')')[0])
 					data = json.loads(str(response))
 					self.debug(1,"def API_REQUEST: winrelease_url data = '%s'"%(data))
-					self.UPDATE_URL = data["URL"]
-					self.UPDATE_HASH = data["SHA512"]
+					UPDATE_RELEASE = int(data["RELEASE"])
+					UPDATE_HASH = data["SHA512"]
+					UPDATE_URL = data["URL"]
+					if UPDATE_RELEASE > MYRELEASETIME:
+						if len(UPDATE_HASH) == 128 and UPDATE_URL.startswith("https://"):
+							self.msgwarn(_("Client update available!"), "oVPN Update")
+					else:
+						self.msgwarn(_("No client update available!"), "oVPN Success")
 					return True
-					if len(HASH) == 128 and URL.startswith("https://"):
-						return data
 				else:
 					self.debug(1,"def API_REQUEST: unknown response = '%s'"%(response))
 			
