@@ -66,16 +66,18 @@ def get_networkadapterlist(DEBUG,silent):
 	debug(1,"[winregs.py] def get_networkadapterlist()",DEBUG,True)
 	try:
 		newlist = []
-		debug(1,"[winregs.py] def get_networkadapterlist: debug 01",DEBUG,True)
 		list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG),silent)["iface_names"]
-		debug(1,"[winregs.py] def get_networkadapterlist: list1 = '%s'"%(list1),DEBUG,True)
+		debug(2,"[winregs.py] def get_networkadapterlist: list1 = '%s'"%(list1),DEBUG,True)
 		list2 = get_networkadapterlist_from_netsh(DEBUG)
-		debug(1,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
+		debug(2,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
 		for name in list1:
+			if name == "(unknown)" or name.startswith("isatap."):
+				continue
 			debug(1,"[winregs.py] def get_networkadapterlist: for name '%s' in list1"%(name),DEBUG,True)
 			for line in list2:
 				debug(1,"[winregs.py] def get_networkadapterlist: for line '%s' in list2"%(line),DEBUG,True)
-				if line.endswith(name):
+				# dont remove 3 spaces! user can't set spaces infront of adpaternames but output has some!
+				if line.endswith("   %s"%(name)):
 					debug(1,"[winregs.py] def get_networkadapterlist: HIT name = '%s'"%(name),DEBUG,True)
 					newlist.append(name)
 					break
