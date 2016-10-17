@@ -21,6 +21,8 @@ class notify:
 		self.classAtom = RegisterClass(wc)
 
 	def send_notify(self,DEBUG,TRAYSIZE,DEV_DIR,text,title):
+		if WINVER10 == False:
+			return False
 		try:
 			
 			while not self.isDestroyed() == True:
@@ -72,7 +74,7 @@ class notify:
 						return False
 			
 			flags = NIF_ICON | NIF_MESSAGE | NIF_TIP
-			nid = (self.hwnd, 0, flags, WM_USER + 20, hicon, "Tooltip")
+			nid = (self.hwnd, 0, flags, WM_USER + 20, hicon, "")
 			
 			Shell_NotifyIcon(NIM_ADD, nid)
 			
@@ -82,7 +84,7 @@ class notify:
 			#icontype = 3 # red cross
 			#icontype = 4 # icon from filepath
 			
-			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "Balloon Tooltip", text, 200,title, icontype))
+			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "", text, 200,title, icontype))
 			
 			if WINVER10 == False:
 				time.sleep(10)
