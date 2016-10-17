@@ -21,8 +21,6 @@ class notify:
 		self.classAtom = RegisterClass(wc)
 
 	def send_notify(self,DEBUG,TRAYSIZE,DEV_DIR,text,title):
-		if WINVER10 == False:
-			return False
 		try:
 			
 			while not self.isDestroyed() == True:
@@ -40,8 +38,10 @@ class notify:
 				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
+
 			except Exception as e:
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1 failed, exception = '%s'"%(e),DEBUG,True)
+
 				try:
 					icon_path = False
 					icon_path1 = "%s\\else\\app_icons\\app_icon.ico" % (DEV_DIR)
@@ -63,8 +63,10 @@ class notify:
 					""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648045(v=vs.85).aspx """
 					hicon = LoadImage(self.hinst, icon_path,IMAGE_ICON, 0, 0, icon_flags)
 					debug(222,"[win_notification.py] def send_notify: LoadImage() #2",DEBUG,True)
+
 				except Exception as e:
 					debug(222,"[win_notification.py] def send_notify: LoadImage() #2 failed, exception = '%s'"%(e),DEBUG,True)
+
 					try:
 						""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648072(v=vs.85).aspx """
 						hicon = LoadIcon(0, IDI_INFORMATION)
@@ -72,12 +74,12 @@ class notify:
 					except Exception as e:
 						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3 failed, exception = '%s'"%(e),DEBUG,True)
 						return False
-			
+
 			flags = NIF_ICON | NIF_MESSAGE | NIF_TIP
 			nid = (self.hwnd, 0, flags, WM_USER + 20, hicon, "")
-			
+
 			Shell_NotifyIcon(NIM_ADD, nid)
-			
+
 			icontype = 0 # bad blurry icon
 			#icontype = 1 # blue info
 			#icontype = 2 # yellow exclamation
@@ -85,10 +87,12 @@ class notify:
 			#icontype = 4 # icon from filepath
 			
 			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "", text, 200,title, icontype))
-			
+
 			if WINVER10 == False:
-				time.sleep(10)
-			
+				import threading
+				wait_event = threading.Event()
+				wait_event.wait(timeout=10)
+
 			anyreturn = DestroyWindow(self.hwnd)
 			debug(222,"[win_notification.py] def send_notify: DestroyWindow() returned = '%s'"%(anyreturn),DEBUG,True)
 
