@@ -1420,6 +1420,13 @@ class Systray:
 				
 				# Language changed
 				if self.LANG_FONT_CHANGE == True:
+					if self.MAINWINDOW_OPEN == True:
+						self.mainwindow.set_title(_("Server"))
+					if self.SETTINGSWINDOW_OPEN == True:
+						self.settingswindow.set_title(_("Settings"))
+					if self.ACCWINDOW_OPEN == True:
+						self.accwindow.set_title(_("Account"))
+					
 					self.debug(1,"def systray_timer: self.LANG_FONT_CHANGE == True")
 					pages = [self.nbpage0, self.nbpage1, self.nbpage2, self.nbpage3]
 					for page in pages:
