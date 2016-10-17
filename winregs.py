@@ -75,7 +75,7 @@ def get_networkadapterlist(DEBUG,silent):
 			debug(1,"[winregs.py] def get_networkadapterlist: for name '%s' in list1"%(name),DEBUG,True)
 			for line in list2:
 				debug(1,"[winregs.py] def get_networkadapterlist: for line '%s' in list2"%(line),DEBUG,True)
-				if name in line:
+				if line.endswith(name):
 					debug(1,"[winregs.py] def get_networkadapterlist: HIT name = '%s'"%(name),DEBUG,True)
 					newlist.append(name)
 					break
@@ -93,22 +93,23 @@ def get_networkadapter_guid(DEBUG,adaptername,silent):
 
 def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
 	try:
-		print("get_tapadapters debug 00")
 		if os.path.isfile(OPENVPN_EXE):
 			cmdstring = '"%s" --show-adapters' % (OPENVPN_EXE)
 			output = subprocess.check_output(cmdstring,shell=True)
 			output0 = encodes.code_fiesta(DEBUG,'decode',output,'get_tapadapters').strip().splitlines()
+			debug(1,"[winregs.py] def get_tapadapters: output0 = '%s'"%(output0),DEBUG,True)
+			if "[name, GUID]" in output0[0]:
+				output0.pop(0)
+				debug(1,"[winregs.py] def get_tapadapters: output0.pop(0)"%(output0),DEBUG,True)
 			TAPADAPTERS = output0
-			#TAPADAPTERS = TAPADAPTERS.decode(decoding).splitlines()
-			#TAPADAPTERS = TAPADAPTERS.decode(decoding).splitlines()
-			#TAPADAPTERS = TAPADAPTERS.splitlines()
-			TAPADAPTERS.pop(0)
 			TAP_DEVS = list()
-			for line in TAPADAPTERS:
-				if len(line) > 0:
-					for INTERFACE in INTERFACES:
-						if INTERFACE in line:
-							print("get_tapadapters debug 03 HIT")
+			for INTERFACE in INTERFACES:
+				GUID = get_networkadapter_guid(DEBUG,INTERFACE,False)
+				for line in TAPADAPTERS:
+					debug(1,"[winregs.py] def get_tapadapters: line = '%s'"%(line),DEBUG,True)
+					if len(line) > 0:
+						if GUID in line:
+							debug(1,"[winregs.py] def get_tapadapters: INTERFACE '%s' HIT"%(INTERFACE),DEBUG,True)
 							INTERFACES.remove(INTERFACE)
 							TAP_DEVS.append(INTERFACE)
 							break
