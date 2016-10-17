@@ -8,7 +8,6 @@ D0WNDNS = debug.getmode("D0WNDNS")
 DEV_DIR=debug.devdir()
 if DEVMODE == True:
 	DEBUG = True
-	
 
 import sys
 try:
@@ -42,10 +41,6 @@ except Exception as e:
 	print("import win_notification failed, exception = '%s'"%(e))
 	sys.exit()
 	WIN_NOTIFY = False
-
-WINVER10 = False
-if "Windows-10" in platform.platform():
-	WINVER10 = True
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -6058,7 +6053,7 @@ class Systray:
 			self.debug(1,"def msgwarn('%s','%s')"%(text,title))
 			return True
 
-		if WIN_NOTIFY == False or self.WIN_ENABLE_NOTIFICATIONS == False or WINVER10 == False:
+		if WIN_NOTIFY == False or self.WIN_ENABLE_NOTIFICATIONS == False:
 			GLib.idle_add(self.msgwarn_glib,text,title)
 		else:
 			self.send_notify(text,title)
@@ -6076,7 +6071,6 @@ class Systray:
 
 	def send_notify_glib(self,text,title):
 		try:
-			#GLib.idle_add(self.notification.send_notify,self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
 			self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
 		except Exception as e:
 			self.debug(1,"def send_notify_glib: failed, exception = '%s'"%(e))
