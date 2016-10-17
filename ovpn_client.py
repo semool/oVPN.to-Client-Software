@@ -1941,7 +1941,6 @@ class Systray:
 		if self.timer_check_certdl_running == False:
 			self.debug(1,"def check_remote_update: check_inet_connection() == True")
 			try:
-				thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_update)
 				thread_certdl = threading.Thread(target=lambda option=option: self.inThread_timer_check_update(option))
 				thread_certdl.daemon = True
 				thread_certdl.start()
