@@ -76,7 +76,7 @@ def get_networkadapterlist(DEBUG,silent):
 			debug(1,"[winregs.py] def get_networkadapterlist: for name '%s' in list1"%(name),DEBUG,True)
 			for line in list2:
 				debug(1,"[winregs.py] def get_networkadapterlist: for line '%s' in list2"%(line),DEBUG,True)
-				# dont remove 3 spaces! user can't set spaces infront of adpaternames but output has some!
+				# dont remove 3 spaces! user can't set spaces infront of names but output has some!
 				if line.endswith("   %s"%(name)):
 					debug(1,"[winregs.py] def get_networkadapterlist: HIT name = '%s'"%(name),DEBUG,True)
 					newlist.append(name)
