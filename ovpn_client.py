@@ -2957,6 +2957,7 @@ class Systray:
 			switch = Gtk.Switch()
 			self.switch_disableextifondisco = switch
 			checkbox_title = Gtk.Label(label=_("Disable '%s' on Disconnect (default: OFF)")%(self.WIN_EXT_DEVICE))
+			self.settings_network_switch_disableextifondisco_checkbox_title = checkbox_title
 			if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
 				switch.set_active(True)
 			else:
@@ -4770,6 +4771,7 @@ class Systray:
 		self.WIN_RESET_EXT_DEVICE = True
 		self.read_interfaces()
 		self.write_options_file()
+		self.settings_network_switch_disableextifondisco_checkbox_title.set_text("Disable '%s' on Disconnect (default: OFF)"%(self.WIN_EXT_DEVICE))
 
 	def cb_extserverview(self,widget,event):
 		if event.button == 1:
