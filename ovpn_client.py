@@ -9,6 +9,7 @@ DEV_DIR=debug.devdir()
 if DEVMODE == True:
 	DEBUG = True
 	
+
 import sys
 try:
 	import patches
@@ -42,6 +43,9 @@ except Exception as e:
 	sys.exit()
 	WIN_NOTIFY = False
 
+WINVER10 = False
+if "Windows-10" in platform.platform():
+	WINVER10 = True
 
 def CDEBUG(level,text,istrue,bindir):
 	debug.debug(level,text,istrue,bindir)
@@ -1620,7 +1624,7 @@ class Systray:
 					statusbar_text = systraytext
 					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
 					if (int(time.time())-self.LAST_OVPN_PING_DEAD_MESSAGE) > 120:
-						self.send_notify_glib(_("Connection unstable or failed!"),_("oVPN"))
+						self.send_notify(_("Connection unstable or failed!"),_("oVPN"))
 						self.LAST_OVPN_PING_DEAD_MESSAGE = int(time.time())
 						
 				elif self.OVPN_PING_STAT > 0:
@@ -5135,25 +5139,19 @@ class Systray:
 			systraytext = _("Testing internet connection!")
 			self.tray.set_tooltip_markup(systraytext)
 			try:
-				ai_list = socket.getaddrinfo(host,port,socket.AF_UNSPEC,socket.SOCK_STREAM)
-				for (family, socktype, proto, canon, sockaddr) in ai_list:
-					try:
-						t1 = time.time()
-						s = socket.socket(family, socktype)
-						s.settimeout(5)
-						s.connect(sockaddr)
-						t2 = time.time()
-						s.close()
-						PING = (t2-t1)*1000
-						self.systraytext_from_before = False
-						self.debug(2,"def try_socket: %s ms" % (PING))
-						return PING
-					except Exception as e:
-						self.debug(2,"def try_socket: port %s failed, exception = '%s'"%(port,e))
-						if self.isValueIPv4(host):
-							time.sleep(3)
+				with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+					s.settimeout(5)
+					t1 = time.time()
+					s.connect((host, port))
+					t2 = time.time()
+					PING = (t2-t1)*1000
+					self.systraytext_from_before = False
+					self.debug(2,"def try_socket: %s ms" % (PING))
+					s.close()
+					return PING
 			except Exception as e:
-				self.debug(1,"def try_socket: failed, exception = '%s'" % (e))
+				self.debug(1,"def try_socket: port %s failed, exception = '%s'"%(port,e))
+				time.sleep(3)
 			i += 1
 		self.systraytext_from_before = False
 		return False
@@ -6057,23 +6055,26 @@ class Systray:
 		if self.DISABLE_ALL_NOTIFICATIONS == True:
 			self.debug(1,"def msgwarn('%s','%s')"%(text,title))
 			return True
-		if WIN_NOTIFY == False or self.WIN_ENABLE_NOTIFICATIONS == False:
+
+		if WIN_NOTIFY == False or self.WIN_ENABLE_NOTIFICATIONS == False or WINVER10 == False:
 			GLib.idle_add(self.msgwarn_glib,text,title)
 		else:
-			GLib.idle_add(self.send_notify,text,title)
+			self.send_notify(text,title)
 
 	def send_notify(self,text,title):
 		self.debug(1,"def send_notify('%s','%s')"%(text,title))
 		if self.DISABLE_ALL_NOTIFICATIONS == True or self.WIN_ENABLE_NOTIFICATIONS == False:
 			return True
 		try:
-			GLib.idle_add(self.notification.send_notify,self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
+			notethread = threading.Thread(target=lambda text=text,title=title: self.send_notify_glib(text,title))
+			notethread.daemon = True
+			notethread.start()
 		except Exception as e:
 			self.debug(1,"def send_notify: failed, exception = '%s'"%(e))
 
 	def send_notify_glib(self,text,title):
-		""" only call send_notify_glib() from already GLib'ed functions! """
 		try:
+			#GLib.idle_add(self.notification.send_notify,self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
 			self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
 		except Exception as e:
 			self.debug(1,"def send_notify_glib: failed, exception = '%s'"%(e))
