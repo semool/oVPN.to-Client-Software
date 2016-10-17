@@ -1,0 +1,6 @@
+f424036d91957c831e1536c03e3ca13ffb32b48ddf2f4e267760d58b7ca86c1b ovpn_client_v0.7.9-gtk3_win32_setup.exe
+5e210054883154d8eb0fa00058c0c454f7a8b213a07303ad7934737bfefb0f0f ovpn_client_v0.7.9-gtk3_win64_setup.exe
+12817352 ovpn_client_v0.7.9-gtk3_win32_setup.exe
+13952632 ovpn_client_v0.7.9-gtk3_win64_setup.exe
+13M ovpn_client_v0.7.9-gtk3_win32_setup.exe
+14M ovpn_client_v0.7.9-gtk3_win64_setup.exe
