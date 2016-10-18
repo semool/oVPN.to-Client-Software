@@ -226,7 +226,6 @@ class Systray:
 		self.VAR["RELEASE"] = int(BUILT_STRING.split()[6].split('(')[1].split(')')[0])
 		
 		self.VAR["UPDATE"] = dict()
-		self.VAR["UPDATE"]["AVAIL"] = False
 		self.VAR["UPDATE"]["FILE"] = False
 		self.VAR["UPDATE"]["HASH"] = False
 		self.VAR["UPDATE"]["SIZE"] = False
@@ -5173,10 +5172,7 @@ class Systray:
 									self.VAR["UPDATE"]["FILE"] = UPDATE_FILE
 									self.VAR["UPDATE"]["SIZE"] = UPDATE_SIZE
 									self.VAR["UPDATE"]["URL"] = UPDATE_URL
-									self.VAR["UPDATE"]["AVAIL"] = True
-									#self.msgwarn(_("Client Update available!"),_("Info"))
-									self.download_client_update()
-									return True
+									return self.download_client_update()
 								else:
 									self.debug(1,"def API_REQUEST: winrelease_url invalid update filename")
 							else:
