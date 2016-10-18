@@ -5227,7 +5227,7 @@ class Systray:
 						self.send_notify(_("Client Update: Download verified!"),_("Success"))
 						return True
 					else:
-						os.delete(localfile)
+						os.remove(localfile)
 						self.send_notify(_("Client Update: Download failed!"),_("Error"))
 				return False
 		except Exception as e:
