@@ -4195,6 +4195,7 @@ class Systray:
 						NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
 					if self.win_join_netsh_cmd(NETSH_CMDLIST):
 						self.debug(1,"def win_netsh_restore_dns: restored to Primary = '%s', Secondary = '%s'" % (self.GATEWAY_DNS1,self.GATEWAY_DNS2))
+						return True
 				else:
 					NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
 					if self.win_join_netsh_cmd(NETSH_CMDLIST):
@@ -4432,18 +4433,25 @@ class Systray:
 		if option == "add" and self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True:
 			self.debug(1,"def win_firewall_set_vcp_rules: option == add and self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True, return True")
 			return True
+		if option == "delete" and self.WIN_FIREWALL_ADDED_RULE_TO_VCP == False:
+			self.debug(1,"def win_firewall_set_vcp_rules: option == del and self.WIN_FIREWALL_ADDED_RULE_TO_VCP == False, return False")
+			return False
 		self.debug(1,"def win_firewall_set_vcp_rules(%s)"%(option))
 		try:
+			NETSH_CMDLIST = list()
+			
 			if option == "add":
 				actionstring = "action=allow"
 			elif option == "delete":
 				actionstring = ""
-				
-			NETSH_CMDLIST = list()
+			
 			program = 'program="%s\\ovpn_client.exe"' % (self.BIN_DIR)
-			rule_name1 = "oVPN.to Client Allow OUT"
+			rule_name1 = "oVPN.to Client Allow OUT SSL"
+			rule_name2 = "oVPN.to Client Allow OUT DNS"
 			rule_string1 = 'advfirewall firewall %s rule name="%s" %s remoteport=443 protocol=tcp profile=any dir=out %s' % (option,rule_name1,program,actionstring)
 			NETSH_CMDLIST.append(rule_string1)
+			#rule_string2 = 'advfirewall firewall %s rule name="%s" %s remoteport=53 protocol=udp profile=any dir=out %s' % (option,rule_name2,program,actionstring)
+			#NETSH_CMDLIST.append(rule_string2)
 			
 			DNSS = release_version.org_data()["DNS_SRV1"]
 			for DNSIP in DNSS:
@@ -4456,12 +4464,14 @@ class Systray:
 			if self.win_join_netsh_cmd(NETSH_CMDLIST):
 				if option == "add":
 					domaindns = True
-					self.win_netsh_set_dns_ovpn(domaindns)
-					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
+					if self.win_netsh_set_dns_ovpn(domaindns) == True:
+						self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
+						return True
 				elif option == "delete":
-					self.win_netsh_restore_dns()
-					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = False
-				return True
+					if self.win_netsh_restore_dns() == True:
+						self.WIN_FIREWALL_ADDED_RULE_TO_VCP = False
+						return True
+			return False
 		except Exception as e:
 			self.debug(1,"def win_firewall_set_vcp_rules: failed, exception = '%s'"%(e))
 
@@ -5264,6 +5274,7 @@ class Systray:
 				self.debug(1,"def check_inet_connection: failed #1")
 				self.win_firewall_set_vcp_rules("add")
 				if not self.try_socket(API_DOMAIN,443,3) == False:
+					self.debug(1,"def check_inet_connection: True")
 					return True
 				self.win_firewall_clear_vcp_rules()
 				self.LAST_CHECK_INET_FALSE = int(time.time())
@@ -5290,7 +5301,7 @@ class Systray:
 					return PING
 			except Exception as e:
 				self.debug(1,"def try_socket: port %s failed, exception = '%s'"%(port,e))
-				time.sleep(3)
+			time.sleep(3)
 			i += 1
 		self.systraytext_from_before = False
 		return False
