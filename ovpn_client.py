@@ -240,7 +240,7 @@ class Systray:
 		
 		# lists
 		self.WIN_TAP_DEVS = list()
-		self.ROUTE_CMDLIST = list()
+		self.PROFILES = list()
 		
 		# dicts
 		self.FLAG_CACHE_PIXBUF = {}
@@ -407,7 +407,6 @@ class Systray:
 	def list_profiles(self):
 		self.debug(1,"def list_profiles()")
 		self.profiles_unclean = os.listdir(self.APP_DIR)
-		self.PROFILES = list()
 		for profile in self.profiles_unclean:
 			if profile.isdigit():
 				self.PROFILES.append(profile)
