@@ -3,8 +3,11 @@
 
 Version: 0.7.9
 + update: use windows notification system
++ update: add switch to disable windows notifications (w10) / balloontips (w7)
 + update: inet connection check
++ update: download client updates into user download folder and verify hash
 + bugfix: network and tap adapter detection
++ bugfix: win7 balloon tooltips
 + bugfix: some typos
 + bugfix: add C++ 2010 DLLs
 + bugfix: py2exe did not write exe information
