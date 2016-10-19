@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from debug import debug
-import os, platform, threading, time
+import os, platform, threading
 
 from win32api import GetSystemMetrics, GetModuleHandle, PostQuitMessage, LoadResource
-from win32con import SM_CXICONSPACING, SM_CXSMICON, SM_CYSMICON, SM_CXICON, SM_CYICON, CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
+from win32con import CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
 from win32gui import CreateIconFromResource, CreateWindow, DestroyWindow, LoadIcon, LoadImage, NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_MODIFY, RegisterClass, UnregisterClass, Shell_NotifyIcon, UpdateWindow, WNDCLASS
 
 WINVER10 = False
@@ -20,7 +20,7 @@ class notify:
 		wc.lpfnWndProc = message_map
 		self.classAtom = RegisterClass(wc)
 
-	def send_notify(self,DEBUG,TRAYSIZE,DEV_DIR,text,title):
+	def send_notify(self,DEBUG,DEV_DIR,text,title):
 		try:
 			
 			while not self.isDestroyed() == True:
@@ -35,9 +35,7 @@ class notify:
 			try:
 				if WINVER10 == False:
 					raise Exception
-				RT_ICON_SIZE = 15
-				if TRAYSIZE == 32 or WINVER10 == True:
-					RT_ICON_SIZE = 14
+				RT_ICON_SIZE = 48
 				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
 				debug(1,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
@@ -59,7 +57,7 @@ class notify:
 						raise Exception
 					icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
 					""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648045(v=vs.85).aspx """
-					hicon = LoadImage(self.hinst, icon_path,IMAGE_ICON, 0, 0, icon_flags)
+					hicon = LoadImage(self.hinst, icon_path,IMAGE_ICON, 48, 48, icon_flags)
 					debug(1,"[win_notification.py] def send_notify: LoadImage() #2",DEBUG,True)
 
 				except Exception as e:
@@ -75,15 +73,13 @@ class notify:
 
 			flags = NIF_ICON | NIF_MESSAGE | NIF_TIP
 			nid = (self.hwnd, 0, flags, WM_USER + 20, hicon, "")
-
 			Shell_NotifyIcon(NIM_ADD, nid)
-			
-			icontype = 0
-			#icontype = 1 # blue info
-			#icontype = 2 # yellow exclamation
-			#icontype = 3 # red cross
-			#icontype = 4 # icon from filepath
-			
+
+			#0=16x16,1=blue info,2=yellow exclamation,3=red cross,4=icon from filepath
+			icontype = 4
+			if WINVER10 == False:
+				icontype = 0
+
 			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "oVPN Notify", text, 200,title, icontype))
 
 			if WINVER10 == False:
@@ -92,9 +88,6 @@ class notify:
 
 			anyreturn = DestroyWindow(self.hwnd)
 			debug(222,"[win_notification.py] def send_notify: DestroyWindow() returned = '%s'"%(anyreturn),DEBUG,True)
-
-			#anyreturn = UnregisterClass(self.classAtom, self.hinst)
-			#debug(1,"[win_notification.py] def send_notify: UnregisterClass() returned = '%s'"%(anyreturn),DEBUG,True)
 
 			debug(1,"[win_notification.py] def send_notify: [Win10 = %s] return" % (WINVER10),DEBUG,True)
 			self.destroyed = True

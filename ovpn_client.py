@@ -52,7 +52,7 @@ try:
 	VCP_DOMAIN = release_version.org_data()["VCP_DOMAIN"]
 	API_DOMAIN = release_version.org_data()["API_DOMAIN"]
 	API_URL = "https://%s:%s/%s" % (API_DOMAIN,release_version.org_data()["API_PORT"],release_version.org_data()["API_POST"])
-	
+
 	try:
 		BITS = struct.calcsize("P") * 8
 		if BITS == 32:
@@ -1609,7 +1609,7 @@ class Systray:
 			systraytext = False
 			if self.timer_check_certdl_running == True:
 				if not self.STATE_CERTDL == False:
-					if self.STATUS_ICON_BLINK%2==0:
+					if self.STATUS_ICON_BLINK == 0:
 						systrayicon = self.systray_icon_syncupdate1
 					else:
 						systrayicon = self.systray_icon_syncupdate2
@@ -1648,7 +1648,7 @@ class Systray:
 					statusbar_text = systraytext
 					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
 					if (int(time.time())-self.LAST_OVPN_PING_DEAD_MESSAGE) > 120:
-						self.send_notify(_("Connection unstable or failed!"),_("oVPN"))
+						self.msgwarn(_("Connection unstable or failed!"),_("oVPN"))
 						self.LAST_OVPN_PING_DEAD_MESSAGE = int(time.time())
 						
 				elif self.OVPN_PING_STAT > 0:
@@ -3469,7 +3469,7 @@ class Systray:
 			self.LAST_CHECK_CFG_UPDATE = time.time()
 			self.cb_check_client_update()
 		else:
-			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
+			self.msgwarn(_("Retry in few seconds..."),_("Please wait..."))
 
 	def settings_updates_button_normalconf(self,page):
 		button = Gtk.Button(label=_("Normal Config Update"))
@@ -3483,7 +3483,7 @@ class Systray:
 			self.LAST_CHECK_CFG_UPDATE = time.time()
 			self.cb_check_normal_update()
 		else:
-			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
+			self.msgwarn(_("Retry in few seconds..."),_("Please wait..."))
 
 	def settings_updates_button_forceconf(self,page):
 		button = Gtk.Button(label=_("Forced Config Update"))
@@ -3498,7 +3498,7 @@ class Systray:
 			self.LAST_CHECK_CFG_UPDATE_FORCE = time.time()
 			self.cb_force_update()
 		else:
-			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
+			self.msgwarn(_("Retry in few seconds..."),_("Please wait..."))
 
 	def settings_updates_button_apireset(self,page):
 		button = Gtk.Button(label=_("Reset API-Login"))
@@ -3512,7 +3512,7 @@ class Systray:
 			self.LAST_HIT_UPDATE_BUTTON5 = int(time.time())
 			GLib.idle_add(self.dialog_apikey)
 		else:
-			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
+			self.msgwarn(_("Retry in few seconds..."),_("Please wait..."))
 
 	def destroy_settingswindow(self):
 		self.debug(1,"def destroy_settingswindow()")
@@ -5300,7 +5300,7 @@ class Systray:
 						self.CONNECTION_ESTABLISHED = True
 						self.OVPN_PING_DEAD_COUNT = 0
 						self.CONNECTION_FAILED_TIME = 0
-						self.send_notify(_("Connection established!"),_("oVPN"))
+						self.msgwarn(_("Connection established!"),_("oVPN"))
 					return True
 			except Exception as e:
 				self.debug(1,"def check_myip: failed, exception = '%s'"%(e))
@@ -6201,7 +6201,7 @@ class Systray:
 
 	def send_notify_glib(self,text,title):
 		try:
-			self.notification.send_notify(self.DEBUG,TRAYSIZE,DEV_DIR,text,title)
+			self.notification.send_notify(self.DEBUG,DEV_DIR,text,title)
 		except Exception as e:
 			self.debug(1,"def send_notify_glib: failed, exception = '%s'"%(e))
 
