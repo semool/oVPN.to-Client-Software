@@ -49,7 +49,7 @@ def setup_data():
 			"exename_cmd" : "ovpn_client_cmd.exe",
 			"version" : "0.%s" % (version_data()["VERSION"]),
 			"name" : "%s for Windows" % (version_data()["NAME"]),
-			"description" : "%s %s" % (version_data()["NAME"],version_data()["VERSION"]),
+			"description" : "%s" % (version_data()["NAME"]),
 			"copyright" : "(C) 2010 - %s %s" % (build_data()["YEAR"],org_data()["ORG"]),
 			"DIST_DIR1" : "dist%s"%(BITS),
 			"DIST_DIR2" : "dist_check_bin%s"%(BITS),
