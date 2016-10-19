@@ -1609,15 +1609,21 @@ class Systray:
 			systraytext = False
 			if self.timer_check_certdl_running == True:
 				if not self.STATE_CERTDL == False:
-					if self.STATE_CERTDL == "lastupdate":
-						systraytext = _("Checking for Updates!")
+					if self.STATUS_ICON_BLINK%2==0:
 						systrayicon = self.systray_icon_syncupdate1
+					else:
+						systrayicon = self.systray_icon_syncupdate2
+					self.STATUS_ICON_BLINK += 1
+					if self.STATE_CERTDL == "clientupdate":
+						systraytext = _("Checking for Client Update!")
+					elif self.STATE_CERTDL == "clientupdatedl":
+						systraytext = _("Downloading Client Update!")
+					elif self.STATE_CERTDL == "lastupdate":
+						systraytext = _("Checking for Updates!")
 					elif self.STATE_CERTDL == "getconfigs":
 						systraytext = _("Downloading Configurations...")
-						systrayicon = self.systray_icon_syncupdate2
 					elif self.STATE_CERTDL == "extract":
 						systraytext = _("Extracting Configs and Certs...")
-						systrayicon = self.systray_icon_syncupdate2
 					statusbar_text = systraytext
 					
 			elif self.inThread_jump_server_running == True:
@@ -1969,6 +1975,7 @@ class Systray:
 			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error"))
 			return False
 		try:
+			self.STATUS_ICON_BLINK = 0
 			self.STATE_CERTDL = "lastupdate"
 			self.timer_check_certdl_running = True
 			try:
@@ -1978,6 +1985,7 @@ class Systray:
 			except Exception as e:
 				self.debug(1,"def inThread_timer_check_update: self.load_ovpn_server() failed, exception = '%s'"%(e))
 			if option == "client":
+				self.STATE_CERTDL = "clientupdate"
 				if self.API_REQUEST(API_ACTION = "winrelease_url"):
 					return self.thread_finish_check_update(True)
 			elif option == "config" and self.API_REQUEST(API_ACTION = self.STATE_CERTDL):
@@ -5203,16 +5211,16 @@ class Systray:
 	def download_client_update(self):
 		try:
 			user_dl_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)
-			user_dl_dir = user_dl_dir
 			self.debug(1,"def download_client_update: user_dl_dir = '%s'"%(user_dl_dir))
 			if os.path.isdir(user_dl_dir):
 				localfile = str(user_dl_dir+"\\"+self.VAR["UPDATE"]["FILE"])
 				if not os.path.isfile(localfile):
 					self.debug(1,"def download_client_update: localfile = '%s' not found"%(localfile))
-					self.send_notify(_("Client Update: Downloading ~15 MB!"),_("Info"))
+					self.msgwarn(_("Client Update: Downloading ~15 MB!"),_("Info"))
+					self.STATE_CERTDL = "clientupdatedl"
 					try:
 						HEADERS = request_api.useragent(self.DEBUG)
-						cli_dl_url = "%s%s" % (self.VAR["UPDATE"]["URL"],self.VAR["UPDATE"]["FILE"])
+						cli_dl_url = str(self.VAR["UPDATE"]["URL"]+self.VAR["UPDATE"]["FILE"])
 						r1 = requests.get(cli_dl_url,headers=HEADERS)
 						if len(r1.content) == self.VAR["UPDATE"]["SIZE"]:
 							fp1 = open(localfile, "wb")
@@ -5224,11 +5232,11 @@ class Systray:
 						self.debug(1,"def download_client_update: download failed, exception = '%s'"%(e))
 				if os.path.isfile(localfile):
 					if hashings.hash_sha512_file(self.DEBUG,localfile) == self.VAR["UPDATE"]["HASH"]:
-						self.send_notify(_("Client Update: Download verified!"),_("Success"))
+						self.msgwarn(_("Client Update: Download verified!"),_("Success"))
 						return True
 					else:
 						os.remove(localfile)
-						self.send_notify(_("Client Update: Download failed!"),_("Error"))
+						self.msgwarn(_("Client Update: Download failed!"),_("Error"))
 				return False
 		except Exception as e:
 			self.debug(1,"def download_client_update: failed, exception = '%s'"%(e))
