@@ -109,16 +109,16 @@ class Systray:
 						self.request_UPDATE = True
 						GLib.idle_add(self.dialog_apikey)
 					else:
-						self.check_remote_update()
+						self.check_remote_update("config")
 				else:
-					self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Update failed!"))
+					self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error"))
 			GLib.timeout_add(1000,self.systray_timer)
 			self.win_firewall_analyze()
 		else:
 			sys.exit()
 	
-	def dummy_func(self):
-		self.debug(1,"def dummy_func()")
+	def dummy_func(self,srcf):
+		self.debug(1,"def dummy_func(), srcf = '%s'"%(srcf))
 
 	def self_vars(self):
 		self.DEBUG = DEBUG
@@ -221,6 +221,16 @@ class Systray:
 		self.OVPN_PING_DEAD_COUNT = 0
 		self.OVPN_PING_EVERY = "15,30"
 		self.INTERFACES = False
+		
+		self.VAR = dict()
+		self.VAR["RELEASE"] = int(BUILT_STRING.split()[6].split('(')[1].split(')')[0])
+		
+		self.VAR["UPDATE"] = dict()
+		self.VAR["UPDATE"]["FILE"] = False
+		self.VAR["UPDATE"]["HASH"] = False
+		self.VAR["UPDATE"]["SIZE"] = False
+		self.VAR["UPDATE"]["URL"] = False
+		
 		
 		self.d0wns_DNS = {'ns1.sg.dns.d0wn.biz': {'countrycode': 'sg', 'dnscryptcertname': '2.dnscrypt-cert.sg.d0wn.biz', 'country': 'Singapore', 'dnscryptpubkey': 'pubkey.sg.dnscrypt.d0wn.biz', 'ip6': '2400:6180:0:d0::38:d001', 'ip4': '128.199.248.105', 'dnscryptports': '54 443 1053 5353 27015', 'dnscryptfingerprint': 'D82B:2B76:1DA0:8470:B55B:820C:FAAB:9F32:D632:E9E0:5616:2CE7:7D21:E970:98FF:4A34'}, 'ns1.nl.dns.d0wn.biz': {'countrycode': 'nl', 'dnscryptcertname': '2.dnscrypt-cert.nl.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.nl.dnscrypt.d0wn.biz', 'ip6': '2a03:b0c0:0:1010::62:f001', 'ip4': '95.85.9.86', 'dnscryptports': '54 80 1053 5353 27015', 'dnscryptfingerprint': '7BE6:68FE:A505:FFA7:4C27:C2CA:F881:59DA:038C:5741:13AA:2556:A4D2:2D0B:B6F0:009E'}, 'ns1.de.dns.d0wn.biz': {'countrycode': 'de', 'dnscryptcertname': '2.dnscrypt-cert.de.d0wn.biz', 'country': 'Germany', 'dnscryptpubkey': 'pubkey.de.dnscrypt.d0wn.biz', 'ip6': '2001:1608:10:195:3:dead:beef:cafe', 'ip4': '82.211.31.248', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'D4A8:6FB5:AA0C:2B6B:8C13:8C29:7F69:F9C8:29C8:E157:F279:6FC7:7366:290F:2A80:0AD2'}, 'ns1.lv.dns.d0wn.biz': {'countrycode': 'lv', 'dnscryptcertname': '2.dnscrypt-cert.lv.d0wn.biz', 'country': 'Latvia', 'dnscryptpubkey': 'pubkey.lv.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '89.111.13.60', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '1B70:FB6F:2E47:1753:91EF:1084:ECD2:983A:9018:F3E3:DDF1:E563:E528:156A:664A:1AE8'}, 'ns1.lu.dns.d0wn.biz': {'countrycode': 'lu', 'dnscryptcertname': '2.dnscrypt-cert.lu.d0wn.biz', 'country': 'Luxembourg', 'dnscryptpubkey': 'pubkey.lu.dnscrypt.d0wn.biz', 'ip6': '2605:6400:30:fbb5:0:1ce:1ce:babe', 'ip4': '104.244.72.13', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '737B:B68B:7D3C:896F:260D:91C3:60A6:AD64:8CD3:1B22:4D5F:7089:490C:539F:2EC6:C309'}, 'ns1.dk.dns.d0wn.biz': {'countrycode': 'dk', 'dnscryptcertname': '2.dnscrypt-cert.dk.d0wn.biz', 'country': 'Denmark', 'dnscryptpubkey': 'pubkey.dk.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '77.66.108.93', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0838:C9CF:2292:2D4C:4DB7:4A5E:ED10:DD36:66DD:9551:7238:6387:B7A0:2FA0:885A:5F77'}, 'ns1.ua.dns.d0wn.biz': {'countrycode': 'ua', 'dnscryptcertname': '2.dnscrypt-cert.ua.d0wn.biz', 'country': 'Ukraine', 'dnscryptpubkey': 'pubkey.ua.dnscrypt.d0wn.biz', 'ip6': '2a02:27a8:0:2::556', 'ip4': '217.12.210.54', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '3B1E:D468:FFD3:F261:20DE:E7F1:6A74:E1D5:D59E:B40D:F3EA:99BC:0B05:70CC:292D:99BA'}, 'ns1.cz.dns.d0wn.biz': {'countrycode': 'cz', 'dnscryptcertname': '2.dnscrypt-cert.cz.d0wn.biz', 'country': 'Czech Republic', 'dnscryptpubkey': 'pubkey.cz.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '81.2.237.32', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '4BAE:D9CE:1A99:42B2:44D1:4454:0C8C:EC0E:D5D8:90CE:0D9B:D3E3:93CF:7ACC:CCE0:3794'}, 'ns1.au.dns.d0wn.biz': {'countrycode': 'au', 'dnscryptcertname': '2.dnscrypt-cert.au.d0wn.biz', 'country': 'Australia', 'dnscryptpubkey': 'pubkey.au.dnscrypt.d0wn.biz', 'ip6': '2402:9e80:1::1:e554', 'ip4': '27.100.36.191', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'A7D9:0F8E:9A98:1381:176A:3D25:36DE:E865:8538:9CD8:78BC:C3B5:A146:23F1:C2EF:58D8'}, 'ns2.sg.dns.d0wn.biz': {'countrycode': 'sg', 'dnscryptcertname': '2.dnscrypt-cert.sg2.d0wn.biz', 'country': 'Singapore', 'dnscryptpubkey': 'pubkey.sg2.dnscrypt.d0wn.biz', 'ip6': '2403:5680::1:200f', 'ip4': '210.16.120.139', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0F00:63C4:6EAF:29C3:29CD:E125:2033:6F0A:0C72:7CDD:F1F4:3D47:F95D:02BC:07F7:9FFC'}, 'ns1.bg.dns.d0wn.biz': {'countrycode': 'bg', 'dnscryptcertname': '2.dnscrypt-cert.bg.d0wn.biz', 'country': 'Bulgaria', 'dnscryptpubkey': 'pubkey.bg.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '217.12.203.133', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '423C:D823:B3EA:2015:F027:ECF1:5704:3EB7:764A:D02D:9447:56E6:51FD:D06F:E571:2FCC'}, 'ns1.us.dns.d0wn.biz': {'countrycode': 'us', 'dnscryptcertname': '2.dnscrypt-cert.us.d0wn.biz', 'country': 'United States of America', 'dnscryptpubkey': 'pubkey.us.dnscrypt.d0wn.biz', 'ip6': '2605:6400:10:59:0:b19:b00b:babe', 'ip4': '199.195.249.174', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '6741:6E7F:4744:194E:D725:91A2:1A62:A715:78F9:62CD:5263:84FC:DAA8:6C7E:4D9F:438B'}, 'ns1.ru.dns.d0wn.biz': {'countrycode': 'ru', 'dnscryptcertname': '2.dnscrypt-cert.ru.d0wn.biz', 'country': 'Russia', 'dnscryptpubkey': 'pubkey.ru.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '91.214.71.181', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0ECA:BC40:E0A1:335F:0221:4240:AB86:2919:D16A:2393:CCEB:4B40:9EB9:4F24:3077:ED99'}, 'ns1.tz.dns.d0wn.biz': {'countrycode': 'tz', 'dnscryptcertname': '2.dnscrypt-cert.tz.d0wn.biz', 'country': 'Tanzania', 'dnscryptpubkey': 'pubkey.tz.dnscrypt.d0wn.biz', 'ip6': '2c0f:fda8:5::2ed1:d2ec', 'ip4': '41.79.69.13', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'B79F:A025:1AF6:2125:DF3E:3B03:856D:4CB7:704E:45EB:B850:3A7B:C6AA:5510:D87D:087D'}, 'ns1.random.dns.d0wn.biz': {'countrycode': 'random', 'dnscryptcertname': '2.dnscrypt-cert.random.d0wn.biz', 'country': 'Moldova', 'dnscryptpubkey': 'pubkey.random.dnscrypt.d0wn.biz', 'ip6': '2a00:1dc0:cafe::c6af:c19d', 'ip4': '178.17.170.133', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'A420:867F:ED5C:024C:C86A:EECE:AA05:194B:017F:D2FF:9E72:385A:874F:8CE5:6832:ED2E'}, 'ns2.lv.dns.d0wn.biz': {'countrycode': 'lv', 'dnscryptcertname': '2.dnscrypt-cert.lv2.d0wn.biz', 'country': 'Latvia', 'dnscryptpubkey': 'pubkey.lv.dnscrypt.d0wn.biz', 'ip6': '2a02:7aa0:1201::f60e:2719', 'ip4': '185.86.151.28', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'B111:F80C:E3E0:1C36:CC73:0995:009E:6351:EF08:0503:309D:9417:7AA3:8C67:916D:0CDF'}, 'ns1.se.dns.d0wn.biz': {'countrycode': 'se', 'dnscryptcertname': '2.dnscrypt-cert.se.d0wn.biz', 'country': 'Sweden', 'dnscryptpubkey': 'pubkey.se.dnscrypt.d0wn.biz', 'ip6': '2a02:7aa0:1619::4f50:a69', 'ip4': '95.215.44.124', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '9D4F:762B:DD24:F77A:64B4:7E0F:F5C6:93FD:A02A:39E9:8FEC:0CEE:F252:3A5F:A403:C032'}, 'ns2.nl.dns.d0wn.biz': {'countrycode': 'nl', 'dnscryptcertname': '2.dnscrypt-cert.nl2.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.nl2.dnscrypt.d0wn.biz', 'ip6': '2a02:2ca0:64:22::2', 'ip4': '185.83.217.248', 'dnscryptports': '54 1053 5353 27015', 'dnscryptfingerprint': 'DFAA:B7D8:29E6:1F34:4FED:2610:4221:70C9:ADC7:7E9F:A65F:4A46:0BAE:A735:3186:3B99'}, 'ns1.cy.dns.d0wn.biz': {'countrycode': 'cy', 'dnscryptcertname': '2.dnscrypt-cert.cy.d0wn.biz', 'country': 'Cyprus', 'dnscryptpubkey': 'pubkey.cy.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '213.169.148.11', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '2144:4FE7:59C3:13B9:FABB:FC2A:F975:9F9C:CD9A:2ED7:0978:3A25:7347:4B83:8F86:EA2B'}, 'ns2.random.dns.d0wn.biz': {'countrycode': 'random', 'dnscryptcertname': '2.dnscrypt-cert.random2.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.random2.dnscrypt.d0wn.biz', 'ip6': '2a00:1ca8:a7::1e9', 'ip4': '185.14.29.140', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '9112:338E:7D0B:5E78:B792:9BB6:1B75:4888:AC94:65B5:B86B:B5DE:CCF3:E5B9:15A5:DC54'}, 'ns2.fr.dns.d0wn.biz': {'countrycode': 'fr', 'dnscryptcertname': '2.dnscrypt-cert.fr2.d0wn.biz', 'country': 'France', 'dnscryptpubkey': 'pubkey.fr2.dnscrypt.d0wn.biz', 'ip6': '2001:41D0:A:0028::1', 'ip4': '37.187.0.40', 'dnscryptports': '54 443 1053 5353 27015', 'dnscryptfingerprint': '25A7:DB7B:7835:55D5:7DA4:7C0C:57F8:9C5F:0220:3D09:67E3:585A:723E:E0D1:CB38:F767'}, 'ns1.uk.dns.d0wn.biz': {'countrycode': 'uk', 'dnscryptcertname': '2.dnscrypt-cert.uk.d0wn.biz', 'country': 'United Kingdom', 'dnscryptpubkey': 'pubkey.uk.dnscrypt.d0wn.biz', 'ip6': '2a04:92c7:7:7::14ae:460a', 'ip4': '185.121.25.85', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'FADB:BE63:7FCD:FE22:0DBE:D433:438C:5A1D:C267:1E96:4B67:1918:B15F:9121:77D7:5B2E'}, 'ns1.gr.dns.d0wn.biz': {'countrycode': 'gr', 'dnscryptcertname': '2.dnscrypt-cert.gr.d0wn.biz', 'country': 'Greece', 'dnscryptpubkey': 'pubkey.gr.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '85.25.105.193', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'D056:D3A4:9568:5AFE:4B0D:C688:7A75:41B2:7217:F0C9:75A5:A6C0:142D:363B:F992:9867'}, 'ns1.is.dns.d0wn.biz': {'countrycode': 'is', 'dnscryptcertname': '2.dnscrypt-cert.is.d0wn.biz', 'country': 'Iceland', 'dnscryptpubkey': 'pubkey.is.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '37.235.49.61', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '2B28:974E:073A:6B38:722A:5BE1:F7A0:250C:508F:A809:238F:8F3D:76D8:6098:20D7:B2D9'}, 'ns1.hk.dns.d0wn.biz': {'countrycode': 'hk', 'dnscryptcertname': '2.dnscrypt-cert.hk.d0wn.biz', 'country': 'Hong Kong', 'dnscryptpubkey': 'pubkey.hk.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '45.124.66.200', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '84ED:0DFF:7967:5DBD:2D93:65A2:A6AB:7F90:146F:A50B:048C:8C75:651B:AA55:7129:6740'}, 'ns1.it.dns.d0wn.biz': {'countrycode': 'it', 'dnscryptcertname': '2.dnscrypt-cert.it.d0wn.biz', 'country': 'Italy', 'dnscryptpubkey': 'pubkey.it.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '31.14.133.188', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'B8F4:76E3:1EA4:ADDB:3426:D870:2819:6989:91EE:0C5A:B789:C74E:D6D9:BFB6:6C29:1D5C'}, 'ns3.nl.dns.d0wn.biz': {'countrycode': 'nl', 'dnscryptcertname': '2.dnscrypt-cert.nl3.d0wn.biz', 'country': 'Netherlands', 'dnscryptpubkey': 'pubkey.nl3.dnscrypt.d0wn.biz', 'ip6': '2a06:7240:5:601:dead:beef:e3e7:7a9d', 'ip4': '185.133.72.116', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '01FC:1AA9:F71F:F09E:55CE:0D04:9ACA:2B11:9536:319E:04A9:C3AE:77CB:127D:4C53:0651'}, 'ns1.md.dns.d0wn.biz': {'countrycode': 'md', 'dnscryptcertname': '2.dnscrypt-cert.md.d0wn.biz', 'country': 'Moldova', 'dnscryptpubkey': 'pubkey.md.dnscrypt.d0wn.biz', 'ip6': '2a00:1dc0:cafe::ad86:fa7e', 'ip4': '178.17.170.67', 'dnscryptports': '54 1053 5353 27015', 'dnscryptfingerprint': '3DB2:C4CB:39E2:6B82:FDDF:6D91:1A65:D164:F4F0:D237:8CDD:0C37:469F:24BA:B9A0:F9FF'}, 'ns2.us.dns.d0wn.biz': {'countrycode': 'us', 'dnscryptcertname': '2.dnscrypt-cert.us2.d0wn.biz', 'country': 'United States of America', 'dnscryptpubkey': 'pubkey.us.dnscrypt.d0wn.biz', 'ip6': '2605:6400:20:7d7:1:5ee:bad:c0de', 'ip4': '209.141.53.57', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'A22D:99C4:E2E9:CB94:67F0:E36A:619F:418B:466C:5786:C0B8:ACAA:B716:71F7:1F81:F5F8'}, 'ns1.ro.dns.d0wn.biz': {'countrycode': 'ro', 'dnscryptcertname': '2.dnscrypt-cert.ro.d0wn.biz', 'country': 'Romania', 'dnscryptpubkey': 'pubkey.ro.dnscrypt.d0wn.biz', 'ip6': '2a04:9dc0:c1:7::cb9:f785', 'ip4': '77.81.104.121', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'DA9E:6882:B0F8:335E:B5F4:A059:1B7D:EE6F:BD55:4451:93B4:13BF:AFFC:7D26:4527:CE1A'}, 'ns2.de.dns.d0wn.biz': {'countrycode': 'de', 'dnscryptcertname': '2.dnscrypt-cert.de2.d0wn.biz', 'country': 'Germany', 'dnscryptpubkey': 'pubkey.de2.dnscrypt.d0wn.biz', 'ip6': '', 'ip4': '185.137.15.105', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '8C62:691A:A7EA:69D3:8A25:86AA:2715:87F0:9B11:9159:0663:55FC:1CD0:61C5:C863:1940'}}
 		# update content of 'self.d0wns_DNS' in DEVMODE only: if 'self.d0wns_DNS = {}' with self.load_d0wns_dns() called from mainwindow rightclick and copy from debug.log
@@ -550,7 +560,7 @@ class Systray:
 						self.debug(1,"def load_icons: file '%s' not found" %(file))
 
 				if missing_file:
-					self.msgwarn(_("Private Icon(s) not found in:\n%s\n\nMissing Icons:\n%s") % (self.ico_dir_theme,missing_file),_("Error: Icon"))
+					self.msgwarn(_("Private Icon(s) not found in:\n%s\n\nMissing Icons:\n%s") % (self.ico_dir_theme,missing_file),_("Error"))
 					return False
 				else:
 					self.systray_icon_connected = systray_icon_connected
@@ -563,7 +573,7 @@ class Systray:
 					self.systray_icon_syncupdate3 = systray_icon_syncupdate3
 			else:
 				#self.debug(1,"def load_icons(), private icon dir not found: '%s'" % (self.ico_dir_theme))
-				self.msgwarn(_("Private Icon Dir not found:\n%s") % (self.ico_dir_theme),_("Error: Icon Dir"))
+				self.msgwarn(_("Private Icon Dir not found:\n%s") % (self.ico_dir_theme),_("Error"))
 				return False
 
 		self.systrayicon_from_before = False
@@ -897,7 +907,7 @@ class Systray:
 			
 			except Exception as e:
 				self.debug(1,"def read_options_file: failed #1, exception = '%s'"%(e))
-				self.msgwarn(_("Read config file failed!"),_("Error: def read_options_file"))
+				self.msgwarn(_("Read config file failed!"),_("Error"))
 				try:
 					os.remove(self.OPT_FILE)
 				except Exception as e:
@@ -1420,6 +1430,13 @@ class Systray:
 				
 				# Language changed
 				if self.LANG_FONT_CHANGE == True:
+					if self.MAINWINDOW_OPEN == True:
+						self.mainwindow.set_title(_("Server"))
+					if self.SETTINGSWINDOW_OPEN == True:
+						self.settingswindow.set_title(_("Settings"))
+					if self.ACCWINDOW_OPEN == True:
+						self.accwindow.set_title(_("Account"))
+					
 					self.debug(1,"def systray_timer: self.LANG_FONT_CHANGE == True")
 					pages = [self.nbpage0, self.nbpage1, self.nbpage2, self.nbpage3]
 					for page in pages:
@@ -1592,15 +1609,21 @@ class Systray:
 			systraytext = False
 			if self.timer_check_certdl_running == True:
 				if not self.STATE_CERTDL == False:
-					if self.STATE_CERTDL == "lastupdate":
-						systraytext = _("Checking for Updates!")
+					if self.STATUS_ICON_BLINK%2==0:
 						systrayicon = self.systray_icon_syncupdate1
+					else:
+						systrayicon = self.systray_icon_syncupdate2
+					self.STATUS_ICON_BLINK += 1
+					if self.STATE_CERTDL == "clientupdate":
+						systraytext = _("Checking for Client Update!")
+					elif self.STATE_CERTDL == "clientupdatedl":
+						systraytext = _("Downloading Client Update!")
+					elif self.STATE_CERTDL == "lastupdate":
+						systraytext = _("Checking for Updates!")
 					elif self.STATE_CERTDL == "getconfigs":
 						systraytext = _("Downloading Configurations...")
-						systrayicon = self.systray_icon_syncupdate2
 					elif self.STATE_CERTDL == "extract":
 						systraytext = _("Extracting Configs and Certs...")
-						systrayicon = self.systray_icon_syncupdate2
 					statusbar_text = systraytext
 					
 			elif self.inThread_jump_server_running == True:
@@ -1657,7 +1680,7 @@ class Systray:
 						self.load_ovpn_server()
 						if not self.APIKEY == False and len(self.OVPN_SERVER) == 0:
 							self.debug(1,"zero server found, initiate first update")
-							self.check_remote_update()
+							self.check_remote_update("config")
 					elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
 						self.INIT_FIRST_UPDATE = False
 					elif self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
@@ -1929,12 +1952,12 @@ class Systray:
 		if self.MOUSE_IN_TRAY < time.time():
 			self.destroy_systray_menu()
 
-	def check_remote_update(self):
-		self.debug(1,"def check_remote_update()")
+	def check_remote_update(self,option):
+		self.debug(1,"def check_remote_update(option=%s)"%(option))
 		if self.timer_check_certdl_running == False:
 			self.debug(1,"def check_remote_update: check_inet_connection() == True")
 			try:
-				thread_certdl = threading.Thread(name='certdl',target=self.inThread_timer_check_certdl)
+				thread_certdl = threading.Thread(target=lambda option=option: self.inThread_timer_check_update(option))
 				thread_certdl.daemon = True
 				thread_certdl.start()
 				threadid_certdl = threading.currentThread()
@@ -1946,51 +1969,52 @@ class Systray:
 			self.debug(1,"def check_remote_update: timer_check_certdl_running failed, exception = '%s'"%(e))
 		return False
 
-	def inThread_timer_check_certdl(self):
-		self.debug(1,"def inThread_timer_check_certdl()")
+	def inThread_timer_check_update(self,option):
+		self.debug(1,"def inThread_timer_check_update(option=%s)"%(option))
 		if self.check_inet_connection() == False:
-			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error: Update failed!"))
+			self.msgwarn(_("Could not connect to %s") % (API_DOMAIN),_("Error"))
 			return False
 		try:
+			self.STATUS_ICON_BLINK = 0
+			self.STATE_CERTDL = "lastupdate"
 			self.timer_check_certdl_running = True
 			try:
 				self.load_ovpn_server()
 				if len(self.OVPN_SERVER) == 0:
 					self.reset_last_update()
 			except Exception as e:
-				self.debug(1,"def inThread_timer_check_certdl: self.load_ovpn_server() failed, exception = '%s'"%(e))
-			self.debug(1,"def inThread_timer_check_certdl()")
-			self.STATE_CERTDL = "lastupdate"
-			if self.API_REQUEST(API_ACTION = "winrelease"):
-				pass
-			if self.API_REQUEST(API_ACTION = "lastupdate"):
-				self.debug(1,"def inThread_timer_check_certdl: API_ACTION lastupdate")
+				self.debug(1,"def inThread_timer_check_update: self.load_ovpn_server() failed, exception = '%s'"%(e))
+			if option == "client":
+				self.STATE_CERTDL = "clientupdate"
+				if self.API_REQUEST(API_ACTION = "winrelease_url"):
+					return self.thread_finish_check_update(True)
+			elif option == "config" and self.API_REQUEST(API_ACTION = self.STATE_CERTDL):
 				if self.check_last_server_update(self.curldata):
 					self.STATE_CERTDL = "getconfigs"
-					if self.API_REQUEST(API_ACTION = "getconfigs"):
+					if self.API_REQUEST(API_ACTION = self.STATE_CERTDL):
 						if self.extract_ovpn():
 							self.OVPN_SERVER = list()
 							if self.load_ovpn_server() == True:
 								self.rebuild_mainwindow()
-							self.msgwarn(_("Certificates and Configs updated!"),_("oVPN Update OK!"))
-							self.win_firewall_clear_vcp_rules()
-							self.timer_check_certdl_running = False
-							return True
+							self.msgwarn(_("Configurations updated!"),_("Success"))
+							return self.thread_finish_check_update(True)
 						else:
-							self.msgwarn(_("Extraction failed!"),_("Error: def inThread_timer_check_certdl"))
+							self.msgwarn(_("Extraction failed!"),_("Error"))
 					else:
-						self.msgwarn(_("Failed to download configurations!"),_("Error: def inThread_timer_check_certdl"))
+						self.msgwarn(_("Download failed!"),_("Error"))
 				else:
-					self.msgwarn(_("No update needed!"),_("oVPN Update OK!"))
-					self.debug(1,"def inThread_timer_check_certdl: no config update available")
-					self.win_firewall_clear_vcp_rules()
-					self.timer_check_certdl_running = False
-					return True
+					self.msgwarn(_("No config update available!"),_("Success"))
+					return self.thread_finish_check_update(True)
 		except Exception as e:
-			self.msgwarn(_("Failed to check for updates!"),_("Error: def inThread_timer_check_certdl"))
+			self.msgwarn(_("Update failed with Exception '%s'!"),_("Error"))
+		return self.thread_finish_check_update(False)
+		
+	def thread_finish_check_update(self,retval):
 		self.win_firewall_clear_vcp_rules()
 		self.timer_check_certdl_running = False
-		return False
+		self.STATE_CERTDL = False
+		self.debug(1,"def thread_finish_check_update(retval=%s)"%(retval))
+		return retval
 
 	def update_mwls(self):
 		self.debug(1,"def update_mwls()")
@@ -2739,6 +2763,7 @@ class Systray:
 			self.nbpage2 = Gtk.VBox(False,spacing=2)
 			self.nbpage2.set_border_width(8)
 			
+			self.settings_updates_button_clientupdate(self.nbpage2)
 			self.settings_updates_button_normalconf(self.nbpage2)
 			self.settings_updates_button_forceconf(self.nbpage2)
 			self.settings_options_button_ipv6(self.nbpage2)
@@ -2902,7 +2927,7 @@ class Systray:
 		if switch.get_active():
 			self.WIN_RESET_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed"))
+				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error"))
 		else:
 			self.WIN_RESET_FIREWALL = False
 		self.write_options_file()
@@ -2932,7 +2957,7 @@ class Systray:
 		if switch.get_active():
 			self.WIN_BACKUP_FIREWALL = True
 			if not self.win_firewall_export_on_start():
-				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error: Windows Firewall Backup failed"))
+				self.msgwarn(_("Could not export Windows Firewall Backup!"),_("Error"))
 		else:
 			self.WIN_BACKUP_FIREWALL = False
 		self.write_options_file()
@@ -3432,6 +3457,20 @@ class Systray:
 			self.DISABLE_QUIT_ENTRY = False
 		self.write_options_file()
 
+	def settings_updates_button_clientupdate(self,page):
+		button = Gtk.Button(label=_("Check Client Update"))
+		button.connect('clicked', self.cb_settings_updates_button_clientupdate)
+		page.pack_start(button,False,False,0)
+		page.pack_start(Gtk.Label(label=""),False,False,0)
+
+	def cb_settings_updates_button_clientupdate(self,event):
+		diff = int((time.time()-self.LAST_CHECK_CFG_UPDATE))
+		if self.timer_check_certdl_running == False and diff > 30:
+			self.LAST_CHECK_CFG_UPDATE = time.time()
+			self.cb_check_client_update()
+		else:
+			self.send_notify(_("Retry in few seconds..."),_("Please wait..."))
+
 	def settings_updates_button_normalconf(self,page):
 		button = Gtk.Button(label=_("Normal Config Update"))
 		button.connect('clicked', self.cb_settings_updates_button_normalconf)
@@ -3782,7 +3821,7 @@ class Systray:
 			if not openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
 				return self.reset_ovpn_values()
 			if not self.win_firewall_start():
-				self.msgwarn(_("Could not start Windows Firewall!"),_("Error: def inThread_spawn_openvpn_process"))
+				self.msgwarn(_("Could not start Windows Firewall!"),_("Error"))
 				return self.reset_ovpn_values()
 			self.win_firewall_clear_vcp_rules()
 			self.win_firewall_modify_rule(option="add")
@@ -3823,7 +3862,7 @@ class Systray:
 							self.OVPN_PING_DEAD_COUNT = 9
 							self.OVPN_PING_LAST = -2
 							self.NEXT_PING_EXEC = 9
-							self.msgwarn(_("OpenVPN process crashed! Restarting..."),_("Error: def inThread_spawn_openvpn_process"))
+							self.msgwarn(_("OpenVPN process crashed! Restarting..."),_("Error"))
 							""" no return loops daemon """
 					else:
 						break
@@ -3884,11 +3923,11 @@ class Systray:
 						if self.win_netsh_set_dns_ovpn():
 							if self.LAST_MSGWARN_WINDOW_DNS < int(time.time())-30:
 								self.LAST_MSGWARN_WINDOW_DNS = int(time.time())
-								self.msgwarn(_("DNS changed but reset ok!"),_("DNS reset!"))
+								self.msgwarn(_("DNS changed but reset ok!"),_("Success"))
 						else:
 							if self.LAST_MSGWARN_WINDOW_DNS < int(time.time())-30:
 								self.LAST_MSGWARN_WINDOW_DNS = int(time.time())
-								self.msgwarn(_("DNS changed and reseting failed!"),_("DNS change failed!"))
+								self.msgwarn(_("DNS changed and reseting failed!"),_("Error"))
 					if self.NEXT_PING_EXEC < int(time.time()) and self.OVPN_CONNECTEDseconds > 5:
 						PING = self.get_ovpn_ping()
 						if PING > 0 and PING < 1:
@@ -4160,10 +4199,10 @@ class Systray:
 								self.debug(1,"Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
 								return True
 							else:
-								self.msgwarn(_("Error: Restore Secondary DNS to %s failed.") % (self.GATEWAY_DNS2),_("Error: DNS restore 2nd"))
+								self.msgwarn(_("Error: Restore Secondary DNS to %s failed.") % (self.GATEWAY_DNS2),_("Error"))
 								return False
 					else:
-						self.msgwarn(_("Error: Restore Primary DNS to %s failed.") % (self.GATEWAY_DNS1),_("Error: DNS restore 1st"))
+						self.msgwarn(_("Error: Restore Primary DNS to %s failed.") % (self.GATEWAY_DNS1),_("Error"))
 						return False
 				else:
 					NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
@@ -4278,13 +4317,13 @@ class Systray:
 					os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), self.CA_FILE)
 					return True
 				except Exception as e:
-					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #1"))
+					self.msgwarn(_("Error:\nSSL Root Certificate for %s not loaded %s") % (VCP_DOMAIN,self.CA_FILE),_("Error"))
 					return False
 			else:
 				self.msgwarn(_("Error:\nInvalid SSL Root Certificate for %s in:\n'%s'\nhash is:\n'%s'\nbut should be '%s'") % (VCP_DOMAIN,self.CA_FILE,self.CA_FILE_HASH,self.CA_FIXED_HASH),_("Error: SSL CA Cert #2"))
 				return False
 		else:
-			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (VCP_DOMAIN,self.CA_FILE),_("Error: SSL CA Cert #3"))
+			self.msgwarn(_("Error:\nSSL Root Certificate for %s not found in:\n'%s'!") % (VCP_DOMAIN,self.CA_FILE),_("Error"))
 			return False
 
 	def win_firewall_start(self):
@@ -4737,7 +4776,7 @@ class Systray:
 				self.request_LOAD_ACCDATA = False
 			if self.request_UPDATE == True:
 				self.request_UPDATE = False
-				self.check_remote_update()
+				self.check_remote_update("config")
 		self.UPDATE_SWITCH = True
 
 	def cb_interface_selector_changed(self, combobox):
@@ -4792,8 +4831,15 @@ class Systray:
 	def cb_check_normal_update(self):
 		# call with GLib.idle_add !
 		self.debug(1,"def cb_check_normal_update()")
-		if self.check_remote_update() == True:
+		if self.check_remote_update("config") == True:
 			self.debug(1,"def cb_check_normal_update: self.check_remote_update() == True")
+			return True
+
+	def cb_check_client_update(self):
+		# call with GLib.idle_add !
+		self.debug(1,"def cb_check_client_update()")
+		if self.check_remote_update("client") == True:
+			self.debug(1,"def cb_check_client_update: self.cb_check_client_update() == True")
 			return True
 
 	def cb_force_update(self):
@@ -5086,7 +5132,7 @@ class Systray:
 	def API_REQUEST(self,API_ACTION):
 		self.debug(1,"def API_REQUEST(%s)"%(API_ACTION))
 		if self.APIKEY == False:
-			self.msgwarn(_("No API Key!"),_("No API Key!"))
+			self.msgwarn(_("No API Key!"),_("Error"))
 			return False
 		
 		if not self.load_ca_cert():
@@ -5097,42 +5143,52 @@ class Systray:
 			HEADERS = request_api.useragent(self.DEBUG)
 			if API_ACTION == "auth" or API_ACTION == "lastupdate" or API_ACTION == "winrelease" or API_ACTION == "winrelease_url":
 				if API_ACTION == "winrelease" or API_ACTION == "winrelease_url":
-					values = { 'action' : API_ACTION, 'bits' : BITS }
+					MYBITS = int(BUILT_STRING.split()[7])
+					values = { 'action' : API_ACTION, 'bits' : MYBITS }
 				else:
 					values = { 'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION }
 				r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
 				response = r.text
 				if response == "AUTHERROR":
-					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("API Login Error"))
+					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error"))
 					self.timer_check_certdl_running = False
 					return False
 				elif response == "AUTHOK:True":
-					self.msgwarn(_("API Login OK!"),_("API Login OK!"))
+					self.msgwarn(_("API Login OK!"),_("Success"))
 					return True
 				elif response.startswith("AUTHOK:1"):
 					data = response.split(":")
 					if data[0] == "AUTHOK":
 						self.curldata = int(data[1])
 						return True
-				elif API_ACTION == "winrelease": 
-					if int(response) >= 78:
-						version = release_version.setup_data()["version"]
-						intversion = int(version.replace(".",""))
-						if int(response) > intversion:
-							self.debug(1,"def API_REQUEST: winrelease update available, response = '%s'"%(response))
-							if self.API_REQUEST("winrelease_url"):
-								self.msgwarn("URL: %s" %self.UPDATE_URL, _("Client Update available!"))
-								return True
-					else:
-						self.debug(1,"def API_REQUEST: winrelease invalid response")
 				elif API_ACTION == "winrelease_url":
+					MYRELEASETIME = int(BUILT_STRING.split()[6].split('(')[1].split(')')[0])
 					data = json.loads(str(response))
 					self.debug(1,"def API_REQUEST: winrelease_url data = '%s'"%(data))
-					self.UPDATE_URL = data["URL"]
-					self.UPDATE_HASH = data["SHA512"]
+					UPDATE_FILE = data["FILE"]
+					UPDATE_HASH = data["HASH"]
+					UPDATE_SIZE = int(data["SIZE"])
+					UPDATE_URL = data["URL"]
+					UPDATE_RELEASE = int(data["RELEASE"])
+					if UPDATE_RELEASE > self.VAR["RELEASE"]:
+						clistring1 = "ovpn_client_v"
+						clistring2 = "-gtk3_win%s_setup.exe" % (MYBITS)
+						if len(UPDATE_HASH) == 128:
+							if UPDATE_URL.startswith("https://") and UPDATE_URL.endswith("/files/ovpn_cli/"):
+								if UPDATE_FILE.startswith(clistring1) and UPDATE_FILE.endswith(clistring2):
+									self.VAR["UPDATE"]["HASH"] = UPDATE_HASH
+									self.VAR["UPDATE"]["FILE"] = UPDATE_FILE
+									self.VAR["UPDATE"]["SIZE"] = UPDATE_SIZE
+									self.VAR["UPDATE"]["URL"] = UPDATE_URL
+									return self.download_client_update()
+								else:
+									self.debug(1,"def API_REQUEST: winrelease_url invalid update filename")
+							else:
+								self.debug(1,"def API_REQUEST: winrelease_url invalid update url")
+						else:
+							self.debug(1,"def API_REQUEST: winrelease_url invalid update hash")
+					self.msgwarn(_("No Client Update available!"), _("Success"))
 					return True
-					if len(HASH) == 128 and URL.startswith("https://"):
-						return data
 				else:
 					self.debug(1,"def API_REQUEST: unknown response = '%s'"%(response))
 			
@@ -5149,11 +5205,41 @@ class Systray:
 				except Exception as e:
 					self.debug(1,"def API_REQUEST: failed write config, exception = '%s'"%(e))
 					return False
-			
-
-				
 		except Exception as e:
 			self.debug(1,"def API_REQUEST: failed, exception = '%s'"%(e))
+
+	def download_client_update(self):
+		try:
+			user_dl_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)
+			self.debug(1,"def download_client_update: user_dl_dir = '%s'"%(user_dl_dir))
+			if os.path.isdir(user_dl_dir):
+				localfile = str(user_dl_dir+"\\"+self.VAR["UPDATE"]["FILE"])
+				if not os.path.isfile(localfile):
+					self.debug(1,"def download_client_update: localfile = '%s' not found"%(localfile))
+					self.msgwarn(_("Client Update: Downloading ~15 MB!"),_("Info"))
+					self.STATE_CERTDL = "clientupdatedl"
+					try:
+						HEADERS = request_api.useragent(self.DEBUG)
+						cli_dl_url = str(self.VAR["UPDATE"]["URL"]+self.VAR["UPDATE"]["FILE"])
+						r1 = requests.get(cli_dl_url,headers=HEADERS)
+						if len(r1.content) == self.VAR["UPDATE"]["SIZE"]:
+							fp1 = open(localfile, "wb")
+							fp1.write(r1.content)
+							fp1.close()
+						else:
+							self.debug(1,"def download_client_update: invalid download size, len(r1.content) = '%s'"%(len(r1.content)))
+					except Exception as e:
+						self.debug(1,"def download_client_update: download failed, exception = '%s'"%(e))
+				if os.path.isfile(localfile):
+					if hashings.hash_sha512_file(self.DEBUG,localfile) == self.VAR["UPDATE"]["HASH"]:
+						self.msgwarn(_("Client Update: Download verified!"),_("Success"))
+						return True
+					else:
+						os.remove(localfile)
+						self.msgwarn(_("Client Update: Download failed!"),_("Error"))
+				return False
+		except Exception as e:
+			self.debug(1,"def download_client_update: failed, exception = '%s'"%(e))
 
 	def check_inet_connection(self):
 		self.debug(1,"def check_inet_connection()")
@@ -5323,7 +5409,7 @@ class Systray:
 							checks = [ca, crt, key, tls ]
 							for value in checks:
 								if not value == 2:
-									self.msgwarn(_("Please update your configurations!"),_("Old configurations detected."))
+									self.msgwarn(_("Please update your configurations!"),_("Error"))
 									self.reset_ovpn_values()
 									self.cb_force_update
 									return False
@@ -5442,7 +5528,7 @@ class Systray:
 				else:
 					self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
 					self.debug(1,"def load_serverdata_from_remote: AUTH ERROR")
-					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),"Error!")
+					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error"))
 					return False
 			except Exception as e:
 				self.LAST_OVPN_SRV_DATA_UPDATE = int(time.time())
@@ -5500,7 +5586,7 @@ class Systray:
 				else:
 					self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
 					self.debug(1,"def load_accinfo_from_remote: AUTH ERROR")
-					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),"Error: def load_accinfo_from_remote")
+					self.msgwarn(_("Invalid User-ID or API-Key or Account expired!"),_("Error"))
 					return False
 			except Exception as e:
 				self.LAST_OVPN_ACC_DATA_UPDATE = int(time.time())
@@ -5528,7 +5614,7 @@ class Systray:
 			return self.verify_openvpnbin_dl()
 		else:
 			if self.check_inet_connection() == False:
-				self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error: def load_openvpnbin_from_remote"))
+				self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error"))
 				return False
 
 			self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
@@ -5551,7 +5637,7 @@ class Systray:
 					self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
 				return self.verify_openvpnbin_dl()
 			except Exception as e:
-				self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error: def load_openvpnbin_from_remote"))
+				self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error"))
 				self.debug(1,"def load_openvpnbin_from_remote: failed, exception = '%s'"%(e))
 				return False
 
@@ -5565,11 +5651,11 @@ class Systray:
 				self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
 				return True
 			else:
-				self.msgwarn(_("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'") % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),_("Error!"))
+				self.msgwarn(_("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'") % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),_("Error"))
 				try:
 					os.remove(self.OPENVPN_SAVE_BIN_TO)
 				except Exception as e:
-					self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error!"))
+					self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error"))
 				self.tray.set_tooltip_markup(_("%s - Verify openVPN failed!") % (CLIENT_STRING))
 				return False
 		else:

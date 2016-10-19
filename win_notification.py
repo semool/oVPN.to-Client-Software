@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from debug import debug
-import os, platform, time
+import os, platform, threading, time
 
 from win32api import GetSystemMetrics, GetModuleHandle, PostQuitMessage, LoadResource
 from win32con import SM_CXICONSPACING, SM_CXSMICON, SM_CYSMICON, SM_CXICON, SM_CYICON, CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
@@ -24,7 +24,8 @@ class notify:
 		try:
 			
 			while not self.isDestroyed() == True:
-				sleep(0.01)
+				wait_event = threading.Event()
+				wait_event.wait(timeout=0.1)
 			self.destroyed = False
 			debug(222,"[win_notification.py] def send_notify: [Win10 = %s]" % (WINVER10),DEBUG,True)
 			style = WS_OVERLAPPED | WS_SYSMENU
@@ -32,17 +33,21 @@ class notify:
 			UpdateWindow(self.hwnd)
 
 			try:
+				if WINVER10 == False:
+					raise Exception
 				RT_ICON_SIZE = 15
 				if TRAYSIZE == 32 or WINVER10 == True:
 					RT_ICON_SIZE = 14
 				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
-				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
+				debug(1,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
 
 			except Exception as e:
 				debug(222,"[win_notification.py] def send_notify: CreateIconFromResource() #1 failed, exception = '%s'"%(e),DEBUG,True)
 
 				try:
+					if WINVER10 == False:
+						raise Exception
 					icon_path = False
 					icon_path1 = "%s\\else\\app_icons\\app_icon.ico" % (DEV_DIR)
 					files = [ icon_path1 ]
@@ -53,16 +58,9 @@ class notify:
 					if icon_path == False:
 						raise Exception
 					icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
-					""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms724385(v=vs.85).aspx """
-					#x1 = GetSystemMetrics(SM_CXSMICON)
-					#y1 = GetSystemMetrics(SM_CYSMICON)
-					#x2 = GetSystemMetrics(SM_CXICON)
-					#y2 = GetSystemMetrics(SM_CYICON)
-					#ispace = GetSystemMetrics(SM_CXICONSPACING)
-					#debug(222,"[win_notification.py] def send_notify: x1 = '%s' y1 = '%s', x2 = '%s' y2 = '%s', ispace = '%s'"%(x1,y1,x2,y2,ispace),DEBUG,True)
 					""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648045(v=vs.85).aspx """
 					hicon = LoadImage(self.hinst, icon_path,IMAGE_ICON, 0, 0, icon_flags)
-					debug(222,"[win_notification.py] def send_notify: LoadImage() #2",DEBUG,True)
+					debug(1,"[win_notification.py] def send_notify: LoadImage() #2",DEBUG,True)
 
 				except Exception as e:
 					debug(222,"[win_notification.py] def send_notify: LoadImage() #2 failed, exception = '%s'"%(e),DEBUG,True)
@@ -70,7 +68,7 @@ class notify:
 					try:
 						""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648072(v=vs.85).aspx """
 						hicon = LoadIcon(0, IDI_INFORMATION)
-						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3",DEBUG,True)
+						debug(1,"[win_notification.py] def send_notify: LoadIcon() #3",DEBUG,True)
 					except Exception as e:
 						debug(222,"[win_notification.py] def send_notify: LoadIcon() #3 failed, exception = '%s'"%(e),DEBUG,True)
 						return False
@@ -79,19 +77,18 @@ class notify:
 			nid = (self.hwnd, 0, flags, WM_USER + 20, hicon, "")
 
 			Shell_NotifyIcon(NIM_ADD, nid)
-
-			icontype = 0 # bad blurry icon
+			
+			icontype = 0
 			#icontype = 1 # blue info
 			#icontype = 2 # yellow exclamation
 			#icontype = 3 # red cross
 			#icontype = 4 # icon from filepath
 			
-			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "", text, 200,title, icontype))
+			Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,WM_USER + 20,hicon, "oVPN Notify", text, 200,title, icontype))
 
 			if WINVER10 == False:
-				import threading
 				wait_event = threading.Event()
-				wait_event.wait(timeout=10)
+				wait_event.wait(timeout=4)
 
 			anyreturn = DestroyWindow(self.hwnd)
 			debug(222,"[win_notification.py] def send_notify: DestroyWindow() returned = '%s'"%(anyreturn),DEBUG,True)
