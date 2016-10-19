@@ -4424,8 +4424,13 @@ class Systray:
 	
 	def win_firewall_set_vcp_rules(self,option):
 		if self.NO_WIN_FIREWALL == True:
+			self.debug(1,"def win_firewall_set_vcp_rules: self.NO_WIN_FIREWALL == True, return True")
 			return True
-		if self.state_openvpn() == True and option == "add":
+		if option == "add" and self.state_openvpn() == True:
+			self.debug(1,"def win_firewall_set_vcp_rules: option == add and state_openvpn() == True, return True")
+			return True
+		if option == "add" and self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True:
+			self.debug(1,"def win_firewall_set_vcp_rules: option == add and self.WIN_FIREWALL_ADDED_RULE_TO_VCP == True, return True")
 			return True
 		self.debug(1,"def win_firewall_set_vcp_rules(%s)"%(option))
 		try:
