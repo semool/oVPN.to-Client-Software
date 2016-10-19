@@ -1044,7 +1044,7 @@ class Systray:
 									i += 1
 								return True
 			else:
-				self.win_netsh_restore_dns_from_backup()
+				self.win_netsh_restore_dns()
 				self.WIN_RESET_EXT_DEVICE = False
 				if self.win_read_interfaces() == True:
 					if self.win_firewall_export_on_start() == True:
@@ -2987,7 +2987,7 @@ class Systray:
 		if switch.get_active():
 			self.NO_DNS_CHANGE = False
 		else:
-			self.win_netsh_restore_dns_from_backup()
+			self.win_netsh_restore_dns()
 			self.NO_DNS_CHANGE = True
 		self.write_options_file()
 		self.UPDATE_SWITCH = True
@@ -3868,7 +3868,7 @@ class Systray:
 						break
 			""" exited openvpn """
 			self.win_disable_ext_interface()
-			self.win_netsh_restore_dns_from_backup()
+			self.win_netsh_restore_dns()
 			self.debug(1,"def inThread_spawn_openvpn_process: exitcode = '%s'"%(exitcode))
 			return self.reset_ovpn_values()
 		except Exception as e:
@@ -4141,31 +4141,33 @@ class Systray:
 		except Exception as e:
 			self.debug(1,"def win_clear_ipv6_routes: failed, exception = '%s'"%(e))
 
-	def win_netsh_set_dns_ovpn(self):
+	def win_netsh_set_dns_ovpn(self,domaindns=False):
 		self.debug(1,"def win_netsh_set_dns_ovpn()")
 		if self.NO_DNS_CHANGE == True:
 			self.debug(1,"def win_netsh_set_dns_ovpn: self.NO_DNS_CHANGE")
 			return True
 		if self.check_dns_is_whitelisted() == True:
 			return True
-		DNSS = self.select_dns()
+		DNSS = self.select_dns(domaindns)
 		NETSH_CMDLIST = list()
 		if len(DNSS) == 1:
 			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
-			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
+			if self.state_openvpn() == True:
+				NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
 		if len(DNSS) == 2:
 			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
 			NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,DNSS[1]))
-			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
-			NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,DNSS[1]))
+			if self.state_openvpn() == True:
+				NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
+				NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,DNSS[1]))
 		if self.win_join_netsh_cmd(NETSH_CMDLIST) == True:
 			self.WIN_DNS_CHANGED = True
 			return True
 		else:
 			self.debug(1,"def win_netsh_set_dns_ovpn: failed!")
 
-	def win_netsh_restore_dns_from_backup(self):
-		self.debug(1,"def win_netsh_restore_dns_from_backup()")
+	def win_netsh_restore_dns(self):
+		self.debug(1,"def win_netsh_restore_dns()")
 		try:
 			if self.NO_DNS_CHANGE == True:
 				return True
@@ -4184,37 +4186,26 @@ class Systray:
 					else:
 						return False
 			except Exception as e:
-				self.debug(1,"def win_netsh_restore_dns_from_backup: restore DHCP on IF: '%s' failed " % (self.WIN_EXT_DEVICE))
+				self.debug(1,"def win_netsh_restore_dns: restore DHCP on IF: '%s' failed " % (self.WIN_EXT_DEVICE))
 			
 			try:
 				if not self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4A:
 					NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
+					if not self.GATEWAY_DNS2 == False:
+						NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
 					if self.win_join_netsh_cmd(NETSH_CMDLIST):
-						self.debug(1,"Primary DNS restored to: %s"%(self.GATEWAY_DNS1))
-						if self.GATEWAY_DNS2 == False:
-							return True
-						else:
-							NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
-							if self.win_join_netsh_cmd(NETSH_CMDLIST):
-								self.debug(1,"Secondary DNS restored to %s" % (self.GATEWAY_DNS2))
-								return True
-							else:
-								self.msgwarn(_("Error: Restore Secondary DNS to %s failed.") % (self.GATEWAY_DNS2),_("Error"))
-								return False
-					else:
-						self.msgwarn(_("Error: Restore Primary DNS to %s failed.") % (self.GATEWAY_DNS1),_("Error"))
-						return False
+						self.debug(1,"def win_netsh_restore_dns: restored to Primary = '%s', Secondary = '%s'" % (self.GATEWAY_DNS1,self.GATEWAY_DNS2))
 				else:
 					NETSH_CMDLIST.append('interface ip set dnsservers "%s" dhcp' % (self.WIN_EXT_DEVICE))
 					if self.win_join_netsh_cmd(NETSH_CMDLIST):
-						self.debug(1,"DNS restored to DHCP")
+						self.debug(1,"def win_netsh_restore_dns: restored to DHCP")
 						return True
 					else:
 						return False
 			except Exception as e:
-				self.debug(1,"def win_netsh_restore_dns_from_backup: Restore DNS failed, exception = '%s'"%(e))
+				self.debug(1,"def win_netsh_restore_dns: restore failed, exception = '%s'"%(e))
 		except Exception as e:
-			self.debug(1,"def win_netsh_restore_dns_from_backup: failed, exception = '%s'"%(e))
+			self.debug(1,"def win_netsh_restore_dns: failed, exception = '%s'"%(e))
 
 	def win_read_dns_from_interface(self,adaptername):
 		if self.STATE_OVPN == False:
@@ -4282,25 +4273,36 @@ class Systray:
 				return False
 		return True
 
-	def select_dns(self):
+	def select_dns(self,domaindns=False):
 		self.debug(111,"def select_dns()")
 		try:
 			if self.GATEWAY_DNS1 == "127.0.0.1":
 				return ["127.0.0.1"]
 			dnslist = list()
-			servername = self.OVPN_CONNECTEDto
-			try:
-				pridns = self.MYDNS[servername]["primary"]["ip4"]
-				dnslist.append(pridns)
+			if domaindns == False:
+				servername = self.OVPN_CONNECTEDto
 				try:
-					secdns = self.MYDNS[servername]["secondary"]["ip4"]
-					dnslist.append(secdns)
+					pridns = self.MYDNS[servername]["primary"]["ip4"]
+					dnslist.append(pridns)
+					try:
+						secdns = self.MYDNS[servername]["secondary"]["ip4"]
+						dnslist.append(secdns)
+					except Exception as e:
+						if self.STATE_OVPN == False:
+							self.debug(1,"def select_dns: secdns not found")
 				except Exception as e:
 					if self.STATE_OVPN == False:
-						self.debug(1,"def select_dns: secdns not found")
-			except Exception as e:
-				if self.STATE_OVPN == False:
-					self.debug(1,"def select_dns: pridns not found")
+						self.debug(1,"def select_dns: pridns not found")
+			elif domaindns == True:
+				DNSS = release_version.org_data()["DNS_SRV1"]
+				rand1, rand2 = 0, 0
+				while rand1 == rand2:
+					rand1 = random.randint(0,len(DNSS)-1)
+					rand2 = random.randint(0,len(DNSS)-1)
+				DOMAIN_DNS1 = DNSS[rand1]
+				DOMAIN_DNS2 = DNSS[rand2]
+				dnslist.append(DOMAIN_DNS1)
+				dnslist.append(DOMAIN_DNS2)
 			if len(dnslist) == 0:
 				dnslist.append(self.GATEWAY_OVPN_IP4A)
 			return dnslist
@@ -4431,23 +4433,28 @@ class Systray:
 				actionstring = "action=allow"
 			elif option == "delete":
 				actionstring = ""
-			url = "https://%s" % (VCP_DOMAIN)
+				
+			NETSH_CMDLIST = list()
 			program = 'program="%s\\ovpn_client.exe"' % (self.BIN_DIR)
 			rule_name1 = "oVPN.to Client Allow OUT"
-			rule_name2 = "oVPN.to Client Allow DNS udp"
-			rule_name3 = "oVPN.to Client Allow DNS tcp"
 			rule_string1 = 'advfirewall firewall %s rule name="%s" %s remoteport=443 protocol=tcp profile=any dir=out %s' % (option,rule_name1,program,actionstring)
-			rule_string2 = 'advfirewall firewall %s rule name="%s" remoteport=53 protocol=udp profile=any dir=out %s' % (option,rule_name2,actionstring)
-			rule_string3 = 'advfirewall firewall %s rule name="%s" remoteport=53 protocol=tcp profile=any dir=out %s' % (option,rule_name3,actionstring)
-			NETSH_CMDLIST = list()
 			NETSH_CMDLIST.append(rule_string1)
-			NETSH_CMDLIST.append(rule_string2)
-			NETSH_CMDLIST.append(rule_string3)
+			
+			DNSS = release_version.org_data()["DNS_SRV1"]
+			for DNSIP in DNSS:
+				rule_name_udp = "oVPN.to Client Allow Domain DNS udp %s" % (DNSIP)
+				rule_name_tcp = "oVPN.to Client Allow Domain DNS tcp %s" % (DNSIP)
+				rule_dns_udp = 'advfirewall firewall %s rule name="%s" remoteport=53 remoteip=%s protocol=udp profile=any dir=out %s' % (option,rule_name_udp,DNSIP,actionstring)
+				rule_dns_tcp = 'advfirewall firewall %s rule name="%s" remoteport=53 remoteip=%s protocol=tcp profile=any dir=out %s' % (option,rule_name_tcp,DNSIP,actionstring)
+				NETSH_CMDLIST.append(rule_dns_udp)
+				NETSH_CMDLIST.append(rule_dns_tcp)
 			if self.win_join_netsh_cmd(NETSH_CMDLIST):
-				time.sleep(3)
 				if option == "add":
+					domaindns = True
+					self.win_netsh_set_dns_ovpn(domaindns)
 					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = True
 				elif option == "delete":
+					self.win_netsh_restore_dns()
 					self.WIN_FIREWALL_ADDED_RULE_TO_VCP = False
 				return True
 		except Exception as e:
@@ -5246,12 +5253,12 @@ class Systray:
 		try:
 			if self.LAST_CHECK_INET_FALSE > int(time.time())-15:
 				return False
-			if not self.try_socket(API_DOMAIN,443,1) == False:
+			if not self.try_socket(API_DOMAIN,443,2) == False:
 				return True
 			else:
 				self.debug(1,"def check_inet_connection: failed #1")
 				self.win_firewall_set_vcp_rules("add")
-				if not self.try_socket(API_DOMAIN,443,2) == False:
+				if not self.try_socket(API_DOMAIN,443,3) == False:
 					return True
 				self.win_firewall_clear_vcp_rules()
 				self.LAST_CHECK_INET_FALSE = int(time.time())
@@ -6020,22 +6027,22 @@ class Systray:
 				if self.WIN_BACKUP_FIREWALL == True and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 					self.win_firewall_restore_on_exit()
 					self.win_firewall_block_on_exit()
-					#self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns()
 					self.debug(1,"Firewall rules restored and block outbound!")
 					return True
 				elif self.WIN_BACKUP_FIREWALL == True and self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_restore_on_exit()
-					#self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns()
 					self.debug(1,"Firewall: rules restored!")
 					return True
 				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
 					self.win_firewall_block_on_exit()
-					#self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns()
 					self.debug(1,"Firewall: block outbound!")
 					return True
 				elif self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == False:
 					self.win_firewall_allowout()
-					#self.win_netsh_restore_dns_from_backup()
+					#self.win_netsh_restore_dns()
 					self.debug(1,"Firewall: allow outbound!")
 					return True
 			else:
@@ -6066,7 +6073,7 @@ class Systray:
 						dialog.destroy()
 						self.debug(1,"def ask_loadorunload_fw: dialog response = NO '%s'" % (response))
 						self.win_firewall_block_on_exit()
-						#self.win_netsh_restore_dns_from_backup()
+						#self.win_netsh_restore_dns()
 						return True
 					elif response == Gtk.ResponseType.YES:
 						dialog.destroy()
@@ -6075,7 +6082,7 @@ class Systray:
 							self.win_firewall_restore_on_exit()
 						else:
 							self.win_firewall_allowout()
-						#self.win_netsh_restore_dns_from_backup()
+						#self.win_netsh_restore_dns()
 						return True
 					else:
 						dialog.destroy()
