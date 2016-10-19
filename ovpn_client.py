@@ -121,6 +121,7 @@ class Systray:
 		self.debug(1,"def dummy_func(), srcf = '%s'"%(srcf))
 
 	def self_vars(self):
+		self.VAR = dict()
 		self.DEBUG = DEBUG
 		self.DEBUGWINDOW_OPEN = False
 		self.DEBUGCACHESIZE = 0
@@ -132,14 +133,15 @@ class Systray:
 		self.MOUSELEVEL = False
 		self.INIT_FIRST_UPDATE = True
 		self.SAVE_APIKEY_INFILE = False
-		self.MAINWINDOW_OPEN = False
-		self.MAINWINDOW_HIDE = False
-		self.MAINWINDOW_ALLOWCELLHIDE = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
-		self.MAINWINDOW_SHOWCELLS = [6, 7, 9, 24, 23, 25, 26, 16, 10, 8, 5, 4, 3]
-		self.MAINWINDOW_CELLINDEX = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher",
-									9:"Live", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 
-									16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 
-									22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR", 26:"Right Flag" }
+		
+		# MAINWINDOW vars
+		self.VAR["MAIN"] = dict()
+		self.VAR['MAIN']['OPEN'] = False
+		self.VAR['MAIN']['HIDE'] = False
+		self.VAR['MAIN']['ALLOWCELLHIDE'] = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
+		self.VAR['MAIN']['SHOWCELLS'] = [ 6, 7, 9, 24, 23, 25, 26, 16, 10, 8, 5, 4, 3 ]
+		self.VAR['MAIN']['CELLINDEX'] = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher", 9:"Live", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR", 26:"Right Flag" }
+		
 		self.HIDECELLSWINDOW_OPEN = False
 		self.SETTINGSWINDOW_OPEN = False
 		self.APP_LANGUAGE = "en"
@@ -163,7 +165,6 @@ class Systray:
 		self.systrayicon_from_before = False
 		self.stop_systray_timer = False
 		self.systray_timer_running = False
-		self.systray_timer_running = False
 		self.inThread_jump_server_running = False
 		self.USERID = False
 		self.STATE_OVPN = False
@@ -175,8 +176,7 @@ class Systray:
 		self.LAST_MSGWARN_WINDOW = 0
 		self.LAST_MSGWARN_WINDOW_DNS = 0
 		self.LAST_OVPN_PING_DEAD_MESSAGE = 0
-		self.CONNECTION_ESTABLISHED = False
-		self.CONNECTION_FAILED_TIME = 0
+
 		self.MSGWARN_WINDOW_OPEN = False
 		self.GATEWAY_LOCAL = False
 		self.GATEWAY_DNS1 = False
@@ -196,33 +196,41 @@ class Systray:
 		self.API_DIR = False
 		self.OPENVPN_EXE = False
 		self.OPENVPN_SILENT_SETUP = False
-		
-		self.OVPN_SERVER = list()
-		self.OVPN_FAV_SERVER = False
-		self.OVPN_AUTO_CONNECT_ON_START = False
-		self.OVPN_CALL_SRV = False
-		self.OVPN_CONNECTEDto = False
-		self.OVPN_CONNECTEDtoIP = False
-		self.OVPN_CONNECTEDtoPort = False
-		self.OVPN_CONNECTEDtoProtocol = False
-		self.OVPN_CONNECTEDtime = False
-		self.OVPN_CONNECTEDseconds = 0
-		self.GATEWAY_OVPN_IP4A = "172.16.32.1"
-		self.GATEWAY_OVPN_IP4B = "172.16.48.1"
-		self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4A
-		self.OVPN_THREADID = False
-		self.OVPN_CONFIGVERSION = "23x"
 		self.OPENVPN_DIR = False
-		self.OVPN_SESSIONLOG = False
-		self.OVPN_PING = list()
-		self.OVPN_isTESTING = False
-		self.OVPN_PING_LAST = -1
-		self.OVPN_PING_STAT = 0
-		self.OVPN_PING_DEAD_COUNT = 0
-		self.OVPN_PING_EVERY = "15,30"
 		self.INTERFACES = False
 		
-		self.VAR = dict()
+		self.VAR['OVPN'] = dict()
+		self.VAR['OVPN']['SERVERLIST'] = list()
+		self.VAR['OVPN']['SERVERINFO'] = {}
+		self.VAR['OVPN']['FAVSRV'] = False
+		self.VAR['OVPN']['AUTOCONNECT'] = False
+		self.VAR['OVPN']['CALL_SRV'] = False
+		self.VAR['OVPN']['LOG'] = False
+		self.VAR['OVPN']['THREADID'] = False
+		
+		self.VAR['OVPN']['PINGS'] = list()
+		self.VAR['OVPN']['PING_LAST'] = -1
+		self.VAR['OVPN']['PING_STAT'] = 0
+		self.VAR['OVPN']['PING_DEAD'] = 0
+		self.VAR['OVPN']['CFGTYPE'] = "23x"
+		
+		self.VAR['OVPN']['CONN'] = dict()
+		self.VAR['OVPN']['CONN']['OK'] = False
+		self.VAR['OVPN']['CONN']['SERVER'] = False
+		self.VAR['OVPN']['CONN']['IP'] = False
+		self.VAR['OVPN']['CONN']['PORT'] = False
+		self.VAR['OVPN']['CONN']['PROTO'] = False
+		self.VAR['OVPN']['CONN']['START'] = 0
+		self.VAR['OVPN']['CONN']['SECONDS'] = 0
+		self.VAR['OVPN']['CONN']['FAILEDTIME'] = 0
+		self.VAR['OVPN']['CONN']['TESTING'] = False
+
+		self.VAR['OVPN']['GW'] = dict()
+		self.VAR['OVPN']['GW']['IP4A'] = "172.16.32.1"
+		self.VAR['OVPN']['GW']['IP4B'] = "172.16.48.1"
+		self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4A']
+		
+		
 		self.VAR["RELEASE"] = int(BUILT_STRING.split()[6].split('(')[1].split(')')[0])
 		
 		self.VAR["UPDATE"] = dict()
@@ -263,7 +271,7 @@ class Systray:
 		self.WINDOW_QUIT_OPEN = False
 		self.WINDOW_ABOUT_OPEN = False
 		
-		self.OVPN_SERVER_INFO = {}
+		
 		self.OVPN_SRV_DATA = {}
 		self.LAST_OVPN_SRV_DATA_UPDATE = 0
 		self.OVPN_ACC_DATA = {}
@@ -311,29 +319,29 @@ class Systray:
 		self.LAST_CHECK_CFG_UPDATE_FORCE = 0
 		self.nbpage0, self.nbpage1, self.nbpage2, self.nbpage3 = False, False, False, False
 		self.WHITELIST_PUBLIC_PROFILE = {
-			"Intern 01) oVPN Connection Check": {"ip":self.GATEWAY_OVPN_IP4A,"port":"80","proto":"tcp"},
-			"Intern 02) https://vcp.ovpn.to": {"ip":self.GATEWAY_OVPN_IP4A,"port":"443","proto":"tcp"},
-			"Intern 03) IRC": {"ip":self.GATEWAY_OVPN_IP4A,"port":"6697","proto":"tcp"},
-			"Intern 04) DNS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"53","proto":"tcp"},
-			"Intern 05) DNS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"53","proto":"udp"},
-			"Intern 06) SSH": {"ip":self.GATEWAY_OVPN_IP4A,"port":"22","proto":"tcp"},
-			"Intern 07) SOCKS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"1080","proto":"tcp"},
-			"Intern 08) HTTP": {"ip":self.GATEWAY_OVPN_IP4A,"port":"3128","proto":"tcp"},
-			"Intern 09) SOCKS Random": {"ip":self.GATEWAY_OVPN_IP4A,"port":"1081","proto":"tcp"},
-			"Intern 10) HTTP Random": {"ip":self.GATEWAY_OVPN_IP4A,"port":"3129","proto":"tcp"},
-			"Intern 11) STUNNEL HTTP": {"ip":self.GATEWAY_OVPN_IP4A,"port":"8081","proto":"tcp"},
-			"Intern 12) STUNNEL SOCKS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"8080","proto":"tcp"},
-			"Intern 13) TOR SOCKS": {"ip":self.GATEWAY_OVPN_IP4A,"port":"9100","proto":"tcp"},
-			"Intern 14) JABBER client": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5222","proto":"tcp"},
-			"Intern 15) JABBER transfer": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5000","proto":"tcp"},
-			"Intern 16) AnoMail IMAPs": {"ip":self.GATEWAY_OVPN_IP4A,"port":"993","proto":"tcp"},
-			"Intern 17) AnoMail POP3s": {"ip":self.GATEWAY_OVPN_IP4A,"port":"995","proto":"tcp"},
-			"Intern 18) AnoMail SMTPs": {"ip":self.GATEWAY_OVPN_IP4A,"port":"587","proto":"tcp"},
-			"Intern 19) ZNC": {"ip":self.GATEWAY_OVPN_IP4A,"port":"6444","proto":"tcp"},
-			"Intern 20) dnscrypt": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5353","proto":"tcp"},
-			"Intern 21) dnscrypt": {"ip":self.GATEWAY_OVPN_IP4A,"port":"5353","proto":"udp"},
-			"Intern 22) nntp-50001 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50001","proto":"tcp"},
-			"Intern 23) nntp-50002 Binary SSL user=ovpn,pass=free": {"ip":self.GATEWAY_OVPN_IP4A,"port":"50002","proto":"tcp"}
+			"Intern 01) oVPN Connection Check": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"80","proto":"tcp"},
+			"Intern 02) https://vcp.ovpn.to": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"443","proto":"tcp"},
+			"Intern 03) IRC": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"6697","proto":"tcp"},
+			"Intern 04) DNS": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"53","proto":"tcp"},
+			"Intern 05) DNS": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"53","proto":"udp"},
+			"Intern 06) SSH": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"22","proto":"tcp"},
+			"Intern 07) SOCKS": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"1080","proto":"tcp"},
+			"Intern 08) HTTP": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"3128","proto":"tcp"},
+			"Intern 09) SOCKS Random": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"1081","proto":"tcp"},
+			"Intern 10) HTTP Random": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"3129","proto":"tcp"},
+			"Intern 11) STUNNEL HTTP": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"8081","proto":"tcp"},
+			"Intern 12) STUNNEL SOCKS": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"8080","proto":"tcp"},
+			"Intern 13) TOR SOCKS": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"9100","proto":"tcp"},
+			"Intern 14) JABBER client": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"5222","proto":"tcp"},
+			"Intern 15) JABBER transfer": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"5000","proto":"tcp"},
+			"Intern 16) AnoMail IMAPs": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"993","proto":"tcp"},
+			"Intern 17) AnoMail POP3s": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"995","proto":"tcp"},
+			"Intern 18) AnoMail SMTPs": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"587","proto":"tcp"},
+			"Intern 19) ZNC": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"6444","proto":"tcp"},
+			"Intern 20) dnscrypt": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"5353","proto":"tcp"},
+			"Intern 21) dnscrypt": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"5353","proto":"udp"},
+			"Intern 22) nntp-50001 Binary SSL user=ovpn,pass=free": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"50001","proto":"tcp"},
+			"Intern 23) nntp-50002 Binary SSL user=ovpn,pass=free": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"50002","proto":"tcp"}
 		}
 
 	def preboot(self):
@@ -680,14 +688,14 @@ class Systray:
 				try:
 					OVPN_FAV_SERVER = parser.get('oVPN','favserver')
 					if OVPN_FAV_SERVER == "False": 
-						self.OVPN_FAV_SERVER = False
-						self.OVPN_AUTO_CONNECT_ON_START = False
+						self.VAR['OVPN']['FAVSRV'] = False
+						self.VAR['OVPN']['AUTOCONNECT'] = False
 					else:
-						self.OVPN_FAV_SERVER = OVPN_FAV_SERVER
-						self.OVPN_AUTO_CONNECT_ON_START = True
-					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
+						self.VAR['OVPN']['FAVSRV'] = OVPN_FAV_SERVER
+						self.VAR['OVPN']['AUTOCONNECT'] = True
+					self.debug(1,"def read_options_file: self.VAR['OVPN']['FAVSRV'] = '%s'" % (self.VAR['OVPN']['FAVSRV']))
 				except Exception as e:
-					self.debug(1,"def read_options_file: self.OVPN_FAV_SERVER failed, exception = '%s'"%(e))
+					self.debug(1,"def read_options_file: self.VAR['OVPN']['FAVSRV'] failed, exception = '%s'"%(e))
 				
 				try:
 					WIN_EXT_DEVICE = parser.get('oVPN','winextdevice')
@@ -749,23 +757,23 @@ class Systray:
 				try:
 					ocfgv = parser.get('oVPN','configversion')
 					if ocfgv == "23x" or ocfgv == "23x46" or ocfgv == "23x64":
-						self.OVPN_CONFIGVERSION = ocfgv
+						self.VAR['OVPN']['CFGTYPE'] = ocfgv
 					else:
-						self.OVPN_CONFIGVERSION = "23x"
+						self.VAR['OVPN']['CFGTYPE'] = "23x"
 					
-					if self.OVPN_CONFIGVERSION == "23x":
-						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4A
+					if self.VAR['OVPN']['CFGTYPE'] == "23x":
+						self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4A']
 						self.VPN_CFG = self.VPN_CFGip4
-					elif self.OVPN_CONFIGVERSION == "23x46":
-						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
+					elif self.VAR['OVPN']['CFGTYPE'] == "23x46":
+						self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4B']
 						self.VPN_CFG = self.VPN_CFGip46
-					elif self.OVPN_CONFIGVERSION == "23x64":
-						self.GATEWAY_OVPN_IP4 = self.GATEWAY_OVPN_IP4B
+					elif self.VAR['OVPN']['CFGTYPE'] == "23x64":
+						self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4B']
 						self.VPN_CFG = self.VPN_CFGip64
 					
-					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION = '%s'" % (self.OVPN_CONFIGVERSION))
+					self.debug(1,"def read_options_file: self.VAR['OVPN']['CFGTYPE'] = '%s'" % (self.VAR['OVPN']['CFGTYPE']))
 				except Exception as e:
-					self.debug(1,"def read_options_file: self.OVPN_CONFIGVERSION failed, exception = '%s'"%(e))
+					self.debug(1,"def read_options_file: self.VAR['OVPN']['CFGTYPE'] failed, exception = '%s'"%(e))
 				
 				try:
 					self.WIN_RESET_FIREWALL = parser.getboolean('oVPN','winresetfirewall')
@@ -830,8 +838,8 @@ class Systray:
 				try:
 					MAINWINDOW_SHOWCELLS = json.loads(str(parser.get('oVPN','mainwindowshowcells')))
 					if len(MAINWINDOW_SHOWCELLS) > 0:
-						self.MAINWINDOW_SHOWCELLS = MAINWINDOW_SHOWCELLS
-						self.debug(1,"def read_options_file: self.MAINWINDOW_SHOWCELLS = '%s'" % (self.MAINWINDOW_SHOWCELLS))
+						self.VAR['MAIN']['SHOWCELLS'] = MAINWINDOW_SHOWCELLS
+						self.debug(1,"def read_options_file: self.VAR['MAIN']['SHOWCELLS'] = '%s'" % (self.VAR['MAIN']['SHOWCELLS']))
 				except Exception as e:
 					self.debug(1,"def read_options_file: mainwindowshowcells failed, exception = '%s'"%(e))
 					
@@ -927,14 +935,14 @@ class Systray:
 				parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 				parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 				parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
-				parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
+				parser.set('oVPN','favserver','%s'%(self.VAR['OVPN']['FAVSRV']))
 				parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 				parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
 				parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
 				parser.set('oVPN','autostartdelay','%s'%(self.AUTOSTART_DELAY_TIME))
 				parser.set('oVPN','autostart','%s'%(self.AUTOSTART))
 				parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
-				parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
+				parser.set('oVPN','configversion','%s'%(self.VAR['OVPN']['CFGTYPE']))
 				parser.set('oVPN','serverviewextend','%s'%(self.LOAD_SRVDATA))
 				parser.set('oVPN','serverviewlightwidth','%s'%(self.SRV_LIGHT_WIDTH_DEFAULT))
 				parser.set('oVPN','serverviewlightheight','%s'%(self.SRV_LIGHT_HEIGHT_DEFAULT))
@@ -953,7 +961,7 @@ class Systray:
 				parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 				parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
 				parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
-				parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(str(self.MAINWINDOW_SHOWCELLS), ensure_ascii=True)))
+				parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(str(self.VAR['MAIN']['SHOWCELLS']), ensure_ascii=True)))
 				parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 				parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
 				parser.set('oVPN','mydns','False')
@@ -987,14 +995,14 @@ class Systray:
 			parser.set('oVPN','debugmode','%s'%(self.DEBUG))
 			parser.set('oVPN','applanguage','%s'%(self.APP_LANGUAGE))
 			parser.set('oVPN','lastcfgupdate','%s'%(self.LAST_CFG_UPDATE))
-			parser.set('oVPN','favserver','%s'%(self.OVPN_FAV_SERVER))
+			parser.set('oVPN','favserver','%s'%(self.VAR['OVPN']['FAVSRV']))
 			parser.set('oVPN','winextdevice','%s'%(self.WIN_EXT_DEVICE))
 			parser.set('oVPN','wintapdevice','%s'%(self.WIN_TAP_DEVICE))
 			parser.set('oVPN','openvpnexe','%s'%(self.OPENVPN_EXE))
 			parser.set('oVPN','autostartdelay','%s'%(self.AUTOSTART_DELAY_TIME))
 			parser.set('oVPN','autostart','%s'%(self.AUTOSTART))
 			parser.set('oVPN','updateovpnonstart','%s'%(self.UPDATEOVPNONSTART))
-			parser.set('oVPN','configversion','%s'%(self.OVPN_CONFIGVERSION))
+			parser.set('oVPN','configversion','%s'%(self.VAR['OVPN']['CFGTYPE']))
 			parser.set('oVPN','serverviewextend','%s'%(self.LOAD_SRVDATA))
 			parser.set('oVPN','serverviewlightwidth','%s'%(self.SRV_LIGHT_WIDTH))
 			parser.set('oVPN','serverviewlightheight','%s'%(self.SRV_LIGHT_HEIGHT))
@@ -1013,7 +1021,7 @@ class Systray:
 			parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
 			parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
 			parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
-			parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.MAINWINDOW_SHOWCELLS, ensure_ascii=True)))
+			parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.VAR['MAIN']['SHOWCELLS'], ensure_ascii=True)))
 			parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
 			parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
 			parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
@@ -1238,8 +1246,8 @@ class Systray:
 			context_menu_servertab = Gtk.Menu()
 			self.context_menu_servertab = context_menu_servertab
 			
-			if self.OVPN_CONNECTEDto == servername:
-				disconnect = Gtk.MenuItem(_("Disconnect %s")%(self.OVPN_CONNECTEDto))
+			if self.VAR['OVPN']['CONN']['SERVER'] == servername:
+				disconnect = Gtk.MenuItem(_("Disconnect %s")%(self.VAR['OVPN']['CONN']['SERVER']))
 				context_menu_servertab.append(disconnect)
 				disconnect.connect('button-release-event', self.cb_kill_openvpn)
 			else:
@@ -1250,7 +1258,7 @@ class Systray:
 			sep = Gtk.SeparatorMenuItem()
 			context_menu_servertab.append(sep)
 			
-			if self.OVPN_FAV_SERVER == servername:
+			if self.VAR['OVPN']['FAVSRV'] == servername:
 				delfavorite = Gtk.MenuItem(_("Remove AutoConnect: %s")%(servername))
 				delfavorite.connect('button-release-event',self.cb_del_ovpn_favorite_server,servername)
 				context_menu_servertab.append(delfavorite)
@@ -1430,7 +1438,7 @@ class Systray:
 				
 				# Language changed
 				if self.LANG_FONT_CHANGE == True:
-					if self.MAINWINDOW_OPEN == True:
+					if self.VAR['MAIN']['OPEN'] == True:
 						self.mainwindow.set_title(_("Server"))
 					if self.SETTINGSWINDOW_OPEN == True:
 						self.settingswindow.set_title(_("Settings"))
@@ -1576,10 +1584,10 @@ class Systray:
 					self.switch_debugmode.set_active(False)
 				
 				# settings_options_button_ipv6
-				if self.OVPN_CONFIGVERSION == "23x":
+				if self.VAR['OVPN']['CFGTYPE'] == "23x":
 					self.button_title.set_label(_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
 					self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
-				elif self.OVPN_CONFIGVERSION == "23x46":
+				elif self.VAR['OVPN']['CFGTYPE'] == "23x46":
 					self.button_title.set_label(_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
 					self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
 				
@@ -1627,23 +1635,23 @@ class Systray:
 					statusbar_text = systraytext
 					
 			elif self.inThread_jump_server_running == True:
-				systraytext = _("Connecting to %s") % (self.OVPN_CALL_SRV)
+				systraytext = _("Connecting to %s") % (self.VAR['OVPN']['CALL_SRV'])
 				systrayicon = self.systray_icon_connect
 				statusbar_text = systraytext
 				self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
 				
 			elif self.state_openvpn() == True:
-				connectedseconds = int(time.time()) - self.OVPN_CONNECTEDtime
-				self.OVPN_CONNECTEDseconds = connectedseconds
-				if self.OVPN_PING_STAT == -2:
-					self.OVPN_isTESTING = True
-					systraytext = _("Testing connection to %s") % (self.OVPN_CONNECTEDto)
+				connectedseconds = int(time.time()) - self.VAR['OVPN']['CONN']['START']
+				self.VAR['OVPN']['CONN']['SECONDS'] = connectedseconds
+				if self.VAR['OVPN']['PING_STAT'] == -2:
+					self.VAR['OVPN']['CONN']['TESTING']= True
+					systraytext = _("Testing connection to %s") % (self.VAR['OVPN']['CONN']['SERVER'])
 					systrayicon = self.systray_icon_testing
 					statusbar_text = systraytext
 					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
 					
-				elif self.OVPN_PING_LAST == -2 and self.OVPN_PING_DEAD_COUNT > 1:
-					systraytext = _("Connection unstable or failed! (%s)") % (self.OVPN_PING_DEAD_COUNT)
+				elif self.VAR['OVPN']['PING_LAST'] == -2 and self.VAR['OVPN']['PING_DEAD'] > 1:
+					systraytext = _("Connection unstable or failed! (%s)") % (self.VAR['OVPN']['PING_DEAD'])
 					systrayicon = self.systray_icon_testing
 					statusbar_text = systraytext
 					self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
@@ -1651,20 +1659,20 @@ class Systray:
 						self.send_notify(_("Connection unstable or failed!"),_("oVPN"))
 						self.LAST_OVPN_PING_DEAD_MESSAGE = int(time.time())
 						
-				elif self.OVPN_PING_STAT > 0:
+				elif self.VAR['OVPN']['PING_STAT'] > 0:
 					try:
-						if self.OVPN_isTESTING == True:
-							self.OVPN_PING = list()
-							self.OVPN_PING_STAT = self.OVPN_PING_LAST
-							self.OVPN_isTESTING = False
+						if self.VAR['OVPN']['CONN']['TESTING']== True:
+							self.VAR['OVPN']['PINGS'] = list()
+							self.VAR['OVPN']['PING_STAT'] = self.VAR['OVPN']['PING_LAST']
+							self.VAR['OVPN']['CONN']['TESTING']= False
 						m, s = divmod(connectedseconds, 60)
 						h, m = divmod(m, 60)
 						d, h = divmod(h, 24)
-						if self.OVPN_CONNECTEDseconds >= 0:
+						if self.VAR['OVPN']['CONN']['SECONDS'] >= 0:
 							connectedtime_text = "%d:%02d:%02d:%02d" % (d,h,m,s)
-						statusbar_text = _("Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)") % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,int(self.OVPN_PING_LAST),int(self.OVPN_PING_STAT))
+						statusbar_text = _("Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)") % (self.VAR['OVPN']['CONN']['SERVER'],self.VAR['OVPN']['CONN']['IP'],self.VAR['OVPN']['CONN']['PORT'],self.VAR['OVPN']['CONN']['PROTO'].upper(),connectedtime_text,int(self.VAR['OVPN']['PING_LAST']),int(self.VAR['OVPN']['PING_STAT']))
 						# systraytext Windows only shows the first 64 characters
-						systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.OVPN_CONNECTEDto,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper(),connectedtime_text,int(self.OVPN_PING_LAST))
+						systraytext = "%s [%s]:%s (%s) [%s] %sms" % (self.VAR['OVPN']['CONN']['SERVER'],self.VAR['OVPN']['CONN']['IP'],self.VAR['OVPN']['CONN']['PORT'],self.VAR['OVPN']['CONN']['PROTO'].upper(),connectedtime_text,int(self.VAR['OVPN']['PING_LAST']))
 						systrayicon = self.systray_icon_connected
 					except Exception as e:
 						self.debug(1,"def systray_timer: systraytext failed, exception '%s'"%(e))
@@ -1675,18 +1683,18 @@ class Systray:
 				statusbar_text = systraytext
 				systrayicon = self.systray_icon_disconnected
 				try:
-					if len(self.OVPN_SERVER) == 0 and self.INIT_FIRST_UPDATE == True:
+					if len(self.VAR['OVPN']['SERVERLIST']) == 0 and self.INIT_FIRST_UPDATE == True:
 						self.INIT_FIRST_UPDATE = False
 						self.load_ovpn_server()
-						if not self.APIKEY == False and len(self.OVPN_SERVER) == 0:
+						if not self.APIKEY == False and len(self.VAR['OVPN']['SERVERLIST']) == 0:
 							self.debug(1,"zero server found, initiate first update")
 							self.check_remote_update("config")
-					elif len(self.OVPN_SERVER) > 0 and self.INIT_FIRST_UPDATE == True:
+					elif len(self.VAR['OVPN']['SERVERLIST']) > 0 and self.INIT_FIRST_UPDATE == True:
 						self.INIT_FIRST_UPDATE = False
-					elif self.OVPN_AUTO_CONNECT_ON_START == True and not self.OVPN_FAV_SERVER == False:
-						self.OVPN_AUTO_CONNECT_ON_START = False
-						self.debug(1,"def systray_timer: self.OVPN_AUTO_CONNECT_ON_START: self.OVPN_FAV_SERVER = '%s'" % (self.OVPN_FAV_SERVER))
-						self.cb_jump_openvpn(0,0,self.OVPN_FAV_SERVER)
+					elif self.VAR['OVPN']['AUTOCONNECT'] == True and not self.VAR['OVPN']['FAVSRV'] == False:
+						self.VAR['OVPN']['AUTOCONNECT'] = False
+						self.debug(1,"def systray_timer: self.VAR['OVPN']['AUTOCONNECT']: self.VAR['OVPN']['FAVSRV'] = '%s'" % (self.VAR['OVPN']['FAVSRV']))
+						self.cb_jump_openvpn(0,0,self.VAR['OVPN']['FAVSRV'])
 					
 				except Exception as e:
 					self.debug(1,"def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed, exception '%s'"%(e))
@@ -1714,7 +1722,7 @@ class Systray:
 				
 				try:
 					# statusbar
-					if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
+					if self.VAR['MAIN']['OPEN'] == True and self.VAR['MAIN']['HIDE'] == False:
 						if not self.statusbartext_from_before == statusbar_text:
 							self.set_statusbar_text(statusbar_text)
 							self.statusbartext_from_before = statusbar_text
@@ -1750,10 +1758,10 @@ class Systray:
 		if not self.systray_menu == False:
 			self.destroy_systray_menu()
 		else:
-			if self.MAINWINDOW_OPEN == False:
+			if self.VAR['MAIN']['OPEN'] == False:
 				try:
 					self.load_ovpn_server()
-					if len(self.OVPN_SERVER) > 0:
+					if len(self.VAR['OVPN']['SERVERLIST']) > 0:
 						event = Gtk.get_current_event_time()
 						self.show_mainwindow(widget, event)
 				except Exception as e:
@@ -1761,12 +1769,12 @@ class Systray:
 			else:
 				if self.mainwindow.get_property("visible") == False:
 					self.debug(1,"def on_left_click: unhide Mainwindow")
-					self.MAINWINDOW_HIDE = False
+					self.VAR['MAIN']['HIDE'] = False
 					self.mainwindow.show()
 				else:
 					self.debug(1,"def on_left_click: hide Mainwindow")
 					self.mainwindow.hide()
-					self.MAINWINDOW_HIDE = True
+					self.VAR['MAIN']['HIDE'] = True
 					return True
 
 	def make_systray_menu(self, event):
@@ -1808,13 +1816,13 @@ class Systray:
 	def make_systray_server_menu(self):
 		self.debug(1,"def make_systray_server_menu()")
 		self.COUNTRYNAMES = {'AF':_("Afghanistan"),'AL':_("Albania"),'DZ':_("Algeria"),'AS':_("American Samoa"),'AD':_("Andorra"),'AO':_("Angola"),'AI':_("Anguilla"),'AQ':_("Antarctica"),'AG':_("Antigua and Barbuda"),'AR':_("Argentina"),'AM':_("Armenia"),'AW':_("Aruba"),'AU':_("Australia"),'AT':_("Austria"),'AZ':_("Azerbaijan"),'BS':_("Bahamas"),'BH':_("Bahrain"),'BD':_("Bangladesh"),'BB':_("Barbados"),'BY':_("Belarus"),'BE':_("Belgium"),'BZ':_("Belize"),'BJ':_("Benin"),'BM':_("Bermuda"),'BT':_("Bhutan"),'BO':_("Plurinational State of Bolivia"),'BA':_("Bosnia and Herzegovina"),'BW':_("Botswana"),'BV':_("Bouvet Island"),'BR':_("Brazil"),'IO':_("British Indian Ocean Territory"),'BN':_("Brunei Darussalam"),'BG':_("Bulgaria"),'BF':_("Burkina Faso"),'BI':_("Burundi"),'KH':_("Cambodia"),'CM':_("Cameroon"),'CA':_("Canada"),'CV':_("Cape Verde"),'KY':_("Cayman Islands"),'CF':_("Central African Republic"),'TD':_("Chad"),'CL':_("Chile"),'CN':_("China"),'CX':_("Christmas Island"),'CC':_("Cocos (Keeling) Islands"),'CO':_("Colombia"),'KM':_("Comoros"),'CG':_("Congo"),'CD':_("the Democratic Republic of the Congo"),'CK':_("Cook Islands"),'CR':_("Costa Rica"),'HR':_("Croatia"),'CU':_("Cuba"),'CY':_("Cyprus"),'CZ':_("Czech Republic"),'DK':_("Denmark"),'DJ':_("Djibouti"),'DM':_("Dominica"),'DO':_("Dominican Republic"),'EC':_("Ecuador"),'EG':_("Egypt"),'SV':_("El Salvador"),'GQ':_("Equatorial Guinea"),'ER':_("Eritrea"),'EE':_("Estonia"),'ET':_("Ethiopia"),'FK':_("Falkland Islands (Malvinas)"),'FO':_("Faroe Islands"),'FJ':_("Fiji"),'FI':_("Finland"),'FR':_("France"),'GF':_("French Guiana"),'PF':_("French Polynesia"),'TF':_("French Southern Territories"),'GA':_("Gabon"),'GM':_("Gambia"),'GE':_("Georgia"),'DE':_("Germany"),'GH':_("Ghana"),'GI':_("Gibraltar"),'GR':_("Greece"),'GL':_("Greenland"),'GD':_("Grenada"),'GP':_("Guadeloupe"),'GU':_("Guam"),'GT':_("Guatemala"),'GG':_("Guernsey"),'GN':_("Guinea"),'GW':_("Guinea-Bissau"),'GY':_("Guyana"),'HT':_("Haiti"),'HM':_("Heard Island and McDonald Islands"),'VA':_("Holy See (Vatican City State)"),'HN':_("Honduras"),'HK':_("Hong Kong"),'HU':_("Hungary"),'IS':_("Iceland"),'IN':_("India"),'ID':_("Indonesia"),'IR':_("Islamic Republic of Iran"),'IQ':_("Iraq"),'IE':_("Ireland"),'IM':_("Isle of Man"),'IL':_("Israel"),'IT':_("Italy"),'JM':_("Jamaica"),'JP':_("Japan"),'JE':_("Jersey"),'JO':_("Jordan"),'KZ':_("Kazakhstan"),'KE':_("Kenya"),'KI':_("Kiribati"),'KW':_("Kuwait"),'KG':_("Kyrgyzstan"),'LV':_("Latvia"),'LB':_("Lebanon"),'LS':_("Lesotho"),'LR':_("Liberia"),'LY':_("Libyan Arab Jamahiriya"),'LI':_("Liechtenstein"),'LT':_("Lithuania"),'LU':_("Luxembourg"),'MO':_("Macao"),'MK':_("Macedonia"),'MG':_("Madagascar"),'MW':_("Malawi"),'MY':_("Malaysia"),'MV':_("Maldives"),'ML':_("Mali"),'MT':_("Malta"),'MH':_("Marshall Islands"),'MQ':_("Martinique"),'MR':_("Mauritania"),'MU':_("Mauritius"),'YT':_("Mayotte"),'MX':_("Mexico"),'FM':_("Federated States of Micronesia"),'MD':_("Republic of Moldova"),'MC':_("Monaco"),'MN':_("Mongolia"),'ME':_("Montenegro"),'MS':_("Montserrat"),'MA':_("Morocco"),'MZ':_("Mozambique"),'MM':_("Myanmar"),'NA':_("Namibia"),'NR':_("Nauru"),'NP':_("Nepal"),'NL':_("Netherlands"),'AN':_("Netherlands Antilles"),'NC':_("New Caledonia"),'NZ':_("New Zealand"),'NI':_("Nicaragua"),'NE':_("Niger"),'NG':_("Nigeria"),'NU':_("Niue"),'NF':_("Norfolk Island"),'MP':_("Northern Mariana Islands"),'NO':_("Norway"),'OM':_("Oman"),'PK':_("Pakistan"),'PW':_("Palau"),'PS':_("Occupied Palestinian Territory"),'PA':_("Panama"),'PG':_("Papua New Guinea"),'PY':_("Paraguay"),'PE':_("Peru"),'PH':_("Philippines"),'PN':_("Pitcairn"),'PL':_("Poland"),'PT':_("Portugal"),'PR':_("Puerto Rico"),'QA':_("Qatar"),'RE':_("Reunion"),'RO':_("Romania"),'RU':_("Russian Federation"),'RW':_("Rwanda"),'BL':_("Saint Barthelemy"),'SH':_("Saint Helena"),'KN':_("Saint Kitts and Nevis"),'LC':_("Saint Lucia"),'MF':_("Saint Martin (French part)"),'PM':_("Saint Pierre and Miquelon"),'VC':_("Saint Vincent and the Grenadines"),'WS':_("Samoa"),'SM':_("San Marino"),'ST':_("Sao Tome and Principe"),'SA':_("Saudi Arabia"),'SN':_("Senegal"),'RS':_("Serbia"),'SC':_("Seychelles"),'SL':_("Sierra Leone"),'SG':_("Singapore"),'SK':_("Slovakia"),'SI':_("Slovenia"),'SB':_("Solomon Islands"),'SO':_("Somalia"),'ZA':_("South Africa"),'GS':_("South Georgia and the South Sandwich Islands"),'ES':_("Spain"),'LK':_("Sri Lanka"),'SD':_("Sudan"),'SR':_("Suriname"),'SJ':_("Svalbard and Jan Mayen"),'SZ':_("Swaziland"),'SE':_("Sweden"),'CH':_("Switzerland"),'SY':_("Syrian Arab Republic"),'TW':_("Taiwan"),'TJ':_("Tajikistan"),'TZ':_("United Republic of Tanzania"),'TH':_("Thailand"),'TL':_("Timor-Leste"),'TG':_("Togo"),'TK':_("Tokelau"),'TO':_("Tonga"),'TT':_("Trinidad and Tobago"),'TN':_("Tunisia"),'TR':_("Turkey"),'TM':_("Turkmenistan"),'TC':_("Turks and Caicos Islands"),'TV':_("Tuvalu"),'UG':_("Uganda"),'UA':_("Ukraine"),'AE':_("United Arab Emirates"),'GB':_("United Kingdom"),'UK':_("United Kingdom"),'US':_("United States"),'UM':_("United States Minor Outlying Islands"),'UY':_("Uruguay"),'UZ':_("Uzbekistan"),'VU':_("Vanuatu"),'VE':_("Bolivarian Republic of Venezuela"),'VN':_("Viet Nam"),'VG':_("British Virgin Islands"),'VI':_("U.S. Virgin Islands"),'WF':_("Wallis and Futuna"),'EH':_("Western Sahara"),'YE':_("Yemen"),'ZM':_("Zambia"),'ZW':_("Zimbabwe")}
-		if len(self.OVPN_SERVER) > 0:
+		if len(self.VAR['OVPN']['SERVERLIST']) > 0:
 			try:
 				countrycodefrombefore = 0
-				for servername in self.OVPN_SERVER:
+				for servername in self.VAR['OVPN']['SERVERLIST']:
 					servershort = servername.split(".")[0].upper()
 					
-					textstring = "%s [%s]:%s (%s)" % (servershort,self.OVPN_SERVER_INFO[servershort][0],self.OVPN_SERVER_INFO[servershort][1],self.OVPN_SERVER_INFO[servershort][2])
+					textstring = "%s [%s]:%s (%s)" % (servershort,self.VAR['OVPN']['SERVERINFO'][servershort][0],self.VAR['OVPN']['SERVERINFO'][servershort][1],self.VAR['OVPN']['SERVERINFO'][servershort][2])
 					countrycode = servershort[:2]
 					#print "string = %s, countrycode = %s" % (textstring,countrycode)
 					
@@ -1847,7 +1855,7 @@ class Systray:
 							self.destroy_systray_menu()
 							self.debug(1,"def make_systray_server_menu: flagimg group1 failed, exception = '%s'"%(e))
 					
-					if self.OVPN_CONNECTEDto == servername:
+					if self.VAR['OVPN']['CONN']['SERVER'] == servername:
 						textstring = servershort+_(" [ disconnect ]")
 						serveritem = Gtk.ImageMenuItem(textstring)
 						serveritem.connect('button-release-event', self.cb_kill_openvpn)
@@ -1871,8 +1879,8 @@ class Systray:
 		if self.state_openvpn() == True:
 			try:
 				sep = Gtk.SeparatorMenuItem()
-				servershort = self.OVPN_CONNECTEDto.split(".")[0].upper()
-				textstring = '%s @ [%s]:%s (%s)' % (servershort,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol.upper())
+				servershort = self.VAR['OVPN']['CONN']['SERVER'].split(".")[0].upper()
+				textstring = '%s @ [%s]:%s (%s)' % (servershort,self.VAR['OVPN']['CONN']['IP'],self.VAR['OVPN']['CONN']['PORT'],self.VAR['OVPN']['CONN']['PROTO'].upper())
 				disconnect = Gtk.ImageMenuItem(textstring)
 				img = Gtk.Image()
 				if self.APP_THEME == "private":
@@ -1980,7 +1988,7 @@ class Systray:
 			self.timer_check_certdl_running = True
 			try:
 				self.load_ovpn_server()
-				if len(self.OVPN_SERVER) == 0:
+				if len(self.VAR['OVPN']['SERVERLIST']) == 0:
 					self.reset_last_update()
 			except Exception as e:
 				self.debug(1,"def inThread_timer_check_update: self.load_ovpn_server() failed, exception = '%s'"%(e))
@@ -1993,7 +2001,7 @@ class Systray:
 					self.STATE_CERTDL = "getconfigs"
 					if self.API_REQUEST(API_ACTION = self.STATE_CERTDL):
 						if self.extract_ovpn():
-							self.OVPN_SERVER = list()
+							self.VAR['OVPN']['SERVERLIST'] = list()
 							if self.load_ovpn_server() == True:
 								self.rebuild_mainwindow()
 							self.msgwarn(_("Configurations updated!"),_("Success"))
@@ -2023,7 +2031,7 @@ class Systray:
 		starttime = time.time()
 		for row in liststore:
 			server = row[2]
-			if server in self.OVPN_SERVER:
+			if server in self.VAR['OVPN']['SERVERLIST']:
 				if debugupdate_mwls: self.debug(1,"def update_mwls: server '%s'" % (server))
 				servershort = server.split(".")[0].upper()
 				if row[2] == server:
@@ -2037,21 +2045,21 @@ class Systray:
 					while cellnumber <= 27:
 						try:
 							oldvalue = row[cellnumber]
-							serverip4  = str(self.OVPN_SERVER_INFO[servershort][0])
-							serverport = str(self.OVPN_SERVER_INFO[servershort][1])
-							serverproto = str(self.OVPN_SERVER_INFO[servershort][2])
-							servercipher = str(self.OVPN_SERVER_INFO[servershort][3])
+							serverip4  = str(self.VAR['OVPN']['SERVERINFO'][servershort][0])
+							serverport = str(self.VAR['OVPN']['SERVERINFO'][servershort][1])
+							serverproto = str(self.VAR['OVPN']['SERVERINFO'][servershort][2])
+							servercipher = str(self.VAR['OVPN']['SERVERINFO'][servershort][3])
 							try:
-								servermtu = str(self.OVPN_SERVER_INFO[servershort][4])
+								servermtu = str(self.VAR['OVPN']['SERVERINFO'][servershort][4])
 							except Exception as e:
 								servermtu = str(1500)
 							if cellnumber == 0:
 								if self.LOAD_SRVDATA == True and len(self.OVPN_SRV_DATA) >= 1:
 									try:
 										serverstatus = self.OVPN_SRV_DATA[servershort]["status"]
-										if server == self.OVPN_CONNECTEDto:
+										if server == self.VAR['OVPN']['CONN']['SERVER']:
 											statusimg = self.decode_icon("shield_go")
-										elif server == self.OVPN_FAV_SERVER:
+										elif server == self.VAR['OVPN']['FAVSRV']:
 											statusimg = self.decode_icon("star")
 										elif serverstatus == "0":
 											statusimg = self.decode_icon("bullet_red")
@@ -2063,9 +2071,9 @@ class Systray:
 										self.debug(1,"def update_mwls: self.OVPN_SRV_DATA[%s]['status'] not found" % (servershort))
 										break
 								else:
-									if server == self.OVPN_CONNECTEDto:
+									if server == self.VAR['OVPN']['CONN']['SERVER']:
 										statusimg = self.decode_icon("shield_go")
-									elif server == self.OVPN_FAV_SERVER:
+									elif server == self.VAR['OVPN']['FAVSRV']:
 										statusimg = self.decode_icon("star")
 									else:
 										statusimg = self.decode_icon("bullet_white")
@@ -2234,7 +2242,7 @@ class Systray:
 
 	def call_redraw_mainwindow(self):
 		self.debug(1,"def call_redraw_mainwindow()")
-		if self.MAINWINDOW_OPEN == True and self.MAINWINDOW_HIDE == False:
+		if self.VAR['MAIN']['OPEN'] == True and self.VAR['MAIN']['HIDE'] == False:
 			self.statusbartext_from_before = False
 			try:
 				GLib.idle_add(self.update_mwls)
@@ -2245,8 +2253,8 @@ class Systray:
 		GLib.idle_add(self.rebuild_mainwindow_glib)
 
 	def rebuild_mainwindow_glib(self):
-		if self.MAINWINDOW_OPEN == True:
-			if self.MAINWINDOW_HIDE == True:
+		if self.VAR['MAIN']['OPEN'] == True:
+			if self.VAR['MAIN']['HIDE'] == True:
 				try:
 					self.destroy_mainwindow()
 					return False
@@ -2274,7 +2282,7 @@ class Systray:
 		self.destroy_systray_menu()
 		self.reset_load_remote_timer()
 		self.statusbartext_from_before = False
-		if self.MAINWINDOW_OPEN == False:
+		if self.VAR['MAIN']['OPEN'] == False:
 			self.load_ovpn_server()
 			try:
 				self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
@@ -2284,10 +2292,10 @@ class Systray:
 				self.mainwindow.set_title(_("Server"))
 				self.mainwindow.set_icon(self.app_icon)
 				self.rebuild_mainwindow()
-				self.MAINWINDOW_OPEN = True
+				self.VAR['MAIN']['OPEN'] = True
 				return True
 			except Exception as e:
-				self.MAINWINDOW_OPEN = False
+				self.VAR['MAIN']['OPEN'] = False
 				self.debug(1,"def show_mainwindow: mainwindow failed, exception = '%s'"%(e))
 				return False
 		else:
@@ -2369,11 +2377,11 @@ class Systray:
 		self.mainwindow_vbox = Gtk.VBox(False,1)
 		self.mainwindow.add(self.mainwindow_vbox)
 		
-		if self.OVPN_CONFIGVERSION == "23x":
+		if self.VAR['OVPN']['CFGTYPE'] == "23x":
 			mode = "IPv4"
-		elif self.OVPN_CONFIGVERSION == "23x46":
+		elif self.VAR['OVPN']['CFGTYPE'] == "23x46":
 			mode = "IPv4 + IPv6"
-		elif self.OVPN_CONFIGVERSION == "23x64":
+		elif self.VAR['OVPN']['CFGTYPE'] == "23x64":
 			mode = "IPv6 + IPv4"
 		
 		label = Gtk.Label(_("oVPN Server [ %s ]") % (mode))
@@ -2405,7 +2413,7 @@ class Systray:
 		## cell 0 == statusicon
 		## cell 1 == flagicon
 		cellnumber = 2
-		for cellid,cellname in self.MAINWINDOW_CELLINDEX.items():
+		for cellid,cellname in self.VAR['MAIN']['CELLINDEX'].items():
 			if not cellnumber == 26:
 				self.debug(2,"def cellname = '%s'" % (cellname))
 				align=0.5
@@ -2431,8 +2439,8 @@ class Systray:
 					if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
 						column.set_visible(False)
 				elif self.LOAD_SRVDATA == True:
-					if cellnumber in self.MAINWINDOW_ALLOWCELLHIDE:
-						if not cellnumber in self.MAINWINDOW_SHOWCELLS:
+					if cellnumber in self.VAR['MAIN']['ALLOWCELLHIDE']:
+						if not cellnumber in self.VAR['MAIN']['SHOWCELLS']:
 							column.set_visible(False)
 						else:
 							column.set_visible(True)
@@ -2447,8 +2455,8 @@ class Systray:
 		if self.LOAD_SRVDATA == False:
 			column.set_visible(False)
 		else:
-			if cellnumber in self.MAINWINDOW_ALLOWCELLHIDE:
-					if not cellnumber in self.MAINWINDOW_SHOWCELLS:
+			if cellnumber in self.VAR['MAIN']['ALLOWCELLHIDE']:
+					if not cellnumber in self.VAR['MAIN']['SHOWCELLS']:
 						column.set_visible(False)
 		self.treeview.append_column(column)
 		
@@ -2474,18 +2482,18 @@ class Systray:
 		return
 
 	def fill_mainwindow_with_server(self):
-		for server in self.OVPN_SERVER:
+		for server in self.VAR['OVPN']['SERVERLIST']:
 			try:
 				countrycode = server[:2]
 				servershort = server.split(".")[0].upper()
 				statusimg = self.decode_icon("bullet_white")
 				countryimg = self.decode_flag(countrycode)
-				serverip4  = self.OVPN_SERVER_INFO[servershort][0]
-				serverport = self.OVPN_SERVER_INFO[servershort][1]
-				serverproto = self.OVPN_SERVER_INFO[servershort][2]
-				servercipher = self.OVPN_SERVER_INFO[servershort][3]
+				serverip4  = self.VAR['OVPN']['SERVERINFO'][servershort][0]
+				serverport = self.VAR['OVPN']['SERVERINFO'][servershort][1]
+				serverproto = self.VAR['OVPN']['SERVERINFO'][servershort][2]
+				servercipher = self.VAR['OVPN']['SERVERINFO'][servershort][3]
 				try:
-					servermtu = self.OVPN_SERVER_INFO[servershort][4]
+					servermtu = self.VAR['OVPN']['SERVERINFO'][servershort][4]
 				except Exception as e:
 					servermtu = 1500
 				self.serverliststore.append([statusimg,countryimg,str(server),str(serverip4),str("-1"),str(serverport),str(serverproto),str(servermtu),str(servercipher),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str("-1"),str(servershort),countryimg,str("")])
@@ -2495,8 +2503,8 @@ class Systray:
 	def destroy_mainwindow(self):
 		self.debug(1,"def destroy_mainwindow()")
 		GLib.idle_add(self.mainwindow.destroy)
-		self.MAINWINDOW_OPEN = False
-		self.MAINWINDOW_HIDE = False
+		self.VAR['MAIN']['OPEN'] = False
+		self.VAR['MAIN']['HIDE'] = False
 		self.statusbar_text = False
 
 	def destroy_debugwindow(self):
@@ -3236,11 +3244,11 @@ class Systray:
 		GLib.idle_add(self.cb_resetextif)
 
 	def settings_options_button_ipv6(self,page):
-		if self.OVPN_CONFIGVERSION == "23x":
+		if self.VAR['OVPN']['CFGTYPE'] == "23x":
 			button_title = Gtk.Label(label=_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
 			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
 			button.connect('clicked', self.cb_settings_options_button_ipv6)
-		elif self.OVPN_CONFIGVERSION  == "23x46":
+		elif self.VAR['OVPN']['CFGTYPE']  == "23x46":
 			button_title = Gtk.Label(label=_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
 			button = Gtk.Button(label=_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
 			button.connect('clicked', self.cb_settings_options_button_ipv6)
@@ -3251,13 +3259,13 @@ class Systray:
 		page.pack_start(Gtk.Label(label=""),False,False,0)
 
 	def cb_settings_options_button_ipv6(self,event):
-		if not self.OVPN_CONFIGVERSION == "23x":
+		if not self.VAR['OVPN']['CFGTYPE'] == "23x":
 			GLib.idle_add(self.cb_change_ipmode1)
-		if not self.OVPN_CONFIGVERSION  == "23x46":
+		if not self.VAR['OVPN']['CFGTYPE']  == "23x46":
 			GLib.idle_add(self.cb_change_ipmode2)
 		"""
 		 *** fixme need isValueIPv6 first! ***
-		if not self.OVPN_CONFIGVERSION == "23x64":
+		if not self.VAR['OVPN']['CFGTYPE'] == "23x64":
 			GLib.idle_add(self.cb_change_ipmode3)
 		"""
 
@@ -3526,8 +3534,8 @@ class Systray:
 
 	def cb_destroy_mainwindow(self,event):
 		self.debug(1,"def cb_destroy_mainwindow")
-		self.MAINWINDOW_OPEN = False
-		self.MAINWINDOW_HIDE = False
+		self.VAR['MAIN']['OPEN'] = False
+		self.VAR['MAIN']['HIDE'] = False
 
 	def cb_destroy_debugwindow(self,event):
 		self.DEBUGWINDOW_OPEN = False
@@ -3564,8 +3572,8 @@ class Systray:
 				except Exception as e:
 					pass
 			self.write_options_file()
-			if self.OVPN_CONNECTEDto == name:
-				self.debug(1,"def cb_set_dns: self.OVPN_CONNECTEDto = %s , name = %s" % (self.OVPN_CONNECTEDto,name))
+			if self.VAR['OVPN']['CONN']['SERVER'] == name:
+				self.debug(1,"def cb_set_dns: self.VAR['OVPN']['CONN']['SERVER'] = %s , name = %s" % (self.VAR['OVPN']['CONN']['SERVER'],name))
 				self.win_netsh_set_dns_ovpn()
 			return True
 
@@ -3611,8 +3619,8 @@ class Systray:
 				except Exception as e:
 					self.MYDNS[name] = value
 				self.write_options_file()
-				if self.OVPN_CONNECTEDto == name:
-					self.debug(1,"def cb_set_dns: self.OVPN_CONNECTEDto = %s , name = %s" % (self.OVPN_CONNECTEDto,name))
+				if self.VAR['OVPN']['CONN']['SERVER'] == name:
+					self.debug(1,"def cb_set_dns: self.VAR['OVPN']['CONN']['SERVER'] = %s , name = %s" % (self.VAR['OVPN']['CONN']['SERVER'],name))
 					self.win_netsh_set_dns_ovpn()
 					return True
 
@@ -3648,7 +3656,7 @@ class Systray:
 			self.destroy_context_menu_servertab()
 			self.debug(1,"def cb_set_ovpn_favorite_server()")
 			try:
-				self.OVPN_FAV_SERVER = server
+				self.VAR['OVPN']['FAVSRV'] = server
 				self.write_options_file()
 				self.call_redraw_mainwindow()
 				return True
@@ -3660,7 +3668,7 @@ class Systray:
 			self.destroy_context_menu_servertab()
 			self.debug(1,"def cb_del_ovpn_favorite_server()")
 			try:
-				self.OVPN_FAV_SERVER = False
+				self.VAR['OVPN']['FAVSRV'] = False
 				self.write_options_file()
 				self.call_redraw_mainwindow()
 				return True
@@ -3674,7 +3682,7 @@ class Systray:
 			self.reset_load_remote_timer()
 
 	def reset_load_remote_timer(self):
-		if self.LOAD_SRVDATA == True and self.MAINWINDOW_OPEN == True:
+		if self.LOAD_SRVDATA == True and self.VAR['MAIN']['OPEN'] == True:
 			if self.LAST_OVPN_SRV_DATA_UPDATE > 0 and self.LAST_OVPN_SRV_DATA_UPDATE < time.time()-60:
 				self.LAST_OVPN_SRV_DATA_UPDATE = 0
 				self.debug(1,"reset_load_remote_timer: SRV")
@@ -3695,7 +3703,7 @@ class Systray:
 			self.destroy_context_menu_servertab()
 			self.destroy_systray_menu()
 			self.debug(1,"def cb_kill_openvpn()")
-			self.OVPN_AUTO_CONNECT_ON_START = False
+			self.VAR['OVPN']['AUTOCONNECT'] = False
 			self.debug(1,"def cb_kill_openvpn")
 			killthread = threading.Thread(target=self.inThread_kill_openvpn)
 			killthread.daemon = True
@@ -3711,7 +3719,7 @@ class Systray:
 			return False
 		if (widget == 0 and event == 0) or event.button == 1:
 			self.OVPN_STOP = True
-			self.OVPN_CALL_SRV = server
+			self.VAR['OVPN']['CALL_SRV'] = server
 			self.destroy_systray_menu()
 			self.destroy_context_menu_servertab()
 			jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
@@ -3730,8 +3738,8 @@ class Systray:
 			self.debug(1,"def inThread_jump_server: server %s" % (server))
 			if self.state_openvpn() == True:
 				self.kill_openvpn()
-			while not self.OVPN_THREADID == False:
-				self.debug(1,"def cb_jump_openvpn: sleep while self.OVPN_THREADID")
+			while not self.VAR['OVPN']['THREADID'] == False:
+				self.debug(1,"def cb_jump_openvpn: sleep while self.VAR['OVPN']['THREADID']")
 				time.sleep(0.1)
 			while not self.timer_ovpn_ping_running == False:
 				self.debug(1,"def cb_jump_openvpn: sleep while self.timer_ovpn_ping_running")
@@ -3778,35 +3786,35 @@ class Systray:
 	def openvpn(self,server):
 		self.debug(1,"def openvpn: server = '%s'" % (server))
 		try:
-			if self.OVPN_THREADID == False:
+			if self.VAR['OVPN']['THREADID'] == False:
 				self.inThread_jump_server_running = True
 				OVPN_CONFIG_FILE = "%s\\%s.ovpn" % (self.VPN_CFG,server)
 				servershort = server.split(".")[0].upper()
 				if os.path.isfile(OVPN_CONFIG_FILE):
-					self.OVPN_CONNECTEDtoIP = self.OVPN_SERVER_INFO[servershort][0]
-					self.OVPN_CONNECTEDtoPort = self.OVPN_SERVER_INFO[servershort][1]
-					self.OVPN_CONNECTEDtoProtocol = self.OVPN_SERVER_INFO[servershort][2]
+					self.VAR['OVPN']['CONN']['IP'] = self.VAR['OVPN']['SERVERINFO'][servershort][0]
+					self.VAR['OVPN']['CONN']['PORT'] = self.VAR['OVPN']['SERVERINFO'][servershort][1]
+					self.VAR['OVPN']['CONN']['PROTO'] = self.VAR['OVPN']['SERVERINFO'][servershort][2]
 				else:
 					self.debug(1,"Error: Server Config not found: '%s'" % (OVPN_CONFIG_FILE))
 					self.reset_ovpn_values()
 					return False
-				self.OVPN_SESSIONLOG = "%s\\openvpn.log" % (self.VPN_DIR)
+				self.VAR['OVPN']['LOG'] = "%s\\openvpn.log" % (self.VPN_DIR)
 				try:
 					OVPN_STRING = '"%s" --config "%s" --dev-node "%s"' % (self.OPENVPN_EXE,OVPN_CONFIG_FILE,self.WIN_TAP_DEVICE)
 					if self.DEBUG == True:
-						self.OVPN_STRING = '%s --log "%s"' % (OVPN_STRING,self.OVPN_SESSIONLOG)
+						self.OVPN_STRING = '%s --log "%s"' % (OVPN_STRING,self.VAR['OVPN']['LOG'])
 					else:
 						self.OVPN_STRING = OVPN_STRING
 					thread_spawn_openvpn_process = threading.Thread(target=self.inThread_spawn_openvpn_process)
 					thread_spawn_openvpn_process.start()
-					self.OVPN_THREADID = threading.currentThread()
-					self.debug(1,"def openvpn: server '%s', threadid '%s'" % (server,self.OVPN_THREADID))
+					self.VAR['OVPN']['THREADID'] = threading.currentThread()
+					self.debug(1,"def openvpn: server '%s', threadid '%s'" % (server,self.VAR['OVPN']['THREADID']))
 				except Exception as e:
 					self.debug(1,"def openvpn: start thread failed, exception '%s'" % (server,e))
 					self.reset_ovpn_values()
 					return False
 			else:
-				self.debug(1,"def openvpn: self.OVPN_THREADID = %s" % (self.OVPN_THREADID))
+				self.debug(1,"def openvpn: self.VAR['OVPN']['THREADID'] = %s" % (self.VAR['OVPN']['THREADID']))
 		except Exception as e:
 			self.debug(1,"def openvpn: failed, exception = '%s'"%(e))
 
@@ -3826,10 +3834,10 @@ class Systray:
 			self.win_firewall_clear_vcp_rules()
 			self.win_firewall_modify_rule(option="add")
 			self.win_clear_ipv6()
-			self.OVPN_CONNECTEDtime = int(time.time())
-			self.OVPN_CONNECTEDto = self.OVPN_CALL_SRV
-			self.OVPN_PING_STAT = -1
-			self.OVPN_PING_LAST = -1
+			self.VAR['OVPN']['CONN']['START'] = int(time.time())
+			self.VAR['OVPN']['CONN']['SERVER'] = self.VAR['OVPN']['CALL_SRV']
+			self.VAR['OVPN']['PING_STAT'] = -1
+			self.VAR['OVPN']['PING_LAST'] = -1
 			self.NEXT_PING_EXEC = 0
 			self.reset_load_remote_timer()
 			if self.TAP_BLOCKOUTBOUND == True:
@@ -3858,9 +3866,9 @@ class Systray:
 							return self.reset_ovpn_values()
 						else:
 							self.debug(1,"def inThread_spawn_openvpn_process: subprocess.check_call failed, exception: '%s'"%(e))
-							self.OVPN_CONNECTEDtime = int(time.time())
-							self.OVPN_PING_DEAD_COUNT = 9
-							self.OVPN_PING_LAST = -2
+							self.VAR['OVPN']['CONN']['START'] = int(time.time())
+							self.VAR['OVPN']['PING_DEAD'] = 9
+							self.VAR['OVPN']['PING_LAST'] = -2
 							self.NEXT_PING_EXEC = 9
 							self.msgwarn(_("OpenVPN process crashed! Restarting..."),_("Error"))
 							""" no return loops daemon """
@@ -3883,19 +3891,19 @@ class Systray:
 			self.OVPN_STOP = False
 			self.STATE_OVPN = False
 			self.inThread_jump_server_running = False
-			self.OVPN_CONNECTEDto = False
-			self.OVPN_CONNECTEDtoIP = False
-			self.OVPN_CONNECTEDtime = 0
-			self.OVPN_CONNECTEDseconds = 0
-			self.OVPN_THREADID = False
-			self.OVPN_PING_STAT = 0
-			self.OVPN_PING_LAST = 0
-			self.OVPN_PING = list()
+			self.VAR['OVPN']['CONN']['SERVER'] = False
+			self.VAR['OVPN']['CONN']['IP'] = False
+			self.VAR['OVPN']['CONN']['START'] = 0
+			self.VAR['OVPN']['CONN']['SECONDS'] = 0
+			self.VAR['OVPN']['THREADID'] = False
+			self.VAR['OVPN']['PING_STAT'] = 0
+			self.VAR['OVPN']['PING_LAST'] = 0
+			self.VAR['OVPN']['PINGS'] = list()
 			self.UPDATE_SWITCH = True
 			self.OVPN_STRING = False
-			self.CONNECTION_ESTABLISHED = False
+			self.VAR['OVPN']['CONN']['OK'] = False
 			self.LAST_OVPN_PING_DEAD_MESSAGE = 0
-			self.delete_file(self.OVPN_SESSIONLOG,"def reset_ovpn_values")
+			self.delete_file(self.VAR['OVPN']['LOG'],"def reset_ovpn_values")
 			self.call_redraw_mainwindow()
 			return False
 		except Exception as e:
@@ -3904,13 +3912,13 @@ class Systray:
 	def inThread_timer_ovpn_ping(self):
 		self.debug(10,"def inThread_timer_ovpn_ping()")
 		if self.timer_ovpn_ping_running == False:
-			self.OVPN_PING_STAT = -2
+			self.VAR['OVPN']['PING_STAT'] = -2
 			self.timer_ovpn_ping_running = True
 			self.debug(1,"def inThread_timer_ovpn_ping: start")
 		
 		if self.state_openvpn() == False:
-			self.OVPN_PING_STAT = -1
-			self.OVPN_PING = list()
+			self.VAR['OVPN']['PING_STAT'] = -1
+			self.VAR['OVPN']['PINGS'] = list()
 			self.timer_ovpn_ping_running = False
 			self.debug(1,"def inThread_timer_ovpn_ping: leaving")
 			return
@@ -3928,7 +3936,7 @@ class Systray:
 							if self.LAST_MSGWARN_WINDOW_DNS < int(time.time())-30:
 								self.LAST_MSGWARN_WINDOW_DNS = int(time.time())
 								self.msgwarn(_("DNS changed and reseting failed!"),_("Error"))
-					if self.NEXT_PING_EXEC < int(time.time()) and self.OVPN_CONNECTEDseconds > 5:
+					if self.NEXT_PING_EXEC < int(time.time()) and self.VAR['OVPN']['CONN']['SECONDS'] > 5:
 						PING = self.get_ovpn_ping()
 						if PING > 0 and PING < 1:
 							PING = round(PING,3)
@@ -3939,15 +3947,15 @@ class Systray:
 							self.NEXT_PING_EXEC = int(time.time())+randint
 							pingsum = 0
 							if PING > 0:
-								self.OVPN_PING.append(PING)
-							if len(self.OVPN_PING) > 16:
-								self.OVPN_PING.pop(0)
-							if len(self.OVPN_PING) > 0:
-								for pingi in self.OVPN_PING:
+								self.VAR['OVPN']['PINGS'].append(PING)
+							if len(self.VAR['OVPN']['PINGS']) > 16:
+								self.VAR['OVPN']['PINGS'].pop(0)
+							if len(self.VAR['OVPN']['PINGS']) > 0:
+								for pingi in self.VAR['OVPN']['PINGS']:
 									pingsum += int(pingi)
-								self.OVPN_PING_STAT = pingsum/len(self.OVPN_PING)
-							self.OVPN_PING_LAST = PING
-							self.OVPN_PING_DEAD_COUNT = 0
+								self.VAR['OVPN']['PING_STAT'] = pingsum/len(self.VAR['OVPN']['PINGS'])
+							self.VAR['OVPN']['PING_LAST'] = PING
+							self.VAR['OVPN']['PING_DEAD'] = 0
 							self.debug(7,"def inThread_timer_ovpn_ping: %s ms, next in %s s"%(PING,randint))
 						#else:
 						#	self.set_ovpn_ping_dead()
@@ -3966,12 +3974,12 @@ class Systray:
 				self.debug(1,"rejoin def inThread_timer_ovpn_ping() failed, exception = '%s'"%(e))
 
 	def set_ovpn_ping_dead(self):
-		self.OVPN_PING_LAST = -2
+		self.VAR['OVPN']['PING_LAST'] = -2
 		self.NEXT_PING_EXEC = int(time.time())+5
-		self.CONNECTION_ESTABLISHED = False
-		self.OVPN_PING_DEAD_COUNT += 1
-		if self.CONNECTION_FAILED_TIME == 0:
-			self.CONNECTION_FAILED_TIME = int(time.time())
+		self.VAR['OVPN']['CONN']['OK'] = False
+		self.VAR['OVPN']['PING_DEAD'] += 1
+		if self.VAR['OVPN']['CONN']['FAILEDTIME'] == 0:
+			self.VAR['OVPN']['CONN']['FAILEDTIME'] = int(time.time())
 
 	def get_ovpn_ping(self):
 		self.debug(2,"def get_ovpn_ping()")
@@ -3979,11 +3987,11 @@ class Systray:
 			ports = [ 53, 5353, 443, 1080, 8080 ]
 			for port in ports:
 				self.debug(2,"def get_ovpn_ping: try port %s"%(port))
-				PING = self.try_socket(self.GATEWAY_OVPN_IP4A,port,1)
+				PING = self.try_socket(self.VAR['OVPN']['GW']['IP4A'],port,1)
 				if not PING == False:
 					return PING
 			self.set_ovpn_ping_dead()
-			return self.OVPN_PING_LAST
+			return self.VAR['OVPN']['PING_LAST']
 		except Exception as e:
 			self.debug(2,"def get_ovpn_ping: failed, exception = '%s'"%(e))
 
@@ -4049,8 +4057,8 @@ class Systray:
 			for line in output:
 				split = line.split()
 				try:
-					if self.OVPN_CONNECTEDtoIP in line:
-						self.debug(1,"def read_ovpn_routes: self.OVPN_CONNECTEDtoIP in line '%s'" % (line))
+					if self.VAR['OVPN']['CONN']['IP'] in line:
+						self.debug(1,"def read_ovpn_routes: self.VAR['OVPN']['CONN']['IP'] in line '%s'" % (line))
 						GATEWAY_LOCAL = line.split()[2]
 						""" *fixme* """
 						if self.isValueIPv4(GATEWAY_LOCAL) and GATEWAY_LOCAL == self.GATEWAY_LOCAL:
@@ -4070,9 +4078,9 @@ class Systray:
 			if self.read_gateway_from_routes():
 				if not self.GATEWAY_LOCAL == False:
 					ROUTE_CMDLIST = list()
-					ROUTE_CMDLIST.append("DELETE %s MASK 255.255.255.255 %s" % (self.OVPN_CONNECTEDtoIP,self.GATEWAY_LOCAL))
-					ROUTE_CMDLIST.append("DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
-					ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.GATEWAY_OVPN_IP4))
+					ROUTE_CMDLIST.append("DELETE %s MASK 255.255.255.255 %s" % (self.VAR['OVPN']['CONN']['IP'],self.GATEWAY_LOCAL))
+					ROUTE_CMDLIST.append("DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.VAR['OVPN']['GW']['IP4']))
+					ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.VAR['OVPN']['GW']['IP4']))
 					return self.win_join_route_cmd(ROUTE_CMDLIST)
 		except Exception as e:
 			self.debug(1,"def del_ovpn_routes: failed, exception = '%s'"%(e))
@@ -4189,7 +4197,7 @@ class Systray:
 				self.debug(1,"def win_netsh_restore_dns: restore DHCP on IF: '%s' failed " % (self.WIN_EXT_DEVICE))
 			
 			try:
-				if not self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4A:
+				if not self.GATEWAY_DNS1 == self.VAR['OVPN']['GW']['IP4A']:
 					NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS1))
 					if not self.GATEWAY_DNS2 == False:
 						NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no'%(self.WIN_EXT_DEVICE,self.GATEWAY_DNS2))
@@ -4281,7 +4289,7 @@ class Systray:
 				return ["127.0.0.1"]
 			dnslist = list()
 			if domaindns == False:
-				servername = self.OVPN_CONNECTEDto
+				servername = self.VAR['OVPN']['CONN']['SERVER']
 				try:
 					pridns = self.MYDNS[servername]["primary"]["ip4"]
 					dnslist.append(pridns)
@@ -4305,7 +4313,7 @@ class Systray:
 				dnslist.append(DOMAIN_DNS1)
 				dnslist.append(DOMAIN_DNS2)
 			if len(dnslist) == 0:
-				dnslist.append(self.GATEWAY_OVPN_IP4A)
+				dnslist.append(self.VAR['OVPN']['GW']['IP4A'])
 			return dnslist
 		
 		except Exception as e:
@@ -4540,11 +4548,11 @@ class Systray:
 			self.debug(1,"def win_firewall_modify_rule()")
 			if self.NO_WIN_FIREWALL == True:
 				return True
-			if self.OVPN_CONNECTEDto == False and option == "delete":
+			if self.VAR['OVPN']['CONN']['SERVER'] == False and option == "delete":
 				return True
-			rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
+			rule_name = "Allow OUT oVPN-IP %s to Port %s Protocol %s" % (self.VAR['OVPN']['CONN']['IP'],self.VAR['OVPN']['CONN']['PORT'],self.VAR['OVPN']['CONN']['PROTO'])
 			if option == "add":
-				rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.OVPN_CONNECTEDtoIP,self.OVPN_CONNECTEDtoPort,self.OVPN_CONNECTEDtoProtocol)
+				rule_string = "advfirewall firewall %s rule name=\"%s\" remoteip=\"%s\" remoteport=\"%s\" protocol=\"%s\" profile=private dir=out action=allow" % (option,rule_name,self.VAR['OVPN']['CONN']['IP'],self.VAR['OVPN']['CONN']['PORT'],self.VAR['OVPN']['CONN']['PROTO'])
 			if option == "delete":
 				rule_string = "advfirewall firewall %s rule name=\"%s\"" % (option,rule_name)
 			self.debug(1,"def win_firewall_modify_rule: rule_string = '%s'"%(rule_string))
@@ -5034,11 +5042,11 @@ class Systray:
 				scrolledwindow.add(grid)
 				i = 0
 				x = 0
-				for cellid in self.MAINWINDOW_ALLOWCELLHIDE:
-					cellname = self.MAINWINDOW_CELLINDEX[cellid]
+				for cellid in self.VAR['MAIN']['ALLOWCELLHIDE']:
+					cellname = self.VAR['MAIN']['CELLINDEX'][cellid]
 					#print cellname
 					button = Gtk.ToggleButton(label=cellname)
-					if cellid in self.MAINWINDOW_SHOWCELLS:
+					if cellid in self.VAR['MAIN']['SHOWCELLS']:
 						button.set_active(True)
 					else:
 						button.set_active(False)
@@ -5057,24 +5065,24 @@ class Systray:
 
 	def cb_hide_cells2(self,button,cellid):
 		self.debug(1,"def cb_hide_cells2() cellid = '%s'"%(cellid))
-		if cellid in self.MAINWINDOW_ALLOWCELLHIDE:
-			if cellid in self.MAINWINDOW_SHOWCELLS:
-				self.MAINWINDOW_SHOWCELLS.remove(cellid)
+		if cellid in self.VAR['MAIN']['ALLOWCELLHIDE']:
+			if cellid in self.VAR['MAIN']['SHOWCELLS']:
+				self.VAR['MAIN']['SHOWCELLS'].remove(cellid)
 				self.debug(1,"def cb_hide_cells2: remove cellid = '%s'"%(cellid))
 			else:
-				self.MAINWINDOW_SHOWCELLS.append(cellid)
+				self.VAR['MAIN']['SHOWCELLS'].append(cellid)
 				self.debug(1,"def cb_hide_cells2: append cellid = '%s'"%(cellid))
 			self.write_options_file()
 			self.rebuild_mainwindow()
 
 	def cb_change_ipmode1(self):
 		self.debug(1,"def cb_change_ipmode1() *GLib*")
-		self.OVPN_CONFIGVERSION = "23x"
+		self.VAR['OVPN']['CFGTYPE'] = "23x"
 		self.write_options_file()
 		self.read_options_file()
-		self.OVPN_SERVER = {}
+		self.VAR['OVPN']['SERVERLIST'] = {}
 		self.load_ovpn_server()
-		if len(self.OVPN_SERVER) == 0:
+		if len(self.VAR['OVPN']['SERVERLIST']) == 0:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!"),_("Switched to IPv4"))
 			self.cb_force_update()
 		self.rebuild_mainwindow()
@@ -5082,12 +5090,12 @@ class Systray:
 
 	def cb_change_ipmode2(self):
 		self.debug(1,"def cb_change_ipmode2() *GLib*")
-		self.OVPN_CONFIGVERSION = "23x46"
+		self.VAR['OVPN']['CFGTYPE'] = "23x46"
 		self.write_options_file()
 		self.read_options_file()
-		self.OVPN_SERVER = {}
+		self.VAR['OVPN']['SERVERLIST'] = {}
 		self.load_ovpn_server()
-		if len(self.OVPN_SERVER) == 0:
+		if len(self.VAR['OVPN']['SERVERLIST']) == 0:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!"),_("Switched to IPv4+6"))
 			self.cb_force_update()
 		self.rebuild_mainwindow()
@@ -5097,12 +5105,12 @@ class Systray:
 	def cb_change_ipmode3(self):
 		self.debug(1,"def cb_change_ipmode3() *GLib*")
 		return True
-		self.OVPN_CONFIGVERSION = "23x64"
+		self.VAR['OVPN']['CFGTYPE'] = "23x64"
 		self.write_options_file()
 		self.read_options_file()
-		self.OVPN_SERVER = {}
+		self.VAR['OVPN']['SERVERLIST'] = {}
 		self.load_ovpn_server()
-		if len(self.OVPN_SERVER) == 0:
+		if len(self.VAR['OVPN']['SERVERLIST']) == 0:
 			self.msgwarn(_("Changed Option:\n\nUse 'Forced Config Update' to get new configs!"),_("Switched to IPv6+4"))
 			self.cb_check_normal_update()
 		self.rebuild_mainwindow()
@@ -5217,7 +5225,7 @@ class Systray:
 			elif API_ACTION == "getconfigs":
 				if os.path.isfile(self.zip_cfg):
 					os.remove(self.zip_cfg)
-				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.OVPN_CONFIGVERSION, 'type' : 'win' }
+				values = {'uid' : self.USERID, 'apikey' : self.APIKEY, 'action' : API_ACTION, 'version' : self.VAR['OVPN']['CFGTYPE'], 'type' : 'win' }
 				r = requests.post(url=self.APIURL,data=values,headers=HEADERS)
 				try:
 					fp = open(self.zip_cfg, "wb")
@@ -5309,26 +5317,26 @@ class Systray:
 	def check_myip(self):
 		self.debug(2,"def check_myip()")
 		# *** fixme *** missing ipv6 support
-		if self.OVPN_CONFIGVERSION == "23x" or self.OVPN_CONFIGVERSION == "23x46":
-			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.OVPN_PING_LAST > 0:
+		if self.VAR['OVPN']['CFGTYPE'] == "23x" or self.VAR['OVPN']['CFGTYPE'] == "23x46":
+			if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.VAR['OVPN']['PING_LAST'] > 0:
 				return True
 			try:
-				url = "http://%s/myip4" % (self.GATEWAY_OVPN_IP4A)
+				url = "http://%s/myip4" % (self.VAR['OVPN']['GW']['IP4A'])
 				HEADERS = request_api.useragent(self.DEBUG)
 				r = requests.get(url,timeout=5,headers=HEADERS)
 				rip = r.content.strip().split()[0].decode(decoding)
 				self.LAST_CHECK_MYIP = int(time.time())
-				if rip == self.OVPN_CONNECTEDtoIP:
-					if self.CONNECTION_ESTABLISHED == False:
-						self.CONNECTION_ESTABLISHED = True
-						self.OVPN_PING_DEAD_COUNT = 0
-						self.CONNECTION_FAILED_TIME = 0
+				if rip == self.VAR['OVPN']['CONN']['IP']:
+					if self.VAR['OVPN']['CONN']['OK'] == False:
+						self.VAR['OVPN']['CONN']['OK'] = True
+						self.VAR['OVPN']['PING_DEAD'] = 0
+						self.VAR['OVPN']['CONN']['FAILEDTIME'] = 0
 						self.send_notify(_("Connection established!"),_("oVPN"))
 					return True
 			except Exception as e:
 				self.debug(1,"def check_myip: failed, exception = '%s'"%(e))
 		else:
-			self.debug(1,"def check_myip: invalid self.OVPN_CONFIGVERSION")
+			self.debug(1,"def check_myip: invalid self.VAR['OVPN']['CFGTYPE']")
 		return False
 
 	def load_firewall_backups(self):
@@ -5356,15 +5364,15 @@ class Systray:
 
 	def load_ovpn_server(self):
 		self.debug(1,"def load_ovpn_server()")
-		if len(self.OVPN_SERVER) > 0:
+		if len(self.VAR['OVPN']['SERVERLIST']) > 0:
 			return
 		try:
 			if os.path.exists(self.VPN_CFG):
 				self.debug(1,"def load_ovpn_server: self.VPN_CFG = '%s'" % (self.VPN_CFG))
 				content = os.listdir(self.VPN_CFG)
 				content = self.sort_ovpn_server(content)
-				self.OVPN_SERVER = list()
-				self.OVPN_SERVER_INFO = {}
+				self.VAR['OVPN']['SERVERLIST'] = list()
+				self.VAR['OVPN']['SERVERINFO'] = {}
 				m, n = 0, 0
 				for file in content:
 					if file.endswith('.ovpn.to.ovpn'):
@@ -5437,8 +5445,8 @@ class Systray:
 									self.cb_force_update
 									return False
 							if i == 4:
-								self.OVPN_SERVER_INFO[servershort] = serverinfo
-								self.OVPN_SERVER.append(servername)
+								self.VAR['OVPN']['SERVERINFO'][servershort] = serverinfo
+								self.VAR['OVPN']['SERVERLIST'].append(servername)
 								#self.debug(2,"def load_ovpn_server: file = '%s'" % (file))
 								m += 1
 							else:
@@ -5463,11 +5471,11 @@ class Systray:
 			self.debug(6,"def load_remote_data: no api data")
 			self.timer_load_remote_data_running = False
 			return False
-		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST <= 0:
+		elif self.state_openvpn() == True and self.VAR['OVPN']['CONN']['SECONDS'] > 0 and self.VAR['OVPN']['PING_LAST'] <= 0:
 			self.debug(6,"def load_remote_data: waiting for ovpn connection")
 			self.timer_load_remote_data_running = False
 			return False
-		elif self.state_openvpn() == True and self.OVPN_CONNECTEDseconds > 0 and self.OVPN_PING_LAST > 999:
+		elif self.state_openvpn() == True and self.VAR['OVPN']['CONN']['SECONDS'] > 0 and self.VAR['OVPN']['PING_LAST'] > 999:
 			self.debug(6,"def load_remote_data: high ping")
 			self.timer_load_remote_data_running = False
 			return False
@@ -5509,10 +5517,10 @@ class Systray:
 		if self.LOAD_SRVDATA == False:
 			self.debug(46,"def load_serverdata_from_remote: disabled")
 			return False
-		elif self.MAINWINDOW_OPEN == False:
+		elif self.VAR['MAIN']['OPEN'] == False:
 			self.debug(46,"def load_serverdata_from_remote: mainwindow not open")
 			return False
-		elif self.MAINWINDOW_HIDE == True:
+		elif self.VAR['MAIN']['HIDE'] == True:
 			self.debug(46,"def load_serverdata_from_remote: mainwindow is hide")
 			return False
 		elif updatein > now:
@@ -5787,7 +5795,7 @@ class Systray:
 
 	def check_dns_is_whitelisted(self):
 		self.debug(1,"def check_dns_is_whitelisted()")
-		#if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.GATEWAY_OVPN_IP4 or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
+		#if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.VAR['OVPN']['GW']['IP4'] or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
 		if self.GATEWAY_DNS1 == "127.0.0.1":
 			self.debug(1,"def check_dns_is_whitelisted: True")
 			return True
