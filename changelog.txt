@@ -1,6 +1,11 @@
 # changelog.txt
 #
 
+Version: 0.8.0
++ update: set domains dns while testing inet
++ bugfix: remove version from exe description or notify system fails
++ bugfix: sharper and bigger notify icon @win10
+
 Version: 0.7.9
 + update: use windows notification system
 + update: add switch to disable windows notifications (w10) / balloontips (w7)
