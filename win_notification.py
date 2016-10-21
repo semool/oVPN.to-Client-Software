@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from debug import debug
-import os, platform, threading
+import os, platform, threading, ctypes
 
 from win32api import GetSystemMetrics, GetModuleHandle, PostQuitMessage, LoadResource
-from win32con import CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
-from win32gui import CreateIconFromResource, CreateWindow, DestroyWindow, LoadIcon, LoadImage, NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_MODIFY, RegisterClass, UnregisterClass, Shell_NotifyIcon, UpdateWindow, WNDCLASS
+from win32con import CW_USEDEFAULT, IMAGE_ICON, IMAGE_BITMAP, IDI_INFORMATION, IDI_APPLICATION, LR_DEFAULTSIZE, LR_DEFAULTCOLOR, LR_LOADFROMFILE, WM_DESTROY, WS_OVERLAPPED, WS_SYSMENU, WM_USER, RT_ICON
+from win32gui import CreateWindow, DestroyWindow, LoadIcon, LoadImage, NIF_ICON, NIF_INFO, NIF_MESSAGE, NIF_TIP, NIM_ADD, NIM_DELETE, NIM_MODIFY, RegisterClass, UnregisterClass, Shell_NotifyIcon, UpdateWindow, WNDCLASS
 
 WINVER10 = False
 if "Windows-10" in platform.platform():
@@ -35,9 +35,9 @@ class notify:
 			try:
 				if WINVER10 == False:
 					raise Exception
-				RT_ICON_SIZE = 13
 				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
-				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
+				icon_res = LoadResource(None, RT_ICON, 13)
+				hicon = ctypes.windll.user32.CreateIconFromResourceEx(icon_res, len(icon_res), True, 0x00030000, 48, 48, LR_DEFAULTCOLOR)
 				debug(1,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
 
 			except Exception as e:
