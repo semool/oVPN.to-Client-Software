@@ -35,7 +35,7 @@ class notify:
 			try:
 				if WINVER10 == False:
 					raise Exception
-				RT_ICON_SIZE = 48
+				RT_ICON_SIZE = 13
 				""" https://msdn.microsoft.com/en-us/library/windows/desktop/ms648060(v=vs.85).aspx """
 				hicon = CreateIconFromResource(LoadResource(None, RT_ICON, RT_ICON_SIZE), True)
 				debug(1,"[win_notification.py] def send_notify: CreateIconFromResource() #1",DEBUG,True)
