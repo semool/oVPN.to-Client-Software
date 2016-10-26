@@ -3942,9 +3942,9 @@ class Systray:
 		elif self.STATE_OVPN == True:
 			try:
 				try:
-					if not self.win_check_dns():
+					if not self.win_check_dns() == True:
 						self.debug(1,"def inThread_timer_ovpn_ping: dns changed")
-						if self.win_netsh_set_dns_ovpn():
+						if self.win_netsh_set_dns_ovpn() == True:
 							if self.LAST_MSGWARN_WINDOW_DNS < int(time.time())-30:
 								self.LAST_MSGWARN_WINDOW_DNS = int(time.time())
 								self.msgwarn(_("DNS changed but reset ok!"),_("Success"))
@@ -4166,29 +4166,32 @@ class Systray:
 			self.debug(1,"def win_clear_ipv6_routes: failed, exception = '%s'"%(e))
 
 	def win_netsh_set_dns_ovpn(self,domaindns=False):
-		self.debug(1,"def win_netsh_set_dns_ovpn()")
+		self.debug(2,"def win_netsh_set_dns_ovpn()")
 		if self.NO_DNS_CHANGE == True:
-			self.debug(1,"def win_netsh_set_dns_ovpn: self.NO_DNS_CHANGE")
 			return True
 		if self.check_dns_is_whitelisted() == True:
 			return True
-		DNSS = self.select_dns(domaindns)
-		NETSH_CMDLIST = list()
-		if len(DNSS) == 1:
-			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
-			if self.state_openvpn() == True:
-				NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
-		if len(DNSS) == 2:
-			NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
-			NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,DNSS[1]))
-			if self.state_openvpn() == True:
-				NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
-				NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,DNSS[1]))
-		if self.win_join_netsh_cmd(NETSH_CMDLIST) == True:
-			self.WIN_DNS_CHANGED = True
-			return True
-		else:
-			self.debug(1,"def win_netsh_set_dns_ovpn: failed!")
+		try:
+			DNSS = self.select_dns(domaindns)
+			NETSH_CMDLIST = list()
+			if len(DNSS) == 1:
+				NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
+				if self.state_openvpn() == True:
+					NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
+			if len(DNSS) == 2:
+				NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_EXT_DEVICE,DNSS[0]))
+				NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_EXT_DEVICE,DNSS[1]))
+				if self.state_openvpn() == True:
+					NETSH_CMDLIST.append('interface ip set dnsservers "%s" static %s primary no' % (self.WIN_TAP_DEVICE,DNSS[0]))
+					NETSH_CMDLIST.append('interface ip add dnsservers "%s" %s index=2 no' % (self.WIN_TAP_DEVICE,DNSS[1]))
+			if self.win_join_netsh_cmd(NETSH_CMDLIST) == True:
+				self.WIN_DNS_CHANGED = True
+				self.debug(1,"def win_netsh_set_dns_ovpn: True")
+				return True
+			else:
+				self.debug(1,"def win_netsh_set_dns_ovpn: False")
+		except Exception as e:
+			self.debug(1,"def win_netsh_set_dns_ovpn: failed, exception = '%s'"%(e))
 
 	def win_netsh_restore_dns(self):
 		self.debug(1,"def win_netsh_restore_dns()")
@@ -4280,6 +4283,7 @@ class Systray:
 			else:
 				self.debug(1,"def win_read_dns_to_backup: self.WIN_EXT_DEVICE == False")
 		except Exception as e:
+			self.debug(1,"def win_read_dns_to_backup: failed, exception = '%s'"%(e))
 			return False
 
 	def win_check_dns(self):
@@ -4287,19 +4291,24 @@ class Systray:
 			return True
 		if self.NO_DNS_CHANGE == True:
 			return True
-		DNSI = self.win_read_dns_from_interface(self.WIN_EXT_DEVICE)
-		DNSS = self.select_dns()
-		self.debug(111,"def win_check_dns: DNSI = '%s', DNSS = '%s'"%(DNSI,DNSS))
-		for key,DNS in DNSI.items():
-			if key == "DNS2" and DNS == False:
-				continue
-			if not DNS in DNSS:
-				self.debug(1,"def win_check_dns: DNS '%s' not in DNSS '%s'"%(DNS,DNSS))
-				return False
-		return True
+		if self.check_dns_is_whitelisted() == True:
+			return True
+		try:
+			DNSI = self.win_read_dns_from_interface(self.WIN_EXT_DEVICE)
+			DNSS = self.select_dns()
+			self.debug(2,"def win_check_dns: DNSI = '%s', DNSS = '%s'"%(DNSI,DNSS))
+			for key,DNS in DNSI.items():
+				if key == "DNS2" and DNS == False:
+					continue
+				if not DNS in DNSS:
+					self.debug(1,"def win_check_dns: DNS '%s' not in DNSS '%s'"%(DNS,DNSS))
+					return False
+			return True
+		except Exception as e:
+			self.debug(1,"def win_check_dns: failed, exception = '%s'"%(e))
 
 	def select_dns(self,domaindns=False):
-		self.debug(111,"def select_dns()")
+		self.debug(2,"def select_dns()")
 		try:
 			if self.GATEWAY_DNS1 == "127.0.0.1":
 				return ["127.0.0.1"]
@@ -5810,13 +5819,13 @@ class Systray:
 		return False
 
 	def check_dns_is_whitelisted(self):
-		self.debug(1,"def check_dns_is_whitelisted()")
+		self.debug(2,"def check_dns_is_whitelisted()")
 		#if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.VAR['OVPN']['GW']['IP4'] or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
 		if self.GATEWAY_DNS1 == "127.0.0.1":
-			self.debug(1,"def check_dns_is_whitelisted: True")
+			self.debug(2,"def check_dns_is_whitelisted: True")
 			return True
 		else:
-			self.debug(1,"def check_dns_is_whitelisted: False")
+			self.debug(2,"def check_dns_is_whitelisted: False")
 			return False
 
 	def load_d0wns_dns(self):
