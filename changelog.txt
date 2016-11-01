@@ -1,6 +1,13 @@
 # changelog.txt
 #
 
+Version: 0.8.1
++ update: d0wn DNS
++ bugfix: Windows 8/10 notification icon
++ bugfix: client with dnscrypt spammed message: DNS changed but reset ok
++ bugfix: disconnect warning message with self.GATEWAY_LOCAL errors
++ bugfix: server window MB/GB/TB traffic sorting
+
 Version: 0.8.0
 + update: set domains dns while testing inet
 + bugfix: remove version from exe description or notify system fails
