@@ -209,6 +209,9 @@ class Systray:
 		for key,value in oVPN_DNS.items():
 			self.d0wns_DNS[key] = value
 		
+		if D0WNDNS == True:
+			self.d0wns_DNS = {}
+		
 		self.FLAGS_B64 = flags_b64.flagsb64()
 		print("len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64)))
 
