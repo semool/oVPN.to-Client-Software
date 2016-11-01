@@ -4073,38 +4073,15 @@ class Systray:
 		except Exception as e:
 			self.debug(1,"def read_gateway_from_interface: failed, exception = '%s'"%(e))
 
-	def read_gateway_from_routes(self):
-		self.debug(1,"def read_gateway_from_routes()")
-		try:
-			output = self.win_return_route_cmd('print')
-			for line in output:
-				split = line.split()
-				try:
-					if self.VAR['OVPN']['CONN']['IP'] in line:
-						self.debug(1,"def read_ovpn_routes: self.VAR['OVPN']['CONN']['IP'] in line '%s'" % (line))
-						GATEWAY_LOCAL = line.split()[2]
-						""" *fixme* """
-						if self.isValueIPv4(GATEWAY_LOCAL) and GATEWAY_LOCAL == self.GATEWAY_LOCAL:
-						#if self.isValueIPv4(GATEWAY_LOCAL):
-							self.debug(1,"def read_gateway_from_routes: self.GATEWAY_LOCAL = '%s'" % (self.GATEWAY_LOCAL))
-							return True
-						else:
-							self.msgwarn(_("Read Gateway from Routes failed:\nGATEWAY_LOCAL: '%s' != self.GATEWAY_LOCAL: '%s'") % (GATEWAY_LOCAL,self.GATEWAY_LOCAL),_("Error"))
-				except Exception as e:
-					pass
-		except Exception as e:
-			self.debug(1,"def read_gateway_from_routes: failed, exception = '%s'"%(e))
-
 	def del_ovpn_routes(self):
 		self.debug(1,"def del_ovpn_routes()")
 		try:
-			if self.read_gateway_from_routes():
-				if not self.GATEWAY_LOCAL == False:
-					ROUTE_CMDLIST = list()
-					ROUTE_CMDLIST.append("DELETE %s MASK 255.255.255.255 %s" % (self.VAR['OVPN']['CONN']['IP'],self.GATEWAY_LOCAL))
-					ROUTE_CMDLIST.append("DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.VAR['OVPN']['GW']['IP4']))
-					ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.VAR['OVPN']['GW']['IP4']))
-					return self.win_join_route_cmd(ROUTE_CMDLIST)
+			if not self.GATEWAY_LOCAL == False:
+				ROUTE_CMDLIST = list()
+				ROUTE_CMDLIST.append("DELETE %s MASK 255.255.255.255 %s" % (self.VAR['OVPN']['CONN']['IP'],self.GATEWAY_LOCAL))
+				ROUTE_CMDLIST.append("DELETE 0.0.0.0 MASK 128.0.0.0 %s" % (self.VAR['OVPN']['GW']['IP4']))
+				ROUTE_CMDLIST.append("DELETE 128.0.0.0 MASK 128.0.0.0 %s" % (self.VAR['OVPN']['GW']['IP4']))
+				return self.win_join_route_cmd(ROUTE_CMDLIST)
 		except Exception as e:
 			self.debug(1,"def del_ovpn_routes: failed, exception = '%s'"%(e))
 
