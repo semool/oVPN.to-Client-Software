@@ -2340,21 +2340,28 @@ class Systray:
 			data1 = treemodel.get_value(iter1, sort_column)
 			data2 = treemodel.get_value(iter2, sort_column)
 			if data1 == "-1":
-				data1 = "0 GB"
+				data1 = "0 MiB"
 			if data2 == "-1":
-				data2 = "0 GB"
+				data2 = "0 MiB"
 			
+			# Do not sort for iter1[2], iter1[3], because traffic is unique enough
 			iter1 = data1.split(" ")
 			number1 = float(iter1[0])
 			byte1 = iter1[1]
-			if byte1 == "TiB":
-				number1 = number1 * 1024
+			# MiB unchanged
+			if byte1 == "GiB":
+				number1 = number1 * 1024				
+			elif byte1 == "TiB":
+				number1 = number1 * 1048576
 			
 			iter2 = data2.split(" ")
 			number2 = float(iter2[0])
 			byte2 = iter2[1]
-			if byte2 == "TiB":
-				number2 = number2 * 1024
+			# MiB unchanged
+			if byte2 == "GiB":
+				number2 = number2 * 1024				
+			elif byte2 == "TiB":
+				number2 = number2 * 1048576
 			
 			if float(number1) < float(number2):
 				return -1
