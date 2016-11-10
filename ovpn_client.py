@@ -5332,6 +5332,8 @@ class Systray:
 
 	def try_socket(self,host,port,tries,i=1):
 		while i <= tries:
+			if self.OVPN_STOP == True or self.state_openvpn() == False:
+				return False
 			self.debug(2,"def try_socket: host = '%s', port = '%s', i = '%s'" % (host,port,i))
 			systraytext = _("Testing internet connection!")
 			self.tray.set_tooltip_markup(systraytext)
@@ -5348,6 +5350,8 @@ class Systray:
 					return PING
 			except Exception as e:
 				self.debug(1,"def try_socket: port %s failed, exception = '%s'"%(port,e))
+			if self.OVPN_STOP == True or self.state_openvpn() == False:
+				return False
 			time.sleep(3)
 			i += 1
 		self.VAR['CACHE']['systraytext'] = False
@@ -5422,6 +5426,7 @@ class Systray:
 						if os.path.isfile(filepath):
 							self.debug(2,"def load_ovpn_server: filepath = '%s'"%(filepath))
 							serverinfo = list()
+							mtu = 0
 							for line in open(filepath):
 								lines += 1
 								if "<ca>" in line or "</ca>" in line:
@@ -5465,7 +5470,7 @@ class Systray:
 										i += 1
 									except Exception as e:
 										self.errorquit(text=_("Could not read Servers Cipher from config: %s") % (file))
-								if "fragment " in line or "link-mtu " in line:
+								if ("fragment " in line or "link-mtu " in line):
 									#print line
 									i += 1
 									try:
@@ -5475,6 +5480,7 @@ class Systray:
 										mtu = 1500
 										serverinfo.append(mtu)
 										self.debug(1,"Could not read mtu from config: %s" % (file))
+									
 							# end: for line in open(filepath)
 							checks = [ca, crt, key, tls ]
 							for value in checks:
@@ -5483,6 +5489,10 @@ class Systray:
 									self.reset_ovpn_values()
 									self.cb_force_update
 									return False
+							
+							if mtu == 0:
+								serverinfo.append(1500)
+								i += 1
 							if i == 4:
 								self.VAR['OVPN']['CONFIGDATA'][servershort] = serverinfo
 								self.VAR['OVPN']['SERVERLIST'].append(servername)
