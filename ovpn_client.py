@@ -5798,9 +5798,7 @@ class Systray:
             return False
 
     def win_detect_openvpn(self):
-        y = True
-        if y:
-        #try:
+        try:
             print("debug 1")
             values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
             print("debug 2")
@@ -5833,12 +5831,8 @@ class Systray:
             if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
                 print("debug 6")
                 return True
-                #if openvpn.win_get_openvpn_version(self.DEBUG,self.OPENVPN_DIR)[0] in openvpn.values(self.DEBUG)["ALLOWED_VERSIONS"]:
-                #   print("debug 7")
-                #   self.debug(1,"def win_detect_openvpn: OVPN_VERSION in openvpn.values(DEBUG)[ALLOWED_VERSIONS]: True")
-                #   return True
-        #except Exception as e:
-        #   self.debug(1,"def win_detect_openvpn: failed, exception = '%s'"%(e))
+        except Exception as e:
+           self.debug(1,"def win_detect_openvpn: failed, exception = '%s'"%(e))
         return False
 
     def check_dns_is_whitelisted(self):

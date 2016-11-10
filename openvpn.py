@@ -16,7 +16,6 @@ import encodes
 def values(DEBUG):
     debug(9,"[openvpn.py] def values()",DEBUG,True)
     try:
-        ALLOWED_VERSIONS = [ "2312" ]
         ARCH = get_arch(DEBUG)
         BUILT = "Nov 3 2016"
         LATEST = "2313"
@@ -69,7 +68,6 @@ def values(DEBUG):
                 "SHA_512":SHA_512, "F_SIZES":F_SIZES, "SETUP_FILENAME":SETUP_FILENAME,
                 "URLS":URLS, "OPENVPN_DL_URL":OPENVPN_DL_URL, "OPENVPN_DL_URL_ALT":OPENVPN_DL_URL_ALT,
                 "OPENVPN_FILEHASHS":OPENVPN_FILEHASHS,
-                "ALLOWED_VERSIONS":ALLOWED_VERSIONS
                 }
     except:
         debug(1,"[openvpn.py] def values: failed",DEBUG,True)
