@@ -1378,7 +1378,7 @@ class Systray:
             i=0
             for name,value in dnsdict.items():
                 try:
-                    #self.debug(59,"try name = '%s', len(value) = '%s', value = '%s'" % (name,len(value),value))
+                    self.debug(59,"try name = '%s', len(value) = '%s', value = '%s'" % (name,len(value),value))
                     
                     dnsip4 = value['ip4']
                     countrycode = value['countrycode']
