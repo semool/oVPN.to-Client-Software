@@ -23,6 +23,7 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Gio
 from datetime import datetime as datetime
 import os, base64, gettext, locale, types, platform, hashlib, random, time, zipfile, subprocess, threading, socket, requests, json, struct, string, re, shlex
 import configparser
+from collections import OrderedDict
 
 # .py files imports
 import winregs
@@ -1372,15 +1373,16 @@ class Systray:
             except Exception as e:
                 secdns = False
             
+            dnsdict = OrderedDict(sorted(self.d0wns_DNS.items(), key=lambda k: (k[1]['countrycode'],k), reverse=False))
+            self.debug(59,"dnsdict = '%s'" % (dnsdict)) 
             i=0
-            for name,value in sorted(self.d0wns_DNS.items()):
+            for name,value in dnsdict.items():
                 try:
-                    self.debug(59,"try name = '%s', len(value) = '%s', value = '%s'" % (name,len(value),value))
-                    dnsip4 = value['ip4']
+                    #self.debug(59,"try name = '%s', len(value) = '%s', value = '%s'" % (name,len(value),value))
                     
-                    self.debug(59,"try dnsip4 = '%s'" % dnsip4)
-                    countrycode = self.d0wns_DNS[name]['countrycode']
-                    self.debug(59,"try countrycode = %s" % countrycode)
+                    dnsip4 = value['ip4']
+                    countrycode = value['countrycode']
+                    
                     dnssubmenu = Gtk.Menu()
                     dnssubmtext = "%s (%s)" % (name,dnsip4)
                     dnssubm = Gtk.ImageMenuItem(dnssubmtext)
@@ -1418,15 +1420,15 @@ class Systray:
                     except Exception as e:
                         self.debug(1,"dnssubmenu.append(setsecdns) failed, exception = '%s'"%(e))
                         
-                    self.debug(59,"dnsmenu.append name = '%s' i=%s\n" % (name,i))
+                    self.debug(59,"dnsmenu.append name = '%s' i=%s" % (name,i))
                     i += 1
                 except Exception as e:
-                    self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: dnsmenu.append(dnssubm) '%s' failed "%(countrycode))
+                    self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: dnsmenu.append(dnssubm) '%s' failed " % (countrycode))
                 
             dnsm.show_all()
             self.context_menu_servertab.append(dnsm)
         except Exception as e:
-            self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: failed!")
+            self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: failed, exception = '%s'"%(e))
 
     def systray_timer(self):
         try:
