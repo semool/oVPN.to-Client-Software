@@ -17,41 +17,41 @@ def values(DEBUG):
     debug(9,"[openvpn.py] def values()",DEBUG,True)
     try:
         ARCH = get_arch(DEBUG)
-        BUILT = "Nov 3 2016"
-        LATEST = "2313"
-        TIMESTAMP = 1478127600
-        VERSION = "2.3.13"
+        BUILT = "Dec 7 2016"
+        LATEST = "2314"
+        TIMESTAMP = 1481065200
+        VERSION = "2.3.14"
         BUILT_V = "I601"
         
         OPENVPN_FILEHASHS ={
-                            "openvpn-install-2.3.13-I601-x86_64.exe": \
-                                {"libeay32.dll": "a46d679160ecda14ecbfd90bbf756679bfa47bca3d5ff928e7fda4b480e9db9772b1340bb36540a1b5ca29d4d8aecb2630b27a8dd8cf3bc8867ef78cf56f51e1", \
-                                "openvpn.exe": "8b9973b4ff571a81edf4e353f5d9cf0ab92bb37b005bc4045f9bcae9891d21c36037e5c244fe53d57d8a46d1745749bfb8dd37095fe2be3719202c966a862117", \
-                                "openvpnserv.exe": "7a6b9f857f898d84051ddf8d937c327e9c694707fbd243c58e0b8fea0b076c87325c418b1f4622267b4a49e00fbd7fae94897ac58ba90f77e14e7f97e7308e44", \
-                                "liblzo2-2.dll": "629636e7fe554be056e92a611242a0560ff0c6c5bdc5dfbe60b8231788a33b234ea9ce22924671ae1719cef3bbab01e83759e553cb1bc4417fe9f59af921092e", \
-                                "openvpn-gui.exe": "04f79eb2154bf0f9ae90bc72f55426b7f1471f9b3b6f61fb2f98c514323dfbcab8c20a5b6e01f63180fe402635babba04263ad8b33c606da671953f6a402a4c8", \
-                                "libpkcs11-helper-1.dll": "4875d42704b78e5b0e617cec8b5a861550b5fe7aafada9c311105b4a37f382fb0a10c852749e52dce90e8c30b9fe7f92b61c3bb1c190eb016ded9a3a7036fcdf", \
-                                "ssleay32.dll": "e930659c42e901514022282cefc9d799e7a6f2611c3a08ea112c8f153d9da6fa3796c871af34e4caf6c7a5ddd7b229518c2f5cfc4c85422d2391959fdaef9d80", \
-                                "openssl.exe": "116f972ba698bec2a4856ffc26600b323ae461bee1d1d3ca9f9afe853e74c4242ed2db7d1f30a5df2648183248a5de647a71896cff55eab98bb75294f204ea96"}, \
-                            "openvpn-install-2.3.13-I601-i686.exe": \
-                                {"libeay32.dll": "90a582a2c60483e41034fe482bd5af3fc7c37fba75035d94c5ed62f580e343447fd38c0888788c932f42eac7ba2de7e21cfd997485a1b5d8e369a94139fa385f", \
-                                "openvpn.exe": "c922d992a5a6e1e2b112e4f4700f2ca951a642e0073b760b80264c59aa2c402ba48af2551f0f7d33be373051972458f650ae8074660f3c7d2b733978644ebd55", \
-                                "openvpnserv.exe": "75fde21f6301233c8ae95746057c0a86177d28f22a1e3e906d2de8b3d14d9e0f9fb3ce233d1afa0e729da4871473d4db4dc638acb0e9eb19510432e9ea9c9c25", \
-                                "liblzo2-2.dll": "b7363ccf0857f2af1c2e39baa56dfb61bda70c89c8972359ec6e20735a93dab528409fc93f5c06a831db2eb6e8b3f8f682cd11d3886bd79f627f00723a06f0ce", \
-                                "openvpn-gui.exe": "8c5507c53a2b77f653b0d5b8353f235d5b8f17d2e633e0571e5fb83027bffe1f00564611c600f75bc07ee497119ea04071a7fa9613ca40039fa8cb612c35b115", \
-                                "libpkcs11-helper-1.dll": "b3406f2bcc0faa7ee53e0984bfed67a70fe6fc6964b128f078f4e21476e27551e3a446db1b8d2fb5e7bc00572455a106dfb1bec4e857d9228ec9893ff223868d", \
-                                "ssleay32.dll": "8b42a553e4f11a1f16548ced5c898c4c887123a774025961419ad42ecc624c772f2e3b0aa567999728c7e2b1a630f157034bf8248dd88b6d72ead6fb44ecff90", \
-                                "openssl.exe": "6ef10d501fac673d33443537133c4321ef9d508f7143dd9668884d987df84ec1f0dacd08b66b1bfacc68fb6ba83b3f19efd803410d59cb31ae3059bf2b44c937"}
+                            "openvpn-install-2.3.14-I601-i686.exe": \
+                                {"libeay32.dll": "8952625b84146959dc2177255d92117372beba8b9d6463c61e4bbae5c98c0febfaf11adbb89e78ba5e5392e83e81085a97811aded6405a20209b98ef52e2a327", \
+                                "openvpn.exe": "1ae87c9129040a33192291887cf9dcc68759655cbcf71eeb94b701aef0cc17a31fe83277312817d7563e4e433c2c4c97bb96436c5a1f0facf203fd7a12561adf", \
+                                "openvpnserv.exe": "7efa425ae67579ef6908022d851ed029dd7a172d946b2b3bf1c9960db8e549787768999a6768889d25cb3345b64fe9ea67f6f05a022c467890b967938e98e10c", \
+                                "liblzo2-2.dll": "0e98459fbd168dd5bd241facc4b479b5654ec0eab24315ad0cb82d447395a13fadc89ca229bf46bfc58e3d2a6f4e57c85b98d412a752bd7b830ded5c2ce0f0ea", \
+                                "openvpn-gui.exe": "31b63591c1975ed88dfc95a59eb3487fbbc131785298e91d8b9dafcb26ff139879556eb189230168a5feb1c17f02b80a9c135f583111727803dc9210ad00f1b3", \
+                                "libpkcs11-helper-1.dll": "f3351e56893918ad644e9d509f429f216af122da22ccb2bff8a8e3161a91d6b0ea815e10ee0f040c8ce5be25a3a2364dfbbb7829123048e59733b721943d64d6", \
+                                "ssleay32.dll": "e0dd310281572849bdde59dd87bd4d965937da4ee403ec96fd959b1da38cf21c660a0e04919775cd0b14dbb99a63e651502fd70b4784cf8f70d9ad6d92016662", \
+                                "openssl.exe": "0c0d1671013f871505ecd2bd91d44c3b48bb8098f8f351c693d95ba9a3aab7fd75a2eb275081e847d733ac7be5f88d284a6304c2f94f51d834f04740c54a42d6"}, \
+                            "openvpn-install-2.3.14-I601-x86_64.exe": \
+                                {"libeay32.dll": "d27768d48f371f528a3778cb6c59a8452e2e9cf04cd95e64cb5563129e9857ea843b2da9c2f39e2981ab9b8c5101b772275004c1ed3ed0a820a92081a6e038e3", \
+                                "openvpn.exe": "abe41e7c0eebfa542da9660f16892326d780938325d27685aa955edd9bf6e0dac2dc9d2b5649e0f958f86a802c41ce5ce924eab1e08754552a4fb079430ca29c", \
+                                "openvpnserv.exe": "c7b1bfac2f354dfe5e4e2fac370df8cf1c12bb837104b9505a45aff292014e4052e064f049164f9f941ede847d589c7475ec1aca220cd5b554762c358c829720", \
+                                "liblzo2-2.dll": "06923e5e2922e08a6dfaf0e6e8744545b565c0639c905f0fc75016c3b5e6d3744c08882c744a39b2612302be104b159ef4d2a4cc776d2f6b76bbf99d2fdefbd1", \
+                                "openvpn-gui.exe": "403c265190d6cd779976d3ee8c8ec874e4db46782017c046ba8a775e3ef69a83e2560bbaca7ab07b3c0d22c111b8a40b503cbbeb593e387b92ff8fe3b04d9da2", \
+                                "libpkcs11-helper-1.dll": "1f26958dc7155769dfdb3e77bab77ada418ace57c7fe2d5cf838159680146fcf860a66a6ecdc22dfb668fb34c14bc90417662c18f4e4956fb681d85a133b4c08", \
+                                "ssleay32.dll": "32a92abfbe4dbb8d3da3664f9a17e354a23045ff207f39863327088c39ef430b351c77915eeaf732dfad437acf0028e524c8877086379f30e92fb9762f2d199a", \
+                                "openssl.exe": "14d4c5f0d77d1598f75d365bc0fd566c6b56bf0995cadf1a372471761dc797ee8de18a00445b9045541c7900e74e765684bc211394c11dc99a2fb853556f20de"}
                             }
         
         SHA_512 = {
-            "i686" : "182c7d906a9fc081080dc3b4459e3ec867681e6cb645a75d2ebe04d1d06ed14605622c4f34ef4d352bbdf68d81b06e2de634bed75cdb7d939e7f2cdd7973d986",
-            "x86_64" : "9ad6cb9afc7932dc883835cf60b5efd94ee3f0914d1fb948982056abd04df9aeb8eca3554bd13acb356602ee85e202276397a3d0fab78e7f4d854406703e007e"
+            "i686" : "082f195e21547135185dddf4e52c41045bf2065a23ec33f07285db9f8a67ede682c1bf9609263aa51997c40b545fa27040ceb3648460646b1ed2bfb394c8e6dd",
+            "x86_64" : "1987e494879f9265d62994b5c34ed7e4c0ea4630599c21847fe168b5186b1b7a4f1971ebc7206a48c809e1f247b7a5ab4b195398bd0e03f885c2123c06c93a02"
             }
             
         F_SIZES = {
-            "i686": 1743104,
-            "x86_64": 1841208
+            "i686": 1912576,
+            "x86_64": 2222656
             }
             
         URLS = {
