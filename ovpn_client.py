@@ -5691,18 +5691,20 @@ class Systray:
         self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.VPN_DIR,openvpn.values(DEBUG)["SETUP_FILENAME"])
         self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
         if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
-            print("debug 4.1.2")
             return self.verify_openvpnbin_dl()
         else:
             if self.check_inet_connection() == False:
                 self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error"))
                 return False
-
-            self.tray.set_tooltip_markup(_("%s - Downloading openVPN (1.8 MB)") % (CLIENT_STRING))
+            fsize = openvpn.values(self.DEBUG)["F_SIZES"][self.ARCH]
+            fsizeh = round(fsize / 1024 / 1024,1)
+            version = openvpn.values(self.DEBUG)["VERSION"]
+            built_v = openvpn.values(self.DEBUG)["BUILT_V"]
+            self.tray.set_tooltip_markup(_("Downloading openVPN %s %s %s (%s MB)") % (version,built_v,self.ARCH,fsizeh))
             try:
                 HEADERS = request_api.useragent(self.DEBUG)
                 r1 = requests.get(openvpn.values(DEBUG)["OPENVPN_DL_URL"],headers=HEADERS)
-                if len(r1.content) == openvpn.values(self.DEBUG)["F_SIZES"][self.ARCH]:
+                if len(r1.content) == fsize:
                     fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
                     fp1.write(r1.content)
                     fp1.close()
