@@ -22,17 +22,7 @@ def values(DEBUG):
         TIMESTAMP = 1482793200
         VERSION = "2.4.0"
         BUILT_V = "I601"
-        """
-        SHA_512 = {
-            "i686" : "082f195e21547135185dddf4e52c41045bf2065a23ec33f07285db9f8a67ede682c1bf9609263aa51997c40b545fa27040ceb3648460646b1ed2bfb394c8e6dd",
-            "x86_64" : "1987e494879f9265d62994b5c34ed7e4c0ea4630599c21847fe168b5186b1b7a4f1971ebc7206a48c809e1f247b7a5ab4b195398bd0e03f885c2123c06c93a02"
-            }
-            
-        F_SIZES = {
-            "i686": 1912576,
-            "x86_64": 2222656
-            }
-        """
+        
         SHA_512 = "22e5101f8d4de440359689b509cb2ca9318a96e3c8f0c2daa0c35f76d9b8608b1adc5f2fad97f63fcc63845c860ad735a70eee90d3f1551bb4c9eea12d69eb94"
         F_SIZE = 3892080
         
@@ -148,9 +138,6 @@ def win_detect_openvpn_version(DEBUG,OPENVPN_DIR):
             return False
         debug(1,"OVPN_VERSION = %s, OVPN_BUILT = %s, OVPN_LATEST_BUILT = %s" % (OVPN_VERSION,OVPN_BUILT,OVPN_LATEST_BUILT),DEBUG,True)
         
-        
-        #if OVPN_VERSION >= OVPN_LATEST:
-        #debug(1,"[openvpn.py] def w_d_o_v: OVPN_VERSION '%s' >= OVPN_LATEST '%s': True"%(OVPN_VERSION,OVPN_LATEST),DEBUG,True)
         if len(OVPN_BUILT) == 3 and len(OVPN_LATEST_BUILT) == 3:
             STR1 = str(OVPN_BUILT[0]+OVPN_BUILT[1]+OVPN_BUILT[2])
             STR2 = str(OVPN_LATEST_BUILT[0]+OVPN_LATEST_BUILT[1]+OVPN_LATEST_BUILT[2])
