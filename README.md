@@ -20,6 +20,14 @@ C:\Python34[_64]\Scripts\pip.exe install requests[security]
 C:\Python34[_64]\Scripts\pip.exe install py2exe
 C:\Python34[_64]\Scripts\pip.exe install pypiwin32
 ```
++ upgrades
+```
+C:\Python34[_64]\Scripts\pip.exe install --upgrade pip
+C:\Python34[_64]\Scripts\pip.exe install --upgrade requests
+C:\Python34[_64]\Scripts\pip.exe install --upgrade requests[security]
+C:\Python34[_64]\Scripts\pip.exe install --upgrade py2exe
+C:\Python34[_64]\Scripts\pip.exe install --upgrade pypiwin32
+```
 + Download [hooks.py](else/python/hooks.py) and replace it in ```C:\Python34[_64]\lib\site-packages\py2exe\```
 
 ### 32 Bit:
