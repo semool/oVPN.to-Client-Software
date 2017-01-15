@@ -5696,7 +5696,7 @@ class Systray:
             if self.check_inet_connection() == False:
                 self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error"))
                 return False
-            fsize = openvpn.values(self.DEBUG)["F_SIZES"][self.ARCH]
+            fsize = openvpn.values(self.DEBUG)["F_SIZE"]
             fsizeh = round(fsize / 1024 / 1024,1)
             version = openvpn.values(self.DEBUG)["VERSION"]
             built_v = openvpn.values(self.DEBUG)["BUILT_V"]
@@ -5729,7 +5729,7 @@ class Systray:
         self.debug(1,"def verify_openvpnbin_dl()")
         if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
             localhash = hashings.hash_sha512_file(self.DEBUG,self.OPENVPN_SAVE_BIN_TO)
-            storehash = openvpn.values(DEBUG)["SHA_512"][self.ARCH]
+            storehash = openvpn.values(DEBUG)["SHA_512"]
             if storehash == localhash:
                 self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
                 return True
@@ -5758,7 +5758,8 @@ class Systray:
             self.OPENVPN_DIR = installtodir
         else:
             # popup install
-            netshcmd = '"%s"' % (self.OPENVPN_SAVE_BIN_TO)
+            installargs = "/SELECT_LAUNCH=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
+            netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,installargs)
         self.debug(1,"def win_install_openvpn: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
         try: 
             exitcode = subprocess.call(netshcmd,shell=True)
