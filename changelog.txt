@@ -1,6 +1,12 @@
 # changelog.txt
 #
 
+Version: 0.8.5
++ update: openVPN 2.4.0
+
+Version: 0.8.4
++ update: openVPN 2.3.14
+
 Version: 0.8.3
 + update: openVPN 2.3.13
 + update: DNS menu sorting by countrycode, name
