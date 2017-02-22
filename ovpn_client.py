@@ -146,7 +146,7 @@ class Systray:
         self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
         self.INSTALLED_THEMES = [ "ms-windows", "Adwaita", "Adwaita-dark", "Greybird", "Flat-Remix-OS" ]
         self.INSTALLED_ICONS = [ "standard", "classic", "classic2", "shield_bluesync", "experimental", "private" ]
-        self.INSTALLED_LANGUAGES = [ "en", "de", "es" ]
+        self.INSTALLED_LANGUAGES = [ "en", "de", "es", "fr" ]
         
         self.VAR['OVPN'] = dict()
         self.OVPN_ACC_DATA = {}
