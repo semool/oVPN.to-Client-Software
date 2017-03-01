@@ -31,7 +31,8 @@ set BINARY=%DISTDIR%\ovpn_client.exe
 
 set CERTUTIL="C:\Windows\System32\CertUtil.exe"
 
-set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk.exe
+IF "%BITS%" == "32" ( set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk_x86.exe )
+IF "%BITS%" == "64" ( set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk_x64.exe )
 set SIGNCERTSHA1=0775a45c76fad6989cbeb35c87e476642ccc172f
 
 IF NOT EXIST %CERTUTIL% (echo %CERTUTIL% NOT FOUND && PAUSE && EXIT)

@@ -6,13 +6,20 @@ from debug import debug
 from debug import devmode
 from debug import devdir
 import hashings
+import openvpn
 
 
 def find_signtool(DEBUG):
     debug(1,"[signtool.py] def find_signtool()",DEBUG,True)
     try:
-        signtoolhash = "e85d79cc617642f585cb9e4ad5dd919b8d15570a291bdd1e69fd38d4f278bc4b6f110329e8fa6948b7d516917cc2bde43532cde33e8c5e66355d0c97cfd7ebc2"
-        exe = "signtool_w10sdk.exe"
+        ARCH = openvpn.get_arch(DEBUG)
+        if ARCH == "x64":
+            exe = "signtool_w10sdk_x64.exe"
+            signtoolhash = "e85d79cc617642f585cb9e4ad5dd919b8d15570a291bdd1e69fd38d4f278bc4b6f110329e8fa6948b7d516917cc2bde43532cde33e8c5e66355d0c97cfd7ebc2"
+        else:
+            exe = "signtool_w10sdk_x86.exe"
+            signtoolhash = "233304669aefeec9ad5d19bd2dd5bb19ea35ce31da0b3aabe5ab859259608a58725fac5993637c9635e5912138d3eb477773351f0ee81cc3ce756d713163cf31"
+        
         BIN_DIR = os.getcwd()
         signtool = "%s\\%s" % (BIN_DIR,exe)
         if not os.path.isfile(signtool):
@@ -26,8 +33,8 @@ def find_signtool(DEBUG):
                 debug(1,"[signtool.py] def find_signtool: signtoolhash failed",DEBUG,True)
         else:
             debug(1,"[signtool.py] def signtool_verify_files: signtool not found",DEBUG,True)
-    except:
-        debug(1,"[signtool.py] def find_signtool: failed",DEBUG,True)
+    except Exception as e:
+        debug(1,"[signtool.py] def find_signtool: failed exception '%s'"%(e),DEBUG,True)
     return False
 
 def signtool_verify(DEBUG,file):
@@ -37,8 +44,10 @@ def signtool_verify(DEBUG,file):
         cscertsha1 = "21F94C255A8B20D21A323CA5ACB8EBF284E09037"
         #if devmode() == True:
         #   cscertsha1 = "1234000012340000123400001234000012340000"
-        #string1 = '"%s" verify /v /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
-        string1 = '"%s" verify /q /a /all /pa /tw /sha1 %s "%s"' % (signtool,cscertsha1,file)
+        verbose = "/q"
+        if DEBUG == True:
+            verbose = "/v"
+        string1 = '"%s" verify %s /a /all /pa /tw /sha1 %s "%s"' % (signtool,verbose,cscertsha1,file)
         debug(1,"[signtool.py] def signtool_verify: string1 = '%s'"%(string1),DEBUG,True)
         exitcode1 = 1
         try:
