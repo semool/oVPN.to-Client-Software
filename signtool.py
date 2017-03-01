@@ -12,18 +12,37 @@ import openvpn
 def find_signtool(DEBUG):
     debug(1,"[signtool.py] def find_signtool()",DEBUG,True)
     try:
-        ARCH = openvpn.get_arch(DEBUG)
-        if ARCH == "x86_64":
-            exe = "signtool_w10sdk_x64.exe"
-            signtoolhash = "e85d79cc617642f585cb9e4ad5dd919b8d15570a291bdd1e69fd38d4f278bc4b6f110329e8fa6948b7d516917cc2bde43532cde33e8c5e66355d0c97cfd7ebc2"
-        else:
-            exe = "signtool_w10sdk_x86.exe"
-            signtoolhash = "233304669aefeec9ad5d19bd2dd5bb19ea35ce31da0b3aabe5ab859259608a58725fac5993637c9635e5912138d3eb477773351f0ee81cc3ce756d713163cf31"
         BIN_DIR = os.getcwd()
-        signtool = "%s\\%s" % (BIN_DIR,exe)
+        ARCH = openvpn.get_arch(DEBUG)
+        
+        exe64 = "signtool_w10sdk_x64.exe"
+        signtool64 = "%s\\%s" % (BIN_DIR,exe64)
+        signtoolhash64 = "e85d79cc617642f585cb9e4ad5dd919b8d15570a291bdd1e69fd38d4f278bc4b6f110329e8fa6948b7d516917cc2bde43532cde33e8c5e66355d0c97cfd7ebc2"
+        
+        exe32 = "signtool_w10sdk_x86.exe"
+        signtool32 = "%s\\%s" % (BIN_DIR,exe32)
+        signtoolhash32 = "233304669aefeec9ad5d19bd2dd5bb19ea35ce31da0b3aabe5ab859259608a58725fac5993637c9635e5912138d3eb477773351f0ee81cc3ce756d713163cf31"
+        
+        if ARCH == "x86_64":
+            if os.path.isfile(signtool64):
+                signtool = signtool64
+                exe = exe64
+                signtoolhash = signtoolhash64
+            elif os.path.isfile(signtool32):
+                signtool = signtool32
+                exe = exe32
+                signtoolhash = signtoolhash32
+            else:
+                signtool = "%s\\includes\\codesign\\%s" % (devdir(),exe64)
+                signtoolhash = signtoolhash64
+        else:
+            signtool = signtool32
+            exe = exe32
+            signtoolhash = signtoolhash32
+        
         if not os.path.isfile(signtool):
             debug(1,"[signtool.py] def signtool_verify_files: signtool '%s' not found"%(signtool),DEBUG,True)
-            signtool = "%s\\includes\\codesign\\%s" % (devdir(),exe)
+            signtool = "%s\\includes\\codesign\\%s" % (devdir(),exe64)
         if os.path.isfile(signtool):
             hash = hashings.hash_sha512_file(DEBUG,signtool)
             if signtoolhash == hash:
