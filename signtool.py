@@ -26,23 +26,21 @@ def find_signtool(DEBUG):
         if ARCH == "x86_64":
             if os.path.isfile(signtool64):
                 signtool = signtool64
-                exe = exe64
                 signtoolhash = signtoolhash64
             elif os.path.isfile(signtool32):
                 signtool = signtool32
-                exe = exe32
                 signtoolhash = signtoolhash32
             else:
                 signtool = "%s\\includes\\codesign\\%s" % (devdir(),exe64)
                 signtoolhash = signtoolhash64
         else:
             signtool = signtool32
-            exe = exe32
             signtoolhash = signtoolhash32
         
         if not os.path.isfile(signtool):
             debug(1,"[signtool.py] def signtool_verify_files: signtool '%s' not found"%(signtool),DEBUG,True)
-            signtool = "%s\\includes\\codesign\\%s" % (devdir(),exe64)
+            signtool = "%s\\includes\\codesign\\%s" % (devdir(),exe32)
+            signtoolhash = signtoolhash32
         if os.path.isfile(signtool):
             hash = hashings.hash_sha512_file(DEBUG,signtool)
             if signtoolhash == hash:
