@@ -2450,9 +2450,11 @@ class Systray:
                     ## cell 0 == statusicon
                     ## cell 1 == flagicon
                     cellnumber = 2
+                    self.debug(1,"def mainwindow_ovpn_server: enter for cellid,cellname in ...")
                     for cellid,cellname in self.VAR['MAIN']['CELLINDEX'].items():
+                        self.debug(1,"def mainwindow_ovpn_server: cellid,cellname = '%s,%s'"%(cellid,cellname))
                         if not cellnumber == 26:
-                            self.debug(2,"def cellname = '%s'" % (cellname))
+                            self.debug(1,"def cellname = '%s'" % (cellname))
                             align=0.5
                             if cellnumber in [ 9, 23, 24 ]:
                                 align=1
