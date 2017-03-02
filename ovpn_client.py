@@ -140,7 +140,8 @@ class Systray:
         self.VAR['MAIN']['OPEN'] = False
         self.VAR['MAIN']['HIDE'] = False
         self.VAR['MAIN']['ALLOWCELLHIDE'] = [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ]
-        self.VAR['MAIN']['SHOWCELLS'] = [ 6, 7, 9, 24, 23, 25, 26, 16, 10, 8, 5, 4, 3 ]
+        self.VAR['MAIN']['SHOWCELLS_STANDARD'] = [ 6, 7, 9, 24, 23, 25, 26, 16, 10, 8, 5, 4, 3 ]
+        self.VAR['MAIN']['SHOWCELLS'] = self.VAR['MAIN']['SHOWCELLS_STANDARD']
         self.VAR['MAIN']['CELLINDEX'] = { 2:"Server", 3:"IPv4", 4:"IPv6", 5:"Port", 6:"Proto", 7:"MTU", 8:"Cipher", 9:"Live", 10:"Link", 11:"VLAN IPv4", 12:"VLAN IPv6", 13:"CPU", 14:"RAM", 15:"HDD", 16:"Traffic", 17:"Load", 18:"oVPN %", 19:"oSSH %", 20:"SOCK %", 21:"HTTP %", 22:"TINC %", 23:"PING4", 24:"PING6", 25:"SVR", 26:"Right Flag" }
         
         self.APP_FONT_SIZE_AVAIABLE = [ "6", "7", "8", "9", "10", "11", "12", "13" ]
@@ -2481,6 +2482,7 @@ class Systray:
                                 self.debug(1,"def mainwindow_ovpn_server: self.LOAD_SRVDATA == True, enter if cellnumber '%s' in self.VAR['MAIN']['ALLOWCELLHIDE']"%(cellnumber))
                                 if cellnumber in self.VAR['MAIN']['ALLOWCELLHIDE']:
                                     self.debug(1,"def mainwindow_ovpn_server: if cellnumber '%s' in self.VAR['MAIN']['ALLOWCELLHIDE']"%(cellnumber))
+                                    self.debug(1,"def mainwindow_ovpn_server: self.VAR['MAIN']['SHOWCELLS'] = '%s'"%(self.VAR['MAIN']['SHOWCELLS']))
                                     if not cellnumber in self.VAR['MAIN']['SHOWCELLS']:
                                         self.debug(1,"def mainwindow_ovpn_server: cellnumber '%s' column.set_visible(False)"%(cellnumber))
                                         column.set_visible(False)
@@ -2528,6 +2530,8 @@ class Systray:
                         self.debug(1,"def mainwindow_ovpn_server: final failed , exception = '%s'"%(e))
                 except Exception as e:
                     self.debug(1,"def mainwindow_ovpn_server: for cellid,cellname in failed , exception = '%s'"%(e))
+                    # try bugfix faulty options.cfg entry mainwindowshowcells = "[x,y,z,...]"
+                    self.VAR['MAIN']['SHOWCELLS'] = self.VAR['MAIN']['SHOWCELLS_STANDARD']
                     self.write_options_file()
             except Exception as e:
                 self.debug(1,"def mainwindow_ovpn_server: Gtk.CellRendererPixbuf failed, exception = '%s'"%(e))
