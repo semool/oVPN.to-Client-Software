@@ -1004,7 +1004,6 @@ class Systray:
             else:
                 APIKEY = False
             cfg = open(self.OPT_FILE,'wt')
-            #parser = SafeConfigParser()
             parser = configparser.ConfigParser()
             parser.add_section('oVPN')
             parser.set('oVPN','apikey','%s'%(APIKEY))
@@ -2529,6 +2528,7 @@ class Systray:
                         self.debug(1,"def mainwindow_ovpn_server: final failed , exception = '%s'"%(e))
                 except Exception as e:
                     self.debug(1,"def mainwindow_ovpn_server: for cellid,cellname in failed , exception = '%s'"%(e))
+                    self.write_options_file()
             except Exception as e:
                 self.debug(1,"def mainwindow_ovpn_server: Gtk.CellRendererPixbuf failed, exception = '%s'"%(e))
         except Exception as e:
