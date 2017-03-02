@@ -1,5 +1,13 @@
 # changelog.txt
 #
+Version: 0.8.8
++ bugfix: mainwindow extended mode failed sometimes
+
+Version: 0.8.7
++ bugfix: openvpn installer loop on windows 32 bit
+
+Version: 0.8.6
++ update: openVPN 2.4.0-I602
 
 Version: 0.8.5
 + update: openVPN 2.4.0
