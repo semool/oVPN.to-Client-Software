@@ -2450,11 +2450,11 @@ class Systray:
                     ## cell 0 == statusicon
                     ## cell 1 == flagicon
                     cellnumber = 2
-                    self.debug(1,"def mainwindow_ovpn_server: enter for cellid,cellname in ...")
+                    self.debug(1,"def mainwindow_ovpn_server: enter for cellid,cellname in CELLINDEX = '%s'"%(self.VAR['MAIN']['CELLINDEX']))
                     for cellid,cellname in self.VAR['MAIN']['CELLINDEX'].items():
                         self.debug(1,"def mainwindow_ovpn_server: cellid,cellname = '%s,%s'"%(cellid,cellname))
                         if not cellnumber == 26:
-                            self.debug(1,"def cellname = '%s'" % (cellname))
+                            self.debug(1,"def mainwindow_ovpn_server: cellname = '%s'" % (cellname))
                             align=0.5
                             if cellnumber in [ 9, 23, 24 ]:
                                 align=1
@@ -2479,10 +2479,14 @@ class Systray:
                                 if cellnumber in [ 4, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ]:
                                     column.set_visible(False)
                             elif self.LOAD_SRVDATA == True:
+                                self.debug(1,"def mainwindow_ovpn_server: self.LOAD_SRVDATA == True, enter if cellnumber '%s' in self.VAR['MAIN']['ALLOWCELLHIDE']"%(cellnumber))
                                 if cellnumber in self.VAR['MAIN']['ALLOWCELLHIDE']:
+                                    self.debug(1,"def mainwindow_ovpn_server: if cellnumber '%s' in self.VAR['MAIN']['ALLOWCELLHIDE']"%(cellnumber))
                                     if not cellnumber in self.VAR['MAIN']['SHOWCELLS']:
+                                        self.debug(1,"def mainwindow_ovpn_server: cellnumber '%s' column.set_visible(False)"%(cellnumber))
                                         column.set_visible(False)
                                     else:
+                                        self.debug(1,"def mainwindow_ovpn_server: cellnumber '%s' column.set_visible(True)"%(cellnumber))
                                         column.set_visible(True)
                             self.treeview.append_column(column)
                             cellnumber = cellnumber + 1
