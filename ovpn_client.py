@@ -977,7 +977,7 @@ class Systray:
                 parser.set('oVPN','wintapblockoutbound','%s'%(self.TAP_BLOCKOUTBOUND))
                 parser.set('oVPN','loadaccinfo','%s'%(self.LOAD_ACCDATA))
                 parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
-                parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(str(self.VAR['MAIN']['SHOWCELLS']), ensure_ascii=True)))
+                parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.VAR['MAIN']['SHOWCELLS'], ensure_ascii=True)))
                 parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
                 parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
                 parser.set('oVPN','mydns','False')
