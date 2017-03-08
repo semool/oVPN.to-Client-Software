@@ -71,5 +71,5 @@ def values(DEBUG):
                 'utf_32', 'utf_32_be', 'utf_32_le', 'utf_16', 'utf_16_be', 'utf_16_le', 'utf_7', 'utf_8', 'utf_8_sig'
                 ]
     codepages = [ 'cp437', 'cp850', 'cp852', 'cp855', 'cp857', 'cp1250', 'cp1251', 'cp1252', 'cp1253', 'cp1254', 'cp1255', 'cp1256', 'cp1257', 'cp65001', 'utf-8', 'utf-16' ]
-    codepages = [ 'utf_8', 'cp850', 'cp1252' ]
+    codepages = [ 'cp850', 'cp1250', 'cp1251', 'cp1252', 'cp1253', 'cp1254', 'cp1255', 'cp1256', 'cp1257', 'cp65001' ]
     return { 'codepages':codepages }
