@@ -2566,17 +2566,21 @@ class Systray:
         return False
 
     def destroy_mainwindow(self):
-        self.debug(1,"def destroy_mainwindow()")
-        GLib.idle_add(self.mainwindow.destroy)
+        try:
+            GLib.idle_add(self.mainwindow.destroy)
+            self.debug(1,"def destroy_mainwindow()")
+        except Exception as e:
+            self.debug(1,"def destroy_mainwindow: failed, exception = '%s'"%(e))
         self.VAR['MAIN']['OPEN'] = False
         self.VAR['MAIN']['HIDE'] = False
         self.statusbar_text = False
+        self.mainwindow = None
 
     def destroy_debugwindow(self):
         self.debug(1,"def destroy_debugwindow()")
         GLib.idle_add(self.debug_window.destroy)
         self.DEBUGWINDOW_OPEN = False
-        
+
     def call_redraw_accwindow(self):
         self.debug(1,"def call_redraw_accwindow()")
         if self.ACCWINDOW_OPEN == True:
