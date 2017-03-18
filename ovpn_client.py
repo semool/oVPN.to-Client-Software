@@ -166,7 +166,7 @@ class Systray:
         self.VAR['OVPN']['PING_LAST'] = -1
         self.VAR['OVPN']['PING_STAT'] = 0
         self.VAR['OVPN']['PING_DEAD'] = 0
-        self.VAR['OVPN']['CFGTYPE'] = "23x"
+        self.VAR['OVPN']['CFGTYPE'] = "24x"
         
         self.VAR['OVPN']['CONN'] = dict()
         self.VAR['OVPN']['CONN']['OK'] = False
@@ -774,21 +774,34 @@ class Systray:
                 
                 try:
                     ocfgv = parser.get('oVPN','configversion')
-                    if ocfgv == "23x" or ocfgv == "23x46" or ocfgv == "23x64":
+                    #if ocfgv == "24x" or ocfgv == "24x46" or ocfgv == "24x64":
+                    if ocfgv == "24x" or ocfgv == "24x46":
                         self.VAR['OVPN']['CFGTYPE'] = ocfgv
+                    elif ocfgv == "23x":
+                        self.VAR['OVPN']['CFGTYPE'] = "24x"
+                    elif ocfgv == "23x46":
+                        self.VAR['OVPN']['CFGTYPE'] = "24x46"
+                        """
+                    elif ocfgv == "23x64":
+                        self.VAR['OVPN']['CFGTYPE'] = "24x64"
+                        """
                     else:
-                        self.VAR['OVPN']['CFGTYPE'] = "23x"
+                        self.VAR['OVPN']['CFGTYPE'] = "24x"
                     
-                    if self.VAR['OVPN']['CFGTYPE'] == "23x":
+                    if self.VAR['OVPN']['CFGTYPE'] == "24x":
                         self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4A']
                         self.VPN_CFG = self.VPN_CFGip4
-                    elif self.VAR['OVPN']['CFGTYPE'] == "23x46":
+                    elif self.VAR['OVPN']['CFGTYPE'] == "24x46":
                         self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4B']
                         self.VPN_CFG = self.VPN_CFGip46
-                    elif self.VAR['OVPN']['CFGTYPE'] == "23x64":
+                        """
+                    elif self.VAR['OVPN']['CFGTYPE'] == "24x64":
                         self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4B']
                         self.VPN_CFG = self.VPN_CFGip64
-                    
+                        """
+                    else:
+                        self.VPN_CFG = self.VPN_CFGip4
+                        
                     self.debug(1,"def read_options_file: self.VAR['OVPN']['CFGTYPE'] = '%s'" % (self.VAR['OVPN']['CFGTYPE']))
                 except Exception as e:
                     self.debug(1,"def read_options_file: self.VAR['OVPN']['CFGTYPE'] failed, exception = '%s'"%(e))
@@ -1602,10 +1615,10 @@ class Systray:
                     self.switch_debugmode.set_active(False)
                 
                 # settings_options_button_ipv6
-                if self.VAR['OVPN']['CFGTYPE'] == "23x":
+                if self.VAR['OVPN']['CFGTYPE'] == "24x":
                     self.button_title.set_label(_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
                     self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
-                elif self.VAR['OVPN']['CFGTYPE'] == "23x46":
+                elif self.VAR['OVPN']['CFGTYPE'] == "24x46":
                     self.button_title.set_label(_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
                     self.button_ipmode.set_label(_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
                 
@@ -2320,12 +2333,24 @@ class Systray:
         self.VAR['CACHE']['statusbartext'] = False
         if self.VAR['MAIN']['OPEN'] == False:
             self.load_ovpn_server()
+            
+            if self.VAR['OVPN']['CFGTYPE'] == "24x":
+                mode = "IPv4"
+            elif self.VAR['OVPN']['CFGTYPE'] == "24x46":
+                mode = "IPv4+6"
+                """
+            elif self.VAR['OVPN']['CFGTYPE'] == "24x64":
+                mode = "IPv6+4"
+                """
+            else:
+                mode = None
+            
             try:
                 self.mainwindow = Gtk.Window(Gtk.WindowType.TOPLEVEL)
                 self.mainwindow.set_position(Gtk.WindowPosition.CENTER)
                 self.mainwindow.connect("destroy",self.cb_destroy_mainwindow)
                 self.mainwindow.connect("key-release-event",self.cb_reset_load_remote_timer)
-                self.mainwindow.set_title(_("Server"))
+                self.mainwindow.set_title(_("Server [ %s ]")%(mode))
                 self.mainwindow.set_icon(self.app_icon)
                 self.rebuild_mainwindow()
                 self.VAR['MAIN']['OPEN'] = True
@@ -2421,14 +2446,7 @@ class Systray:
             self.mainwindow_vbox = Gtk.VBox(False,1)
             self.mainwindow.add(self.mainwindow_vbox)
             
-            if self.VAR['OVPN']['CFGTYPE'] == "23x":
-                mode = "IPv4"
-            elif self.VAR['OVPN']['CFGTYPE'] == "23x46":
-                mode = "IPv4 + IPv6"
-            elif self.VAR['OVPN']['CFGTYPE'] == "23x64":
-                mode = "IPv6 + IPv4"
-            
-            label = Gtk.Label(_("oVPN Server [ %s ]") % (mode))
+            #label = Gtk.Label(_("oVPN Server [ %s ]") % (mode))
             self.serverliststore = Gtk.ListStore(GdkPixbuf.Pixbuf,GdkPixbuf.Pixbuf,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,str,GdkPixbuf.Pixbuf,str)
             self.treeview = Gtk.TreeView(self.serverliststore)
             self.treeview.connect("button-release-event",self.on_right_click_mainwindow)
@@ -3313,11 +3331,11 @@ class Systray:
         GLib.idle_add(self.cb_resetextif)
 
     def settings_options_button_ipv6(self,page):
-        if self.VAR['OVPN']['CFGTYPE'] == "23x":
+        if self.VAR['OVPN']['CFGTYPE'] == "24x":
             button_title = Gtk.Label(label=_("Current: IPv4 Entry Server with Exit to IPv4 (standard)"))
             button = Gtk.Button(label=_("Use IPv4 Entry Server with Exits to IPv4 + IPv6"))
             button.connect('clicked', self.cb_settings_options_button_ipv6)
-        elif self.VAR['OVPN']['CFGTYPE']  == "23x46":
+        elif self.VAR['OVPN']['CFGTYPE']  == "24x46":
             button_title = Gtk.Label(label=_("Current: IPv4 Entry Server with Exits to IPv4 + IPv6"))
             button = Gtk.Button(label=_("Use IPv4 Entry Server with Exit to IPv4 (standard)"))
             button.connect('clicked', self.cb_settings_options_button_ipv6)
@@ -3328,13 +3346,13 @@ class Systray:
         page.pack_start(Gtk.Label(label=""),False,False,0)
 
     def cb_settings_options_button_ipv6(self,event):
-        if not self.VAR['OVPN']['CFGTYPE'] == "23x":
+        if not self.VAR['OVPN']['CFGTYPE'] == "24x":
             GLib.idle_add(self.cb_change_ipmode1)
-        if not self.VAR['OVPN']['CFGTYPE']  == "23x46":
+        if not self.VAR['OVPN']['CFGTYPE']  == "24x46":
             GLib.idle_add(self.cb_change_ipmode2)
         """
          *** fixme need isValueIPv6 first! ***
-        if not self.VAR['OVPN']['CFGTYPE'] == "23x64":
+        if not self.VAR['OVPN']['CFGTYPE'] == "24x64":
             GLib.idle_add(self.cb_change_ipmode3)
         """
 
@@ -5140,7 +5158,7 @@ class Systray:
 
     def cb_change_ipmode1(self):
         self.debug(1,"def cb_change_ipmode1() *GLib*")
-        self.VAR['OVPN']['CFGTYPE'] = "23x"
+        self.VAR['OVPN']['CFGTYPE'] = "24x"
         self.write_options_file()
         self.read_options_file()
         self.VAR['OVPN']['SERVERLIST'] = {}
@@ -5153,7 +5171,7 @@ class Systray:
 
     def cb_change_ipmode2(self):
         self.debug(1,"def cb_change_ipmode2() *GLib*")
-        self.VAR['OVPN']['CFGTYPE'] = "23x46"
+        self.VAR['OVPN']['CFGTYPE'] = "24x46"
         self.write_options_file()
         self.read_options_file()
         self.VAR['OVPN']['SERVERLIST'] = {}
@@ -5168,7 +5186,7 @@ class Systray:
     def cb_change_ipmode3(self):
         self.debug(1,"def cb_change_ipmode3() *GLib*")
         return True
-        self.VAR['OVPN']['CFGTYPE'] = "23x64"
+        self.VAR['OVPN']['CFGTYPE'] = "24x64"
         self.write_options_file()
         self.read_options_file()
         self.VAR['OVPN']['SERVERLIST'] = {}
@@ -5384,7 +5402,7 @@ class Systray:
     def check_myip(self):
         self.debug(2,"def check_myip()")
         # *** fixme *** missing ipv6 support
-        if self.VAR['OVPN']['CFGTYPE'] == "23x" or self.VAR['OVPN']['CFGTYPE'] == "23x46":
+        if self.VAR['OVPN']['CFGTYPE'] == "24x" or self.VAR['OVPN']['CFGTYPE'] == "24x46":
             if self.LAST_CHECK_MYIP > int(time.time())-random.randint(120,300) and self.VAR['OVPN']['PING_LAST'] > 0:
                 return True
             try:
