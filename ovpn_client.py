@@ -101,6 +101,7 @@ class Systray:
         self.tray.connect('popup-menu', self.on_right_click)
         self.tray.connect('activate', self.on_left_click)
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+        self.mainwindow = None
         self.window.connect("delete-event", Gtk.main_quit)
         self.init_localization(None)
         if self.preboot():
@@ -4140,11 +4141,8 @@ class Systray:
             output = self.win_return_netsh_cmd(netshcmd)
             if not output == False:
                 for line in output:
-                    #print line
-                    if " fd48:8bea:68a5:" in line:
-                        #print line
+                    if "fd48:8bea:68a5:" in line:
                         ipv6addr = line.split("    ")[2]
-                        #print ipv6addr
                         if ipv6addr.startswith("fd48:8bea:68a5:"):
                             cmdstring = 'interface ipv6 delete dnsservers "%s" "%s"' % (self.WIN_TAP_DEVICE,ipv6addr)
                             NETSH_CMDLIST.append(netshcmd)
@@ -4162,12 +4160,14 @@ class Systray:
             if not output == False:
                 try:
                     for line in output:
-                        if " fd48:8bea:68a5:" in line or " fe80:" in line:
+                        if "fd48:8bea:68a5:" in line:
                             self.debug(1,"def win_clear_ipv6_addr: found: line = '%s'" % (line))
                             if not "%" in line:
                                 ipv6addr = line.split()[1]
                                 netshcmd = 'interface ipv6 delete address address="%s" interface="%s" store=active' % (ipv6addr,self.WIN_TAP_DEVICE)
                                 NETSH_CMDLIST.append(netshcmd)
+                        else:
+                            self.debug(1,"def win_clear_ipv6_addr: line = '%s'" % (line))
                     if len(NETSH_CMDLIST) > 0:
                         self.win_join_netsh_cmd(NETSH_CMDLIST)
                 except Exception as e:
@@ -4182,11 +4182,20 @@ class Systray:
             output = self.win_return_netsh_cmd(netshcmd)
             if not output == False:
                 for line in output:
-                    if " fd48:8bea:68a5:" in line or " fe80:" in line:
+                    if "fd48:8bea:68a5:" in line \
+                        or "::/3" in line \
+                        or "2000::/3" in line \
+                        or "2000::/4" in line \
+                        or "3000::/4" in line \
+                        or "fc00::/7" in line \
+                        or "ff00::/8" in line:
+
                         self.debug(1,"def win_clear_ipv6_routes: found: line = '%s'" % (line))
                         ipv6 = line.split()[3]
                         output = self.win_return_route_cmd("DELETE %s" % (ipv6))
                         self.debug(1,"def win_clear_ipv6_routes: %s %s" % (ipv6,output))
+                    else:
+                        self.debug(1,"def win_clear_ipv6_routes: line = '%s'" % (line))
         except Exception as e:
             self.debug(1,"def win_clear_ipv6_routes: failed, exception = '%s'"%(e))
 
