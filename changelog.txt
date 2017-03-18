@@ -3,6 +3,7 @@
 Version: 0.8.9
 + bugfix: mainwindow thrown exception sometimes
 + bugfix: ipv6 addr / routes
++ update: ncp-ciphers
 
 Version: 0.8.8
 + bugfix: mainwindow extended mode failed sometimes

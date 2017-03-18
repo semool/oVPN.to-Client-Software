@@ -5489,7 +5489,7 @@ class Systray:
                                             serverinfo.append(port)
                                             i += 1
                                     except Exception as e:
-                                        self.errorquit(text=_("Could not read Servers Remote-IP:Port from config: %s") % (file))
+                                        self.msgwarn(text=_("Could not read Servers Remote-IP:Port from config: %s") % (file))
                                 elif "proto " in line:
                                     #print line
                                     try:
@@ -5499,21 +5499,35 @@ class Systray:
                                             serverinfo.append(proto)
                                             i += 1
                                     except Exception as e:
-                                        self.errorquit(text=_("Could not read Servers Protocol from config: %s") % (file))
+                                        self.msgwarn(_("Could not read Servers Protocol from config: %s") % (file),_("Error"))
+                                elif line.startswith("ncp-ciphers "):
+                                    cipher = None
+                                    ciphers = ["AES-256-GCM","AES-192-GCM","AES-128-GCM"]
+                                    try:
+                                        cipher = line.split()[1].split(":")[0]
+                                    except Exception as e:
+                                        self.msgwarn(_("Could not read Servers ncp-ciphers from config: %s") % (file),_("Error"))
+                                    if cipher in ciphers:
+                                        serverinfo.append(cipher)
+                                        i += 1
+                                    else:
+                                        self.debug(1,"invalid ncp-cipher: '%s' line='%s' not in '%s'" % (cipher,line,ciphers))
                                 elif line.startswith("cipher "):
-                                    #print line
+                                    cipher = None
+                                    ciphers = ["AES-256-CBC","AES-192-CBC","AES-128-CBC","CAM-256-CBC"]
                                     try:
                                         cipher = line.split()[1]
                                         if cipher == "CAMELLIA-256-CBC":
-                                            cipher = "CAM-256"
-                                        elif cipher == "AES-256-CBC":
-                                            cipher = "AES-256"
+                                            cipher = "CAM-256-CBC"
+                                    except Exception as e:
+                                        self.msgwarn(_("Could not read Servers Cipher from config: %s") % (file),_("Error"))
+                                    if cipher in ciphers:
                                         serverinfo.append(cipher)
                                         i += 1
-                                    except Exception as e:
-                                        self.errorquit(text=_("Could not read Servers Cipher from config: %s") % (file))
+                                    else:
+                                        self.debug(1,"invalid cipher: '%s' line='%s' not in '%s'" % (cipher,line,ciphers))
+
                                 if ("fragment " in line or "link-mtu " in line):
-                                    #print line
                                     i += 1
                                     try:
                                         mtu = line.split()[1]
