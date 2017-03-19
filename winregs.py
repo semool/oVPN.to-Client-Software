@@ -99,7 +99,7 @@ def get_tapadapters(DEBUG,OPENVPN_EXE,INTERFACES):
             cmdstring = '"%s" --show-adapters' % (OPENVPN_EXE)
             output = subprocess.check_output(cmdstring,shell=True)
             output0 = encodes.code_fiesta(DEBUG,'decode',output,'get_tapadapters').strip().splitlines()
-            debug(1,"[winregs.py] def get_tapadapters: output0 = '%s'"%(output0),DEBUG,True)
+            debug(1,"[winregs.py] def get_tapadapters: '%s' output0 = '%s'"%(cmdstring,output0),DEBUG,True)
             if "[name, GUID]" in output0[0]:
                 output0.pop(0)
                 debug(1,"[winregs.py] def get_tapadapters: output0.pop(0)"%(output0),DEBUG,True)
