@@ -17,14 +17,13 @@ def values(DEBUG):
     debug(9,"[openvpn.py] def values()",DEBUG,True)
     try:
         ARCH = get_arch(DEBUG)
-        BUILT = "Jan 31 2017"
-        LATEST = "240"
-        TIMESTAMP = 1485817200
-        VERSION = "2.4.0"
-        BUILT_V = "I602"
+        BUILT = "Mar 22 2017"
+        TIMESTAMP = 1490137200
+        VERSION = "2.4.1"
+        BUILT_V = "I601"
         
-        SHA_512 = "1794d63df9572c77bb44c40b142fbb8024ed2613bb18488825476878fecf6846a2dfb5e496942c547c65191d27c445669919fc029ea07c8ebcce285492da24af"
-        F_SIZE = 3379880
+        SHA_512 = "83ac5500f9fc15c65bf8f2ca90f04c3043b7431fef763408c29746a7385b5a3ea313e11cf4fd274559c8cd9ba811cc6df49d2a84b94330f738fa31724edca4ba"
+        F_SIZE = 3446040
         
         URLS = {
             "REM" : "https://%s/files/openvpn" % (release_version.org_data()["VCP_DOMAIN"]),
@@ -36,7 +35,7 @@ def values(DEBUG):
         OPENVPN_DL_URL_ALT = "%s/%s" % (URLS["ALT"],SETUP_FILENAME)
         
         return {
-                "ARCH":ARCH, "BUILT":BUILT, "LATEST":LATEST, "TIMESTAMP":TIMESTAMP, "VERSION":VERSION, "BUILT_V":BUILT_V, 
+                "ARCH":ARCH, "BUILT":BUILT, "TIMESTAMP":TIMESTAMP, "VERSION":VERSION, "BUILT_V":BUILT_V, 
                 "SHA_512":SHA_512, "F_SIZE":F_SIZE, "SETUP_FILENAME":SETUP_FILENAME,
                 "URLS":URLS, "OPENVPN_DL_URL":OPENVPN_DL_URL, "OPENVPN_DL_URL_ALT":OPENVPN_DL_URL_ALT,
                 }
@@ -123,12 +122,15 @@ def win_get_openvpn_version(DEBUG,OPENVPN_DIR):
         debug(1,"[openvpn.py] def win_get_openvpn_version: failed, exception = '%s'"%(e),DEBUG,True)
     return False
 
-def win_detect_openvpn_version(DEBUG,OPENVPN_DIR):
+def win_detect_openvpn_version(DEBUG,OPENVPN_DIR,OVPN_LATEST_BUILT = None, OVPN_LATEST_BUILT_TIMESTAMP = 0):
     try:
         debug(1,"[openvpn.py] def win_detect_openvpn_version()",DEBUG,True)
-        OVPN_LATEST = values(DEBUG)["LATEST"]
-        OVPN_LATEST_BUILT = values(DEBUG)["BUILT"].split()
-        OVPN_LATEST_BUILT_TIMESTAMP = values(DEBUG)["TIMESTAMP"]
+        if OVPN_LATEST_BUILT == None:
+            OVPN_LATEST_BUILT = values(DEBUG)["BUILT"].split()
+        else:
+            OVPN_LATEST_BUILT = OVPN_LATEST_BUILT.split()
+        if OVPN_LATEST_BUILT_TIMESTAMP == 0:
+            OVPN_LATEST_BUILT_TIMESTAMP = values(DEBUG)["TIMESTAMP"]
         DATA = win_get_openvpn_version(DEBUG,OPENVPN_DIR)
         if not DATA == False:
             OVPN_VERSION = DATA[0]
@@ -136,13 +138,13 @@ def win_detect_openvpn_version(DEBUG,OPENVPN_DIR):
         else:
             debug(1,"[openvpn.py] def w_d_o_v: failed, DATA == False",DEBUG,True)
             return False
-        debug(1,"OVPN_VERSION = %s, OVPN_BUILT = %s, OVPN_LATEST_BUILT = %s" % (OVPN_VERSION,OVPN_BUILT,OVPN_LATEST_BUILT),DEBUG,True)
+        debug(1,"[openvpn.py] def w_d_o_v: myOVPN_VERSION = %s, my OVPN_BUILT = %s, my OVPN_LATEST_BUILT = %s" % (OVPN_VERSION,OVPN_BUILT,OVPN_LATEST_BUILT),DEBUG,True)
         
         if len(OVPN_BUILT) == 3 and len(OVPN_LATEST_BUILT) == 3:
             STR1 = str(OVPN_BUILT[0]+OVPN_BUILT[1]+OVPN_BUILT[2])
             STR2 = str(OVPN_LATEST_BUILT[0]+OVPN_LATEST_BUILT[1]+OVPN_LATEST_BUILT[2])
             if STR1 == STR2:
-                debug(1,"[openvpn.py] def w_d_o_v: OVPN_BUILT '%s' == OVPN_LATEST_BUILT '%s': True"%(OVPN_BUILT,OVPN_LATEST_BUILT),DEBUG,True)
+                debug(1,"[openvpn.py] def w_d_o_v: my OVPN_BUILT '%s' == OVPN_LATEST_BUILT '%s': True"%(OVPN_BUILT,OVPN_LATEST_BUILT),DEBUG,True)
                 return True
             else:
                 months = { 'Jan':1, 'Feb':2, 'Mar':3, 'Apr':4, 'May':5, 'Jun':6, 'Jul':7, 'Aug':8, 'Sep':9, 'Oct':10, 'Nov':11, 'Dec':12 }
@@ -152,13 +154,16 @@ def win_detect_openvpn_version(DEBUG,OPENVPN_DIR):
                 built_year = int(OVPN_BUILT[2])
                 built_timestamp = int(time.mktime(datetime(built_year,built_month_int,built_day,0,0).timetuple()))
                 if built_timestamp >= OVPN_LATEST_BUILT_TIMESTAMP:
-                    debug(1,"[openvpn.py] def w_d_o_v: built_timestamp '%s' > OVPN_LATEST_BUILT_TIMESTAMP '%s': True" % (built_timestamp,OVPN_LATEST_BUILT_TIMESTAMP),DEBUG,True)
+                    debug(1,"[openvpn.py] def w_d_o_v: my built_timestamp '%s' >= OVPN_LATEST_BUILT_TIMESTAMP '%s': True" % (built_timestamp,OVPN_LATEST_BUILT_TIMESTAMP),DEBUG,True)
                     return True
+                else:
+                    debug(1,"[openvpn.py] def w_d_o_v: my built_timestamp '%s' < OVPN_LATEST_BUILT_TIMESTAMP '%s': False" % (built_timestamp,OVPN_LATEST_BUILT_TIMESTAMP),DEBUG,True)
         else:
-            debug(1,"[openvpn.py] def win_detect_openvpn_version: OVPN_VERSION '%s' too old"%(OVPN_VERSION),DEBUG,True)
+            debug(1,"[openvpn.py] def w_d_o_v: OVPN_VERSION '%s' failed"%(OVPN_VERSION),DEBUG,True)
+        return False
     except Exception as e:
-        debug(1,"[openvpn.py] def win_detect_openvpn_version: failed, exception = '%s'"%(e),DEBUG,True)
-    debug(1,"[openvpn.py] def win_detect_openvpn_version: return False",DEBUG,True)
+        debug(1,"[openvpn.py] def w_d_o_v: failed, exception = '%s'"%(e),DEBUG,True)
+    debug(1,"[openvpn.py] def w_d_o_v: return False",DEBUG,True)
     return False
 
 def list_openvpn_files(DEBUG,OPENVPN_DIR,type):
@@ -265,9 +270,6 @@ def extract_ovpn(self):
     pass
 
 def win_select_openvpn(self):
-    pass
-
-def win_detect_openvpn_version(self):
     pass
 
 def find_signtool(self):

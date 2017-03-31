@@ -1663,6 +1663,8 @@ class Systray:
                         systraytext = _("Downloading Configurations...")
                     elif self.STATE_CERTDL == "extract":
                         systraytext = _("Extracting Configs and Certs...")
+                    elif self.STATE_CERTDL == "openvpn_dl":
+                        systraytext = _("Downloading openVPN Update...")
                     statusbar_text = systraytext
                     
             elif self.inThread_jump_server_running == True:
@@ -5281,6 +5283,9 @@ class Systray:
                     UPDATE_SIZE = int(data["SIZE"])
                     UPDATE_URL = data["URL"]
                     UPDATE_RELEASE = int(data["RELEASE"])
+                    
+                    supr_nocliupdate = False
+                    
                     if UPDATE_RELEASE > self.VAR["RELEASE"]:
                         clistring1 = "ovpn_client_v"
                         clistring2 = "-gtk3_win%s_setup.exe" % (MYBITS)
@@ -5298,7 +5303,31 @@ class Systray:
                                 self.debug(1,"def API_REQUEST: winrelease_url invalid update url")
                         else:
                             self.debug(1,"def API_REQUEST: winrelease_url invalid update hash")
-                    self.msgwarn(_("No Client Update available!"), _("Success"))
+                    
+                    try:
+                        self.debug(1,"def API_REQUEST: OPENVPN #1")
+                        OPENVPN = data["OPENVPN"]
+                        self.debug(1,"def API_REQUEST: OPENVPN #2")
+                        OVPN_LATEST_BUILT = OPENVPN["BUILT"]
+                        self.debug(1,"def API_REQUEST: OPENVPN #3")
+                        OVPN_LATEST_BUILT_TIMESTAMP = OPENVPN["TIMESTAMP"]
+                        self.debug(1,"def API_REQUEST: OPENVPN #4")
+                        if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
+                            self.debug(1,"def API_REQUEST: OPENVPN #5")
+                            if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_DIR, OVPN_LATEST_BUILT, OVPN_LATEST_BUILT_TIMESTAMP) == False:
+                                self.debug(1,"def API_REQUEST: OPENVPN #6")
+                                self.msgwarn(_("Downloading Update: openVPN Setup %s %s (%s MB)")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"],round(OPENVPN["F_SIZE"] / 1024 / 1024,1)),_("Info"))
+                                if self.load_openvpnbin_from_remote(update=OPENVPN) == True:
+                                        self.debug(1,"def API_REQUEST: OPENVPN #7")
+                                        self.msgwarn(_("Verified Update: openVPN Setup %s %s '%s'")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"],self.OPENVPN_SAVE_BIN_TO),_("Success"))
+                                        supr_nocliupdate = True
+                                else:
+                                    self.msgwarn(_("Failed Download openVPN Setup %s %s")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"]),_("Error"))
+                    except Exception as e:
+                        self.debug(1,"def API_REQUEST: OPENVPN failed, exception = '%s'"%(e))
+                    
+                    if supr_nocliupdate == False:
+                        self.msgwarn(_("No Client Update available!"), _("Success"))
                     return True
                 else:
                     self.debug(1,"def API_REQUEST: unknown response = '%s'"%(response))
@@ -5319,9 +5348,18 @@ class Systray:
         except Exception as e:
             self.debug(1,"def API_REQUEST: failed, exception = '%s'"%(e))
 
+    def get_user_dl_dir(self):
+        user_dl_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)
+        
+        if not os.path.isdir(user_dl_dir):
+            user_dl_dir = self.VPN_DIR
+        
+        self.debug(1,"def get_user_dl_dir: user_dl_dir = '%s'"%(user_dl_dir))
+        return user_dl_dir
+    
     def download_client_update(self):
         try:
-            user_dl_dir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)
+            user_dl_dir = self.get_user_dl_dir()
             self.debug(1,"def download_client_update: user_dl_dir = '%s'"%(user_dl_dir))
             if os.path.isdir(user_dl_dir):
                 localfile = str(user_dl_dir+"\\"+self.VAR["UPDATE"]["FILE"])
@@ -5741,94 +5779,120 @@ class Systray:
             return self.win_install_openvpn()
 
     """ *fixme* move to openvpn.py """
-    def load_openvpnbin_from_remote(self):
-        self.debug(1,"def load_openvpnbin_from_remote()")
-        self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (self.VPN_DIR,openvpn.values(DEBUG)["SETUP_FILENAME"])
-        self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
-        if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
-            return self.verify_openvpnbin_dl()
-        else:
-            if self.check_inet_connection() == False:
-                self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error"))
-                return False
-            fsize = openvpn.values(self.DEBUG)["F_SIZE"]
-            fsizeh = round(fsize / 1024 / 1024,1)
-            version = openvpn.values(self.DEBUG)["VERSION"]
-            built_v = openvpn.values(self.DEBUG)["BUILT_V"]
-            self.tray.set_tooltip_markup(_("Downloading openVPN %s %s %s (%s MB)") % (version,built_v,self.ARCH,fsizeh))
-            try:
-                HEADERS = request_api.useragent(self.DEBUG)
-                r1 = requests.get(openvpn.values(DEBUG)["OPENVPN_DL_URL"],headers=HEADERS)
-                if len(r1.content) == fsize:
-                    fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
-                    fp1.write(r1.content)
-                    fp1.close()
-                    ascfile = "%s.asc" % (openvpn.values(DEBUG)["OPENVPN_DL_URL"])
-                    if os.path.isfile(ascfile):
-                        os.remove(ascfile)
-                    HEADERS = request_api.useragent(self.DEBUG)
-                    r2 = requests.get(ascfile,headers=HEADERS)
-                    fp2 = open(self.OPENVPN_ASC_FILE, "wb")
-                    fp2.write(r2.content)
-                    fp2.close()
+    def load_openvpnbin_from_remote(self,update=None):
+        try:
+            self.debug(1,"def load_openvpnbin_from_remote() update = '%s'"%update)
+            if update == None:
+                SETUP_FILENAME = openvpn.values(DEBUG)["SETUP_FILENAME"]
+                DL_DIR = self.VPN_DIR
+            else:
+                SETUP_FILENAME = update["SETUP_FILENAME"]
+                DL_DIR = self.get_user_dl_dir()
+            
+            self.OPENVPN_SAVE_BIN_TO = "%s\\%s" % (DL_DIR,SETUP_FILENAME)
+            self.OPENVPN_ASC_FILE = "%s.asc" % (self.OPENVPN_SAVE_BIN_TO)
+            if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
+                return self.verify_openvpnbin_dl(update)
+            else:
+                if self.check_inet_connection() == False:
+                    self.msgwarn(_("Failed to download openVPN Update!"),_("Error"))
+                    return False
+                
+                if update == None:
+                    fsize = int(openvpn.values(self.DEBUG)["F_SIZE"])
                 else:
-                    self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
-                return self.verify_openvpnbin_dl()
-            except Exception as e:
-                self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error"))
-                self.debug(1,"def load_openvpnbin_from_remote: failed, exception = '%s'"%(e))
-                return False
+                    fsize = int(update["F_SIZE"])
+                    
+                dl_url = "%s/%s" % (openvpn.values(DEBUG)["URLS"]["REM"],SETUP_FILENAME)
+                ascfile = "%s.asc" % (dl_url)
+                self.STATE_CERTDL = "openvpn_dl"
+                try:
+                    HEADERS = request_api.useragent(self.DEBUG)
+                    r1 = requests.get(dl_url,headers=HEADERS)
+                    if len(r1.content) == fsize:
+                        fp1 = open(self.OPENVPN_SAVE_BIN_TO, "wb")
+                        fp1.write(r1.content)
+                        fp1.close()
+                        if os.path.isfile(ascfile):
+                            os.remove(ascfile)
+                        HEADERS = request_api.useragent(self.DEBUG)
+                        r2 = requests.get(ascfile,headers=HEADERS)
+                        fp2 = open(self.OPENVPN_ASC_FILE, "wb")
+                        fp2.write(r2.content)
+                        fp2.close()
+                    else:
+                        self.debug(1,"Invalid filesize len(r1.content) = '%s' but !== self.OPENVPN_FILESIZE"%(len(r1.content)))
+                        self.STATE_CERTDL = "clientupdate"
+                    return self.verify_openvpnbin_dl(update)
+                except Exception as e:
+                    self.STATE_CERTDL = False
+                    self.msgwarn(_("Failed to download openVPN Update!\n\nPlease install manually:\n'%s'")%(openvpn.values(DEBUG)["OPENVPN_DL_URL"]),_("Error"))
+                    self.debug(1,"def load_openvpnbin_from_remote: failed #2, exception = '%s'"%(e))
+                    return False
+        except Exception as e:
+            self.debug(1,"def load_openvpnbin_from_remote: failed #1, exception = '%s'"%(e))
 
     """ *fixme* move to openvpn.py """
-    def verify_openvpnbin_dl(self):
-        self.debug(1,"def verify_openvpnbin_dl()")
-        if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
-            localhash = hashings.hash_sha512_file(self.DEBUG,self.OPENVPN_SAVE_BIN_TO)
-            storehash = openvpn.values(DEBUG)["SHA_512"]
-            if storehash == localhash:
-                self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
-                return True
+    def verify_openvpnbin_dl(self,update=None):
+        try:
+            self.debug(1,"def verify_openvpnbin_dl() update = '%s'"%update)
+            if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
+                localhash = hashings.hash_sha512_file(self.DEBUG,self.OPENVPN_SAVE_BIN_TO)
+                if update == None:
+                    storehash = openvpn.values(DEBUG)["SHA_512"]
+                else:
+                    storehash = update["SHA_512"]
+                if storehash == localhash:
+                    self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
+                    return True
+                else:
+                    self.msgwarn(_("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'") % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),_("Error"))
+                    try:
+                        os.remove(self.OPENVPN_SAVE_BIN_TO)
+                    except Exception as e:
+                        self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error"))
+                    self.tray.set_tooltip_markup(_("%s - Verify openVPN failed!") % (CLIENT_STRING))
+                    return False
             else:
-                self.msgwarn(_("Invalid File hash: %s !\nlocalhash = '%s'\nbut should be = '%s'") % (self.OPENVPN_SAVE_BIN_TO,localhash,self.OPENVPN_FILEHASH),_("Error"))
-                try:
-                    os.remove(self.OPENVPN_SAVE_BIN_TO)
-                except Exception as e:
-                    self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error"))
-                self.tray.set_tooltip_markup(_("%s - Verify openVPN failed!") % (CLIENT_STRING))
                 return False
-        else:
-            return False
+        except Exception as e:
+            self.debug(1,"def verify_openvpnbin_dl: failed, exception = '%s'"%(e))
+
 
     """ *fixme* move to openvpn.py """
     def win_install_openvpn(self):
-        self.debug(1,"def win_install_openvpn()")
-        self.tray.set_tooltip_markup(_("%s - Install openVPN") % (CLIENT_STRING))
-        if self.OPENVPN_SILENT_SETUP == True:
-            # silent install
-            installtodir = "%s\\runtime" % (self.VPN_DIR)
-            options = "/S /SELECT_SHORTCUTS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
-            parameters = '%s /D=%s' % (options,installtodir)
-            netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,parameters)
-            self.debug(1,"def win_install_openvpn: silent cmd =\n'%s'" % (netshcmd))
-            self.OPENVPN_DIR = installtodir
-        else:
-            # popup install
-            installargs = "/SELECT_LAUNCH=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
-            netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,installargs)
-        self.debug(1,"def win_install_openvpn: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
-        try: 
-            exitcode = subprocess.call(netshcmd,shell=True)
-            if exitcode == 0:
-                if self.OPENVPN_SILENT_SETUP == True:
-                    self.debug(1,"def win_install_openvpn: silent OK!")
-                else:
-                    self.debug(1,"def win_install_openvpn:\n\n'%s'\n\nexitcode = %s" % (netshcmd,exitcode))
-                return True
+        try:
+            self.debug(1,"def w_i_o()")
+            self.tray.set_tooltip_markup(_("%s - Install openVPN") % (CLIENT_STRING))
+            if self.OPENVPN_SILENT_SETUP == True:
+                # silent install
+                installtodir = "%s\\runtime" % (self.VPN_DIR)
+                options = "/S /SELECT_SHORTCUTS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
+                parameters = '%s /D=%s' % (options,installtodir)
+                netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,parameters)
+                self.debug(1,"def w_i_o: silent cmd =\n'%s'" % (netshcmd))
+                self.OPENVPN_DIR = installtodir
             else:
-                self.debug(1,"def win_install_openvpn: '%s' exitcode = %s" % (netshcmd,exitcode))
+                # popup install
+                installargs = "/SELECT_LAUNCH=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
+                netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,installargs)
+            self.debug(1,"def w_i_o: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
+            try: 
+                exitcode = subprocess.call(netshcmd,shell=True)
+                if exitcode == 0:
+                    if self.OPENVPN_SILENT_SETUP == True:
+                        self.debug(1,"def w_i_o: silent OK!")
+                    else:
+                        self.debug(1,"def w_i_o:\n\n'%s'\n\nexitcode = %s" % (netshcmd,exitcode))
+                    return True
+                else:
+                    self.debug(1,"def w_i_o: '%s' exitcode = %s" % (netshcmd,exitcode))
+                    return False
+            except Exception as e:
+                self.debug(1,"def w_i_o: netshcmd '%s' failed, exception = '%s'" % (netshcmd,e))
                 return False
         except Exception as e:
-            self.debug(1,"def win_install_openvpn: '%s' failed" % (netshcmd))
+            self.debug(1,"def w_i_o: failed, exception = '%s'" % (e))
             return False
 
     """ *fixme* move to openvpn.py """
