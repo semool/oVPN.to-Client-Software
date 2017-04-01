@@ -29,7 +29,9 @@ def get_uninstall_progs():
 """ NETWORK ADAPTER """
 
 def get_networkadapter_guids(DEBUG):
-    return netifaces.interfaces()
+    ifaces = netifaces.interfaces()
+    debug(1,"[winregs.py] def get_networkadapter_guids: ifaces = '%s'"%(ifaces),DEBUG,True)
+    return ifaces
 
 def get_networkadapterlist_from_netsh(DEBUG):
     encodes.logencoding(DEBUG)
@@ -67,11 +69,11 @@ def get_networkadapterlist(DEBUG,silent):
     try:
         newlist = []
         list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG),silent)["iface_names"]
-        debug(2,"[winregs.py] def get_networkadapterlist: list1 = '%s'"%(list1),DEBUG,True)
+        debug(1,"[winregs.py] def get_networkadapterlist: list1 = '%s'"%(list1),DEBUG,True)
         list2 = get_networkadapterlist_from_netsh(DEBUG)
-        debug(2,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
+        debug(1,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
         for name in list1:
-            if name == "(unknown)" or name.startswith("isatap."):
+            if name == "(unknown)" or name.startswith("isatap.") or name.startswith("Teredo") or name.startswith("Npcap"):
                 continue
             debug(1,"[winregs.py] def get_networkadapterlist: for name '%s' in list1"%(name),DEBUG,True)
             for line in list2:

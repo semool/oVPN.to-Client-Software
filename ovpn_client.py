@@ -1072,6 +1072,8 @@ class Systray:
                     if self.win_firewall_export_on_start() == True:
                         if self.win_read_dns_to_backup() == True:
                             if self.read_gateway_from_interface() == True:
+                                if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
+                                    self.win_disable_ext_interface()
                                 return True
                             else:
                                 i = 0
@@ -1094,6 +1096,8 @@ class Systray:
         self.debug(1,"def win_read_interfaces()")
         try:
             print("win_read_interfaces debug 1")
+            if self.WIN_EXT_DEVICE != False:
+                self.win_enable_ext_interface()
             self.INTERFACES = winregs.get_networkadapterlist(self.DEBUG,False)
             print(self.INTERFACES)
             print("win_read_interfaces debug 2")
@@ -4604,14 +4608,14 @@ class Systray:
         return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
     def win_disable_ext_interface(self):
-        self.debug(1,"def win_disable_ext_interface()")
+        self.debug(1,"def win_disable_ext_interface() '%s'"%(self.WIN_EXT_DEVICE))
         if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
             NETSH_CMDLIST = list()
             NETSH_CMDLIST.append('interface set interface "%s" DISABLED'%(self.WIN_EXT_DEVICE))
             return self.win_join_netsh_cmd(NETSH_CMDLIST)
 
     def win_enable_ext_interface(self):
-        self.debug(1,"def win_enable_ext_interface()")
+        self.debug(1,"def win_enable_ext_interface() '%s'"%(self.WIN_EXT_DEVICE))
         NETSH_CMDLIST = list()
         NETSH_CMDLIST.append('interface set interface "%s" ENABLED'%(self.WIN_EXT_DEVICE))
         return self.win_join_netsh_cmd(NETSH_CMDLIST)
