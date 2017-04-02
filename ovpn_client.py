@@ -240,7 +240,7 @@ class Systray:
         self.WIN_TAP_DEVICE = False
         self.WIN_EXT_DEVICE = False
         self.SAVE_APIKEY_INFILE = False
-        self.OPENVPN_UPDATE = False
+        self.OPENVPN_UPDATE = None
         
         # lists
         self.WIN_TAP_DEVS = list()
@@ -294,6 +294,7 @@ class Systray:
         self.LAST_CHECK_CFG_UPDATE = 0
         self.LAST_CHECK_CFG_UPDATE_FORCE = 0
         self.MOUSE_IN_TRAY = 0
+        self.LAST_SETTINGS_NBPAGE = None
         
         # config options
         self.OPENVPN_EXE = False
@@ -1473,7 +1474,7 @@ class Systray:
                 self.debug(1,"def systray_timer: UPDATE_SWITCH")
                 
                 # Language changed
-                if self.LANG_FONT_CHANGE == True or self.OPENVPN_UPDATE != False:
+                if self.LANG_FONT_CHANGE == True or self.OPENVPN_UPDATE != None:
                     if self.VAR['MAIN']['OPEN'] == True:
                         self.mainwindow.set_title(_("Server"))
                     if self.SETTINGSWINDOW_OPEN == True:
@@ -1494,10 +1495,15 @@ class Systray:
                         self.show_hide_options_window()
                         self.show_hide_updates_window()
                         self.settingswindow.show_all()
-                        if self.OPENVPN_UPDATE != False:
-                            self.settingsnotebook.set_current_page(2)
+                        
+                        if self.LAST_SETTINGS_NBPAGE != None:
+                            self.settingsnotebook.set_current_page(self.LAST_SETTINGS_NBPAGE)
+                            self.LAST_SETTINGS_NBPAGE = None
                         else:
-                            self.settingsnotebook.set_current_page(1)
+                            if self.OPENVPN_UPDATE != None:
+                                self.settingsnotebook.set_current_page(2)
+                            else:
+                                self.settingsnotebook.set_current_page(1)
                     except Exception as e:
                         self.debug(1,"def systray_timer: settingswindow failed, exception = '%s'"%(page,e))
                     self.LANG_FONT_CHANGE = False
@@ -2869,8 +2875,13 @@ class Systray:
             self.nbpage2.set_border_width(8)
             
             self.settings_updates_button_clientupdate(self.nbpage2)
-            if self.OPENVPN_UPDATE != False:
-                self.settings_updates_button_openvpnupdate(self.nbpage2)
+            
+            if self.OPENVPN_UPDATE != None:
+                if self.OPENVPN_UPDATE["SETUP"] == True:
+                    self.OPENVPN_UPDATE = None
+                else:
+                    self.settings_updates_button_openvpnupdate(self.nbpage2)
+                
             self.settings_updates_button_normalconf(self.nbpage2)
             self.settings_updates_button_forceconf(self.nbpage2)
             self.settings_options_button_ipv6(self.nbpage2)
@@ -3578,7 +3589,6 @@ class Systray:
         else:
             self.msgwarn(_("Retry in few seconds..."),_("Please wait..."))
 
-
     def settings_updates_button_openvpnupdate(self,page):
         button = Gtk.Button(label=_("Install Update: openVPN %s %s [ %s ]")%(self.OPENVPN_UPDATE["VERSION"],self.OPENVPN_UPDATE["BUILT_V"],self.OPENVPN_UPDATE["BUILT"],))
         button.connect('clicked', self.cb_settings_updates_button_openvpnupdate)
@@ -3586,14 +3596,13 @@ class Systray:
         page.pack_start(Gtk.Label(label=""),False,False,0)
 
     def cb_settings_updates_button_openvpnupdate(self,event):
-        #thread = threading.Thread(target=self.cb_install_openvpn_update)
-        #thread.daemon = True
-        #thread.start()
-        #self.cb_install_openvpn_update()
-        self.upgrade_openvpn(self.OPENVPN_UPDATE)
-
-    #def cb_install_openvpn_update(self):
-    #    
+        if "SETUP_OPEN" in self.OPENVPN_UPDATE and self.OPENVPN_UPDATE["SETUP_OPEN"] == True:
+            return False
+        elif self.OPENVPN_UPDATE != None:
+            self.OPENVPN_UPDATE["SETUP_OPEN"] = True
+            thread = threading.Thread(target=lambda update=self.OPENVPN_UPDATE: self.upgrade_openvpn(update))
+            thread.daemon = True
+            thread.start()
 
     def settings_updates_button_normalconf(self,page):
         button = Gtk.Button(label=_("Normal Config Update"))
@@ -5333,6 +5342,7 @@ class Systray:
                     try:
                         OPENVPN = data["OPENVPN"]
                         self.OPENVPN_UPDATE = OPENVPN
+                        self.OPENVPN_UPDATE["SETUP"] = False
                         OVPN_LATEST_BUILT = OPENVPN["BUILT"]
                         OVPN_LATEST_BUILT_TIMESTAMP = OPENVPN["TIMESTAMP"]
                         if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
@@ -5340,7 +5350,6 @@ class Systray:
                                 if self.load_openvpnbin_from_remote(update=OPENVPN) == True:
                                         self.msgwarn(_("Verified Update: openVPN Setup %s %s '%s'")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"],self.OPENVPN_SAVE_BIN_TO),_("Success"))
                                         self.UPDATE_SWITCH = True
-                                        #self.LANG_FONT_CHANGE = True
                                         supr_nocliupdate = True
                                 else:
                                     self.msgwarn(_("Failed Download openVPN Setup %s %s")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"]),_("Error"))
@@ -5916,16 +5925,19 @@ class Systray:
                         self.debug(1,"def w_i_o:\n\n'%s'\n\nexitcode = %s" % (netshcmd,exitcode))
                     if reconnect_server != False:
                         self.cb_jump_openvpn(0,0,reconnect_server)
+                    if self.OPENVPN_UPDATE != None:
+                        self.OPENVPN_UPDATE["SETUP"] = True
+                        self.UPDATE_SWITCH = True
+                        if self.SETTINGSWINDOW_OPEN == True:
+                            self.LAST_SETTINGS_NBPAGE = 2
                     return True
                 else:
                     self.debug(1,"def w_i_o: '%s' exitcode = %s" % (netshcmd,exitcode))
-                    return False
             except Exception as e:
                 self.debug(1,"def w_i_o: netshcmd '%s' failed, exception = '%s'" % (netshcmd,e))
-                return False
         except Exception as e:
             self.debug(1,"def w_i_o: failed, exception = '%s'" % (e))
-            return False
+        return False
 
     """ *fixme* move to openvpn.py """
     def win_dialog_select_openvpn(self):
