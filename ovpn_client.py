@@ -240,6 +240,7 @@ class Systray:
         self.WIN_TAP_DEVICE = False
         self.WIN_EXT_DEVICE = False
         self.SAVE_APIKEY_INFILE = False
+        self.OPENVPN_UPDATE = False
         
         # lists
         self.WIN_TAP_DEVS = list()
@@ -1472,7 +1473,7 @@ class Systray:
                 self.debug(1,"def systray_timer: UPDATE_SWITCH")
                 
                 # Language changed
-                if self.LANG_FONT_CHANGE == True:
+                if self.LANG_FONT_CHANGE == True or self.OPENVPN_UPDATE != False:
                     if self.VAR['MAIN']['OPEN'] == True:
                         self.mainwindow.set_title(_("Server"))
                     if self.SETTINGSWINDOW_OPEN == True:
@@ -1493,7 +1494,10 @@ class Systray:
                         self.show_hide_options_window()
                         self.show_hide_updates_window()
                         self.settingswindow.show_all()
-                        self.settingsnotebook.set_current_page(1)
+                        if self.OPENVPN_UPDATE != False:
+                            self.settingsnotebook.set_current_page(2)
+                        else:
+                            self.settingsnotebook.set_current_page(1)
                     except Exception as e:
                         self.debug(1,"def systray_timer: settingswindow failed, exception = '%s'"%(page,e))
                     self.LANG_FONT_CHANGE = False
@@ -2865,6 +2869,8 @@ class Systray:
             self.nbpage2.set_border_width(8)
             
             self.settings_updates_button_clientupdate(self.nbpage2)
+            if self.OPENVPN_UPDATE != False:
+                self.settings_updates_button_openvpnupdate(self.nbpage2)
             self.settings_updates_button_normalconf(self.nbpage2)
             self.settings_updates_button_forceconf(self.nbpage2)
             self.settings_options_button_ipv6(self.nbpage2)
@@ -3572,6 +3578,23 @@ class Systray:
         else:
             self.msgwarn(_("Retry in few seconds..."),_("Please wait..."))
 
+
+    def settings_updates_button_openvpnupdate(self,page):
+        button = Gtk.Button(label=_("Install Update: openVPN %s %s [ %s ]")%(self.OPENVPN_UPDATE["VERSION"],self.OPENVPN_UPDATE["BUILT_V"],self.OPENVPN_UPDATE["BUILT"],))
+        button.connect('clicked', self.cb_settings_updates_button_openvpnupdate)
+        page.pack_start(button,False,False,0)
+        page.pack_start(Gtk.Label(label=""),False,False,0)
+
+    def cb_settings_updates_button_openvpnupdate(self,event):
+        #thread = threading.Thread(target=self.cb_install_openvpn_update)
+        #thread.daemon = True
+        #thread.start()
+        #self.cb_install_openvpn_update()
+        self.upgrade_openvpn(self.OPENVPN_UPDATE)
+
+    #def cb_install_openvpn_update(self):
+    #    
+
     def settings_updates_button_normalconf(self,page):
         button = Gtk.Button(label=_("Normal Config Update"))
         button.connect('clicked', self.cb_settings_updates_button_normalconf)
@@ -3791,13 +3814,12 @@ class Systray:
             self.reset_load_remote_timer()
 
     def cb_kill_openvpn(self,widget,event):
-        if event.button == 1:
+        self.debug(1,"def cb_kill_openvpn()")
+        if event == 1 or event.button == 1:
             self.VAR['OVPN']['STOP'] = True
             self.destroy_context_menu_servertab()
             self.destroy_systray_menu()
-            self.debug(1,"def cb_kill_openvpn()")
             self.VAR['OVPN']['AUTOCONNECT'] = False
-            self.debug(1,"def cb_kill_openvpn")
             killthread = threading.Thread(target=self.inThread_kill_openvpn)
             killthread.daemon = True
             killthread.start()
@@ -5310,12 +5332,15 @@ class Systray:
                     
                     try:
                         OPENVPN = data["OPENVPN"]
+                        self.OPENVPN_UPDATE = OPENVPN
                         OVPN_LATEST_BUILT = OPENVPN["BUILT"]
                         OVPN_LATEST_BUILT_TIMESTAMP = OPENVPN["TIMESTAMP"]
                         if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
                             if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_DIR, OVPN_LATEST_BUILT, OVPN_LATEST_BUILT_TIMESTAMP) == False:
                                 if self.load_openvpnbin_from_remote(update=OPENVPN) == True:
                                         self.msgwarn(_("Verified Update: openVPN Setup %s %s '%s'")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"],self.OPENVPN_SAVE_BIN_TO),_("Success"))
+                                        self.UPDATE_SWITCH = True
+                                        #self.LANG_FONT_CHANGE = True
                                         supr_nocliupdate = True
                                 else:
                                     self.msgwarn(_("Failed Download openVPN Setup %s %s")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"]),_("Error"))
@@ -5768,11 +5793,10 @@ class Systray:
             return False
 
     """ *fixme* move to openvpn.py """
-    def upgrade_openvpn(self):
-        self.debug(1,"def upgrade_openvpn()")
-        if self.load_openvpnbin_from_remote():
-            print("debug 4.1.1")
-            return self.win_install_openvpn()
+    def upgrade_openvpn(self,update=None):
+        self.debug(1,"def upgrade_openvpn() update = '%s'"%(update))
+        if self.load_openvpnbin_from_remote(update):
+            return self.win_install_openvpn(update)
 
     """ *fixme* move to openvpn.py """
     def load_openvpnbin_from_remote(self,update=None):
@@ -5836,10 +5860,11 @@ class Systray:
             self.debug(1,"def verify_openvpnbin_dl() update = '%s'"%update)
             if os.path.isfile(self.OPENVPN_SAVE_BIN_TO):
                 localhash = hashings.hash_sha512_file(self.DEBUG,self.OPENVPN_SAVE_BIN_TO)
-                if update == None:
-                    storehash = openvpn.values(DEBUG)["SHA_512"]
-                else:
+                if update != None:
                     storehash = update["SHA_512"]
+                else:
+                    storehash = openvpn.values(DEBUG)["SHA_512"]
+                
                 if storehash == localhash:
                     self.debug(1,"def verify_openvpnbin_dl: file = '%s' localhash = '%s' OK" % (self.OPENVPN_SAVE_BIN_TO,localhash))
                     return True
@@ -5849,19 +5874,24 @@ class Systray:
                         os.remove(self.OPENVPN_SAVE_BIN_TO)
                     except Exception as e:
                         self.msgwarn(_("Failed remove file: %s") % (self.OPENVPN_SAVE_BIN_TO),_("Error"))
-                    self.tray.set_tooltip_markup(_("%s - Verify openVPN failed!") % (CLIENT_STRING))
+                    #self.tray.set_tooltip_markup(_("%s - Verify openVPN failed!") % (CLIENT_STRING))
                     return False
             else:
                 return False
         except Exception as e:
             self.debug(1,"def verify_openvpnbin_dl: failed, exception = '%s'"%(e))
 
-
     """ *fixme* move to openvpn.py """
-    def win_install_openvpn(self):
+    def win_install_openvpn(self,update=None):
+        self.debug(1,"def w_i_o()")
+        if self.state_openvpn() == True:
+            reconnect_server = self.VAR['OVPN']['CALL_SRV']
+            self.cb_kill_openvpn(None,1)
+        else:
+            reconnect_server = False
         try:
-            self.debug(1,"def w_i_o()")
-            self.tray.set_tooltip_markup(_("%s - Install openVPN") % (CLIENT_STRING))
+            netshcmd = None
+            #self.tray.set_tooltip_markup(_("%s - Install openVPN") % (CLIENT_STRING))
             if self.OPENVPN_SILENT_SETUP == True:
                 # silent install
                 installtodir = "%s\\runtime" % (self.VPN_DIR)
@@ -5874,14 +5904,18 @@ class Systray:
                 # popup install
                 installargs = "/SELECT_LAUNCH=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENVPN=1 /SELECT_SERVICE=0 /SELECT_TAP=1 /SELECT_OPENVPNGUI=0 /SELECT_ASSOCIATIONS=0 /SELECT_OPENSSL_UTILITIES=0 /SELECT_EASYRSA=0 /SELECT_PATH=1"
                 netshcmd = '"%s" %s' % (self.OPENVPN_SAVE_BIN_TO,installargs)
-            self.debug(1,"def w_i_o: '%s'" % (self.OPENVPN_SAVE_BIN_TO))
-            try: 
+            self.debug(1,"def w_i_o: '%s'" % (netshcmd))
+            if netshcmd == None:
+                return False
+            try:
                 exitcode = subprocess.call(netshcmd,shell=True)
                 if exitcode == 0:
                     if self.OPENVPN_SILENT_SETUP == True:
                         self.debug(1,"def w_i_o: silent OK!")
                     else:
                         self.debug(1,"def w_i_o:\n\n'%s'\n\nexitcode = %s" % (netshcmd,exitcode))
+                    if reconnect_server != False:
+                        self.cb_jump_openvpn(0,0,reconnect_server)
                     return True
                 else:
                     self.debug(1,"def w_i_o: '%s' exitcode = %s" % (netshcmd,exitcode))
