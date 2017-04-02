@@ -5309,20 +5309,12 @@ class Systray:
                             self.debug(1,"def API_REQUEST: winrelease_url invalid update hash")
                     
                     try:
-                        self.debug(1,"def API_REQUEST: OPENVPN #1")
                         OPENVPN = data["OPENVPN"]
-                        self.debug(1,"def API_REQUEST: OPENVPN #2")
                         OVPN_LATEST_BUILT = OPENVPN["BUILT"]
-                        self.debug(1,"def API_REQUEST: OPENVPN #3")
                         OVPN_LATEST_BUILT_TIMESTAMP = OPENVPN["TIMESTAMP"]
-                        self.debug(1,"def API_REQUEST: OPENVPN #4")
                         if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-                            self.debug(1,"def API_REQUEST: OPENVPN #5")
                             if openvpn.win_detect_openvpn_version(self.DEBUG,self.OPENVPN_DIR, OVPN_LATEST_BUILT, OVPN_LATEST_BUILT_TIMESTAMP) == False:
-                                self.debug(1,"def API_REQUEST: OPENVPN #6")
-                                self.msgwarn(_("Downloading Update: openVPN Setup %s %s (%s MB)")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"],round(OPENVPN["F_SIZE"] / 1024 / 1024,1)),_("Info"))
                                 if self.load_openvpnbin_from_remote(update=OPENVPN) == True:
-                                        self.debug(1,"def API_REQUEST: OPENVPN #7")
                                         self.msgwarn(_("Verified Update: openVPN Setup %s %s '%s'")%(OPENVPN["VERSION"],OPENVPN["BUILT_V"],self.OPENVPN_SAVE_BIN_TO),_("Success"))
                                         supr_nocliupdate = True
                                 else:
@@ -5810,6 +5802,8 @@ class Systray:
                 dl_url = "%s/%s" % (openvpn.values(DEBUG)["URLS"]["REM"],SETUP_FILENAME)
                 ascfile = "%s.asc" % (dl_url)
                 self.STATE_CERTDL = "openvpn_dl"
+                if update != None:
+                    self.msgwarn(_("Downloading Update: openVPN Setup %s %s (%s MB)")%(update["VERSION"],update["BUILT_V"],round(update["F_SIZE"] / 1024 / 1024,1)),_("Info"))
                 try:
                     HEADERS = request_api.useragent(self.DEBUG)
                     r1 = requests.get(dl_url,headers=HEADERS)
@@ -5927,11 +5921,8 @@ class Systray:
 
     def win_detect_openvpn(self):
         try:
-            print("debug 1")
             values = openvpn.win_detect_openvpn(self.DEBUG,self.OPENVPN_EXE)
-            print("debug 2")
             if not values == False:
-                print("debug 3")
                 self.OPENVPN_DIR = values["OPENVPN_DIR"]
                 self.OPENVPN_EXE = values["OPENVPN_EXE"]
                 self.debug(1,"def win_detect_openvpn: DIR = '%s', EXE = '%s'"%(self.OPENVPN_DIR,self.OPENVPN_EXE))
@@ -5943,21 +5934,15 @@ class Systray:
                 if self.win_dialog_select_openvpn() == True:
                     if self.win_detect_openvpn == True:
                         return True
-            print("debug 4")
             if self.upgrade_openvpn() == True:
-                print("debug 4.1")
                 if self.win_detect_openvpn() == True:
-                    print("debug 4.2")
                     return True
-                print("debug 4.3")
             else:
                 if self.verify_openvpnbin_dl() == True:
                     self.msgwarn(_("openVPN Setup downloaded and hash verified OK!\n\nPlease start setup from file:\n'%s'\n\nVerify GPG with:\n'%s'") % (self.OPENVPN_SAVE_BIN_TO,self.OPENVPN_ASC_FILE),_("Info"))
                 else:
                     self.msgwarn(_("openVPN Setup downloaded but hash verify failed!\nPlease install openVPN!\nURL1: %s\nURL2: %s") % (openvpn.values(DEBUG)["OPENVPN_DL_URL"],openvpn.values(DEBUG)["OPENVPN_DL_URL_ALT"]),_("Error"))
-            print("debug 5")
             if openvpn.check_files(self.DEBUG,self.OPENVPN_DIR) == True:
-                print("debug 6")
                 return True
         except Exception as e:
            self.debug(1,"def win_detect_openvpn: failed, exception = '%s'"%(e))
