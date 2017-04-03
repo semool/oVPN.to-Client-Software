@@ -28,9 +28,9 @@ def get_uninstall_progs():
 
 """ NETWORK ADAPTER """
 
-def get_networkadapter_guids(DEBUG):
+def get_networkadapter_guids(DEBUG,src=None):
     ifaces = netifaces.interfaces()
-    debug(1,"[winregs.py] def get_networkadapter_guids: ifaces = '%s'"%(ifaces),DEBUG,True)
+    debug(2,"[winregs.py] def get_networkadapter_guids: ifaces = '%s', src = '%s'"%(ifaces,src),DEBUG,True)
     return ifaces
 
 def get_networkadapterlist_from_netsh(DEBUG):
@@ -68,7 +68,7 @@ def get_networkadapterlist(DEBUG,silent):
     debug(1,"[winregs.py] def get_networkadapterlist()",DEBUG,True)
     try:
         newlist = []
-        list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG),silent)["iface_names"]
+        list1 = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG,src=get_networkadapterlist),silent)["iface_names"]
         debug(1,"[winregs.py] def get_networkadapterlist: list1 = '%s'"%(list1),DEBUG,True)
         list2 = get_networkadapterlist_from_netsh(DEBUG)
         debug(1,"[winregs.py] def get_networkadapterlist: list2 = '%s'"%(list2),DEBUG,True)
@@ -89,7 +89,7 @@ def get_networkadapterlist(DEBUG,silent):
         return False
 
 def get_networkadapter_guid(DEBUG,adaptername,silent):
-    guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG),silent)["mapguids"]
+    guids = get_networkadapterlist_from_guids(DEBUG,get_networkadapter_guids(DEBUG,src=get_networkadapter_guid),silent)["mapguids"]
     guid = guids[adaptername]
     if silent == False:
         debug(1,"[winregs.py] def get_networkadapter_guid: adaptername = '%s' guid = '%s'" % (adaptername,guid),DEBUG,True)
