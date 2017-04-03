@@ -942,14 +942,14 @@ class Systray:
                     value = json.loads(str(parser.get('oVPN','disconnectonidle')))
                     
                     if "enabled" in value and value["enabled"] == True:
-                        enabled = value["enabled"]
+                        enabled = True
                     else:
                         enabled = False
                     
                     if "idletime" in value:
                         idletime = int(value["idletime"])
                     else:
-                        idletime = 0
+                        idletime = 3600
                     
                     if idletime <= 0:
                         idletime = 0
@@ -960,19 +960,16 @@ class Systray:
                     
                     if "times" in value:
                         times = value["times"]
-                        if len(times) == 0:
-                            times = standard_idletimes
-                        else:
-                            
-                            for time in times:
-                                try:
-                                    itime = int(time)
-                                except:
-                                    itime = 0
-                                if itime >= 60:
-                                    newtimeslist.append(itime)
-                            if len(newtimeslist) > 0:
-                                times = newtimeslist
+                        
+                        for time in times:
+                            try:
+                                itime = int(time)
+                            except:
+                                itime = 0
+                            if itime >= 60:
+                                newtimeslist.append(itime)
+                        if len(newtimeslist) > 0:
+                            times = newtimeslist
                     
                     if len(newtimeslist) == 0:
                         times = standard_idletimes
@@ -1050,7 +1047,7 @@ class Systray:
                 parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
                 parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.VAR['MAIN']['SHOWCELLS'], ensure_ascii=True)))
                 parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
-                parser.set('oVPN','disconnectonidle','%s'%(self.DISCONNECT_ON_IDLE))
+                parser.set('oVPN','disconnectonidle','%s'%(json.dumps(self.DISCONNECT_ON_IDLE, ensure_ascii=True)))
                 parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
                 parser.set('oVPN','mydns','False')
                 #parser.write(bytes(cfg,locale.getpreferredencoding()))
