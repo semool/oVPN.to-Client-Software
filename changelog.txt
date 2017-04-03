@@ -1,5 +1,11 @@
 # changelog.txt
 #
+Version: 0.8.10
++ update: openvpn 2.4.1 I601
++ update: Check openVPN version with button: "Check Client Update", download latest setup and show a button: "Install openVPN". Install will disconnect established connection and reconnect after openVPN setup is done!
++ update: New option "Disconnect on Idle" will do what it says and instantly reconnect once you're back! Set times in '%\oVPN.to Client\appdata\ovpn\12345\options.cfg': disconnectonidle = {"times": [60, 120, 300, 600, 900, 1800, 3600, 7200, 10800, 21600, 43200, 86400], "idletime": 900, "enabled": true }
++ bugfix: client sometimes read wrong interface and did not boot with option "Disable Interface on Disconnect" enabled
+
 Version: 0.8.9
 + bugfix: mainwindow thrown exception sometimes
 + bugfix: ipv6 addr / routes
