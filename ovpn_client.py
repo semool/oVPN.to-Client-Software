@@ -1796,7 +1796,7 @@ class Systray:
                     statusbar_text = systraytext
                     self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
                     if (int(time.time())-self.LAST_OVPN_PING_DEAD_MESSAGE) > 120:
-                        self.send_notify(_("Connection unstable or failed!"),_("oVPN"))
+                        self.send_notify(_("Connection unstable or failed!"),_("oVPN.to Server: %s")%(self.VAR['OVPN']['CALL_SRV']))
                         self.LAST_OVPN_PING_DEAD_MESSAGE = int(time.time())
                         
                 elif self.VAR['OVPN']['PING_STAT'] > 0:
@@ -5654,7 +5654,7 @@ class Systray:
                         self.VAR['OVPN']['CONN']['OK'] = True
                         self.VAR['OVPN']['PING_DEAD'] = 0
                         self.VAR['OVPN']['CONN']['FAILEDTIME'] = 0
-                        self.send_notify(_("Connection established!"),_("oVPN"))
+                        self.send_notify(_("Connection established!"),_("oVPN.to Server: %s")%(self.VAR['OVPN']['CALL_SRV']))
                     return True
             except Exception as e:
                 self.debug(1,"def check_myip: failed, exception = '%s'"%(e))
