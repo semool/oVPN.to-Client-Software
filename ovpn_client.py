@@ -36,6 +36,8 @@ import hashings
 import request_api
 import encodes
 import flags_b64
+import idle
+
 try:
     import win_notification
     WIN_NOTIFY = True
@@ -330,6 +332,7 @@ class Systray:
         self.DISABLE_SRV_WINDOW = False
         self.DISABLE_ACC_WINDOW = False
         self.DISABLE_QUIT_ENTRY = True
+        self.DISCONNECT_ON_IDLE = { "server": None, "is_idle": False, "discon": False }
         
         # from befores
         self.VAR['CACHE'] = dict()
@@ -934,6 +937,57 @@ class Systray:
                 except Exception as e:
                     self.debug(1,"def read_options_file: disablequitentry failed, exception = '%s'"%(e))
                 
+                standard_idletimes = [ 60, 120, 300, 600, 900, 1800, 3600, 7200, 10800, 21600, 43200, 86400 ]
+                try:
+                    value = json.loads(str(parser.get('oVPN','disconnectonidle')))
+                    
+                    if "enabled" in value and value["enabled"] == True:
+                        enabled = value["enabled"]
+                    else:
+                        enabled = False
+                    
+                    if "idletime" in value:
+                        idletime = int(value["idletime"])
+                    else:
+                        idletime = 0
+                    
+                    if idletime <= 0:
+                        idletime = 0
+                    elif idletime > 0 and idletime < 60:
+                        idletime = 60
+                    
+                    newtimeslist = []
+                    
+                    if "times" in value:
+                        times = value["times"]
+                        if len(times) == 0:
+                            times = standard_idletimes
+                        else:
+                            
+                            for time in times:
+                                try:
+                                    itime = int(time)
+                                except:
+                                    itime = 0
+                                if itime >= 60:
+                                    newtimeslist.append(itime)
+                            if len(newtimeslist) > 0:
+                                times = newtimeslist
+                    
+                    if len(newtimeslist) == 0:
+                        times = standard_idletimes
+                    
+                    self.DISCONNECT_ON_IDLE["enabled"] = enabled
+                    self.DISCONNECT_ON_IDLE["idletime"] = idletime
+                    self.DISCONNECT_ON_IDLE["times"] = times
+                    
+                    self.debug(1,"def read_options_file: self.DISCONNECT_ON_IDLE '%s'" % (self.DISCONNECT_ON_IDLE))
+                except Exception as e:
+                    self.debug(1,"def read_options_file: disconnectonidle failed, exception = '%s'"%(e))
+                    self.DISCONNECT_ON_IDLE["enabled"] = False
+                    self.DISCONNECT_ON_IDLE["idletime"] = 3600
+                    self.DISCONNECT_ON_IDLE["times"] = standard_idletimes
+                
                 try:
                     MYDNS = json.loads(str(parser.get('oVPN','mydns')))
                     if len(MYDNS) > 0:
@@ -996,6 +1050,7 @@ class Systray:
                 parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
                 parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.VAR['MAIN']['SHOWCELLS'], ensure_ascii=True)))
                 parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
+                parser.set('oVPN','disconnectonidle','%s'%(self.DISCONNECT_ON_IDLE))
                 parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
                 parser.set('oVPN','mydns','False')
                 #parser.write(bytes(cfg,locale.getpreferredencoding()))
@@ -1055,6 +1110,7 @@ class Systray:
             parser.set('oVPN','loaddataevery','%s'%(self.LOAD_DATA_EVERY))
             parser.set('oVPN','mainwindowshowcells','%s'%(json.dumps(self.VAR['MAIN']['SHOWCELLS'], ensure_ascii=True)))
             parser.set('oVPN','disablequitentry','%s'%(self.DISABLE_QUIT_ENTRY))
+            parser.set('oVPN','disconnectonidle','%s'%(json.dumps(self.DISCONNECT_ON_IDLE, ensure_ascii=True)))
             parser.set('oVPN','winnotify','%s'%(self.WIN_ENABLE_NOTIFICATIONS))
             parser.set('oVPN','mydns','%s'%(json.dumps(self.MYDNS, ensure_ascii=True)))
             parser.write(cfg)
@@ -1450,10 +1506,47 @@ class Systray:
         except Exception as e:
             self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: failed, exception = '%s'"%(e))
 
+    def check_idletime(self):
+        try:
+            idletime = idle.get_idle_duration()
+            if idletime > 9:
+                return int(idletime)
+        except Exception as e:
+            self.debug(1,"def get_idletime: failed, exception = '%s'"%(e))
+        return False
+
     def systray_timer(self):
         try:
-            self.debug(10,"def systray_timer()")
             starttime = time.time()
+            self.debug(10,"def systray_timer()")
+            
+            if self.DISCONNECT_ON_IDLE["enabled"] == True:
+                idletime = self.check_idletime()
+                disconnect_in = False
+                if idletime != False:
+                    if self.DISCONNECT_ON_IDLE["is_idle"] == False:
+                        self.DISCONNECT_ON_IDLE["is_idle"] = True
+                    
+                    if self.state_openvpn() and self.DISCONNECT_ON_IDLE["discon"] == False:
+                        disconnect_in = self.DISCONNECT_ON_IDLE["idletime"] - idletime
+                        if disconnect_in <= 0:
+                            self.DISCONNECT_ON_IDLE["discon"] = True
+                            self.DISCONNECT_ON_IDLE["server"] = self.VAR['OVPN']['CALL_SRV']
+                            self.debug(1,"def systray_timer(): system idle time '%s', DISCONNECT_ON_IDLE, server = '%s'"%(idletime,self.DISCONNECT_ON_IDLE["server"]))
+                            #self.msgwarn(_("Initiating Idletime Disconnect!"),_("Info"))
+                            self.cb_kill_openvpn(None,1)
+                        else:
+                            self.debug(1,"def systray_timer(): system idle time '%s', disconnect_in '%s'"%(idletime,disconnect_in))
+                else:
+                    if self.DISCONNECT_ON_IDLE["is_idle"] == True:
+                        self.DISCONNECT_ON_IDLE["is_idle"] = False
+                        if self.state_openvpn() == False and self.DISCONNECT_ON_IDLE["server"] != None:
+                            self.cb_jump_openvpn(0,0,self.DISCONNECT_ON_IDLE["server"])
+                
+                    self.DISCONNECT_ON_IDLE["is_idle"] = False
+            else:
+                self.DISCONNECT_ON_IDLE["is_idle"] = False
+            
             self.systray_timer_running = True
             if self.stop_systray_timer == True:
                 self.systray_timer_running = False
@@ -1544,7 +1637,7 @@ class Systray:
                     except Exception as e:
                         pass
                 
-                # def settings_firewall_switch_nofw()
+                # def settings_security_switch_nofw()
                 if self.NO_WIN_FIREWALL == True:
                     self.switch_fw.set_active(False)
                     try:
@@ -1554,43 +1647,43 @@ class Systray:
                 else:
                     self.switch_fw.set_active(True)
                 
-                # def settings_firewall_switch_tapblockoutbound()
+                # def settings_security_switch_tapblockoutbound()
                 if self.TAP_BLOCKOUTBOUND == True:
                     self.switch_tapblockoutbound.set_active(True)
                 else:
                     self.switch_tapblockoutbound.set_active(False)
                 
-                # def settings_firewall_switch_fwblockonexit()
+                # def settings_security_switch_fwblockonexit()
                 if self.WIN_ALWAYS_BLOCK_FW_ON_EXIT == True:
                     self.switch_fwblockonexit.set_active(True)
                 else:
                     self.switch_fwblockonexit.set_active(False)
                 
-                # def settings_firewall_switch_fwdontaskonexit()
+                # def settings_security_switch_fwdontaskonexit()
                 if self.WIN_DONT_ASK_FW_EXIT == True:
                     self.switch_fwdontaskonexit.set_active(True)
                 else:
                     self.switch_fwdontaskonexit.set_active(False)
                 
-                # def settings_firewall_switch_fwresetonconnect()
+                # def settings_security_switch_fwresetonconnect()
                 if self.WIN_RESET_FIREWALL == True:
                     self.switch_fwresetonconnect.set_active(True)
                 else:
                     self.switch_fwresetonconnect.set_active(False)
                 
-                # def settings_firewall_switch_fwbackupmode()
+                # def settings_security_switch_fwbackupmode()
                 if self.WIN_BACKUP_FIREWALL == True:
                     self.switch_fwbackupmode.set_active(True)
                 else:
                     self.switch_fwbackupmode.set_active(False)
                 
-                # def settings_network_switch_nodns()
+                # def settings_security_switch_nodns()
                 if self.NO_DNS_CHANGE == True:
                     self.switch_nodns.set_active(False)
                 else:
                     self.switch_nodns.set_active(True)
                 
-                # settings_network_switch_disableextifondisco
+                # settings_security_switch_disableextifondisco
                 if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
                     self.switch_disableextifondisco.set_active(True)
                 else:
@@ -2783,14 +2876,28 @@ class Systray:
             self.nbpage0 = Gtk.VBox(False,spacing=2)
             self.nbpage0.set_border_width(8)
             
-            self.settings_firewall_switch_nofw(self.nbpage0)
-            self.settings_firewall_switch_fwblockonexit(self.nbpage0)
-            self.settings_firewall_switch_fwdontaskonexit(self.nbpage0)
-            self.settings_firewall_switch_fwresetonconnect(self.nbpage0)
-            self.settings_firewall_switch_fwbackupmode(self.nbpage0)
-            self.settings_network_switch_nodns(self.nbpage0)
-            self.settings_firewall_switch_tapblockoutbound(self.nbpage0)
-            self.settings_network_switch_disableextifondisco(self.nbpage0)
+            self.settings_security_switch_nofw(self.nbpage0)
+            self.settings_security_switch_fwblockonexit(self.nbpage0)
+            self.settings_security_switch_fwdontaskonexit(self.nbpage0)
+            self.settings_security_switch_fwresetonconnect(self.nbpage0)
+            self.settings_security_switch_fwbackupmode(self.nbpage0)
+            self.settings_security_switch_nodns(self.nbpage0)
+            self.settings_security_switch_tapblockoutbound(self.nbpage0)
+            self.settings_security_switch_disableextifondisco(self.nbpage0)
+            
+            ##
+            self.nbpage0_h0 = Gtk.HBox(False, spacing=2)
+            
+            self.nbpage0_h0a = Gtk.VBox(False, spacing=0)
+            self.nbpage0_h0.pack_start(self.nbpage0_h0a,True,True,0)
+            self.settings_security_switch_disconnectonidle(self.nbpage0_h0a)
+            
+            self.nbpage0_h0b = Gtk.VBox(False, spacing=0)
+            self.nbpage0_h0.pack_start(self.nbpage0_h0b,True,True,0)
+            self.settings_security_disconnectonidle_combobox(self.nbpage0_h0b)
+            
+            self.nbpage0.pack_start(self.nbpage0_h0,False,False,0)
+            ##
             
             self.settingsnotebook.append_page(self.nbpage0, Gtk.Label(_(" Security ")))
         except Exception as e:
@@ -2899,12 +3006,12 @@ class Systray:
                 self.nbpage3 = Gtk.VBox(False,spacing=2)
                 self.nbpage3.set_border_width(8)
                 self.nbpage3.pack_start(Gtk.Label(label=_("Restore Firewall Backups\n")),False,False,0)
-                self.settings_firewall_switch_backuprestore(self.nbpage3)
+                self.settings_security_switch_backuprestore(self.nbpage3)
                 self.settingsnotebook.append_page(self.nbpage3, Gtk.Label(_(" Backups ")))
         except Exception as e:
             self.debug(1,"def show_hide_backup_window: nbpage3 failed, exception = '%s'"%(e))
 
-    def settings_firewall_switch_nofw(self,page):
+    def settings_security_switch_nofw(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_fw = switch
@@ -2913,18 +3020,18 @@ class Systray:
                 switch.set_active(False)
             else:
                 switch.set_active(True)
-            switch.connect("notify::state", self.cb_settings_firewall_switch_nofw)
+            switch.connect("notify::state", self.cb_settings_security_switch_nofw)
             page.pack_start(checkbox_title,False,False,0)
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_firewall_switch_nofw: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_nofw: failed, exception = '%s'"%(e))
 
-    def cb_settings_firewall_switch_nofw(self,switch,gparam):
+    def cb_settings_security_switch_nofw(self,switch,gparam):
         if self.state_openvpn() == True:
             self.UPDATE_SWITCH = True
             return
-        self.debug(1,"def cb_settings_firewall_switch_nofw()")
+        self.debug(1,"def cb_settings_security_switch_nofw()")
         if switch.get_active():
             self.NO_WIN_FIREWALL = False
             self.WIN_DONT_ASK_FW_EXIT = True
@@ -2934,7 +3041,7 @@ class Systray:
         self.ask_loadorunload_fw()
         self.UPDATE_SWITCH = True
 
-    def settings_firewall_switch_tapblockoutbound(self,page):
+    def settings_security_switch_tapblockoutbound(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_tapblockoutbound = switch
@@ -2943,18 +3050,18 @@ class Systray:
                 switch.set_active(True)
             else:
                 switch.set_active(False)
-            switch.connect("notify::state", self.cb_settings_firewall_switch_tapblockoutbound)
+            switch.connect("notify::state", self.cb_settings_security_switch_tapblockoutbound)
             page.pack_start(checkbox_title,False,False,0)
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_firewall_switch_tapblockoutbound: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_tapblockoutbound: failed, exception = '%s'"%(e))
 
-    def cb_settings_firewall_switch_tapblockoutbound(self,switch,gparam):
+    def cb_settings_security_switch_tapblockoutbound(self,switch,gparam):
         if self.NO_WIN_FIREWALL == True or self.inThread_jump_server_running == True or self.win_firewall_tap_blockoutbound_running == True:
             self.UPDATE_SWITCH = True
             return
-        self.debug(1,"def cb_settings_firewall_switch_tapblockoutbound()")
+        self.debug(1,"def cb_settings_security_switch_tapblockoutbound()")
         if switch.get_active():
             self.TAP_BLOCKOUTBOUND = True
         else:
@@ -2965,7 +3072,7 @@ class Systray:
         self.write_options_file()
         self.UPDATE_SWITCH = True
 
-    def settings_firewall_switch_fwblockonexit(self,page):
+    def settings_security_switch_fwblockonexit(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_fwblockonexit = switch
@@ -2974,18 +3081,18 @@ class Systray:
                 switch.set_active(True)
             else:
                 switch.set_active(False)
-            switch.connect("notify::state", self.cb_settings_firewall_switch_fwblockonexit)
+            switch.connect("notify::state", self.cb_settings_security_switch_fwblockonexit)
             page.pack_start(checkbox_title,False,False,0)
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_firewall_switch_fwblockonexit: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_fwblockonexit: failed, exception = '%s'"%(e))
 
-    def cb_settings_firewall_switch_fwblockonexit(self,switch,gparam):
+    def cb_settings_security_switch_fwblockonexit(self,switch,gparam):
         if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
             self.UPDATE_SWITCH = True
             return
-        self.debug(1,"def cb_settings_firewall_switch_fwblockonexit()")
+        self.debug(1,"def cb_settings_security_switch_fwblockonexit()")
         if switch.get_active():
             self.WIN_ALWAYS_BLOCK_FW_ON_EXIT = True
         else:
@@ -2993,7 +3100,7 @@ class Systray:
         self.write_options_file()
         self.UPDATE_SWITCH = True
 
-    def settings_firewall_switch_fwdontaskonexit(self,page):
+    def settings_security_switch_fwdontaskonexit(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_fwdontaskonexit = switch
@@ -3002,18 +3109,18 @@ class Systray:
                 switch.set_active(True)
             else:
                 switch.set_active(False)
-            switch.connect("notify::state", self.cb_settings_firewall_switch_fwdontaskonexit)
+            switch.connect("notify::state", self.cb_settings_security_switch_fwdontaskonexit)
             page.pack_start(checkbox_title,False,False,0)
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_firewall_switch_fwblockonexit: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_fwblockonexit: failed, exception = '%s'"%(e))
 
-    def cb_settings_firewall_switch_fwdontaskonexit(self,switch,gparam):
+    def cb_settings_security_switch_fwdontaskonexit(self,switch,gparam):
         if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
             self.UPDATE_SWITCH = True
             return
-        self.debug(1,"def cb_settings_firewall_switch_fwdontaskonexit()")
+        self.debug(1,"def cb_settings_security_switch_fwdontaskonexit()")
         if switch.get_active():
             self.WIN_DONT_ASK_FW_EXIT = True
         else:
@@ -3021,7 +3128,7 @@ class Systray:
         self.write_options_file()
         self.UPDATE_SWITCH = True
 
-    def settings_firewall_switch_fwresetonconnect(self,page):
+    def settings_security_switch_fwresetonconnect(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_fwresetonconnect = switch
@@ -3030,18 +3137,18 @@ class Systray:
                 switch.set_active(True)
             else:
                 switch.set_active(False)
-            switch.connect("notify::state", self.cb_settings_firewall_switch_fwresetonconnect)
+            switch.connect("notify::state", self.cb_settings_security_switch_fwresetonconnect)
             page.pack_start(checkbox_title,False,False,0)
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_firewall_switch_fwresetonconnect: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_fwresetonconnect: failed, exception = '%s'"%(e))
 
-    def cb_settings_firewall_switch_fwresetonconnect(self,switch,gparam):
+    def cb_settings_security_switch_fwresetonconnect(self,switch,gparam):
         if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
             self.UPDATE_SWITCH = True
             return
-        self.debug(1,"def cb_settings_firewall_switch_fwresetonconnect()")
+        self.debug(1,"def cb_settings_security_switch_fwresetonconnect()")
         if switch.get_active():
             self.WIN_RESET_FIREWALL = True
             if not self.win_firewall_export_on_start():
@@ -3051,7 +3158,7 @@ class Systray:
         self.write_options_file()
         self.UPDATE_SWITCH = True
 
-    def settings_firewall_switch_fwbackupmode(self,page):
+    def settings_security_switch_fwbackupmode(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_fwbackupmode = switch
@@ -3060,18 +3167,18 @@ class Systray:
                 switch.set_active(True)
             else:
                 switch.set_active(False)
-            switch.connect("notify::state", self.cb_settings_firewall_switch_fwbackupmode)
+            switch.connect("notify::state", self.cb_settings_security_switch_fwbackupmode)
             page.pack_start(checkbox_title,False,False,0)
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_firewall_switch_fwbackupmode: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_fwbackupmode: failed, exception = '%s'"%(e))
 
-    def cb_settings_firewall_switch_fwbackupmode(self,switch,gparam):
+    def cb_settings_security_switch_fwbackupmode(self,switch,gparam):
         if self.NO_WIN_FIREWALL == True or self.state_openvpn() == True:
             self.UPDATE_SWITCH = True
             return
-        self.debug(1,"def cb_settings_firewall_switch_fwbackupmode()")
+        self.debug(1,"def cb_settings_security_switch_fwbackupmode()")
         if switch.get_active():
             self.WIN_BACKUP_FIREWALL = True
             if not self.win_firewall_export_on_start():
@@ -3080,8 +3187,65 @@ class Systray:
             self.WIN_BACKUP_FIREWALL = False
         self.write_options_file()
         self.UPDATE_SWITCH = True
+        
+    def settings_security_switch_disconnectonidle(self,page):
+        try:
+            switch = Gtk.Switch()
+            self.switch_disconnectonidle = switch
+            checkbox_title = Gtk.Label(label=_("Disconnect on Idle (default: OFF)"))
+            if self.DISCONNECT_ON_IDLE["enabled"] == True:
+                switch.set_active(True)
+            else:
+                switch.set_active(False)
+            switch.connect("notify::state", self.cb_switch_disconnectonidle)
+            page.pack_start(checkbox_title,False,False,0)
+            page.pack_start(switch,False,False,0)
+            page.pack_start(Gtk.Label(label=""),False,False,0)
+        except Exception as e:
+            self.debug(1,"def settings_security_switch_disconnectonidle: failed, exception = '%s'"%(e))
 
-    def settings_network_switch_nodns(self,page):
+    def cb_switch_disconnectonidle(self,switch,gparam):
+        self.debug(1,"def cb_switch_disconnectonidle()")
+        if switch.get_active():
+            self.DISCONNECT_ON_IDLE["enabled"] = True
+        else:
+            self.DISCONNECT_ON_IDLE["enabled"] = False
+        self.write_options_file()
+        self.UPDATE_SWITCH = True
+        
+    def settings_security_disconnectonidle_combobox(self,page):
+        try:
+            self.debug(1,"def settings_security_disconnectonidle_combobox()")
+            combobox_title = Gtk.Label(label=_("Delay in seconds"))
+            combobox = Gtk.ComboBoxText.new()
+            self.combobox_time = combobox
+            
+            i = 0
+            for time in self.DISCONNECT_ON_IDLE["times"]:
+                combobox.append_text("%s"%(time))
+                if self.DISCONNECT_ON_IDLE["idletime"] == time:
+                    active_item = i
+                i += 1
+            combobox.set_active(active_item)
+            combobox.connect('changed',self.cb_disconnectonidle_switcher_changed)
+            page.pack_start(combobox_title,False,False,0)
+            page.pack_start(combobox,False,False,0)
+            page.pack_start(Gtk.Label(label=""),False,False,0)
+        except Exception as e:
+            self.debug(1,"def settings_options_combobox_time: failed, exception = '%s'"%(e))
+
+    def cb_disconnectonidle_switcher_changed(self, combobox):
+        self.debug(1,"def cb_disconnectonidle_switcher_changed()")
+        model = combobox.get_model()
+        index = combobox.get_active()
+        if index > -1:
+            self.DISCONNECT_ON_IDLE["idletime"] = int(combobox.get_active_text())
+            self.write_options_file()
+            self.UPDATE_SWITCH = True
+            self.debug(1,"def cb_disconnectonidle_switcher_changed: selected Time = '%s'" % (self.DISCONNECT_ON_IDLE["idletime"]))
+        return
+
+    def settings_security_switch_nodns(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_nodns = switch
@@ -3095,7 +3259,7 @@ class Systray:
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_network_switch_nodns: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_nodns: failed, exception = '%s'"%(e))
 
     def cb_switch_nodns(self,switch,gparam):
         if self.state_openvpn() == True:
@@ -3110,25 +3274,25 @@ class Systray:
         self.write_options_file()
         self.UPDATE_SWITCH = True
 
-    def settings_network_switch_disableextifondisco(self,page):
+    def settings_security_switch_disableextifondisco(self,page):
         try:
             switch = Gtk.Switch()
             self.switch_disableextifondisco = switch
             checkbox_title = Gtk.Label(label=_("Disable '%s' on Disconnect (default: OFF)")%(self.WIN_EXT_DEVICE))
-            self.settings_network_switch_disableextifondisco_checkbox_title = checkbox_title
+            self.settings_security_switch_disableextifondisco_checkbox_title = checkbox_title
             if self.WIN_DISABLE_EXT_IF_ON_DISCO == True:
                 switch.set_active(True)
             else:
                 switch.set_active(False)
-            switch.connect("notify::state", self.cb_settings_network_switch_disableextifondisco)
+            switch.connect("notify::state", self.cb_settings_security_switch_disableextifondisco)
             page.pack_start(checkbox_title,False,False,0)
             page.pack_start(switch,False,False,0)
             page.pack_start(Gtk.Label(label=""),False,False,0)
         except Exception as e:
-            self.debug(1,"def settings_network_switch_disableextifondisco: failed, exception = '%s'"%(e))
+            self.debug(1,"def settings_security_switch_disableextifondisco: failed, exception = '%s'"%(e))
 
-    def cb_settings_network_switch_disableextifondisco(self,switch,gparam):
-        self.debug(1,"def cb_settings_network_switch_disableextifondisco()")
+    def cb_settings_security_switch_disableextifondisco(self,switch,gparam):
+        self.debug(1,"def cb_settings_security_switch_disableextifondisco()")
         if switch.get_active():
             self.WIN_DISABLE_EXT_IF_ON_DISCO = True
             if self.state_openvpn() == False:
@@ -3140,7 +3304,7 @@ class Systray:
         self.write_options_file()
         self.UPDATE_SWITCH = True
 
-    def settings_firewall_switch_backuprestore(self, page):
+    def settings_security_switch_backuprestore(self, page):
         for file in self.FIREWALL_BACKUPS:
             button = Gtk.Button(label=("%s")%(file))
             button.connect('clicked', self.cb_restore_firewallbackup, file)
@@ -3838,18 +4002,21 @@ class Systray:
         self.kill_openvpn()
 
     def cb_jump_openvpn(self,widget,event,server):
-        if self.inThread_jump_server_running == True:
-            self.debug(1,"def cb_jump_openvpn: inThread_jump_server() running ! return False")
-            return False
-        if (widget == 0 and event == 0) or event.button == 1:
-            self.VAR['OVPN']['STOP'] = True
-            self.VAR['OVPN']['CALL_SRV'] = server
-            self.destroy_systray_menu()
-            self.destroy_context_menu_servertab()
-            jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
-            jumpthread.daemon = True
-            jumpthread.start()
-            self.debug(1,"def cb_jump_openvpn: %s" % (server))
+        try:
+            if self.inThread_jump_server_running == True:
+                self.debug(1,"def cb_jump_openvpn: inThread_jump_server() running ! return False")
+                return False
+            if (widget == 0 and event == 0) or event.button == 1:
+                self.VAR['OVPN']['STOP'] = True
+                self.VAR['OVPN']['CALL_SRV'] = server
+                self.destroy_systray_menu()
+                self.destroy_context_menu_servertab()
+                jumpthread = threading.Thread(target=lambda server=server: self.inThread_jump_server(server))
+                jumpthread.daemon = True
+                jumpthread.start()
+                self.debug(1,"def cb_jump_openvpn: %s" % (server))
+        except Exception as e:
+            self.debug(1,"def cb_jump_openvpn: failed, exception = '%s'"%(e))
 
     def inThread_jump_server(self,server):
         self.debug(1,"def inThread_jump_server()")
@@ -4028,6 +4195,9 @@ class Systray:
             self.VAR['OVPN']['CONN']['OK'] = False
             self.LAST_OVPN_PING_DEAD_MESSAGE = 0
             self.delete_file(self.VAR['OVPN']['LOGFILE'],"def reset_ovpn_values")
+            if self.DISCONNECT_ON_IDLE["discon"] == True:
+                self.msgwarn(_("Idle Disconnected!"),_("Success"))
+                self.DISCONNECT_ON_IDLE["discon"] = False
             self.call_redraw_mainwindow()
             return False
         except Exception as e:
@@ -5004,7 +5174,7 @@ class Systray:
         self.WIN_RESET_EXT_DEVICE = True
         self.read_interfaces()
         self.write_options_file()
-        self.settings_network_switch_disableextifondisco_checkbox_title.set_text("Disable '%s' on Disconnect (default: OFF)"%(self.WIN_EXT_DEVICE))
+        self.settings_security_switch_disableextifondisco_checkbox_title.set_text("Disable '%s' on Disconnect (default: OFF)"%(self.WIN_EXT_DEVICE))
 
     def cb_extserverview(self,widget,event):
         if event.button == 1:
