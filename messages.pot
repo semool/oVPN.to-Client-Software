@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2017-03-18 19:45+Mitteleuropäische Zeit\n"
+"POT-Creation-Date: 2017-06-22 17:44+Westeuropäische Sommerzeit\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,47 +15,49 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: Q:\ovpn-client\.\ovpn_client.py:117 Q:\ovpn-client\.\ovpn_client.py:589
-#: Q:\ovpn-client\.\ovpn_client.py:602 Q:\ovpn-client\.\ovpn_client.py:942
-#: Q:\ovpn-client\.\ovpn_client.py:2007 Q:\ovpn-client\.\ovpn_client.py:2034
-#: Q:\ovpn-client\.\ovpn_client.py:2036 Q:\ovpn-client\.\ovpn_client.py:2041
-#: Q:\ovpn-client\.\ovpn_client.py:3017 Q:\ovpn-client\.\ovpn_client.py:3047
-#: Q:\ovpn-client\.\ovpn_client.py:3911 Q:\ovpn-client\.\ovpn_client.py:3952
-#: Q:\ovpn-client\.\ovpn_client.py:4017 Q:\ovpn-client\.\ovpn_client.py:4404
-#: Q:\ovpn-client\.\ovpn_client.py:4410 Q:\ovpn-client\.\ovpn_client.py:5238
-#: Q:\ovpn-client\.\ovpn_client.py:5256 Q:\ovpn-client\.\ovpn_client.py:5342
-#: Q:\ovpn-client\.\ovpn_client.py:5522 Q:\ovpn-client\.\ovpn_client.py:5645
-#: Q:\ovpn-client\.\ovpn_client.py:5703 Q:\ovpn-client\.\ovpn_client.py:5730
-#: Q:\ovpn-client\.\ovpn_client.py:5756 Q:\ovpn-client\.\ovpn_client.py:5770
-#: Q:\ovpn-client\.\ovpn_client.py:5774 Q:\ovpn-client\.\ovpn_client.py:5867
-#: Q:\ovpn-client\.\ovpn_client.py:6232
+#: Q:\ovpn-client\.\ovpn_client.py:119 Q:\ovpn-client\.\ovpn_client.py:594
+#: Q:\ovpn-client\.\ovpn_client.py:607 Q:\ovpn-client\.\ovpn_client.py:1002
+#: Q:\ovpn-client\.\ovpn_client.py:2120 Q:\ovpn-client\.\ovpn_client.py:2147
+#: Q:\ovpn-client\.\ovpn_client.py:2149 Q:\ovpn-client\.\ovpn_client.py:2154
+#: Q:\ovpn-client\.\ovpn_client.py:3152 Q:\ovpn-client\.\ovpn_client.py:3182
+#: Q:\ovpn-client\.\ovpn_client.py:4120 Q:\ovpn-client\.\ovpn_client.py:4161
+#: Q:\ovpn-client\.\ovpn_client.py:4229 Q:\ovpn-client\.\ovpn_client.py:4616
+#: Q:\ovpn-client\.\ovpn_client.py:4622 Q:\ovpn-client\.\ovpn_client.py:5450
+#: Q:\ovpn-client\.\ovpn_client.py:5468 Q:\ovpn-client\.\ovpn_client.py:5522
+#: Q:\ovpn-client\.\ovpn_client.py:5585 Q:\ovpn-client\.\ovpn_client.py:5737
+#: Q:\ovpn-client\.\ovpn_client.py:5744 Q:\ovpn-client\.\ovpn_client.py:5758
+#: Q:\ovpn-client\.\ovpn_client.py:5779 Q:\ovpn-client\.\ovpn_client.py:5902
+#: Q:\ovpn-client\.\ovpn_client.py:5960 Q:\ovpn-client\.\ovpn_client.py:5994
+#: Q:\ovpn-client\.\ovpn_client.py:6027 Q:\ovpn-client\.\ovpn_client.py:6048
+#: Q:\ovpn-client\.\ovpn_client.py:6052 Q:\ovpn-client\.\ovpn_client.py:6157
+#: Q:\ovpn-client\.\ovpn_client.py:6520
 msgid "Error"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:117 Q:\ovpn-client\.\ovpn_client.py:2007
+#: Q:\ovpn-client\.\ovpn_client.py:119 Q:\ovpn-client\.\ovpn_client.py:2120
 msgid "Could not connect to %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:384 Q:\ovpn-client\.\ovpn_client.py:386
-#: Q:\ovpn-client\.\ovpn_client.py:388
+#: Q:\ovpn-client\.\ovpn_client.py:389 Q:\ovpn-client\.\ovpn_client.py:391
+#: Q:\ovpn-client\.\ovpn_client.py:393
 msgid "Operating System not supported: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:408
+#: Q:\ovpn-client\.\ovpn_client.py:413
 msgid "Could not create app_dir: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:440
+#: Q:\ovpn-client\.\ovpn_client.py:445
 msgid "Select User-ID failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:492 Q:\ovpn-client\.\ovpn_client.py:495
-#: Q:\ovpn-client\.\ovpn_client.py:498 Q:\ovpn-client\.\ovpn_client.py:501
-#: Q:\ovpn-client\.\ovpn_client.py:504
+#: Q:\ovpn-client\.\ovpn_client.py:497 Q:\ovpn-client\.\ovpn_client.py:500
+#: Q:\ovpn-client\.\ovpn_client.py:503 Q:\ovpn-client\.\ovpn_client.py:506
+#: Q:\ovpn-client\.\ovpn_client.py:509
 msgid "Error: '%s' not found!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:589
+#: Q:\ovpn-client\.\ovpn_client.py:594
 msgid ""
 "Private Icon(s) not found in:\n"
 "%s\n"
@@ -64,19 +66,19 @@ msgid ""
 "%s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:602
+#: Q:\ovpn-client\.\ovpn_client.py:607
 msgid ""
 "Private Icon Dir not found:\n"
 "%s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:620
+#: Q:\ovpn-client\.\ovpn_client.py:625
 msgid ""
 "Could not remove lock file.\n"
 "File itself locked because another oVPN Client instance running?"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:644
+#: Q:\ovpn-client\.\ovpn_client.py:649
 msgid ""
 "Creating API-DIRS\n"
 "%s \n"
@@ -86,19 +88,19 @@ msgid ""
 "%s failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:647
+#: Q:\ovpn-client\.\ovpn_client.py:652
 msgid "Creating config folders failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:942
+#: Q:\ovpn-client\.\ovpn_client.py:1002
 msgid "Read config file failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1097
+#: Q:\ovpn-client\.\ovpn_client.py:1163
 msgid "Could not read your Network Interfaces!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1101
+#: Q:\ovpn-client\.\ovpn_client.py:1167
 msgid ""
 "Could not read your Network Interfaces!\n"
 "Please rename your network adapters to:\n"
@@ -106,18 +108,18 @@ msgid ""
 "exception: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1108
+#: Q:\ovpn-client\.\ovpn_client.py:1174
 msgid ""
 "Could not read your TAP Network Interfaces!\n"
 "Please rename your network adapters to:\n"
 "lan1, lan2, wifi1, wifi1, vpn1, vpn2"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1119
+#: Q:\ovpn-client\.\ovpn_client.py:1185
 msgid "No OpenVPN TAP-Windows Adapter found!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1127
+#: Q:\ovpn-client\.\ovpn_client.py:1193
 msgid ""
 "No OpenVPN TAP-Adapter found!\n"
 "Please install openVPN!\n"
@@ -125,1353 +127,1370 @@ msgid ""
 "URL2: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1143
+#: Q:\ovpn-client\.\ovpn_client.py:1209
 msgid "No Network Adapter found!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1161
+#: Q:\ovpn-client\.\ovpn_client.py:1227
 msgid ""
 "Multiple TAPs found!\n"
 "\n"
 "Please select your TAP Adapter!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1189
+#: Q:\ovpn-client\.\ovpn_client.py:1255
 msgid "Choose your External Network Adapter!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1220
+#: Q:\ovpn-client\.\ovpn_client.py:1286
 msgid "Please select your User-ID!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1273
+#: Q:\ovpn-client\.\ovpn_client.py:1339
 msgid "Disconnect %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1277
+#: Q:\ovpn-client\.\ovpn_client.py:1343
 msgid "Connect to %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1285
+#: Q:\ovpn-client\.\ovpn_client.py:1351
 msgid "Remove AutoConnect: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1289
+#: Q:\ovpn-client\.\ovpn_client.py:1355
 msgid "Set AutoConnect: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1304
+#: Q:\ovpn-client\.\ovpn_client.py:1370
 msgid "[enabled]"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1306
+#: Q:\ovpn-client\.\ovpn_client.py:1372
 msgid "[disabled]"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1307
+#: Q:\ovpn-client\.\ovpn_client.py:1373
 msgid "Load Server Information %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1315 Q:\ovpn-client\.\ovpn_client.py:5104
+#: Q:\ovpn-client\.\ovpn_client.py:1381 Q:\ovpn-client\.\ovpn_client.py:5316
 msgid "Hide unwanted cells"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1328
+#: Q:\ovpn-client\.\ovpn_client.py:1394
 msgid "Set Server-View Size [%sx%s]"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1335
+#: Q:\ovpn-client\.\ovpn_client.py:1401
 msgid "Update every: %s seconds"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1356
+#: Q:\ovpn-client\.\ovpn_client.py:1422
 msgid "Change DNS"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1362
+#: Q:\ovpn-client\.\ovpn_client.py:1428
 msgid "Primary DNS: %s (%s)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1374
+#: Q:\ovpn-client\.\ovpn_client.py:1440
 msgid "Secondary DNS: %s (%s)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1407
+#: Q:\ovpn-client\.\ovpn_client.py:1473
 msgid "Primary DNS '%s' @ %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1411
+#: Q:\ovpn-client\.\ovpn_client.py:1477
 msgid "Set Primary DNS"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1420
+#: Q:\ovpn-client\.\ovpn_client.py:1486
 msgid "Secondary DNS '%s' @ %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1424
+#: Q:\ovpn-client\.\ovpn_client.py:1490
 msgid "Set Secondary DNS"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1466
+#: Q:\ovpn-client\.\ovpn_client.py:1569
 msgid "Server"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1468 Q:\ovpn-client\.\ovpn_client.py:1946
-#: Q:\ovpn-client\.\ovpn_client.py:2734
+#: Q:\ovpn-client\.\ovpn_client.py:1571 Q:\ovpn-client\.\ovpn_client.py:2059
+#: Q:\ovpn-client\.\ovpn_client.py:2848
 msgid "Settings"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1470 Q:\ovpn-client\.\ovpn_client.py:1934
-#: Q:\ovpn-client\.\ovpn_client.py:2613
+#: Q:\ovpn-client\.\ovpn_client.py:1573 Q:\ovpn-client\.\ovpn_client.py:2047
+#: Q:\ovpn-client\.\ovpn_client.py:2727
 msgid "Account"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1612 Q:\ovpn-client\.\ovpn_client.py:3327
+#: Q:\ovpn-client\.\ovpn_client.py:1723 Q:\ovpn-client\.\ovpn_client.py:3519
 msgid "Current: IPv4 Entry Server with Exit to IPv4 (standard)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1613 Q:\ovpn-client\.\ovpn_client.py:3328
+#: Q:\ovpn-client\.\ovpn_client.py:1724 Q:\ovpn-client\.\ovpn_client.py:3520
 msgid "Use IPv4 Entry Server with Exits to IPv4 + IPv6"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1615 Q:\ovpn-client\.\ovpn_client.py:3331
+#: Q:\ovpn-client\.\ovpn_client.py:1726 Q:\ovpn-client\.\ovpn_client.py:3523
 msgid "Current: IPv4 Entry Server with Exits to IPv4 + IPv6"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1616 Q:\ovpn-client\.\ovpn_client.py:3332
+#: Q:\ovpn-client\.\ovpn_client.py:1727 Q:\ovpn-client\.\ovpn_client.py:3524
 msgid "Use IPv4 Entry Server with Exit to IPv4 (standard)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1650
+#: Q:\ovpn-client\.\ovpn_client.py:1761
 msgid "Checking for Client Update!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1652
+#: Q:\ovpn-client\.\ovpn_client.py:1763
 msgid "Downloading Client Update!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1654
+#: Q:\ovpn-client\.\ovpn_client.py:1765
 msgid "Checking for Updates!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1656
+#: Q:\ovpn-client\.\ovpn_client.py:1767
 msgid "Downloading Configurations..."
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1658
+#: Q:\ovpn-client\.\ovpn_client.py:1769
 msgid "Extracting Configs and Certs..."
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1662
+#: Q:\ovpn-client\.\ovpn_client.py:1771
+msgid "Downloading openVPN Update..."
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:1775
 msgid "Connecting to %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1672
+#: Q:\ovpn-client\.\ovpn_client.py:1785
 msgid "Testing connection to %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1678
+#: Q:\ovpn-client\.\ovpn_client.py:1791
 msgid "Connection unstable or failed! (%s)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1683
+#: Q:\ovpn-client\.\ovpn_client.py:1796
 msgid "Connection unstable or failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1683 Q:\ovpn-client\.\ovpn_client.py:5411
-msgid "oVPN"
+#: Q:\ovpn-client\.\ovpn_client.py:1796 Q:\ovpn-client\.\ovpn_client.py:5654
+msgid "oVPN.to Server: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1697
+#: Q:\ovpn-client\.\ovpn_client.py:1810
 msgid "Connected to %s [%s]:%s (%s) [ %s ] (%s / %s ms)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1705
+#: Q:\ovpn-client\.\ovpn_client.py:1818
 msgid "Disconnected! Have a nice and anonymous day!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Afghanistan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Albania"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Algeria"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "American Samoa"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Andorra"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Angola"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Anguilla"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Antarctica"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Antigua and Barbuda"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Argentina"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Armenia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Aruba"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Australia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Austria"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Azerbaijan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bahamas"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bahrain"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bangladesh"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Barbados"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Belarus"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Belgium"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Belize"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Benin"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bermuda"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bhutan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bolivarian Republic of Venezuela"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bosnia and Herzegovina"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Botswana"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bouvet Island"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Brazil"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "British Indian Ocean Territory"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "British Virgin Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Brunei Darussalam"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Bulgaria"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Burkina Faso"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Burundi"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cambodia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cameroon"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Canada"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cape Verde"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cayman Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Central African Republic"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Chad"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Chile"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "China"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Christmas Island"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cocos (Keeling) Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Colombia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Comoros"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Congo"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cook Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Costa Rica"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Croatia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cuba"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Cyprus"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Czech Republic"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Denmark"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Djibouti"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Dominica"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Dominican Republic"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Ecuador"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Egypt"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "El Salvador"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Equatorial Guinea"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Eritrea"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Estonia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Ethiopia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Falkland Islands (Malvinas)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Faroe Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Federated States of Micronesia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Fiji"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Finland"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "France"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "French Guiana"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "French Polynesia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "French Southern Territories"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Gabon"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Gambia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Georgia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Germany"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Ghana"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Gibraltar"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Greece"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Greenland"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Grenada"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Guadeloupe"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Guam"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Guatemala"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Guernsey"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Guinea"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Guinea-Bissau"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Guyana"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Haiti"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Heard Island and McDonald Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Holy See (Vatican City State)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Honduras"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Hong Kong"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Hungary"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Iceland"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "India"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Indonesia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Iraq"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Ireland"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Islamic Republic of Iran"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Isle of Man"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Israel"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Italy"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Jamaica"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Japan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Jersey"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Jordan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Kazakhstan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Kenya"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Kiribati"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Kuwait"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Kyrgyzstan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Latvia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Lebanon"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Lesotho"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Liberia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Libyan Arab Jamahiriya"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Liechtenstein"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Lithuania"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Luxembourg"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Macao"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Macedonia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Madagascar"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Malawi"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Malaysia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Maldives"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Mali"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Malta"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Marshall Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Martinique"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Mauritania"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Mauritius"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Mayotte"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Mexico"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Monaco"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Mongolia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Montenegro"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Montserrat"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Morocco"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Mozambique"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Myanmar"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Namibia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Nauru"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Nepal"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Netherlands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Netherlands Antilles"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "New Caledonia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "New Zealand"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Nicaragua"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Niger"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Nigeria"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Niue"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Norfolk Island"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Northern Mariana Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Norway"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Occupied Palestinian Territory"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Oman"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Pakistan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Palau"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Panama"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Papua New Guinea"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Paraguay"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Peru"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Philippines"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Pitcairn"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Plurinational State of Bolivia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Poland"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Portugal"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Puerto Rico"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Qatar"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Republic of Moldova"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Reunion"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Romania"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Russian Federation"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Rwanda"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saint Barthelemy"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saint Helena"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saint Kitts and Nevis"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saint Lucia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saint Martin (French part)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saint Pierre and Miquelon"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saint Vincent and the Grenadines"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Samoa"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "San Marino"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Sao Tome and Principe"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Saudi Arabia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Senegal"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Serbia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Seychelles"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Sierra Leone"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Singapore"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Slovakia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Slovenia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Solomon Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Somalia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "South Africa"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "South Georgia and the South Sandwich Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Spain"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Sri Lanka"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Sudan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Suriname"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Svalbard and Jan Mayen"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Swaziland"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Sweden"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Switzerland"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Syrian Arab Republic"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Taiwan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Tajikistan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Thailand"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Timor-Leste"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Togo"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Tokelau"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Tonga"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Trinidad and Tobago"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Tunisia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Turkey"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Turkmenistan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Turks and Caicos Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Tuvalu"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "U.S. Virgin Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Uganda"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Ukraine"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "United Arab Emirates"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "United Kingdom"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "United Republic of Tanzania"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "United States"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "United States Minor Outlying Islands"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Uruguay"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Uzbekistan"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Vanuatu"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Viet Nam"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Wallis and Futuna"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Western Sahara"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Yemen"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Zambia"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "Zimbabwe"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1842
+#: Q:\ovpn-client\.\ovpn_client.py:1955
 msgid "the Democratic Republic of the Congo"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1883
+#: Q:\ovpn-client\.\ovpn_client.py:1996
 msgid " [ disconnect ]"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1931
+#: Q:\ovpn-client\.\ovpn_client.py:2044
 msgid "Close Account"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1944
+#: Q:\ovpn-client\.\ovpn_client.py:2057
 msgid "Close Settings"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1959
+#: Q:\ovpn-client\.\ovpn_client.py:2072
 msgid "About"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:1967
+#: Q:\ovpn-client\.\ovpn_client.py:2080
 msgid "Quit"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2031
+#: Q:\ovpn-client\.\ovpn_client.py:2144
 msgid "Configurations updated!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2031 Q:\ovpn-client\.\ovpn_client.py:2038
-#: Q:\ovpn-client\.\ovpn_client.py:4013 Q:\ovpn-client\.\ovpn_client.py:5260
-#: Q:\ovpn-client\.\ovpn_client.py:5293 Q:\ovpn-client\.\ovpn_client.py:5338
+#: Q:\ovpn-client\.\ovpn_client.py:2144 Q:\ovpn-client\.\ovpn_client.py:2151
+#: Q:\ovpn-client\.\ovpn_client.py:4196 Q:\ovpn-client\.\ovpn_client.py:4225
+#: Q:\ovpn-client\.\ovpn_client.py:5472 Q:\ovpn-client\.\ovpn_client.py:5518
+#: Q:\ovpn-client\.\ovpn_client.py:5527 Q:\ovpn-client\.\ovpn_client.py:5581
 msgid "Success"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2034
+#: Q:\ovpn-client\.\ovpn_client.py:2147
 msgid "Extraction failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2036
+#: Q:\ovpn-client\.\ovpn_client.py:2149
 msgid "Download failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2038
+#: Q:\ovpn-client\.\ovpn_client.py:2151
 msgid "No config update available!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2041
+#: Q:\ovpn-client\.\ovpn_client.py:2154
 msgid "Update failed with Exception '%s'!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2344
+#: Q:\ovpn-client\.\ovpn_client.py:2459
 msgid "Server [ %s ]"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2636
+#: Q:\ovpn-client\.\ovpn_client.py:2750
 msgid "Settings -> Updates: 'Load Account Info' [disabled]"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2638
+#: Q:\ovpn-client\.\ovpn_client.py:2752
 msgid ""
 "No data loaded!\n"
 "Retry in few seconds..."
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2771
+#: Q:\ovpn-client\.\ovpn_client.py:2899
 msgid " Security "
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2844
+#: Q:\ovpn-client\.\ovpn_client.py:2972
 msgid " Options "
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2860
+#: Q:\ovpn-client\.\ovpn_client.py:2995
 msgid " Updates "
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2870
+#: Q:\ovpn-client\.\ovpn_client.py:3005
 msgid ""
 "Restore Firewall Backups\n"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2872
+#: Q:\ovpn-client\.\ovpn_client.py:3007
 msgid " Backups "
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2880
+#: Q:\ovpn-client\.\ovpn_client.py:3015
 msgid "Use Windows Firewall (default: ON) "
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2910
+#: Q:\ovpn-client\.\ovpn_client.py:3045
 msgid "TAP-Adapter block outbound (default: OFF)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2941
+#: Q:\ovpn-client\.\ovpn_client.py:3076
 msgid "Block Internet on Disconnect or Quit (default: ON)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2969
+#: Q:\ovpn-client\.\ovpn_client.py:3104
 msgid "Disable FW question on Quit (default: OFF)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:2997
+#: Q:\ovpn-client\.\ovpn_client.py:3132
 msgid "Clear Rules on Connect (default: OFF)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3017 Q:\ovpn-client\.\ovpn_client.py:3047
+#: Q:\ovpn-client\.\ovpn_client.py:3152 Q:\ovpn-client\.\ovpn_client.py:3182
 msgid "Could not export Windows Firewall Backup!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3027
+#: Q:\ovpn-client\.\ovpn_client.py:3162
 msgid "Backup on Start / Restore on Quit (default: OFF)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3057
-msgid "DNS Leak Protection (default: ON)"
+#: Q:\ovpn-client\.\ovpn_client.py:3192
+msgid "Disconnect on Idle (default: OFF)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3086
-msgid "Disable '%s' on Disconnect (default: OFF)"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:3123
-msgid "Update Configs on Start (default: OFF)"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:3148
-msgid "Client autostart (default: OFF)"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:3174
+#: Q:\ovpn-client\.\ovpn_client.py:3216 Q:\ovpn-client\.\ovpn_client.py:3366
 msgid "Delay in seconds"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3214
+#: Q:\ovpn-client\.\ovpn_client.py:3249
+msgid "DNS Leak Protection (default: ON)"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:3278
+msgid "Disable '%s' on Disconnect (default: OFF)"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:3315
+msgid "Update Configs on Start (default: OFF)"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:3340
+msgid "Client autostart (default: OFF)"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:3406
 msgid "Account Info"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3254
+#: Q:\ovpn-client\.\ovpn_client.py:3446
 msgid "Server Info"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3289
+#: Q:\ovpn-client\.\ovpn_client.py:3481
 msgid "Debug Mode (default: OFF)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3316
+#: Q:\ovpn-client\.\ovpn_client.py:3508
 msgid "Select Network Adapter"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3354
+#: Q:\ovpn-client\.\ovpn_client.py:3546
 msgid "Change App Theme"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3390
+#: Q:\ovpn-client\.\ovpn_client.py:3582
 msgid "Change App Icons"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3426
+#: Q:\ovpn-client\.\ovpn_client.py:3618
 msgid "Change App Font Size"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3459
+#: Q:\ovpn-client\.\ovpn_client.py:3651
 msgid "Change App Language"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3503
+#: Q:\ovpn-client\.\ovpn_client.py:3695
 msgid "Use Windows Notification System (default: ON)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3527
+#: Q:\ovpn-client\.\ovpn_client.py:3719
 msgid "Disable About and Quit on Connection (default: ON)"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3548
+#: Q:\ovpn-client\.\ovpn_client.py:3740
 msgid "Check Client Update"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3559 Q:\ovpn-client\.\ovpn_client.py:3573
-#: Q:\ovpn-client\.\ovpn_client.py:3588 Q:\ovpn-client\.\ovpn_client.py:3602
+#: Q:\ovpn-client\.\ovpn_client.py:3751 Q:\ovpn-client\.\ovpn_client.py:3780
+#: Q:\ovpn-client\.\ovpn_client.py:3795 Q:\ovpn-client\.\ovpn_client.py:3809
 msgid "Please wait..."
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3559 Q:\ovpn-client\.\ovpn_client.py:3573
-#: Q:\ovpn-client\.\ovpn_client.py:3588 Q:\ovpn-client\.\ovpn_client.py:3602
+#: Q:\ovpn-client\.\ovpn_client.py:3751 Q:\ovpn-client\.\ovpn_client.py:3780
+#: Q:\ovpn-client\.\ovpn_client.py:3795 Q:\ovpn-client\.\ovpn_client.py:3809
 msgid "Retry in few seconds..."
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3562
+#: Q:\ovpn-client\.\ovpn_client.py:3754
+msgid "Install Update: openVPN %s %s [ %s ]"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:3769
 msgid "Normal Config Update"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3576
+#: Q:\ovpn-client\.\ovpn_client.py:3783
 msgid "Forced Config Update"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3591
+#: Q:\ovpn-client\.\ovpn_client.py:3798
 msgid "Reset API-Login"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3911
+#: Q:\ovpn-client\.\ovpn_client.py:4120
 msgid "Could not start Windows Firewall!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:3952
+#: Q:\ovpn-client\.\ovpn_client.py:4161
 msgid "OpenVPN process crashed! Restarting..."
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4013
+#: Q:\ovpn-client\.\ovpn_client.py:4196
+msgid "Idle Disconnected!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:4225
 msgid "DNS changed but reset ok!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4017
+#: Q:\ovpn-client\.\ovpn_client.py:4229
 msgid "DNS changed and reseting failed!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4404
+#: Q:\ovpn-client\.\ovpn_client.py:4616
 msgid ""
 "Error:\n"
 "SSL Root Certificate for %s not loaded %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4407
+#: Q:\ovpn-client\.\ovpn_client.py:4619
 msgid ""
 "Error:\n"
 "Invalid SSL Root Certificate for %s in:\n"
@@ -1481,154 +1500,175 @@ msgid ""
 "but should be '%s'"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4407
+#: Q:\ovpn-client\.\ovpn_client.py:4619
 msgid "Error: SSL CA Cert #2"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4410
+#: Q:\ovpn-client\.\ovpn_client.py:4622
 msgid ""
 "Error:\n"
 "SSL Root Certificate for %s not found in:\n"
 "'%s'!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4653 Q:\ovpn-client\.\ovpn_client.py:4673
+#: Q:\ovpn-client\.\ovpn_client.py:4865 Q:\ovpn-client\.\ovpn_client.py:4885
 msgid "Error: netsh.exe not found!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4690 Q:\ovpn-client\.\ovpn_client.py:4711
+#: Q:\ovpn-client\.\ovpn_client.py:4902 Q:\ovpn-client\.\ovpn_client.py:4923
 msgid "Error: route.exe not found!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4727 Q:\ovpn-client\.\ovpn_client.py:4739
+#: Q:\ovpn-client\.\ovpn_client.py:4939 Q:\ovpn-client\.\ovpn_client.py:4951
 msgid "ipconfig.exe not found!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4777
+#: Q:\ovpn-client\.\ovpn_client.py:4989
 msgid "oVPN.to Setup"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4778
+#: Q:\ovpn-client\.\ovpn_client.py:4990
 msgid "Enter your oVPN.to Details"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4785 Q:\ovpn-client\.\ovpn_client.py:4789
+#: Q:\ovpn-client\.\ovpn_client.py:4997 Q:\ovpn-client\.\ovpn_client.py:5001
 msgid "User-ID:"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4798
+#: Q:\ovpn-client\.\ovpn_client.py:5010
 msgid "API-Key:"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4803
+#: Q:\ovpn-client\.\ovpn_client.py:5015
 msgid "Save Passphrase in File?"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:4998
+#: Q:\ovpn-client\.\ovpn_client.py:5210
 msgid "Server Window Size"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5000
+#: Q:\ovpn-client\.\ovpn_client.py:5212
 msgid ""
 "Enter width and height\n"
 "\n"
 "Leave blank for default"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5002
+#: Q:\ovpn-client\.\ovpn_client.py:5214
 msgid "Width (pixel):"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5008
+#: Q:\ovpn-client\.\ovpn_client.py:5220
 msgid "Height (pixel):"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5056
+#: Q:\ovpn-client\.\ovpn_client.py:5268
 msgid "Load Data every X seconds"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5060
+#: Q:\ovpn-client\.\ovpn_client.py:5272
 msgid "seconds:"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5159
+#: Q:\ovpn-client\.\ovpn_client.py:5371
 msgid "Switched to IPv4"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5159 Q:\ovpn-client\.\ovpn_client.py:5172
-#: Q:\ovpn-client\.\ovpn_client.py:5187
+#: Q:\ovpn-client\.\ovpn_client.py:5371 Q:\ovpn-client\.\ovpn_client.py:5384
+#: Q:\ovpn-client\.\ovpn_client.py:5399
 msgid ""
 "Changed Option:\n"
 "\n"
 "Use 'Forced Config Update' to get new configs!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5172
+#: Q:\ovpn-client\.\ovpn_client.py:5384
 msgid "Switched to IPv4+6"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5187
+#: Q:\ovpn-client\.\ovpn_client.py:5399
 msgid "Switched to IPv6+4"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5238
+#: Q:\ovpn-client\.\ovpn_client.py:5450
 msgid "No API Key!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5256 Q:\ovpn-client\.\ovpn_client.py:5645
-#: Q:\ovpn-client\.\ovpn_client.py:5703
+#: Q:\ovpn-client\.\ovpn_client.py:5468 Q:\ovpn-client\.\ovpn_client.py:5902
+#: Q:\ovpn-client\.\ovpn_client.py:5960
 msgid "Invalid User-ID or API-Key or Account expired!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5260
+#: Q:\ovpn-client\.\ovpn_client.py:5472
 msgid "API Login OK!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5293
-msgid "No Client Update available!"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5322
-msgid "Client Update: Downloading ~15 MB!"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5322 Q:\ovpn-client\.\ovpn_client.py:5865
-msgid "Info"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5338
-msgid "Client Update: Download verified!"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5342
-msgid "Client Update: Download failed!"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5372
-msgid "Testing internet connection!"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5411
-msgid "Connection established!"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5484
-msgid "Could not read Servers Remote-IP:Port from config: %s"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5494
-msgid "Could not read Servers Protocol from config: %s"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5506
-msgid "Could not read Servers Cipher from config: %s"
+#: Q:\ovpn-client\.\ovpn_client.py:5518
+msgid "Verified Update: openVPN Setup %s %s '%s'"
 msgstr ""
 
 #: Q:\ovpn-client\.\ovpn_client.py:5522
+msgid "Failed Download openVPN Setup %s %s"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5527
+msgid "No Client Update available!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5565
+msgid "Client Update: Downloading ~15 MB!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5565 Q:\ovpn-client\.\ovpn_client.py:6006
+#: Q:\ovpn-client\.\ovpn_client.py:6155
+msgid "Info"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5581
+msgid "Client Update: Download verified!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5585
+msgid "Client Update: Download failed!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5615
+msgid "Testing internet connection!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5654
+msgid "Connection established!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5727
+msgid "Could not read Servers Remote-IP:Port from config: %s"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5737
+msgid "Could not read Servers Protocol from config: %s"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5744
+msgid "Could not read Servers ncp-ciphers from config: %s"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5758
+msgid "Could not read Servers Cipher from config: %s"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:5779
 msgid "Please update your configurations!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5730 Q:\ovpn-client\.\ovpn_client.py:5756
+#: Q:\ovpn-client\.\ovpn_client.py:5994
+msgid "Failed to download openVPN Update!"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:6006
+msgid "Downloading Update: openVPN Setup %s %s (%s MB)"
+msgstr ""
+
+#: Q:\ovpn-client\.\ovpn_client.py:6027
 msgid ""
 "Failed to download openVPN Update!\n"
 "\n"
@@ -1636,30 +1676,18 @@ msgid ""
 "'%s'"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5736
-msgid "Downloading openVPN %s %s %s (%s MB)"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5770
+#: Q:\ovpn-client\.\ovpn_client.py:6048
 msgid ""
 "Invalid File hash: %s !\n"
 "localhash = '%s'\n"
 "but should be = '%s'"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5774
+#: Q:\ovpn-client\.\ovpn_client.py:6052
 msgid "Failed remove file: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5775
-msgid "%s - Verify openVPN failed!"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5783
-msgid "%s - Install openVPN"
-msgstr ""
-
-#: Q:\ovpn-client\.\ovpn_client.py:5815
+#: Q:\ovpn-client\.\ovpn_client.py:6112
 msgid ""
 "OpenVPN not found!\n"
 "\n"
@@ -1668,15 +1696,15 @@ msgid ""
 "If you did not install openVPN yet: click cancel on next window!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5815
+#: Q:\ovpn-client\.\ovpn_client.py:6112
 msgid "Setup: openVPN"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5816
+#: Q:\ovpn-client\.\ovpn_client.py:6113
 msgid "Select openvpn.exe or Cancel to install openVPN"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5865
+#: Q:\ovpn-client\.\ovpn_client.py:6155
 msgid ""
 "openVPN Setup downloaded and hash verified OK!\n"
 "\n"
@@ -1687,7 +1715,7 @@ msgid ""
 "'%s'"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:5867
+#: Q:\ovpn-client\.\ovpn_client.py:6157
 msgid ""
 "openVPN Setup downloaded but hash verify failed!\n"
 "Please install openVPN!\n"
@@ -1695,19 +1723,19 @@ msgid ""
 "URL2: %s"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:6091
+#: Q:\ovpn-client\.\ovpn_client.py:6379
 msgid "Quit oVPN.to Client"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:6099
+#: Q:\ovpn-client\.\ovpn_client.py:6387
 msgid "Do you really want to quit?"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:6164
+#: Q:\ovpn-client\.\ovpn_client.py:6452
 msgid "Firewall Settings"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:6172
+#: Q:\ovpn-client\.\ovpn_client.py:6460
 msgid ""
 "Restore previous firewall settings?\n"
 "\n"
@@ -1715,7 +1743,7 @@ msgid ""
 "Press 'NO' to set profiles to 'blockinbound,blockoutbound'!"
 msgstr ""
 
-#: Q:\ovpn-client\.\ovpn_client.py:6174
+#: Q:\ovpn-client\.\ovpn_client.py:6462
 msgid ""
 "Allow outgoing connection to internet?\n"
 "\n"
