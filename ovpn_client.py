@@ -342,7 +342,7 @@ class Systray:
         self.VAR['CACHE']['icontheme'] = self.ICONS_THEME
         
         # any vars
-        self.CA_FIXED_HASH = "f37dff160dda454d432e5f0e0f30f8b20986b59daadabf2d261839de5dfd1e7d8a52ecae54bdd21c9fee9238628f9fff70c7e1a340481d14f3a1bdeea4a162e8"
+        self.CA_FIXED_HASH = "6d37d66b7268b8f5e493c80f5a8c6119fa2af7e1598a63e0b7503f22df409de7312088a4e5de8acaf2a72d6e5a9c24dc464be158e20bdea2aeb87373e2f208c3"
         self.WHITELIST_PUBLIC_PROFILE = {
             "Intern 01) oVPN Connection Check": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"80","proto":"tcp"},
             "Intern 02) https://vcp.ovpn.to": {"ip":self.VAR['OVPN']['GW']['IP4A'],"port":"443","proto":"tcp"},
