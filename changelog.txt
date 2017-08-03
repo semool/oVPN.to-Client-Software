@@ -1,5 +1,12 @@
 # changelog.txt
 #
+Version: 0.8.12
++ update: SSL Cert and new Codesign Key
++ update: french translation
+
+Version: 0.8.11
++ update: openvpn 2.4.3 I601
+
 Version: 0.8.10
 + update: openvpn 2.4.1 I601
 + update: Check openVPN version with button: "Check Client Update", download latest setup and show a button: "Install openVPN". Install will disconnect established connection and reconnect after openVPN setup is done!
