@@ -24,7 +24,7 @@ set CERTUTIL="C:\Windows\System32\CertUtil.exe"
 
 IF "%BITS%" == "32" ( set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk_x86.exe )
 IF "%BITS%" == "64" ( set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk_x64.exe )
-set SIGNCERTSHA1=‎02fde186c1cac4a08cec7b7420bf3280d6fe978b
+set SIGNCERTSHA1=02fde186c1cac4a08cec7b7420bf3280d6fe978b
 
 
 IF NOT EXIST %CERTUTIL% (echo %CERTUTIL% NOT FOUND && PAUSE && EXIT)
