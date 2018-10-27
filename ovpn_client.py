@@ -193,27 +193,7 @@ class Systray:
         self.VAR["UPDATE"]["SIZE"] = False
         self.VAR["UPDATE"]["URL"] = False
         
-        #self.d0wns_DNS = {'ns1.ca.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.ca.d0wn.biz', 'countrycode': 'ca', 'dnscryptpubkey': 'pubkey.ca.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '9DCE:B0A9:9653:C069:8583:AA5C:498C:3A75:8FBB:AEAA:55A8:6D0F:7C50:896C:45F5:F5ED', 'country': 'Canada', 'ip4': '198.50.244.26'}, 'ns2.random.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.random2.d0wn.biz', 'countrycode': 'random', 'dnscryptpubkey': 'pubkey.random2.dnscrypt.d0wn.biz', 'ip6': '2a00:1ca8:a7::1e9', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '9112:338E:7D0B:5E78:B792:9BB6:1B75:4888:AC94:65B5:B86B:B5DE:CCF3:E5B9:15A5:DC54', 'country': 'Netherlands', 'ip4': '185.14.29.140'}, 'ns1.es.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.es.d0wn.biz', 'countrycode': 'es', 'dnscryptpubkey': 'pubkey.es.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'EB09:E854:AEDA:9705:CB47:ED69:EADD:4156:3653:82C5:C88D:A2E3:6917:3B54:4774:7505', 'country': 'Spain', 'ip4': '91.142.220.29'}, 'ns1.it.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.it.d0wn.biz', 'countrycode': 'it', 'dnscryptpubkey': 'pubkey.it.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '2DEC:CEF8:A4D0:57DE:0D1A:CE8E:0A3C:BEB8:2135:61A8:BF0E:7373:0BA0:EC38:C876:3B50', 'country': 'Italy', 'ip4': '31.14.133.188'}, 'ns1.nl.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.nl.d0wn.biz', 'countrycode': 'nl', 'dnscryptpubkey': 'pubkey.nl.dnscrypt.d0wn.biz', 'ip6': '2a03:b0c0:0:1010::62:f001', 'dnscryptports': '54 80 1053 5353 27015', 'dnscryptfingerprint': '7BE6:68FE:A505:FFA7:4C27:C2CA:F881:59DA:038C:5741:13AA:2556:A4D2:2D0B:B6F0:009E', 'country': 'Netherlands', 'ip4': '95.85.9.86'}, 'ns2.us.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.us2.d0wn.biz', 'countrycode': 'us', 'dnscryptpubkey': 'pubkey.us.dnscrypt.d0wn.biz', 'ip6': '2605:6400:20:7d7:1:5ee:bad:c0de', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'A22D:99C4:E2E9:CB94:67F0:E36A:619F:418B:466C:5786:C0B8:ACAA:B716:71F7:1F81:F5F8', 'country': 'United States of America', 'ip4': '209.141.53.57'}, 'ns1.random.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.random.d0wn.biz', 'countrycode': 'random', 'dnscryptpubkey': 'pubkey.random.dnscrypt.d0wn.biz', 'ip6': '2a00:1dc0:cafe::c6af:c19d', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'A420:867F:ED5C:024C:C86A:EECE:AA05:194B:017F:D2FF:9E72:385A:874F:8CE5:6832:ED2E', 'country': 'Moldova', 'ip4': '178.17.170.133'}, 'ns2.nl.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.nl2.d0wn.biz', 'countrycode': 'nl', 'dnscryptpubkey': 'pubkey.nl2.dnscrypt.d0wn.biz', 'ip6': '2a02:2ca0:64:22::2', 'dnscryptports': '54 1053 5353 27015', 'dnscryptfingerprint': 'DFAA:B7D8:29E6:1F34:4FED:2610:4221:70C9:ADC7:7E9F:A65F:4A46:0BAE:A735:3186:3B99', 'country': 'Netherlands', 'ip4': '185.83.217.248'}, 'ns1.hk.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.hk.d0wn.biz', 'countrycode': 'hk', 'dnscryptpubkey': 'pubkey.hk.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '84ED:0DFF:7967:5DBD:2D93:65A2:A6AB:7F90:146F:A50B:048C:8C75:651B:AA55:7129:6740', 'country': 'Hong Kong', 'ip4': '45.124.66.200'}, 'ns2.lv.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.lv2.d0wn.biz', 'countrycode': 'lv', 'dnscryptpubkey': 'pubkey.lv.dnscrypt.d0wn.biz', 'ip6': '2a02:7aa0:1201::f60e:2719', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'B111:F80C:E3E0:1C36:CC73:0995:009E:6351:EF08:0503:309D:9417:7AA3:8C67:916D:0CDF', 'country': 'Latvia', 'ip4': '185.86.151.28'}, 'ns1.ua.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.ua.d0wn.biz', 'countrycode': 'ua', 'dnscryptpubkey': 'pubkey.ua.dnscrypt.d0wn.biz', 'ip6': '2a02:27a8:0:2::556', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '3B1E:D468:FFD3:F261:20DE:E7F1:6A74:E1D5:D59E:B40D:F3EA:99BC:0B05:70CC:292D:99BA', 'country': 'Ukraine', 'ip4': '217.12.210.54'}, 'ns1.dk.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.dk.d0wn.biz', 'countrycode': 'dk', 'dnscryptpubkey': 'pubkey.dk.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0838:C9CF:2292:2D4C:4DB7:4A5E:ED10:DD36:66DD:9551:7238:6387:B7A0:2FA0:885A:5F77', 'country': 'Denmark', 'ip4': '77.66.108.93'}, 'ns1.fr.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.fr.d0wn.biz', 'countrycode': 'fr', 'dnscryptpubkey': 'pubkey.fr.dnscrypt.d0wn.biz', 'ip6': '2001:41d0:d:1c5::7d09:1', 'dnscryptports': '54 1053 5353 27015', 'dnscryptfingerprint': '58A8:22D3:29EB:C14F:BCEB:45AF:42EB:2F58:C797:0AD3:ED31:397D:1D34:8636:2375:7251', 'country': 'France', 'ip4': '151.80.7.115'}, 'ns1.is.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.is.d0wn.biz', 'countrycode': 'is', 'dnscryptpubkey': 'pubkey.is.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '2B28:974E:073A:6B38:722A:5BE1:F7A0:250C:508F:A809:238F:8F3D:76D8:6098:20D7:B2D9', 'country': 'Iceland', 'ip4': '37.235.49.61'}, 'ns1.lu.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.lu.d0wn.biz', 'countrycode': 'lu', 'dnscryptpubkey': 'pubkey.lu.dnscrypt.d0wn.biz', 'ip6': '2605:6400:30:fbb5:0:1ce:1ce:babe', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '737B:B68B:7D3C:896F:260D:91C3:60A6:AD64:8CD3:1B22:4D5F:7089:490C:539F:2EC6:C309', 'country': 'Luxembourg', 'ip4': '104.244.72.13'}, 'ns1.cy.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.cy.d0wn.biz', 'countrycode': 'cy', 'dnscryptpubkey': 'pubkey.cy.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '2144:4FE7:59C3:13B9:FABB:FC2A:F975:9F9C:CD9A:2ED7:0978:3A25:7347:4B83:8F86:EA2B', 'country': 'Cyprus', 'ip4': '213.169.148.11'}, 'ns1.md.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.md.d0wn.biz', 'countrycode': 'md', 'dnscryptpubkey': 'pubkey.md.dnscrypt.d0wn.biz', 'ip6': '2a00:1dc0:cafe::ad86:fa7e', 'dnscryptports': '54 1053 5353 27015', 'dnscryptfingerprint': '3DB2:C4CB:39E2:6B82:FDDF:6D91:1A65:D164:F4F0:D237:8CDD:0C37:469F:24BA:B9A0:F9FF', 'country': 'Moldova', 'ip4': '178.17.170.67'}, 'ns1.sg.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.sg.d0wn.biz', 'countrycode': 'sg', 'dnscryptpubkey': 'pubkey.sg.dnscrypt.d0wn.biz', 'ip6': '2400:6180:0:d0::38:d001', 'dnscryptports': '54 443 1053 5353 27015', 'dnscryptfingerprint': 'D82B:2B76:1DA0:8470:B55B:820C:FAAB:9F32:D632:E9E0:5616:2CE7:7D21:E970:98FF:4A34', 'country': 'Singapore', 'ip4': '128.199.248.105'}, 'ns2.sg.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.sg2.d0wn.biz', 'countrycode': 'sg', 'dnscryptpubkey': 'pubkey.sg2.dnscrypt.d0wn.biz', 'ip6': '2403:5680::1:200f', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0F00:63C4:6EAF:29C3:29CD:E125:2033:6F0A:0C72:7CDD:F1F4:3D47:F95D:02BC:07F7:9FFC', 'country': 'Singapore', 'ip4': '210.16.120.139'}, 'ns1.cz.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.cz.d0wn.biz', 'countrycode': 'cz', 'dnscryptpubkey': 'pubkey.cz.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'EE21:5055:4DA0:1367:BAC3:768A:7C1E:24BF:D777:ACD5:77A4:44F8:BDF3:84E0:5966:D855', 'country': 'Czech Republic', 'ip4': '81.2.237.32'}, 'ns1.ro.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.ro.d0wn.biz', 'countrycode': 'ro', 'dnscryptpubkey': 'pubkey.ro.dnscrypt.d0wn.biz', 'ip6': '2a04:9dc0:c1:7::cb9:f785', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'DA9E:6882:B0F8:335E:B5F4:A059:1B7D:EE6F:BD55:4451:93B4:13BF:AFFC:7D26:4527:CE1A', 'country': 'Romania', 'ip4': '77.81.104.121'}, 'ns1.lv.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.lv.d0wn.biz', 'countrycode': 'lv', 'dnscryptpubkey': 'pubkey.lv.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': '1B70:FB6F:2E47:1753:91EF:1084:ECD2:983A:9018:F3E3:DDF1:E563:E528:156A:664A:1AE8', 'country': 'Latvia', 'ip4': '89.111.13.60'}, 'ns1.de.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.de.d0wn.biz', 'countrycode': 'de', 'dnscryptpubkey': 'pubkey.de.dnscrypt.d0wn.biz', 'ip6': '2001:1608:10:195:3:dead:beef:cafe', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'B040:19F8:8D49:4682:41E3:EB58:5F61:173F:EF8E:55DA:0597:2DB7:27BB:C153:1DD8:D109', 'country': 'Germany', 'ip4': '82.211.31.248'}, 'ns2.de.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.de2.d0wn.biz', 'countrycode': 'de', 'dnscryptpubkey': 'pubkey.de2.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '8C62:691A:A7EA:69D3:8A25:86AA:2715:87F0:9B11:9159:0663:55FC:1CD0:61C5:C863:1940', 'country': 'Germany', 'ip4': '185.137.15.105'}, 'ns1.tz.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.tz.d0wn.biz', 'countrycode': 'tz', 'dnscryptpubkey': 'pubkey.tz.dnscrypt.d0wn.biz', 'ip6': '2c0f:fda8:5::2ed1:d2ec', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'B79F:A025:1AF6:2125:DF3E:3B03:856D:4CB7:704E:45EB:B850:3A7B:C6AA:5510:D87D:087D', 'country': 'Tanzania', 'ip4': '41.79.69.13'}, 'ns1.uk.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.uk.d0wn.biz', 'countrycode': 'uk', 'dnscryptpubkey': 'pubkey.uk.dnscrypt.d0wn.biz', 'ip6': '2a04:92c7:7:7::14ae:460a', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'FADB:BE63:7FCD:FE22:0DBE:D433:438C:5A1D:C267:1E96:4B67:1918:B15F:9121:77D7:5B2E', 'country': 'United Kingdom', 'ip4': '185.121.25.85'}, 'ns1.ru.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.ru.d0wn.biz', 'countrycode': 'ru', 'dnscryptpubkey': 'pubkey.ru.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '0ECA:BC40:E0A1:335F:0221:4240:AB86:2919:D16A:2393:CCEB:4B40:9EB9:4F24:3077:ED99', 'country': 'Russia', 'ip4': '91.214.71.181'}, 'ns1.au.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.au.d0wn.biz', 'countrycode': 'au', 'dnscryptpubkey': 'pubkey.au.dnscrypt.d0wn.biz', 'ip6': '2402:9e80:1::1:e554', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': 'A7D9:0F8E:9A98:1381:176A:3D25:36DE:E865:8538:9CD8:78BC:C3B5:A146:23F1:C2EF:58D8', 'country': 'Australia', 'ip4': '27.100.36.191'}, 'ns1.gr.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.gr.d0wn.biz', 'countrycode': 'gr', 'dnscryptpubkey': 'pubkey.gr.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 5353 1053 27015', 'dnscryptfingerprint': 'D056:D3A4:9568:5AFE:4B0D:C688:7A75:41B2:7217:F0C9:75A5:A6C0:142D:363B:F992:9867', 'country': 'Greece', 'ip4': '85.25.105.193'}, 'ns1.us.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.us.d0wn.biz', 'countrycode': 'us', 'dnscryptpubkey': 'pubkey.us.dnscrypt.d0wn.biz', 'ip6': '2605:6400:10:59:0:b19:b00b:babe', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '6741:6E7F:4744:194E:D725:91A2:1A62:A715:78F9:62CD:5263:84FC:DAA8:6C7E:4D9F:438B', 'country': 'United States of America', 'ip4': '199.195.249.174'}, 'ns2.fr.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.fr2.d0wn.biz', 'countrycode': 'fr', 'dnscryptpubkey': 'pubkey.fr2.dnscrypt.d0wn.biz', 'ip6': '2001:41D0:A:0028::1', 'dnscryptports': '54 443 1053 5353 27015', 'dnscryptfingerprint': '25A7:DB7B:7835:55D5:7DA4:7C0C:57F8:9C5F:0220:3D09:67E3:585A:723E:E0D1:CB38:F767', 'country': 'France', 'ip4': '37.187.0.40'}, 'ns1.bg.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.bg.d0wn.biz', 'countrycode': 'bg', 'dnscryptpubkey': 'pubkey.bg.dnscrypt.d0wn.biz', 'ip6': '', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '423C:D823:B3EA:2015:F027:ECF1:5704:3EB7:764A:D02D:9447:56E6:51FD:D06F:E571:2FCC', 'country': 'Bulgaria', 'ip4': '217.12.203.133'}, 'ns3.nl.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.nl3.d0wn.biz', 'countrycode': 'nl', 'dnscryptpubkey': 'pubkey.nl3.dnscrypt.d0wn.biz', 'ip6': '2a06:7240:5:601:dead:beef:e3e7:7a9d', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '01FC:1AA9:F71F:F09E:55CE:0D04:9ACA:2B11:9536:319E:04A9:C3AE:77CB:127D:4C53:0651', 'country': 'Netherlands', 'ip4': '185.133.72.116'}, 'ns1.se.dns.d0wn.biz': {'dnscryptcertname': '2.dnscrypt-cert.se.d0wn.biz', 'countrycode': 'se', 'dnscryptpubkey': 'pubkey.se.dnscrypt.d0wn.biz', 'ip6': '2a02:7aa0:1619::4f50:a69', 'dnscryptports': '54 80 443 1053 5353 27015', 'dnscryptfingerprint': '9D4F:762B:DD24:F77A:64B4:7E0F:F5C6:93FD:A02A:39E9:8FEC:0CEE:F252:3A5F:A403:C032', 'country': 'Sweden', 'ip4': '95.215.44.124'}}
-        # update content of 'self.d0wns_DNS' with argument D0WNDNS: if 'self.d0wns_DNS = {}' with self.load_d0wns_dns() called from mainwindow rightclick and copy from debug.log
-        
-        #oVPN_DNS = { 
-        #                'ns1.ch.dns.ovpn.to': {
-        #                    'countrycode': 'ch', 
-        #                    'dnscryptcertname': '2.dnscrypt-cert.swiss1.ovpn.to', 
-        #                    'country': 'Switzerland', 
-        #                    'dnscryptpubkey': 'pubkey.ch.dnscrypt.ovpn.to', 
-        #                    'ip6': '2a03:9a60:827:abcd::ef42', 
-        #                    'ip4': '185.128.41.238', 
-        #                    'dnscryptports': '5353', 
-        #                    'dnscryptfingerprint': '7A66:D5BA:186D:4C52:DD0F:FB42:0DD7:B9BF:7A4C:3442:E309:FD38:CC86:4E76:1445:877E',
-        #                    #'expire': '2017-Aug-21'
-        #                    },
-        #                }
-        #for key,value in oVPN_DNS.items():
-        #    self.d0wns_DNS[key] = value
-        
-        #if D0WNDNS == True:
-        #    self.d0wns_DNS = {}
+        self.DNS = {}
         
         self.FLAGS_B64 = flags_b64.flagsb64()
         print("len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64)))
@@ -471,8 +451,6 @@ class Systray:
         self.VPN_CFGip4 = "%s\\ip4" % (self.VPN_CFG)
         self.VPN_CFGip46 = "%s\\ip46" % (self.VPN_CFG)
         self.VPN_CFGip64 = "%s\\ip64" % (self.VPN_CFG)
-        
-        #self.dns_d0wntxt =  "%s\\dns.txt" % (self.API_DIR)
         
         self.zip_cfg = "%s\\confs.zip" % (self.VPN_DIR)
         self.zip_crt = "%s\\certs.zip" % (self.VPN_DIR)
@@ -1358,12 +1336,11 @@ class Systray:
             sep = Gtk.SeparatorMenuItem()
             context_menu_servertab.append(sep)
             
-            """
-            #self.make_context_menu_servertab_d0wns_dnsmenu(servername)
+            self.make_context_menu_servertab_dnsmenu(servername)
             
             sep = Gtk.SeparatorMenuItem()
             context_menu_servertab.append(sep)
-            """
+            
             
             if self.DISABLE_SRV_WINDOW == False:
                 try:
@@ -1412,13 +1389,16 @@ class Systray:
         except Exception as e:
             self.debug(1,"def make_context_menu_servertab: failed, exception = '%s'"%(e))
 
-    """
-    def make_context_menu_servertab_d0wns_dnsmenu(self,servername):
+    
+    def make_context_menu_servertab_dnsmenu(self,servername):
         try:
-            self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: servername = '%s'" % (servername))
+            self.debug(1,"def m_c_m_s_dnsmenu: servername = '%s'" % (servername))
+            servershort = servername.split(".")[0].lower()
+            countrycode = servershort[:2]
+            self.debug(1,"def m_c_m_s_dnsmenu: countrycode = '%s'" % (countrycode))
             
-            if D0WNDNS == True and len(self.d0wns_DNS) == 0:
-                self.load_d0wns_dns()
+            if self.check_dns_dict(countrycode) == False:
+                self.load_dns_from_remote(countrycode)
             
             dnsmenu = Gtk.Menu()
             dnsm = Gtk.MenuItem(_("Change DNS"))
@@ -1432,7 +1412,7 @@ class Systray:
                 cbdata = {servername:{"primary":{"ip4":pridns,"dnsname":priname}}}
                 pridnsm.connect('button-release-event',self.cb_del_dns,cbdata)
                 self.context_menu_servertab.append(pridnsm)
-                self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: pridns = '%s', priname = '%s'"%(pridns,priname))
+                self.debug(1,"def m_c_m_s_dnsmenu: pridns = '%s', priname = '%s'"%(pridns,priname))
             except Exception as e:
                 pridns = False
             
@@ -1444,29 +1424,29 @@ class Systray:
                 cbdata = {servername:{"secondary":{"ip4":secdns,"dnsname":secname}}}
                 secdnsm.connect('button-release-event',self.cb_del_dns,cbdata)
                 self.context_menu_servertab.append(secdnsm)
-                self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: secdns = '%s', secname = '%s'"%(secdns,secname))
+                self.debug(1,"def m_c_m_s_dnsmenu: secdns = '%s', secname = '%s'"%(secdns,secname))
             except Exception as e:
                 secdns = False
             
-            dnsdict = OrderedDict(sorted(self.d0wns_DNS.items(), key=lambda k: (k[1]['countrycode'],k), reverse=False))
-            self.debug(59,"dnsdict = '%s'" % (dnsdict)) 
+            self.debug(1,"def m_c_m_s_dnsmenu: pri+sec dns menu")
+            
             i=0
-            for name,value in dnsdict.items():
+            dnsdict = self.DNS[countrycode]
+            self.debug(9,"def m_c_m_s_dnsmenu: dnsdict = '%s'"%(dnsdict))
+            for value in dnsdict:
+                self.debug(9,"def m_c_m_s_dnsmenu: dns %s id = %s"%(countrycode,value))
                 try:
-                    self.debug(59,"try name = '%s', len(value) = '%s', value = '%s'" % (name,len(value),value))
-                    
-                    dnsip4 = value['ip4']
-                    countrycode = value['countrycode']
-                    
+                    dnsip4 = value['ip']
+                    name = value['name']
                     dnssubmenu = Gtk.Menu()
                     dnssubmtext = "%s (%s)" % (name,dnsip4)
                     dnssubm = Gtk.ImageMenuItem(dnssubmtext)
                     dnssubm.set_submenu(dnssubmenu)
-                    img = Gtk.Image()
-                    imgfile = self.decode_flag(countrycode)
-                    img.set_from_pixbuf(imgfile)
-                    dnssubm.set_always_show_image(True)
-                    dnssubm.set_image(img)
+                    #img = Gtk.Image()
+                    #imgfile = self.decode_flag(countrycode)
+                    #img.set_from_pixbuf(imgfile)
+                    #dnssubm.set_always_show_image(True)
+                    #dnssubm.set_image(img)
                     dnsmenu.append(dnssubm)
                     
                     try:
@@ -1494,18 +1474,15 @@ class Systray:
                         dnssubmenu.append(setsecdns)
                     except Exception as e:
                         self.debug(1,"dnssubmenu.append(setsecdns) failed, exception = '%s'"%(e))
-                        
-                    self.debug(59,"dnsmenu.append name = '%s' i=%s" % (name,i))
-                    i += 1
+                    
                 except Exception as e:
-                    self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: dnsmenu.append(dnssubm) '%s' failed " % (countrycode))
-                
+                    self.debug(1,"def make_context_menu_servertab_dnsmenu: dnsmenu.append(dnssubm) '%s' failed " % (countrycode))
+            
             dnsm.show_all()
             self.context_menu_servertab.append(dnsm)
         except Exception as e:
-            self.debug(1,"def make_context_menu_servertab_d0wns_dnsmenu: failed, exception = '%s'"%(e))
-    """
-    
+            self.debug(1,"def make_context_menu_servertab_dnsmenu: failed, exception = '%s'"%(e))
+
     def check_idletime(self):
         try:
             idletime = idle.get_idle_duration()
@@ -6166,7 +6143,7 @@ class Systray:
 
     def check_dns_is_whitelisted(self):
         self.debug(2,"def check_dns_is_whitelisted()")
-        #if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.VAR['OVPN']['GW']['IP4'] or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.d0wns_DNS:
+        #if self.GATEWAY_DNS1 == "127.0.0.1" or self.GATEWAY_DNS1 == self.VAR['OVPN']['GW']['IP4'] or self.GATEWAY_DNS1 == "8.8.8.8" or self.GATEWAY_DNS1 == "8.8.4.4" or self.GATEWAY_DNS1 == "208.67.222.222" or self.GATEWAY_DNS1 == "208.67.220.220" or self.GATEWAY_DNS1 in self.DNS:
         if self.GATEWAY_DNS1 == "127.0.0.1":
             self.debug(2,"def check_dns_is_whitelisted: True")
             return True
@@ -6174,144 +6151,29 @@ class Systray:
             self.debug(2,"def check_dns_is_whitelisted: False")
             return False
     
-    """
-    def load_d0wns_dns(self):
-        self.debug(1,"def load_d0wns_dns()")
+    def load_dns_from_remote(self,countrycode):
+        self.debug(1,"def load_dns_from_remote()")
         try:
-            dnsdata = False
-            dnsdata = self.d0wn_dns_entrys()
-            if not dnsdata == False and len(dnsdata) > 0:
-                #self.debug(76,"def load_d0wns_dns: len(dnsdata) = '%s'" % (len(dnsdata)))
-                #self.debug(76,"def load_d0wns_dns: len(dnsdata) = '%s', dnsdata='%s'" % (len(dnsdata),dnsdata))
-                self.d0wns_DNS = {}
-                for entry in dnsdata:
-                    if len(entry) > 0:
-                        data = entry.split(",")
-                        name = data[0]
-                        ip4 = data[1]
-                        ip6 = data[2]
-                        country = data[3]
-                        dnscryptfingerprint = data[4]
-                        dnscryptcertname = data[5]
-                        dnscryptports = data[6]
-                        #dnscryptvalidto = data[7]
-                        dnscryptpubkey = data[8]
-                        active = data[12]
-                        if name.endswith("any.dns.d0wn.biz") or country.lower() == "anycast":
-                            self.debug(1,"def load_d0wns_dns: for continue, name '%s' invalid"%(name))
-                            continue
-                        if active == "1" and self.check_d0wns_names(name) == True and self.isValueIPv4(ip4) == True and self.check_d0wns_dnscountry(country) == True and self.check_d0wns_dnscryptfingerprint(dnscryptfingerprint) == True and self.check_d0wns_names(dnscryptcertname) == True and self.check_d0wns_dnscryptports(dnscryptports) == True:
-                            self.d0wns_DNS[name].update({"ip4":ip4,"ip6":ip6,"country":country,"dnscryptfingerprint":dnscryptfingerprint,"dnscryptcertname":dnscryptcertname,"dnscryptports":dnscryptports,"dnscryptpubkey":dnscryptpubkey})
-                        elif active == "0":
-                            self.debug(1,"def load_d0wns_dns: offline '%s'" % (name))
-                        else:
-                            self.debug(1,"def load_d0wns_dns: failed '%s'" % (data))
-                #self.debug(1,"def load_d0wns_dns: True len(self.d0wns_DNS) = %s" % (len(self.d0wns_DNS)))
-                self.debug(0,"def load_d0wns_dns: len(self.d0wns_DNS) = '%s'\n#\n#self.d0wns_DNS = %s\n#" % (len(self.d0wns_DNS),self.d0wns_DNS))
-                self.debug(1,"def load_d0wns_dns: len(self.d0wns_DNS)= '%s' content written to DEBUGLOG" % (len(self.d0wns_DNS)))
-                return True
-        except Exception as e:
-            self.debug(1,"def load_d0wns_dns: failed, exception = '%s'"%(e))
-
-    def d0wn_dns_entrys(self):
-        dnsdata = False
-        if D0WNDNS == True:
-            if not os.path.isfile(self.dns_d0wntxt):
-                if not self.load_d0wns_dns_from_remote():
-                    self.debug(1,"def d0wn_dns_entrys: self.load_d0wns_dns_from_remote() failed!")
-            if os.path.isfile(self.dns_d0wntxt):
-                self.debug(1,"self.d0wn_dns_entrys() DEVMODE")
-                fp = open(self.dns_d0wntxt,'rt')
-                dnsdata = fp.read().splitlines()
-                fp.close()
-            else:
-                self.debug(1,"def d0wn_dns_entrys: self.dns_d0wntxt = '%s' not found"%(self.dns_d0wntxt))
-        return dnsdata
-
-    def check_d0wns_dnscryptports(self,value):
-        self.debug(59,"def check_d0wns_dnscryptports()")
-        try:
-            data = value.split()
-            for entry in data:
-                entry = int(entry)
-                if entry > 0 and entry <= 65535:
-                    pass
-                else:
-                    self.debug(1,"def check_d0wns_dnscryptports: failed value '%s'" % (value))
-                    return False
+            url = "https://%s/files/dns/ungefiltert-surfen.de/%s.json" % (VCP_DOMAIN,countrycode.lower())
+            HEADERS = request_api.useragent(self.DEBUG)
+            r = requests.get(url,headers=HEADERS)
+            data = json.loads(str(r.text))
+            self.DNS[countrycode] = data
+            self.debug(9,"load_dns_from_remote = '%s'" % (data))
+            self.debug(1,"def load_dns_from_remote: True , len data = %s" % (len(data)))
             return True
         except Exception as e:
+            debug(1,"def load_dns_from_remote: failed #1, exception = '%s'"%(e))
             return False
-
-    def check_d0wns_names(self,name):
-        self.debug(59,"def check_d0wns_names()")
+            
+    def check_dns_dict(self,countrycode):
         try:
-            data = name.split('.')
-            self.debug(59,"def check_d0wns_names: data = '%s' len(data)='%s'" % (data,len(data)))
-            if len(data) == 5:
-                if data[0].startswith("ns") and data[0].isalnum() and data[1].isalnum() and data[2].isalnum() and data[3].isalnum() and data[4].isalnum():
-                    self.d0wns_DNS[name] = {"countrycode":data[1]}
-                    return True
-                elif data[0] == "2" and data[1] == "dnscrypt-cert" and data[2].isalnum() and data[3].isalnum() and data[4].isalnum():
-                    return True
-                else:
-                    self.debug(1,"def check_d0wns_names: name failed value '%s'" % (name))
-        except Exception as e:
-            return False
-
-    def check_d0wns_dnscountry(self,value):
-        self.debug(59,"def check_d0wns_dnscountry()")
-        try:
-            if not value.isalnum():
-                data = value.split()
-                for entry in data:
-                    if not entry.isalnum():
-                        self.debug(1,"def check_d0wns_dnscountry: '%s' failed" % (value))
-                        return False
-            return True
-        except Exception as e:
-            return False
-
-    def check_d0wns_dnscryptfingerprint(self,value):
-        self.debug(59,"def check_d0wns_dnscryptfingerprint()")
-        try:
-            if len(value) == 79:
-                for toc in value.split(':'):
-                    if not len(toc) == 4 or not toc.isalnum():
-                        self.debug(1,"def check_d0wns_dnscryptfingerprint: value = '%s' toc '%s'"%(value,toc))
-                        return False
-                self.debug(59,"def check_d0wns_dnscryptfingerprint: True")
+            if len(self.DNS[countrycode]) > 0:
                 return True
-            else:
-                self.debug(1,"def check_d0wns_dnscryptfingerprint: len value = %s" % (len(value)))
         except Exception as e:
+            self.DNS[countrycode] = {}
+            self.debug(1,"def check_dns_dict: created countrycode = '%s'"%(e))
             return False
-
-    def load_d0wns_dns_from_remote(self):
-        if D0WNDNS == True:
-            self.debug(1,"def load_d0wns_dns_from_remote()")
-            try:
-                if os.path.isfile(self.dns_d0wntxt):
-                    os.remove(self.dns_d0wntxt)
-                if not os.path.isfile(self.dns_d0wntxt):
-                    try:
-                        url = "https://%s/files/dns/d0wns_dns.static.txt" % (VCP_DOMAIN)
-                        HEADERS = request_api.useragent(self.DEBUG)
-                        r = requests.get(url,headers=HEADERS)
-                        fp = open(self.dns_d0wntxt,'wb')
-                        fp.write(r.content)
-                        fp.close()
-                        self.debug(1,"def load_d0wns_dns_from_remote: True")
-                        return True
-                    except Exception as e:
-                        debug(1,"def load_d0wns_dns_from_remote: failed #2, exception = '%s'"%(e))
-                        return False
-                else:
-                    return True
-            except Exception as e:
-                debug(1,"def load_d0wns_dns_from_remote: failed #1, exception = '%s'"%(e))
-                return False
-    """
     
     def show_about_dialog(self,widget,event):
         self.debug(1,"def show_about_dialog()")
