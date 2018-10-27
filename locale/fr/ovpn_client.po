@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-08-03 04:04+0100\n"
-"PO-Revision-Date: 2017-08-03 04:06+0100\n"
+"PO-Revision-Date: 2018-06-06 22:52+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 1.8.9\n"
+"X-Generator: Poedit 2.0.5\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: Q:\ovpn-client\.\ovpn_client.py:119 Q:\ovpn-client\.\ovpn_client.py:594
@@ -299,7 +299,7 @@ msgstr "Extraction Configs et Certs..."
 
 #: Q:\ovpn-client\.\ovpn_client.py:1771
 msgid "Downloading openVPN Update..."
-msgstr ""
+msgstr "Téléchargement de la mise à jour OpenVPN..."
 
 #: Q:\ovpn-client\.\ovpn_client.py:1775
 msgid "Connecting to %s"
@@ -1342,7 +1342,7 @@ msgstr "Echec de la mise à jour avec Exception '%s'!"
 
 #: Q:\ovpn-client\.\ovpn_client.py:2459
 msgid "Server [ %s ]"
-msgstr ""
+msgstr "Serveur [ %s ]"
 
 #: Q:\ovpn-client\.\ovpn_client.py:2750
 msgid "Settings -> Updates: 'Load Account Info' [disabled]"
@@ -1408,7 +1408,7 @@ msgstr "Sauvegarde au lancement / Restauration à la Fermeture (défaut: OFF)"
 
 #: Q:\ovpn-client\.\ovpn_client.py:3192
 msgid "Disconnect on Idle (default: OFF)"
-msgstr ""
+msgstr "Déconnecter au ralenti (par défaut: désactivé)"
 
 #: Q:\ovpn-client\.\ovpn_client.py:3216 Q:\ovpn-client\.\ovpn_client.py:3366
 msgid "Delay in seconds"
@@ -1486,7 +1486,7 @@ msgstr "Nouvel essai dans quelques secondes..."
 
 #: Q:\ovpn-client\.\ovpn_client.py:3754
 msgid "Install Update: openVPN %s %s [ %s ]"
-msgstr ""
+msgstr "Installer la mise à jour: OpenVPN %s %s [ %s]"
 
 #: Q:\ovpn-client\.\ovpn_client.py:3769
 msgid "Normal Config Update"
@@ -1510,7 +1510,7 @@ msgstr "Plantage du processus OpenVPN! Redémarrage..."
 
 #: Q:\ovpn-client\.\ovpn_client.py:4196
 msgid "Idle Disconnected!"
-msgstr ""
+msgstr "Déconnecté: inactif!"
 
 #: Q:\ovpn-client\.\ovpn_client.py:4225
 msgid "DNS changed but reset ok!"
@@ -1536,7 +1536,7 @@ msgid ""
 "hash is:\n"
 "'%s'\n"
 "but should be '%s'"
-msgstr "Erreur:"
+msgstr ""
 
 #: Q:\ovpn-client\.\ovpn_client.py:4619
 msgid "Error: SSL CA Cert #2"
@@ -1653,11 +1653,11 @@ msgstr "API Login OK!"
 
 #: Q:\ovpn-client\.\ovpn_client.py:5518
 msgid "Verified Update: openVPN Setup %s %s '%s'"
-msgstr ""
+msgstr "Mise à jour vérifiée: configuration OpenVPN %s %s' %s'"
 
 #: Q:\ovpn-client\.\ovpn_client.py:5522
 msgid "Failed Download openVPN Setup %s %s"
-msgstr ""
+msgstr "%s - La vérification d'OpenVPN a échoué!"
 
 #: Q:\ovpn-client\.\ovpn_client.py:5527
 msgid "No Client Update available!"
@@ -1698,7 +1698,7 @@ msgstr "N'a pas pu lire les protocoles Serveurs dans la config: %s"
 
 #: Q:\ovpn-client\.\ovpn_client.py:5744
 msgid "Could not read Servers ncp-ciphers from config: %s"
-msgstr ""
+msgstr "N'a pas pu lire les chiffrements ncp Serveurs dans la config: %s"
 
 #: Q:\ovpn-client\.\ovpn_client.py:5758
 msgid "Could not read Servers Cipher from config: %s"
@@ -1710,11 +1710,11 @@ msgstr "Veuillez mettre à jour vos configurations !"
 
 #: Q:\ovpn-client\.\ovpn_client.py:5994
 msgid "Failed to download openVPN Update!"
-msgstr ""
+msgstr "Impossible de télécharger la mise à jour openVPN!"
 
 #: Q:\ovpn-client\.\ovpn_client.py:6006
 msgid "Downloading Update: openVPN Setup %s %s (%s MB)"
-msgstr ""
+msgstr "Téléchargement de mise à jour: openVPN installer %s %s (%s MB)"
 
 #: Q:\ovpn-client\.\ovpn_client.py:6027
 msgid ""
@@ -1775,12 +1775,13 @@ msgid ""
 "Verify GPG with:\n"
 "'%s'"
 msgstr ""
-"OpenVPN Setup téléchargé et contrôle d'intégrité réussi!\n"
+"openVPN Setup téléchargé et contrôle d'intégrité réussi!\n"
 "\n"
 "Veuillez lancer l'installation depuis le fichier:\n"
 "'%s'\n"
 "\n"
-"Vérification GPG avec:"
+"Vérification GPG avec:\n"
+"'%s'"
 
 #: Q:\ovpn-client\.\ovpn_client.py:6157
 msgid ""
@@ -1789,7 +1790,7 @@ msgid ""
 "URL1: %s\n"
 "URL2: %s"
 msgstr ""
-"OpenVPN Setup téléchargé mais le contrôle d'intégrité a échoué!\n"
+"openVPN Setup téléchargé mais le contrôle d'intégrité a échoué!\n"
 "Veuillez installer openVPN!\n"
 "Url1 : %s\n"
 "URL2 : %s"
