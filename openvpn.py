@@ -17,13 +17,13 @@ def values(DEBUG):
     debug(9,"[openvpn.py] def values()",DEBUG,True)
     try:
         ARCH = get_arch(DEBUG)
-        BUILT = "Jun 20 2017"
-        TIMESTAMP = 1497909600
-        VERSION = "2.4.3"
-        BUILT_V = "I601"
+        BUILT = "Apr 26 2018"
+        TIMESTAMP = 1524693600
+        VERSION = "2.4.6"
+        BUILT_V = "I602"
         
-        SHA_512 = "a0da5281a38c2445af1c89f3153be6ced9d419b2e2c94c0326cd0821c6dad682808ada2bba5643754c5c9971b84940f4020163af4053d83ff13e605748cb13f0"
-        F_SIZE = 3453240
+        SHA_512 = "1d8456847c84425d5078062bca790c2ffcd6cc0a227ee4522537a87716de3878065b9813cd1aa6b56ebb3fbfb0558f5b71ecbfe20063d01ab4f9c5ba932a28f4"
+        F_SIZE = 3861232
         
         URLS = {
             "REM" : "https://%s/files/openvpn" % (release_version.org_data()["VCP_DOMAIN"]),
