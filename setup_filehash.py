@@ -38,8 +38,8 @@ class OpenVPN_HashBinsToJson:
         self.OPENVPN_HASH = "6644a61a1bb3b796957d4add6a28a02137ec9f09c886c6a42233b0dafd9030ed3fda8ab05dcc82783223277b6e71e200dd665bac220e9ee747626c3cb1b6346d"
         self.DOWNLOAD_ASC = True
         
-        self.OPENVPN_ARCHS = ["i686","x86_64"]
-        self.OPENVPN_BINS = [ "2.3.12:I601","2.3.12:I602","2.3.13:I601" ]
+        self.OPENVPN_ARCHS = []
+        self.OPENVPN_BINS = [ "2.4.0:I601" ]
         
         self.WORKING_DIR = "files"
         self.STORAGE_DIR = "%s/openvpn" % (self.WORKING_DIR)
@@ -104,11 +104,15 @@ class OpenVPN_HashBinsToJson:
         for BIN in self.OPENVPN_BINS:
             version = BIN.split(':')[0]
             built = BIN.split(':')[1]
-            for arch in self.OPENVPN_ARCHS:
-                filename = self.openvpn_filename_exe(version,built,arch)
+            if len(self.OPENVPN_ARCHS) > 0:
+                for arch in self.OPENVPN_ARCHS:
+                    filename = self.openvpn_filename_exe(version,built,arch)
+                    url = "%s/%s" % (self.OPENVPN_HTTP,filename)
+                    
+            else:
+                filename = self.openvpn_filename_exe(version,built,"")
                 url = "%s/%s" % (self.OPENVPN_HTTP,filename)
-                self.download_file(url,filename)
-                
+            self.download_file(url,filename)
         return True
 
     def download_file(self,url,filename):
@@ -120,9 +124,9 @@ class OpenVPN_HashBinsToJson:
                     r = requests.get(url)
                     bytes = len(r.content)
                     try:
-                        if bytes < 1600000:
+                        if bytes < 3000000:
                             print "Downloaded '%s' (%s bytes) is too small, skipping...\n" % (filename,bytes)
-                            if bytes < 256:
+                            if bytes <= 1024:
                                 print "r.content = '%s'" % (r.content)
                             return False
                         else:
@@ -218,15 +222,15 @@ class OpenVPN_HashBinsToJson:
         try:
             if os.path.isfile(file):
                 extractto = "%s/%s" % (self.EXTRACT_DIR,filename)
-                #print "extractto = '%s'" % (extractto)
+                print "extractto = '%s'" % (extractto)
                 if not os.path.isdir(extractto):
                     os.mkdir(extractto)
                     
-                string = "\"%s\" x \"%s\" -bb1 -bso0 -bse0 -bsp1 -o\"%s\" bin/" % (self.SEVENZIP,file,extractto)
-                #print "def extract_file: string = '%s'" % (string)
+                string = "\"%s\" x \"%s\" -bb3 -bso0 -bse0 -bsp1 -o\"%s\" bin/" % (self.SEVENZIP,file,extractto)
+                print "def extract_file: string = '%s'" % (string)
                 
                 exitcode = subprocess.call("%s" % (string),shell=True)
-                #print "exitcode = %s\n" % (exitcode)
+                print "exitcode = %s\n" % (exitcode)
                 if exitcode == 0:
                     print "File '%s' extracted to '%s/'" % (filename,extractto)
                     return True
@@ -255,7 +259,11 @@ class OpenVPN_HashBinsToJson:
             return True
 
     def openvpn_filename_exe(self,version,built,arch):
-        return "openvpn-install-%s-%s-%s.exe" % (version,built,arch)
+        if len(arch) > 0:
+            filename = "openvpn-install-%s-%s-%s.exe" % (version,built,arch)
+        else:
+            filename = "openvpn-install-%s-%s.exe" % (version,built)
+        return filename
 
     def openvpn_filename_asc(self,filename):
         return "%s.asc" % (filename)

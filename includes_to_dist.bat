@@ -49,7 +49,7 @@ IF NOT EXIST %GTKDLLFILE% (
 
 ::Delete unneded Language Files 
 for /f "delims=" %%i in ('dir /b "%LANGPATH%*.*"') do (
-	IF NOT "%%i" == "de" IF NOT "%%i" == "en" IF NOT "%%i" == "es" (
+	IF NOT "%%i" == "de" IF NOT "%%i" == "en" IF NOT "%%i" == "es" IF NOT "%%i" == "fr" (
 		rd /s /q "%LANGPATH%%%i" 2>nul
 	)
 )
