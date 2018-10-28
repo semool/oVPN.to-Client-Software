@@ -185,6 +185,8 @@ class Systray:
         self.VAR['OVPN']['GW']['IP4B'] = "172.16.48.1"
         self.VAR['OVPN']['GW']['IP4'] = self.VAR['OVPN']['GW']['IP4A']
         
+        self.VAR['OVPN']['DNS_UPDATE'] = dict()
+        
         self.VAR["RELEASE"] = int(BUILT_STRING.split()[6].split('(')[1].split(')')[0])
         
         self.VAR["UPDATE"] = dict()
@@ -194,6 +196,8 @@ class Systray:
         self.VAR["UPDATE"]["URL"] = False
         
         self.DNS = {}
+        self.GOOD_DNS = {}
+        self.DNS_PING = {}
         
         self.FLAGS_B64 = flags_b64.flagsb64()
         print("len(self.FLAGS_B64) = '%s'" % (len(self.FLAGS_B64)))
@@ -255,6 +259,8 @@ class Systray:
         # timers running
         self.win_firewall_tap_blockoutbound_running = False
         self.timer_load_remote_data_running = False
+        self.timer_update_dns_remote_data_running = False
+        self.timer_update_dns_ping_running = False
         self.timer_ovpn_ping_running = False
         self.timer_check_certdl_running = False
         self.stop_systray_timer = False
@@ -274,6 +280,7 @@ class Systray:
         self.LAST_HIT_UPDATE_BUTTON5 = 0
         self.LAST_CHECK_CFG_UPDATE = 0
         self.LAST_CHECK_CFG_UPDATE_FORCE = 0
+        self.LAST_DNS_PING_RUN = 0
         self.MOUSE_IN_TRAY = 0
         self.LAST_SETTINGS_NBPAGE = None
         
@@ -1392,17 +1399,29 @@ class Systray:
     
     def make_context_menu_servertab_dnsmenu(self,servername):
         try:
-            self.debug(1,"def m_c_m_s_dnsmenu: servername = '%s'" % (servername))
             servershort = servername.split(".")[0].lower()
             countrycode = servershort[:2]
-            self.debug(1,"def m_c_m_s_dnsmenu: countrycode = '%s'" % (countrycode))
+            self.check_dns_dict(countrycode)
+            self.debug(1,"def m_c_m_s_dnsmenu: servername = '%s', cc = '%s'" % (servername,countrycode))
             
-            if self.check_dns_dict(countrycode) == False:
-                self.load_dns_from_remote(countrycode)
+            try:
+                dnsm_update = Gtk.MenuItem(_("Update DNS List"))
+                dnsm_update.connect('button-release-event',self.cb_update_dns,countrycode)
+                self.context_menu_servertab.append(dnsm_update)
+                self.debug(1,"def m_c_m_s_dnsmenu: self.context_menu_servertab.append(dnsm_update) %s"%(countrycode))
+            except Exception as e:
+                self.debug(1,"def m_c_m_s_dnsmenu: failed dnsm_update MenuItem, exception = '%s'"%(e))
             
-            dnsmenu = Gtk.Menu()
-            dnsm = Gtk.MenuItem(_("Change DNS"))
-            dnsm.set_submenu(dnsmenu)
+            if len(self.DNS[countrycode]) > 0:
+                try:
+                    dnsmenu = Gtk.Menu()
+                    dnsm = Gtk.MenuItem(_("Change DNS"))
+                    dnsm.set_submenu(dnsmenu)
+                    dnsmenu_req = True
+                except Exception as e:
+                    self.debug(1,"def m_c_m_s_dnsmenu: failed dnsm.set_submenu(dnsmenu), exception = '%s'"%(e))
+            else:
+                dnsmenu_req = False
             
             try:
                 pridns = self.MYDNS[servername]["primary"]["ip4"]
@@ -1428,58 +1447,79 @@ class Systray:
             except Exception as e:
                 secdns = False
             
-            self.debug(1,"def m_c_m_s_dnsmenu: pri+sec dns menu")
-            
-            i=0
-            dnsdict = self.DNS[countrycode]
-            self.debug(9,"def m_c_m_s_dnsmenu: dnsdict = '%s'"%(dnsdict))
-            for value in dnsdict:
-                self.debug(9,"def m_c_m_s_dnsmenu: dns %s id = %s"%(countrycode,value))
-                try:
-                    dnsip4 = value['ip']
-                    name = value['name']
-                    dnssubmenu = Gtk.Menu()
-                    dnssubmtext = "%s (%s)" % (name,dnsip4)
-                    dnssubm = Gtk.ImageMenuItem(dnssubmtext)
-                    dnssubm.set_submenu(dnssubmenu)
-                    #img = Gtk.Image()
-                    #imgfile = self.decode_flag(countrycode)
-                    #img.set_from_pixbuf(imgfile)
-                    #dnssubm.set_always_show_image(True)
-                    #dnssubm.set_image(img)
-                    dnsmenu.append(dnssubm)
-                    
-                    try:
-                        cbdata = {servername:{"primary":{"ip4":dnsip4,"dnsname":name}}}
-                        if pridns == dnsip4:
-                            string = _("Primary DNS '%s' @ %s") % (pridns,servername)
-                            setpridns = Gtk.MenuItem(string)
-                            setpridns.connect('button-release-event',self.cb_del_dns,cbdata)
-                        else:
-                            setpridns = Gtk.MenuItem(_("Set Primary DNS"))
-                            setpridns.connect('button-release-event',self.cb_set_dns,cbdata)
-                        dnssubmenu.append(setpridns)
-                    except Exception as e:
-                        self.debug(1,"dnssubmenu.append(setpridns) failed, exception = '%s'"%(e))
-                    
-                    try:
-                        cbdata = {servername:{"secondary":{"ip4":dnsip4,"dnsname":name}}}
-                        if secdns == dnsip4:
-                            string = _("Secondary DNS '%s' @ %s") % (secdns,servername)
-                            setsecdns = Gtk.MenuItem(string)
-                            setsecdns.connect('button-release-event',self.cb_del_dns,cbdata)
-                        else:
-                            setsecdns = Gtk.MenuItem(_("Set Secondary DNS"))
-                            setsecdns.connect('button-release-event',self.cb_set_dns,cbdata)
-                        dnssubmenu.append(setsecdns)
-                    except Exception as e:
-                        self.debug(1,"dnssubmenu.append(setsecdns) failed, exception = '%s'"%(e))
-                    
-                except Exception as e:
-                    self.debug(1,"def make_context_menu_servertab_dnsmenu: dnsmenu.append(dnssubm) '%s' failed " % (countrycode))
-            
-            dnsm.show_all()
-            self.context_menu_servertab.append(dnsm)
+            if dnsmenu_req:
+                self.debug(1,"def m_c_m_s_dnsmenu: dnsmenu_added, filling data")
+                i=0
+                if countrycode in self.GOOD_DNS.keys() and len(self.GOOD_DNS[countrycode]) > 0:
+                    for addr,value in self.GOOD_DNS[countrycode].items():
+                        self.debug(9,"def m_c_m_s_dnsmenu: GOOD_DNS %s dns %s value = %s"%(countrycode,addr,value))
+                        try:
+                            
+                            dnsip4 = addr
+                            name = value['name']
+                            ping = value['ping']
+                            dnssec = value['dnssec']
+                            
+                            if not len(name):
+                                name = "no-hostname"
+                            
+                            
+                            dnssubmenu = Gtk.Menu()
+                            dnssubmtext = "%s ms - dnssec:%s - %s - %s" % (ping,dnssec,dnsip4,name)
+                            dnssubm = Gtk.ImageMenuItem(dnssubmtext)
+                            dnssubm.set_submenu(dnssubmenu)
+                            
+                            if dnssec:
+                                img = Gtk.Image(stock=Gtk.STOCK_CONNECT)
+                            else:
+                                img = Gtk.Image(stock=Gtk.STOCK_DIALOG_WARNING)
+                            dnssubm.set_always_show_image(True)
+                            dnssubm.set_image(img)
+                            
+                            """
+                            img = Gtk.Image()
+                            imgfile = self.decode_flag(countrycode)
+                            img.set_from_pixbuf(imgfile)
+                            dnssubm.set_always_show_image(True)
+                            dnssubm.set_image(img)
+                            """
+                            
+                            dnsmenu.append(dnssubm)
+                            try:
+                                cbdata = {servername:{"primary":{"ip4":dnsip4,"dnsname":name}}}
+                                if pridns == dnsip4:
+                                    string = _("Primary DNS '%s' @ %s") % (pridns,servername)
+                                    setpridns = Gtk.MenuItem(string)
+                                    setpridns.connect('button-release-event',self.cb_del_dns,cbdata)
+                                else:
+                                    setpridns = Gtk.MenuItem(_("Set Primary DNS"))
+                                    setpridns.connect('button-release-event',self.cb_set_dns,cbdata)
+                                dnssubmenu.append(setpridns)
+                            except Exception as e:
+                                self.debug(1,"def m_c_m_s_dnsmenu: dnssubmenu.append(setpridns) failed, exception = '%s'"%(e))
+                            
+                            try:
+                                cbdata = {servername:{"secondary":{"ip4":dnsip4,"dnsname":name}}}
+                                if secdns == dnsip4:
+                                    string = _("Secondary DNS '%s' @ %s") % (secdns,servername)
+                                    setsecdns = Gtk.MenuItem(string)
+                                    setsecdns.connect('button-release-event',self.cb_del_dns,cbdata)
+                                else:
+                                    setsecdns = Gtk.MenuItem(_("Set Secondary DNS"))
+                                    setsecdns.connect('button-release-event',self.cb_set_dns,cbdata)
+                                dnssubmenu.append(setsecdns)
+                            except Exception as e:
+                                self.debug(1,"def m_c_m_s_dnsmenu: dnssubmenu.append(setsecdns) failed, exception = '%s'"%(e))
+                        
+                        except Exception as e:
+                            self.debug(1,"def m_c_m_s_dnsmenu: dnsmenu.append(dnssubm) '%s' failed " % (countrycode))
+                        i += 1
+                
+                dnsm.show_all()
+                self.context_menu_servertab.append(dnsm)
+                self.debug(1,"def m_c_m_s_dnsmenu: published %s dns to menu '%s'"%(i,countrycode))
+            else:
+                self.debug(1,"def m_c_m_s_dnsmenu: dnsmenu_added failed")
         except Exception as e:
             self.debug(1,"def make_context_menu_servertab_dnsmenu: failed, exception = '%s'"%(e))
 
@@ -1756,7 +1796,7 @@ class Systray:
                 systrayicon = self.systray_icon_connect
                 statusbar_text = systraytext
                 self.debug(1,"def systray_timer: cstate = '%s'" % (systraytext))
-                
+            
             elif self.state_openvpn() == True:
                 connectedseconds = int(time.time()) - self.VAR['OVPN']['CONN']['START']
                 self.VAR['OVPN']['CONN']['SECONDS'] = connectedseconds
@@ -1814,7 +1854,7 @@ class Systray:
                         self.cb_jump_openvpn(0,0,self.VAR['OVPN']['FAVSRV'])
                     
                 except Exception as e:
-                    self.debug(1,"def timer_statusbar: OVPN_AUTO_CONNECT_ON_START failed, exception '%s'"%(e))
+                    self.debug(1,"def systray_timer: OVPN_AUTO_CONNECT_ON_START failed, exception '%s'"%(e))
 
             try:
                 try:
@@ -1850,11 +1890,28 @@ class Systray:
             
             try:
                 if self.timer_load_remote_data_running == False:
-                    thread = threading.Thread(target=self.load_remote_data)
-                    thread.daemon = True
-                    thread.start()
+                    thread6e61 = threading.Thread(target=self.load_remote_data)
+                    thread6e61.daemon = True
+                    thread6e61.start()
             except Exception as e:
-                self.debug(1,"def systray_timer: thread target=self.load_remote_data failed, exception '%s'"%(e))
+                self.debug(1,"def systray_timer: thread6e61 target=self.load_remote_data failed, exception '%s'"%(e))
+            
+            try:
+                if self.timer_update_dns_remote_data_running == False:
+                    thread642f = threading.Thread(target=self.update_dns_remote_data)
+                    thread642f.daemon = True
+                    thread642f.start()
+            except Exception as e:
+                self.debug(1,"def systray_timer: thread642f target=self.update_dns_remote_data failed, exception '%s'"%(e))
+            
+            try:
+                if self.timer_update_dns_ping_running == False:
+                    thread0a6d = threading.Thread(target=self.update_dns_pings)
+                    thread0a6d.daemon = True
+                    thread0a6d.start()
+            except Exception as e:
+                self.debug(1,"def systray_timer: thread0a6d target=self.update_dns_pings failed, exception '%s'"%(e))
+                
             runtime = int((time.time()-starttime)*1000)
             if runtime > 10000:
                 self.debug(1,"def systray_timer() return runtime = '%s ms'"%(runtime))
@@ -3814,12 +3871,20 @@ class Systray:
     def cb_destroy_accwindow(self,event):
         self.debug(1,"def cb_destroy_accwindow")
         self.ACCWINDOW_OPEN = False
+    
+    def cb_update_dns(self,widget,event,data):
+        if event.button == 1:
+            self.debug(1,"def cb_update_dns(): cbdata = '%s'"%(data))
+            self.destroy_context_menu_servertab()
+            self.VAR['OVPN']['DNS_UPDATE'][data] = 0
+            # triggers in self.update_dns_remote_data()
+            #self.load_dns_from_remote(data)
+
 
     def cb_del_dns(self,widget,event,data):
         if event.button == 1:
-            self.debug(1,"def cb_del_dns()")
+            self.debug(1,"def cb_del_dns(): cbdata = '%s'"%(data))
             self.destroy_context_menu_servertab()
-            print("def cb_del_dns: cbdata = '%s'" % (data))
             for name,value in data.items():
                 try:
                     if value["primary"]["ip4"] == self.MYDNS[name]["primary"]["ip4"]:
@@ -5783,6 +5848,53 @@ class Systray:
         except Exception as e:
             self.debug(1,"def load_ovpn_server: failed, exception = '%s'"%(e))
 
+    def update_dns_remote_data(self):
+        self.timer_update_dns_remote_data_running = True
+        self.debug(9,"def update_dns_remote_data: timer_update_dns_remote_data_running")
+        done, fail = 0, 0
+        try:
+            dnstimedict = self.VAR['OVPN']['DNS_UPDATE']
+            if len(dnstimedict) > 0:
+                self.debug(3,"def update_dns_remote_data: dnstimedict = '%s'"%(dnstimedict))
+                for key,value in self.VAR['OVPN']['DNS_UPDATE'].items():
+                    now = int((time.time()))
+                    diff = now-3600
+                    if value == 0 or value < diff:
+                        self.debug(1,"def update_dns_remote_data: key = '%s', value = '%s'"%(key,value))
+                        if self.load_dns_from_remote(key):
+                            self.VAR['OVPN']['DNS_UPDATE'][key] = now
+                            done += 1
+                        else:
+                            fail += 1
+        except Exception as e:
+            self.debug(1,"def update_dns_remote_data: failed, exception = '%s'"%(e))
+        if done > 0 or fail > 0:
+            self.debug(1,"def update_dns_remote_data: done %s, fail %s"%(done,fail))
+        self.timer_update_dns_remote_data_running = False
+        
+    def update_dns_pings(self):
+        self.debug(9,"def update_dns_pings()")
+        now = int(time.time())
+        diff = now-9
+        if self.LAST_DNS_PING_RUN > diff:
+            return False
+        
+        self.timer_update_dns_ping_running = True
+        self.LAST_DNS_PING_RUN = now
+        if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
+            for countrycode,data in self.DNS.items():
+                done, fail = 0, 0
+                self.debug(9,"def update_dns_ping: countrycode = '%s', data = '%s'"%(countrycode,data))
+                for value in data:
+                    if self.DNStest(value['ip'],countrycode,value) == True:
+                        done += 1
+                    self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(countrycode,value['ip']))
+                if done > 0:
+                    self.debug(1,"def update_dns_ping: countrycode = '%s' done"%(countrycode,done))
+        else:
+            self.debug(1,"def update_dns_pings(): ovpn not connected")
+        self.timer_update_dns_ping_running = False
+    
     def load_remote_data(self):
         if self.timer_load_remote_data_running == True:
             return False
@@ -5812,6 +5924,101 @@ class Systray:
                 GLib.idle_add(self.call_redraw_accwindow)
         self.timer_load_remote_data_running = False
 
+    def add_good_dns(self,addr,countrycode,data):
+        try:
+            if addr not in self.GOOD_DNS[countrycode]:
+                self.GOOD_DNS[countrycode][addr] = {}
+            self.GOOD_DNS[countrycode][addr]['name'] = data['name']
+            self.GOOD_DNS[countrycode][addr]['dnssec'] = data['dnssec']
+            self.GOOD_DNS[countrycode][addr]['ping'] = self.DNS_PING[addr]['ping']
+            return True
+        except Exception as e:
+            self.debug(1,"def add_good_dns: failed, '%s'"%(e))
+    
+    def set_bad_dns(self,addr,countrycode):
+        try:
+            if addr in self.GOOD_DNS[countrycode].keys():
+                del self.GOOD_DNS[countrycode][addr]
+            self.DNS_PING[addr]['ping'] = 9999
+            self.DNS_PING[addr]['last'] = int(time.time())
+            return True
+        except Exception as e:
+            self.debug(1,"def set_bad_dns: failed, '%s'"%(e))
+    
+    def DNStest(self,addr,countrycode,data):
+        try:
+            
+            if self.STATE_OVPN == False:
+                return False
+            
+            if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] < 30:
+                return False
+            
+            if self.VAR['OVPN']['CONN']['SERVER'] != False:
+                servername = self.VAR['OVPN']['CONN']['SERVER']
+                servershort = servername.split(".")[0].lower()
+                testcountrycode = servershort[:2]
+                if testcountrycode != countrycode:
+                    return False
+            
+            self.debug(9,"def DNStest: addr '%s'"%(addr))
+            try:
+                last = self.DNS_PING[addr]['last']
+                now = int(time.time())
+                diff = now-1800
+                if last > diff:
+                    return False
+            except Exception as e:
+                self.DNS_PING[addr] = {}
+                self.debug(9,"def DNStest: e='%s', create dict DNS_PING addr '%s'"%(e,addr))
+            
+
+                
+            try:
+                packet = struct.pack("!HHHHHH", 0x0001, 0x0100, 1, 0, 0, 0)
+                for name in ('www', 'google', countrycode):
+                    header = b"!b"
+                    header += bytes(str(len(name)), "utf-8") + b"s"
+                    query = struct.pack(header, len(name), name.encode('utf-8'))
+                    packet = packet + query
+                dns_query = packet + struct.pack("!bHH", 0, 1, 1)
+                
+                try:
+                    s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
+                    s.settimeout(3)
+                    # send dns request
+                    sendcount=s.sendto(packet, 0, (addr,53))
+                    if sendcount <= 0:
+                        self.debug(1,"def DNStest: %s failed, sendcount = '%s'"%(addr,sendcount))
+                        return False
+                    start = int(time.time() * 1000)
+                    try:
+                        recvdata=s.recvfrom(1024)
+                    except Exception as e:
+                        self.set_bad_dns(addr,countrycode)
+                        self.debug(1,"def DNStest: %s %s recvdata failed, '%s'"%(countrycode,addr,e))
+                        return False
+                        
+                    try:
+                        end = int(time.time() * 1000)
+                        tdiff = end-start
+                        self.debug(1,"def DNStest: %s %s (%s ms)"%(countrycode,addr,tdiff))
+                        
+                        self.DNS_PING[addr]['ping'] = tdiff
+                        self.DNS_PING[addr]['last'] = int(time.time())
+                        
+                        self.add_good_dns(addr,countrycode,data)
+                        
+                        return True
+                    except Exception as e:
+                        self.debug(1,"def DNStest: calc failed, '%s'"%(e))
+                except Exception as e:
+                    self.debug(1,"def DNStest: socket socket failed, '%s'"%(e))
+            except Exception as e:
+                self.debug(1,"def DNStest: struct packet failed, '%s'"%(e))
+        except Exception as e:
+            self.debug(1,"def DNStest: failed, '%s'"%(e))
+    
     def check_hash_dictdata(self,newdata,olddata):
         self.debug(2,"def check_hash_dictdata()")
         try:
@@ -6152,19 +6359,20 @@ class Systray:
             return False
     
     def load_dns_from_remote(self,countrycode):
-        self.debug(1,"def load_dns_from_remote()")
-        try:
-            url = "https://%s/files/dns/ungefiltert-surfen.de/%s.json" % (VCP_DOMAIN,countrycode.lower())
-            HEADERS = request_api.useragent(self.DEBUG)
-            r = requests.get(url,headers=HEADERS)
-            data = json.loads(str(r.text))
-            self.DNS[countrycode] = data
-            self.debug(9,"load_dns_from_remote = '%s'" % (data))
-            self.debug(1,"def load_dns_from_remote: True , len data = %s" % (len(data)))
-            return True
-        except Exception as e:
-            debug(1,"def load_dns_from_remote: failed #1, exception = '%s'"%(e))
-            return False
+        if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
+            self.debug(1,"def load_dns_from_remote() countrycode = '%s'"%(countrycode))
+            try:
+                url = "https://%s/files/dns/ungefiltert-surfen.de/%s.json" % (VCP_DOMAIN,countrycode.lower())
+                HEADERS = request_api.useragent(self.DEBUG)
+                r = requests.get(url,headers=HEADERS)
+                data = json.loads(str(r.text))
+                self.DNS[countrycode] = data
+                self.debug(9,"load_dns_from_remote = '%s'" % (data))
+                self.debug(1,"def load_dns_from_remote: True , len data = %s" % (len(data)))
+                return True
+            except Exception as e:
+                debug(1,"def load_dns_from_remote: failed #1, exception = '%s'"%(e))
+                return False
             
     def check_dns_dict(self,countrycode):
         try:
@@ -6172,6 +6380,7 @@ class Systray:
                 return True
         except Exception as e:
             self.DNS[countrycode] = {}
+            self.GOOD_DNS[countrycode] = {}
             self.debug(1,"def check_dns_dict: created countrycode = '%s'"%(e))
             return False
     
