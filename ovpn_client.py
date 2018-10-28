@@ -5851,7 +5851,7 @@ class Systray:
     def update_dns_remote_data(self):
         self.timer_update_dns_remote_data_running = True
         self.debug(9,"def update_dns_remote_data: timer_update_dns_remote_data_running")
-        done, fail = 0, 0
+        done = 0
         try:
             dnstimedict = self.VAR['OVPN']['DNS_UPDATE']
             if len(dnstimedict) > 0:
@@ -5864,12 +5864,10 @@ class Systray:
                         if self.load_dns_from_remote(key):
                             self.VAR['OVPN']['DNS_UPDATE'][key] = now
                             done += 1
-                        else:
-                            fail += 1
         except Exception as e:
             self.debug(1,"def update_dns_remote_data: failed, exception = '%s'"%(e))
-        if done > 0 or fail > 0:
-            self.debug(1,"def update_dns_remote_data: done %s, fail %s"%(done,fail))
+        if done > 0:
+            self.debug(1,"def update_dns_remote_data: done %s"%(done))
         self.timer_update_dns_remote_data_running = False
         
     def update_dns_pings(self):
@@ -5883,14 +5881,14 @@ class Systray:
         self.LAST_DNS_PING_RUN = now
         if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
             for countrycode,data in self.DNS.items():
-                done, fail = 0, 0
+                done = 0
                 self.debug(9,"def update_dns_ping: countrycode = '%s', data = '%s'"%(countrycode,data))
                 for value in data:
                     if self.DNStest(value['ip'],countrycode,value) == True:
                         done += 1
                     self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(countrycode,value['ip']))
                 if done > 0:
-                    self.debug(1,"def update_dns_ping: countrycode = '%s' done"%(countrycode,done))
+                    self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
         else:
             self.debug(1,"def update_dns_pings(): ovpn not connected")
         self.timer_update_dns_ping_running = False
