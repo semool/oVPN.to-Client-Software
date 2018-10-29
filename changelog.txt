@@ -1,5 +1,12 @@
 # changelog.txt
 #
+Version: 0.8.16
++ new DNS menu
+
+Version: 0.8.15
++ update: new Codesign Key
++ update: openvpn 2.4.6 I602
+
 Version: 0.8.12
 + update: SSL Cert and new Codesign Key
 + update: french translation
