@@ -5987,11 +5987,13 @@ class Systray:
                 self.debug(1,"def DNStest: False 02 %s %s"%(addr,countrycode))
                 return False
             
-            if addr in self.DNS_PING.keys() and fail in self.DNS_PING[addr]:
+            try:
                 if self.DNS_PING[addr]['fail'] > 3:
                     self.debug(1,"def DNStest: %s ignore addr '%s' fail > 3"%(countrycode,addr))
                     return False
-            
+            except Exception as e:
+                self.debug(1,"def DNStest: Exception, '%s'"%(e))
+                
             if self.VAR['OVPN']['CONN']['SERVER'] != False:
                 servername = self.VAR['OVPN']['CONN']['SERVER']
                 servershort = servername.split(".")[0].lower()
