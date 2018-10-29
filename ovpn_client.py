@@ -6041,6 +6041,9 @@ class Systray:
             try:
                 if self.DNS_PING[countrycode][addr]['fail'] > 3:
                     self.debug(1,"def DNStest: %s ignore addr '%s' fail > 3"%(countrycode,addr))
+                    del self.DNS_PING[countrycode][addr]
+                    del self.DNS[countrycode][addr]
+                    del self.GOOD_DNS[countrycode][addr]
                     return False
             except Exception as e:
                 self.debug(9,"def DNStest: exception, '%s'"%(e))
@@ -6112,13 +6115,13 @@ class Systray:
                             self.debug(1,"def DNStest: invalid %s %s len %s recvdata '%s', %s:%s"%(countrycode,addr,len(recvdata),recvdata,raddr[0],raddr[1]))
                             return False
                     except Exception as e:
-                        self.debug(1,"def DNStest: calc failed, '%s'"%(e))
+                        self.debug(1,"def DNStest: %s %s calc failed, '%s'"%(countrycode,addr,e))
                 except Exception as e:
-                    self.debug(1,"def DNStest: socket failed, '%s'"%(e))
+                    self.debug(1,"def DNStest: %s %s socket failed, '%s'"%(countrycode,addr,e))
             except Exception as e:
-                self.debug(1,"def DNStest: struct failed, '%s'"%(e))
+                self.debug(1,"def DNStest: %s %s struct failed, '%s'"%(countrycode,addr,e))
         except Exception as e:
-            self.debug(1,"def DNStest: failed, '%s'"%(e))
+            self.debug(1,"def DNStest: %s %s, failed exception = '%s'"%(countrycode,addr,e))
     
     def check_hash_dictdata(self,newdata,olddata):
         self.debug(2,"def check_hash_dictdata()")
