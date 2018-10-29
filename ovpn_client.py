@@ -263,7 +263,7 @@ class Systray:
         self.timer_load_remote_data_running = False
         self.timer_update_dns_remote_data_running = False
         self.timer_update_dns_ping_running = False
-        timer_stop_dns_ping = False
+        self.timer_stop_dns_ping = False
         self.timer_ovpn_ping_running = False
         self.timer_check_certdl_running = False
         self.stop_systray_timer = False
@@ -5929,9 +5929,6 @@ class Systray:
             diff = now-9
             if self.LAST_DNS_PING_RUN < diff:
                 self.LAST_DNS_PING_RUN = now
-                if self.timer_stop_dns_ping == True:
-                    self.debug(1,"def update_dns_ping: timer_stop_dns_ping = True, return");
-                    return
                 if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
                     mycountrycode = self.VAR['OVPN']['CONN']['COUNTRYCODE']
                     if mycountrycode in self.DNS and len(self.DNS[mycountrycode]):
@@ -5940,6 +5937,7 @@ class Systray:
                         for addr,value in self.DNS[mycountrycode].items():
                             if self.timer_stop_dns_ping == True:
                                 self.debug(1,"def update_dns_ping: inloop timer_stop_dns_ping = True, stopping");
+                                self.cb_res_dns(None,None,mycountrycode)
                                 return
                             try:
                                 if not self.DNStest(addr,mycountrycode,value):
@@ -5996,22 +5994,24 @@ class Systray:
                 self.GOOD_DNS[countrycode][addr] = {}
             self.GOOD_DNS[countrycode][addr]['name'] = data['name']
             self.GOOD_DNS[countrycode][addr]['dnssec'] = data['dnssec']
-            self.GOOD_DNS[countrycode][addr]['ping'] = self.DNS_PING[addr]['ping']
+            self.GOOD_DNS[countrycode][addr]['ping'] = self.DNS_PING[countrycode][addr]['ping']
             return True
         except Exception as e:
             self.debug(1,"def add_good_dns: failed, '%s'"%(e))
     
     def set_bad_dns(self,addr,countrycode):
+        if self.STATE_OVPN == False:
+            return
         try:
             if addr in self.GOOD_DNS[countrycode].keys():
                 del self.GOOD_DNS[countrycode][addr]
-            self.DNS_PING[addr]['ping'] = 9999
-            self.DNS_PING[addr]['last'] = int(time.time())
+            self.DNS_PING[countrycode][addr]['ping'] = 9999
+            self.DNS_PING[countrycode][addr]['last'] = int(time.time())
             
             try:
-                self.DNS_PING[addr]['fail'] += 1
+                self.DNS_PING[countrycode][addr]['fail'] += 1
             except Exception as e:
-                self.DNS_PING[addr]['fail'] = 1
+                self.DNS_PING[countrycode][addr]['fail'] = 1
             
             return True
         except Exception as e:
@@ -6029,7 +6029,7 @@ class Systray:
                 return False
             
             try:
-                if self.DNS_PING[addr]['fail'] > 3:
+                if self.DNS_PING[countrycode][addr]['fail'] > 3:
                     self.debug(1,"def DNStest: %s ignore addr '%s' fail > 3"%(countrycode,addr))
                     return False
             except Exception as e:
@@ -6044,13 +6044,15 @@ class Systray:
                     return False
             
             try:
-                last = self.DNS_PING[addr]['last']
+                last = self.DNS_PING[countrycode][addr]['last']
                 now = int(time.time())
                 diff = now-3600
                 if last > diff:
                     return False
             except Exception as e:
-                self.DNS_PING[addr] = {}
+                if countrycode not in self.DNS_PING:
+                    self.DNS_PING[countrycode] = {}
+                self.DNS_PING[countrycode][addr] = {}
                 self.debug(9,"def DNStest: e='%s', create dict DNS_PING addr '%s'"%(e,addr))
             time.sleep(0.5)
             try:
@@ -6084,9 +6086,9 @@ class Systray:
                         tdiff = end-start
                         self.debug(1,"def DNStest: %s %s (%s ms)"%(countrycode,addr,tdiff))
                         
-                        self.DNS_PING[addr]['ping'] = tdiff
-                        self.DNS_PING[addr]['last'] = int(time.time())
-                        self.DNS_PING[addr]['fail'] = 0
+                        self.DNS_PING[countrycode][addr]['ping'] = tdiff
+                        self.DNS_PING[countrycode][addr]['last'] = int(time.time())
+                        self.DNS_PING[countrycode][addr]['fail'] = 0
                         
                         if b'\xfe\xfe\xfe\xfe' in recvdata:
                             return True
