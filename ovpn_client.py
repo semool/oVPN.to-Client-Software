@@ -5977,14 +5977,16 @@ class Systray:
             self.debug(1,"def set_bad_dns: failed, '%s'"%(e))
     
     def DNStest(self,addr,countrycode,data):
+        e = False
+        time.sleep(0.5)
         try:
             self.debug(9,"def DNStest: addr '%s', countrycode = '%s', data = '%s'"%(addr,countrycode,data))
             if self.STATE_OVPN == False:
-                self.debug(1,"def DNStest: False 01 %s %s"%(addr,countrycode))
+                self.debug(9,"def DNStest: False 01 %s %s"%(addr,countrycode))
                 return False
             
             if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] < 8:
-                self.debug(1,"def DNStest: False 02 %s %s"%(addr,countrycode))
+                self.debug(9,"def DNStest: False 02 %s %s"%(addr,countrycode))
                 return False
             
             try:
@@ -5992,7 +5994,7 @@ class Systray:
                     self.debug(1,"def DNStest: %s ignore addr '%s' fail > 3"%(countrycode,addr))
                     return False
             except Exception as e:
-                self.debug(1,"def DNStest: Exception, '%s'"%(e))
+                self.debug(9,"def DNStest: exception, '%s'"%(e))
                 
             if self.VAR['OVPN']['CONN']['SERVER'] != False:
                 servername = self.VAR['OVPN']['CONN']['SERVER']
@@ -6013,27 +6015,31 @@ class Systray:
                 self.debug(9,"def DNStest: e='%s', create dict DNS_PING addr '%s'"%(e,addr))
             try:
                 packet = struct.pack("!HHHHHH", 0x0001, 0x0100, 1, 0, 0, 0)
-                for name in ('www', 'google', countrycode):
+                for name in ('dns', 'ovpn', 'rip'):
                     header = b"!b"
                     header += bytes(str(len(name)), "utf-8") + b"s"
                     query = struct.pack(header, len(name), name.encode('utf-8'))
                     packet = packet + query
-                dns_query = packet + struct.pack("!bHH", 0, 1, 1)
+                dns_query = packet + struct.pack("bHH", 0, 1, 1)
+                
                 try:
                     s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-                    s.settimeout(3)
+                    s.settimeout(9)
                     # send dns request
-                    sendcount=s.sendto(packet, 0, (addr,53))
+                    sendcount=s.sendto(dns_query, 0, (addr,53))
                     if sendcount <= 0:
                         self.debug(1,"def DNStest: %s failed, sendcount = '%s'"%(addr,sendcount))
                         return False
                     start = int(time.time() * 1000)
                     try:
-                        recvdata=s.recvfrom(1024)
+                        recvdata, raddr = s.recvfrom(8192)
+                        self.debug(9,"def DNStest: %s %s recvdata '%s', %s:%s"%(countrycode,addr,recvdata,raddr[0],raddr[1]))
+                        self.debug(1,"def DNStest: %s %s recvdata len '%s'"%(countrycode,addr,len(recvdata)))
                     except Exception as e:
                         self.set_bad_dns(addr,countrycode)
                         self.debug(1,"def DNStest: %s %s recvdata failed, '%s'"%(countrycode,addr,e))
                         return False
+                        
                     try:
                         end = int(time.time() * 1000)
                         tdiff = end-start
@@ -6054,6 +6060,9 @@ class Systray:
                 self.debug(1,"def DNStest: struct packet failed, '%s'"%(e))
         except Exception as e:
             self.debug(1,"def DNStest: failed, '%s'"%(e))
+        if e != False:
+            self.set_bad_dns(addr,countrycode)
+            return False
     
     def check_hash_dictdata(self,newdata,olddata):
         self.debug(2,"def check_hash_dictdata()")
