@@ -5977,7 +5977,6 @@ class Systray:
             self.debug(1,"def set_bad_dns: failed, '%s'"%(e))
     
     def DNStest(self,addr,countrycode,data):
-        e = False
         time.sleep(0.5)
         try:
             self.debug(9,"def DNStest: addr '%s', countrycode = '%s', data = '%s'"%(addr,countrycode,data))
@@ -6032,9 +6031,12 @@ class Systray:
                         return False
                     start = int(time.time() * 1000)
                     try:
-                        recvdata, raddr = s.recvfrom(8192)
+                        recvdata, raddr = s.recvfrom(1024)
                         self.debug(9,"def DNStest: %s %s recvdata '%s', %s:%s"%(countrycode,addr,recvdata,raddr[0],raddr[1]))
-                        self.debug(1,"def DNStest: %s %s recvdata len '%s'"%(countrycode,addr,len(recvdata)))
+                        if len(recvdata) < 46:
+                            self.debug(1,"def DNStest: %s %s recvdata len '%s'"%(countrycode,addr,len(recvdata)))
+                            self.set_bad_dns(addr,countrycode)
+                            return False
                     except Exception as e:
                         self.set_bad_dns(addr,countrycode)
                         self.debug(1,"def DNStest: %s %s recvdata failed, '%s'"%(countrycode,addr,e))
@@ -6060,9 +6062,6 @@ class Systray:
                 self.debug(1,"def DNStest: struct packet failed, '%s'"%(e))
         except Exception as e:
             self.debug(1,"def DNStest: failed, '%s'"%(e))
-        if e != False:
-            self.set_bad_dns(addr,countrycode)
-            return False
     
     def check_hash_dictdata(self,newdata,olddata):
         self.debug(2,"def check_hash_dictdata()")
