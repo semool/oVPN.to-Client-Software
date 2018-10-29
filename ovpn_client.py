@@ -1457,8 +1457,11 @@ class Systray:
                 i=0
                 self.VAR['OVPN']['CONN']['SERVER']
                 
+                
                 if countrycode in self.GOOD_DNS.keys() and len(self.GOOD_DNS[countrycode]) > 0:
-                    for addr,value in self.GOOD_DNS[countrycode].items():
+                    dnsdict = OrderedDict(sorted(self.GOOD_DNS[countrycode].items(), key=lambda k: (k[1]['ping'],k), reverse=False))
+                    #for addr,value in self.GOOD_DNS[countrycode].items():
+                    for addr,value in dnsdict.items():
                         self.debug(9,"def m_c_m_s_dnsmenu: GOOD_DNS %s dns %s value = %s"%(countrycode,addr,value))
                         try:
                             
@@ -1470,9 +1473,12 @@ class Systray:
                             if not len(name):
                                 name = "no-hostname"
                             
-                            
                             dnssubmenu = Gtk.Menu()
                             dnssubmtext = "%s ms - dnssec:%s - %s - %s" % (ping,dnssec,dnsip4,name)
+                            dnssubm = Gtk.MenuItem(dnssubmtext)
+                            dnssubm.set_submenu(dnssubmenu)
+                            
+                            """
                             dnssubm = Gtk.ImageMenuItem(dnssubmtext)
                             dnssubm.set_submenu(dnssubmenu)
                             
@@ -1480,13 +1486,6 @@ class Systray:
                                 img = Gtk.Image(stock=Gtk.STOCK_CONNECT)
                             else:
                                 img = Gtk.Image(stock=Gtk.STOCK_DIALOG_WARNING)
-                            dnssubm.set_always_show_image(True)
-                            dnssubm.set_image(img)
-                            
-                            """
-                            img = Gtk.Image()
-                            imgfile = self.decode_flag(countrycode)
-                            img.set_from_pixbuf(imgfile)
                             dnssubm.set_always_show_image(True)
                             dnssubm.set_image(img)
                             """
@@ -5885,7 +5884,7 @@ class Systray:
         if done > 0:
             self.debug(1,"def update_dns_remote_data: done %s"%(done))
         self.timer_update_dns_remote_data_running = False
-        
+    
     def update_dns_pings(self):
         self.timer_update_dns_ping_running = True
         self.debug(9,"def update_dns_pings()")
@@ -5894,26 +5893,20 @@ class Systray:
             diff = now-9
             if self.LAST_DNS_PING_RUN < diff:
                 self.LAST_DNS_PING_RUN = now
-                
                 if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
                     mycountrycode = self.VAR['OVPN']['CONN']['COUNTRYCODE']
-                    if mycountrycode in self.DNS:
-                        #for data in self.DNS[countrycode].items():
-                        for countrycode,data in self.DNS.items():
-                            if countrycode != mycountrycode:
-                                continue
-                            done = 0
-                            self.debug(1,"def update_dns_ping: countrycode = '%s', len data = '%s'"%(countrycode,len(data)))
-                            for value in data:
-                                addr = value['ip']
-                                try:
-                                    if self.DNStest(addr,countrycode,value) == True:
-                                        done += 1
-                                    self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(countrycode,addr))
-                                except Exception as e:
-                                    self.debug(1,"def update_dns_pings: failed DNStest ip %s, exception = '%s'"%(addr,e))
-                            if done > 0:
-                                self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
+                    if mycountrycode in self.DNS and len(self.DNS[mycountrycode]):
+                        done = 0
+                        self.debug(1,"def update_dns_ping: countrycode = '%s', len data = '%s'"%(mycountrycode,len(self.DNS[mycountrycode])))
+                        for addr,value in self.DNS[mycountrycode].items():
+                            try:
+                                if self.DNStest(addr,mycountrycode,value) == True:
+                                    done += 1
+                                self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(mycountrycode,addr))
+                            except Exception as e:
+                                self.debug(1,"def update_dns_pings: failed DNStest ip %s, exception = '%s'"%(addr,e))
+                        if done > 0:
+                            self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
                 else:
                     self.debug(1,"def update_dns_pings(): not connected")
         except Exception as e:
@@ -5977,7 +5970,6 @@ class Systray:
             self.debug(1,"def set_bad_dns: failed, '%s'"%(e))
     
     def DNStest(self,addr,countrycode,data):
-        time.sleep(0.5)
         try:
             self.debug(9,"def DNStest: addr '%s', countrycode = '%s', data = '%s'"%(addr,countrycode,data))
             if self.STATE_OVPN == False:
@@ -6012,8 +6004,10 @@ class Systray:
             except Exception as e:
                 self.DNS_PING[addr] = {}
                 self.debug(9,"def DNStest: e='%s', create dict DNS_PING addr '%s'"%(e,addr))
+            time.sleep(0.5)
             try:
-                packet = struct.pack("!HHHHHH", 0x0001, 0x0100, 1, 0, 0, 0)
+                dnsid = random.randint(0, 65535)
+                packet = struct.pack("!HHHHHH", dnsid, 0x0100, 1, 0, 0, 0)
                 for name in ('dns', 'ovpn', 'rip'):
                     header = b"!b"
                     header += bytes(str(len(name)), "utf-8") + b"s"
@@ -6030,13 +6024,9 @@ class Systray:
                         self.debug(1,"def DNStest: %s failed, sendcount = '%s'"%(addr,sendcount))
                         return False
                     start = int(time.time() * 1000)
+                    recvdata = None
                     try:
                         recvdata, raddr = s.recvfrom(1024)
-                        self.debug(9,"def DNStest: %s %s recvdata '%s', %s:%s"%(countrycode,addr,recvdata,raddr[0],raddr[1]))
-                        if len(recvdata) < 46:
-                            self.debug(1,"def DNStest: %s %s recvdata len '%s'"%(countrycode,addr,len(recvdata)))
-                            self.set_bad_dns(addr,countrycode)
-                            return False
                     except Exception as e:
                         self.set_bad_dns(addr,countrycode)
                         self.debug(1,"def DNStest: %s %s recvdata failed, '%s'"%(countrycode,addr,e))
@@ -6051,7 +6041,12 @@ class Systray:
                         self.DNS_PING[addr]['last'] = int(time.time())
                         self.DNS_PING[addr]['fail'] = 0
                         
-                        self.add_good_dns(addr,countrycode,data)
+                        if b'\xfe\xfe\xfe\xfe' in recvdata:
+                            self.add_good_dns(addr,countrycode,data)
+                        else:
+                            self.debug(1,"def DNStest: invalid %s %s len %s recvdata '%s', %s:%s"%(countrycode,addr,len(recvdata),recvdata,raddr[0],raddr[1]))
+                            self.set_bad_dns(addr,countrycode)
+                            return False
                         
                         return True
                     except Exception as e:
@@ -6410,9 +6405,15 @@ class Systray:
                 HEADERS = request_api.useragent(self.DEBUG)
                 r = requests.get(url,headers=HEADERS)
                 data = json.loads(str(r.text))
-                self.DNS[countrycode] = data
+                dnew = {}
+                for value in data:
+                    addr = value['ip']
+                    dnew[addr] = {}
+                    dnew[addr]['name'] = value['name']
+                    dnew[addr]['dnssec'] = value['dnssec']
+                self.DNS[countrycode] = dnew
                 self.debug(9,"load_dns_from_remote = '%s'" % (data))
-                self.debug(1,"def load_dns_from_remote: True , len data = %s" % (len(data)))
+                self.debug(1,"def load_dns_from_remote: %s True, len data = %s" % (countrycode,len(data)))
                 return True
             except Exception as e:
                 debug(1,"def load_dns_from_remote: failed #1, exception = '%s'"%(e))
