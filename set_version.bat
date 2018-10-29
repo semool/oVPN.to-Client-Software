@@ -1,1 +1,1 @@
-set RELEASE=0.8.15
+set RELEASE=0.8.16
