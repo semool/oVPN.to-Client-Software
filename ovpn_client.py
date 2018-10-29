@@ -5906,7 +5906,7 @@ class Systray:
                             except Exception as e:
                                 self.debug(1,"def update_dns_pings: failed DNStest ip %s, exception = '%s'"%(addr,e))
                         if done > 0:
-                            self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
+                            self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(mycountrycode,done))
                 else:
                     self.debug(1,"def update_dns_pings(): not connected")
         except Exception as e:
