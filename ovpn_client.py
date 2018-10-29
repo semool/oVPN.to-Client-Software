@@ -5909,8 +5909,9 @@ class Systray:
                 self.debug(3,"def update_dns_remote_data: dnstimedict = '%s'"%(dnstimedict))
                 for key,value in self.VAR['OVPN']['DNS_UPDATE'].items():
                     now = int((time.time()))
-                    diff = now-3600
-                    if value == 0 or value < diff:
+                    #diff = now-3600
+                    #if value == 0 or value < diff:
+                    if value == 0:
                         self.debug(1,"def update_dns_remote_data: key = '%s', value = '%s'"%(key,value))
                         if self.load_dns_from_remote(key):
                             self.VAR['OVPN']['DNS_UPDATE'][key] = now
