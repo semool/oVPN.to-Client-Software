@@ -5871,26 +5871,29 @@ class Systray:
         self.timer_update_dns_remote_data_running = False
         
     def update_dns_pings(self):
-        self.debug(9,"def update_dns_pings()")
-        now = int(time.time())
-        diff = now-9
-        if self.LAST_DNS_PING_RUN > diff:
-            return False
-        
         self.timer_update_dns_ping_running = True
-        self.LAST_DNS_PING_RUN = now
-        if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
-            for countrycode,data in self.DNS.items():
-                done = 0
-                self.debug(9,"def update_dns_ping: countrycode = '%s', data = '%s'"%(countrycode,data))
-                for value in data:
-                    if self.DNStest(value['ip'],countrycode,value) == True:
-                        done += 1
-                    self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(countrycode,value['ip']))
-                if done > 0:
-                    self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
-        else:
-            self.debug(1,"def update_dns_pings(): ovpn not connected")
+        try:
+            self.debug(9,"def update_dns_pings()")
+            now = int(time.time())
+            diff = now-9
+            if self.LAST_DNS_PING_RUN > diff:
+                return False
+            
+            self.LAST_DNS_PING_RUN = now
+            if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
+                for countrycode,data in self.DNS.items():
+                    done = 0
+                    self.debug(9,"def update_dns_ping: countrycode = '%s', data = '%s'"%(countrycode,data))
+                    for value in data:
+                        if self.DNStest(value['ip'],countrycode,value) == True:
+                            done += 1
+                        self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(countrycode,value['ip']))
+                    if done > 0:
+                        self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
+            else:
+                self.debug(9,"def update_dns_pings(): not connected")
+        except Exception as e:
+            self.debug(1,"def update_dns_pings: failed, exception = '%s'"%(e))
         self.timer_update_dns_ping_running = False
     
     def load_remote_data(self):
