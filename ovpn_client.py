@@ -172,6 +172,8 @@ class Systray:
         self.VAR['OVPN']['CONN'] = dict()
         self.VAR['OVPN']['CONN']['OK'] = False
         self.VAR['OVPN']['CONN']['SERVER'] = False
+        self.VAR['OVPN']['CONN']['SERVERSHORT'] = False
+        self.VAR['OVPN']['CONN']['COUNTRYCODE'] = False
         self.VAR['OVPN']['CONN']['IP'] = False
         self.VAR['OVPN']['CONN']['PORT'] = False
         self.VAR['OVPN']['CONN']['PROTO'] = False
@@ -1396,7 +1398,6 @@ class Systray:
         except Exception as e:
             self.debug(1,"def make_context_menu_servertab: failed, exception = '%s'"%(e))
 
-    
     def make_context_menu_servertab_dnsmenu(self,servername):
         try:
             servershort = servername.split(".")[0].lower()
@@ -1411,17 +1412,19 @@ class Systray:
                 self.debug(1,"def m_c_m_s_dnsmenu: self.context_menu_servertab.append(dnsm_update) %s"%(countrycode))
             except Exception as e:
                 self.debug(1,"def m_c_m_s_dnsmenu: failed dnsm_update MenuItem, exception = '%s'"%(e))
+
+            dnsmenu_req = False
+            if self.VAR['OVPN']['CONN']['COUNTRYCODE'] != countrycode:
+                
+                dnsm = Gtk.MenuItem(_("DNS appear when connected"))
+                dnsm.show_all()
+                self.context_menu_servertab.append(dnsm)
             
-            if len(self.DNS[countrycode]) > 0:
-                try:
+            elif len(self.GOOD_DNS[countrycode]) > 0:
                     dnsmenu = Gtk.Menu()
                     dnsm = Gtk.MenuItem(_("Change DNS"))
                     dnsm.set_submenu(dnsmenu)
                     dnsmenu_req = True
-                except Exception as e:
-                    self.debug(1,"def m_c_m_s_dnsmenu: failed dnsm.set_submenu(dnsmenu), exception = '%s'"%(e))
-            else:
-                dnsmenu_req = False
             
             try:
                 pridns = self.MYDNS[servername]["primary"]["ip4"]
@@ -1447,9 +1450,13 @@ class Systray:
             except Exception as e:
                 secdns = False
             
+
+                
             if dnsmenu_req:
                 self.debug(1,"def m_c_m_s_dnsmenu: dnsmenu_added, filling data")
                 i=0
+                self.VAR['OVPN']['CONN']['SERVER']
+                
                 if countrycode in self.GOOD_DNS.keys() and len(self.GOOD_DNS[countrycode]) > 0:
                     for addr,value in self.GOOD_DNS[countrycode].items():
                         self.debug(9,"def m_c_m_s_dnsmenu: GOOD_DNS %s dns %s value = %s"%(countrycode,addr,value))
@@ -1519,7 +1526,7 @@ class Systray:
                 self.context_menu_servertab.append(dnsm)
                 self.debug(1,"def m_c_m_s_dnsmenu: published %s dns to menu '%s'"%(i,countrycode))
             else:
-                self.debug(1,"def m_c_m_s_dnsmenu: dnsmenu_added failed")
+                self.debug(1,"def m_c_m_s_dnsmenu: dnsmenu not req")
         except Exception as e:
             self.debug(1,"def make_context_menu_servertab_dnsmenu: failed, exception = '%s'"%(e))
 
@@ -1906,9 +1913,12 @@ class Systray:
             
             try:
                 if self.timer_update_dns_ping_running == False:
+                    self.debug(9,"def systray_timer() thread self.update_dns_pings()")
                     thread0a6d = threading.Thread(target=self.update_dns_pings)
                     thread0a6d.daemon = True
                     thread0a6d.start()
+                else:
+                    self.debug(9,"def systray_timer() thread self.update_dns_pings() is running")
             except Exception as e:
                 self.debug(1,"def systray_timer: thread0a6d target=self.update_dns_pings failed, exception '%s'"%(e))
                 
@@ -4167,8 +4177,12 @@ class Systray:
             self.win_firewall_clear_vcp_rules()
             self.win_firewall_modify_rule(option="add")
             self.win_clear_ipv6()
+            servershort = self.VAR['OVPN']['CALL_SRV'].split(".")[0].lower()
+            countrycode = servershort[:2]
             self.VAR['OVPN']['CONN']['START'] = int(time.time())
             self.VAR['OVPN']['CONN']['SERVER'] = self.VAR['OVPN']['CALL_SRV']
+            self.VAR['OVPN']['CONN']['SERVERSHORT'] = servershort
+            self.VAR['OVPN']['CONN']['COUNTRYCODE'] = countrycode
             self.VAR['OVPN']['PING_STAT'] = -1
             self.VAR['OVPN']['PING_LAST'] = -1
             self.NEXT_PING_EXEC = 0
@@ -4225,6 +4239,8 @@ class Systray:
             self.STATE_OVPN = False
             self.inThread_jump_server_running = False
             self.VAR['OVPN']['CONN']['SERVER'] = False
+            self.VAR['OVPN']['CONN']['SERVERSHORT'] = False
+            self.VAR['OVPN']['CONN']['COUNTRYCODE'] = False
             self.VAR['OVPN']['CONN']['IP'] = False
             self.VAR['OVPN']['CONN']['START'] = 0
             self.VAR['OVPN']['CONN']['SECONDS'] = 0
@@ -5872,26 +5888,34 @@ class Systray:
         
     def update_dns_pings(self):
         self.timer_update_dns_ping_running = True
+        self.debug(9,"def update_dns_pings()")
         try:
-            self.debug(9,"def update_dns_pings()")
             now = int(time.time())
             diff = now-9
-            if self.LAST_DNS_PING_RUN > diff:
-                return False
-            
-            self.LAST_DNS_PING_RUN = now
-            if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
-                for countrycode,data in self.DNS.items():
-                    done = 0
-                    self.debug(9,"def update_dns_ping: countrycode = '%s', data = '%s'"%(countrycode,data))
-                    for value in data:
-                        if self.DNStest(value['ip'],countrycode,value) == True:
-                            done += 1
-                        self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(countrycode,value['ip']))
-                    if done > 0:
-                        self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
-            else:
-                self.debug(9,"def update_dns_pings(): not connected")
+            if self.LAST_DNS_PING_RUN < diff:
+                self.LAST_DNS_PING_RUN = now
+                
+                if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] > 8:
+                    mycountrycode = self.VAR['OVPN']['CONN']['COUNTRYCODE']
+                    if mycountrycode in self.DNS:
+                        #for data in self.DNS[countrycode].items():
+                        for countrycode,data in self.DNS.items():
+                            if countrycode != mycountrycode:
+                                continue
+                            done = 0
+                            self.debug(1,"def update_dns_ping: countrycode = '%s', len data = '%s'"%(countrycode,len(data)))
+                            for value in data:
+                                addr = value['ip']
+                                try:
+                                    if self.DNStest(addr,countrycode,value) == True:
+                                        done += 1
+                                    self.debug(9,"def update_dns_ping: countrycode = '%s', ip = '%s'"%(countrycode,addr))
+                                except Exception as e:
+                                    self.debug(1,"def update_dns_pings: failed DNStest ip %s, exception = '%s'"%(addr,e))
+                            if done > 0:
+                                self.debug(1,"def update_dns_ping: countrycode = '%s' done = %s"%(countrycode,done))
+                else:
+                    self.debug(1,"def update_dns_pings(): not connected")
         except Exception as e:
             self.debug(1,"def update_dns_pings: failed, exception = '%s'"%(e))
         self.timer_update_dns_ping_running = False
@@ -5942,27 +5966,40 @@ class Systray:
                 del self.GOOD_DNS[countrycode][addr]
             self.DNS_PING[addr]['ping'] = 9999
             self.DNS_PING[addr]['last'] = int(time.time())
+            
+            try:
+                self.DNS_PING[addr]['fail'] += 1
+            except Exception as e:
+                self.DNS_PING[addr]['fail'] = 1
+            
             return True
         except Exception as e:
             self.debug(1,"def set_bad_dns: failed, '%s'"%(e))
     
     def DNStest(self,addr,countrycode,data):
         try:
-            
+            self.debug(9,"def DNStest: addr '%s', countrycode = '%s', data = '%s'"%(addr,countrycode,data))
             if self.STATE_OVPN == False:
+                self.debug(1,"def DNStest: False 01 %s %s"%(addr,countrycode))
                 return False
             
-            if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] < 30:
+            if self.STATE_OVPN == True and self.VAR['OVPN']['CONN']['SECONDS'] < 8:
+                self.debug(1,"def DNStest: False 02 %s %s"%(addr,countrycode))
                 return False
+            
+            if addr in self.DNS_PING.keys() and fail in self.DNS_PING[addr]:
+                if self.DNS_PING[addr]['fail'] > 3:
+                    self.debug(1,"def DNStest: %s ignore addr '%s' fail > 3"%(countrycode,addr))
+                    return False
             
             if self.VAR['OVPN']['CONN']['SERVER'] != False:
                 servername = self.VAR['OVPN']['CONN']['SERVER']
                 servershort = servername.split(".")[0].lower()
                 testcountrycode = servershort[:2]
                 if testcountrycode != countrycode:
+                    self.debug(1,"def DNStest: False 03 %s connected %s != test %s"%(addr,countrycode,testcountrycode))
                     return False
             
-            self.debug(9,"def DNStest: addr '%s'"%(addr))
             try:
                 last = self.DNS_PING[addr]['last']
                 now = int(time.time())
@@ -5972,9 +6009,6 @@ class Systray:
             except Exception as e:
                 self.DNS_PING[addr] = {}
                 self.debug(9,"def DNStest: e='%s', create dict DNS_PING addr '%s'"%(e,addr))
-            
-
-                
             try:
                 packet = struct.pack("!HHHHHH", 0x0001, 0x0100, 1, 0, 0, 0)
                 for name in ('www', 'google', countrycode):
@@ -5983,7 +6017,6 @@ class Systray:
                     query = struct.pack(header, len(name), name.encode('utf-8'))
                     packet = packet + query
                 dns_query = packet + struct.pack("!bHH", 0, 1, 1)
-                
                 try:
                     s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
                     s.settimeout(3)
@@ -5999,7 +6032,6 @@ class Systray:
                         self.set_bad_dns(addr,countrycode)
                         self.debug(1,"def DNStest: %s %s recvdata failed, '%s'"%(countrycode,addr,e))
                         return False
-                        
                     try:
                         end = int(time.time() * 1000)
                         tdiff = end-start
@@ -6007,6 +6039,7 @@ class Systray:
                         
                         self.DNS_PING[addr]['ping'] = tdiff
                         self.DNS_PING[addr]['last'] = int(time.time())
+                        self.DNS_PING[addr]['fail'] = 0
                         
                         self.add_good_dns(addr,countrycode,data)
                         
