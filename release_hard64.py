@@ -1,1 +1,1 @@
-def builtdate(): return "oVPN.to Client 0.8.16 - built: 2018-10-29 (1540791573) 64 BITS"
+def builtdate(): return "oVPN.to Client 0.8.17 - built: 2018-11-14 (1542209890) 64 BITS"
