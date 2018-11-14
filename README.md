@@ -45,8 +45,8 @@ C:\Python34_64\Scripts\pip.exe install netifaces-0.10.5-cp34-cp34m-win_amd64.whl
 ## Basic Requirements
 + [PyGObject 3.18.2rev10 AIO](https://sourceforge.net/projects/pygobjectwin32/files/pygi-aio-3.18.2_rev10-setup_84c21bc2679ff32e73de38cbaa6ef6d30c628ae5.exe/download) Select only: 'Base packages' + 'GTK+ 3.18.9' and install into 32 and 64 bit!
 + [Visual C++ 2010 Express] (http://www.chip.de/downloads/Visual-C-2010-Express_24081894.html)
-+ [Inno Setup 5.5.9](http://www.jrsoftware.org/download.php/is.exe)
-+ [poedit 1.8.10](https://download.poedit.net/Poedit-1.8.10-setup.exe)
++ [Inno Setup](http://www.jrsoftware.org/download.php/is.exe)
++ [poedit](https://poedit.net)
 
 ## Developer Imports: how to run or build from source
 ### Debug Mode

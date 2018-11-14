@@ -1,5 +1,9 @@
 # changelog.txt
 #
+
+Version: 0.8.17
++ add dns response thread
+
 Version: 0.8.16
 + new DNS menu
 
