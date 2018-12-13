@@ -5088,7 +5088,7 @@ class Systray:
             useridEntry = Gtk.Entry()
             if self.USERID == False:
                 useridEntry.set_visibility(True)
-                useridEntry.set_max_length(9)
+                useridEntry.set_max_length(11)
                 useridEntry.set_size_request(200,24)
                 useridLabel = Gtk.Label(label=_("User-ID:"))
                 dialogBox.pack_start(useridLabel,False,False,0)
