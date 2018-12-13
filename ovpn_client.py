@@ -1547,37 +1547,43 @@ class Systray:
         return False
 
     def systray_timer(self):
+        #test = True
+        #if test:
         try:
             starttime = time.time()
             self.debug(10,"def systray_timer()")
             
-            if self.DISCONNECT_ON_IDLE["enabled"] == True:
-                idletime = self.check_idletime()
-                disconnect_in = False
-                if idletime != False:
-                    if self.DISCONNECT_ON_IDLE["is_idle"] == False:
-                        self.DISCONNECT_ON_IDLE["is_idle"] = True
+            try:
+                if self.DISCONNECT_ON_IDLE["enabled"] == True:
+                    idletime = self.check_idletime()
+                    disconnect_in = False
+                    if idletime != False:
+                        if self.DISCONNECT_ON_IDLE["is_idle"] == False:
+                            self.DISCONNECT_ON_IDLE["is_idle"] = True
+                        
+                        if self.state_openvpn() and self.DISCONNECT_ON_IDLE["discon"] == False:
+                            disconnect_in = self.DISCONNECT_ON_IDLE["idletime"] - idletime
+                            if disconnect_in <= 0:
+                                self.DISCONNECT_ON_IDLE["discon"] = True
+                                self.DISCONNECT_ON_IDLE["server"] = self.VAR['OVPN']['CALL_SRV']
+                                self.debug(1,"def systray_timer(): system idle time '%s', DISCONNECT_ON_IDLE, server = '%s'"%(idletime,self.DISCONNECT_ON_IDLE["server"]))
+                                #self.msgwarn(_("Initiating Idletime Disconnect!"),_("Info"))
+                                self.cb_kill_openvpn(None,1)
+                            else:
+                                self.debug(1,"def systray_timer(): system idle time '%s', disconnect_in '%s'"%(idletime,disconnect_in))
+                    else:
+                        if self.DISCONNECT_ON_IDLE["is_idle"] == True:
+                            self.DISCONNECT_ON_IDLE["is_idle"] = False
+                            if self.state_openvpn() == False and self.DISCONNECT_ON_IDLE["server"] != None:
+                                self.cb_jump_openvpn(0,0,self.DISCONNECT_ON_IDLE["server"])
                     
-                    if self.state_openvpn() and self.DISCONNECT_ON_IDLE["discon"] == False:
-                        disconnect_in = self.DISCONNECT_ON_IDLE["idletime"] - idletime
-                        if disconnect_in <= 0:
-                            self.DISCONNECT_ON_IDLE["discon"] = True
-                            self.DISCONNECT_ON_IDLE["server"] = self.VAR['OVPN']['CALL_SRV']
-                            self.debug(1,"def systray_timer(): system idle time '%s', DISCONNECT_ON_IDLE, server = '%s'"%(idletime,self.DISCONNECT_ON_IDLE["server"]))
-                            #self.msgwarn(_("Initiating Idletime Disconnect!"),_("Info"))
-                            self.cb_kill_openvpn(None,1)
-                        else:
-                            self.debug(1,"def systray_timer(): system idle time '%s', disconnect_in '%s'"%(idletime,disconnect_in))
-                else:
-                    if self.DISCONNECT_ON_IDLE["is_idle"] == True:
                         self.DISCONNECT_ON_IDLE["is_idle"] = False
-                        if self.state_openvpn() == False and self.DISCONNECT_ON_IDLE["server"] != None:
-                            self.cb_jump_openvpn(0,0,self.DISCONNECT_ON_IDLE["server"])
-                
+                else:
                     self.DISCONNECT_ON_IDLE["is_idle"] = False
-            else:
-                self.DISCONNECT_ON_IDLE["is_idle"] = False
-            
+            except Exception as e:
+                self.DISCONNECT_ON_IDLE["enabled"] = False
+                self.debug(1,"def systray_timer: failed, DISCONNECT_ON_IDLE exception '%s'"%(e))
+                
             self.systray_timer_running = True
             if self.stop_systray_timer == True:
                 self.systray_timer_running = False
