@@ -34,7 +34,7 @@ IF NOT %errorlevel% == 0 (
 	echo py2exe compiled with exitcode %errorlevel%: logfile: %PY2EXE_LOG%
 	for %%F in (%SOURCEDIR%\py2exe*.log) do if %%~zF equ 0 del %%F
 	IF EXIST %PY2EXE_ERR% notepad.exe %PY2EXE_ERR%
-	pause
+	::pause
 	exit
 	)
 
@@ -87,5 +87,5 @@ IF EXIST inno_setup.iss del inno_setup.iss
 
 call release.bat
 echo release.bat finished, hit to close
-pause
+::pause
 exit

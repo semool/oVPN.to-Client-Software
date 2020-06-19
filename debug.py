@@ -6,7 +6,7 @@ DEBUGcount = 0
 DEBUGfrombefore = False
 
 def devdir():
-    dir = "E:\\ovpn-client"
+    dir = "E:\Persoenlich\ovpn-client"
     return dir
 
 def getmode(MODE):

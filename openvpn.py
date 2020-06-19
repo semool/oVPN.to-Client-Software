@@ -187,6 +187,7 @@ def list_openvpn_files(DEBUG,OPENVPN_DIR,type):
     return False
 
 def check_files(DEBUG,OPENVPN_DIR):
+    return True
     debug(1,"[openvpn.py] def check_files()",DEBUG,True)
     # search signtool
     if not signtool.find_signtool(DEBUG) == False:

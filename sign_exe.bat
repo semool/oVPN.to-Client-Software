@@ -13,4 +13,4 @@ IF DEFINED SIGNTOOLCMD4 (%SIGNTOOLCMD4% %BINARY%)
 IF DEFINED SIGNTOOLVERI (%SIGNTOOLVERI% %BINARY%)
 
 echo sign_exe.bat complete, pause
-pause
+::pause

@@ -2,11 +2,11 @@
 echo set_dirs.bat
 echo %SOURCEDIR%
 
-set PY32=E:\python\Python34
-set PY64=E:\python\Python34_64
+set PY32="c:\Program Files (x86)\Python3.4"
+set PY64="c:\Program Files (x86)\Python3.4-x64"
 
 set APPDIR=%APPDATA%\ovpn\bin\client\dist
-set INNOCOMPILE="C:\Program Files (x86)\Inno Setup 5\Compil32.exe"
+set INNOCOMPILE="C:\Program Files (x86)\Inno Setup\Compil32.exe"
 set EXE7Z="%PROGRAMFILES%\7-Zip\7z.exe"
 
 set BITS=%~1
@@ -24,7 +24,7 @@ set CERTUTIL="C:\Windows\System32\CertUtil.exe"
 
 IF "%BITS%" == "32" ( set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk_x86.exe )
 IF "%BITS%" == "64" ( set SIGNTOOL=%INCLUDESDIR%\codesign\signtool_w10sdk_x64.exe )
-set SIGNCERTSHA1=02fde186c1cac4a08cec7b7420bf3280d6fe978b
+set SIGNCERTSHA1=0AF41FD3CD57C81EBD3D8A6685E670F004B5FDCB
 
 
 IF NOT EXIST %CERTUTIL% (echo %CERTUTIL% NOT FOUND && PAUSE && EXIT)
